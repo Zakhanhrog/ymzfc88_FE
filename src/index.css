@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for Ant Design integration */
+.ant-layout {
+  background: transparent;
+}
+
+.ant-layout-header {
+  padding: 0;
+  height: 80px;
+  line-height: 80px;
+}
+
+.ant-menu-horizontal {
+  border: none;
+}
+
+/* Ensure menu items are visible */
+.ant-menu-horizontal .ant-menu-item {
+  color: white !important;
+}
+
+.ant-menu-horizontal .ant-menu-item:hover {
+  color: white !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.ant-menu-horizontal .ant-menu-item-selected {
+  color: white !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-bottom: 2px solid white !important;
+}
+
+/* Custom navbar button styles */
+.ant-btn-text {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.ant-btn-text:hover,
+.ant-btn-text:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Sub Navigation Styles */
+.game-nav-container {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.game-nav-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.game-nav-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.game-nav-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Custom styles for Auth Modal */
+.auth-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.auth-modal .ant-modal-header {
+  display: none;
+}
+
+.auth-modal .ant-modal-body {
+  padding: 0;
+}
+
+.auth-modal .ant-modal-close {
+  top: 16px;
+  right: 16px;
+  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hide form validation errors to prevent layout issues */
+.auth-modal .ant-form-item-explain,
+.auth-modal .ant-form-item-explain-error {
+  display: none !important;
+}
+
+.auth-modal .ant-form-item-explain-error {
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Ensure consistent form item spacing */
+.auth-modal .ant-form-item {
+  margin-bottom: 16px !important;
+}
+
+.auth-modal .ant-form-item-has-error .ant-input,
+.auth-modal .ant-form-item-has-error .ant-input-password,
+.auth-modal .ant-form-item-has-error .ant-input:focus,
+.auth-modal .ant-form-item-has-error .ant-input-password:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Compact form styling for register modal */
+.auth-modal .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.auth-modal .ant-form-item-label {
+  padding-bottom: 2px;
+}
+
+/* Modern input styling */
+.auth-modal .ant-input,
+.auth-modal .ant-input-password {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.auth-modal .ant-input:focus,
+.auth-modal .ant-input-password:focus,
+.auth-modal .ant-input-focused,
+.auth-modal .ant-input-password-focused {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.auth-modal .ant-input::placeholder {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Button styling */
+.auth-modal .ant-btn-primary {
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.auth-modal .ant-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Checkbox styling */
+.auth-modal .ant-checkbox-wrapper {
+  font-size: 14px;
+}
+
+/* Remove form item margins */
+.auth-modal .ant-form-item-explain,
+.auth-modal .ant-form-item-extra {
+  margin-top: 4px;
+}
+
+/* Smooth animations for modal */
+.auth-modal .ant-modal {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Modal body height */
+.auth-modal .ant-modal-body {
+  min-height: 550px;
+  padding: 0;
+}
+
+/* Modal content height */
+.auth-modal .ant-modal-content {
+  min-height: 600px;
+}
+
+/* Banner Carousel Styles */
+.banner-carousel .slick-dots {
+  bottom: 20px;
+}
+
+.banner-carousel .slick-dots li button {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+}
+
+.banner-carousel .slick-dots li.slick-active button {
+  background: white;
+}
+
+.banner-carousel .slick-dots li button:before {
+  display: none;
+}
+
+/* Marquee Animation for Announcement */
+@keyframes marquee {
+  0% {
+    transform: translate3d(100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 20s linear infinite;
+  padding-right: 2rem;
+}
