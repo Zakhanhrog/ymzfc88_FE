@@ -1,4 +1,4 @@
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, App } from 'antd';
 import { UserOutlined, LockOutlined, HomeOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,22 +7,31 @@ import { authService } from '../services/authService';
 const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { message } = App.useApp();
 
   const onFinish = async (values) => {
     setLoading(true);
+    
+    // Test thông báo trước
+    message.info('Đang xử lý đăng nhập...');
+    
     try {
       const response = await authService.login(values);
       
-      // Lưu token và user info
+      // Lưu token, refreshToken và user info
       localStorage.setItem('token', response.token);
+      localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
       
       message.success('Đăng nhập thành công!');
       
       // Đóng modal và reload để cập nhật UI
-      onClose && onClose();
-      window.location.reload();
+      setTimeout(() => {
+        onClose && onClose();
+        window.location.reload();
+      }, 1000);
     } catch (error) {
+      console.error('Login error:', error);
       message.error(error.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);
@@ -72,10 +81,9 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <Form.Item
-              name="email"
+              name="usernameOrEmail"
               rules={[
-                { required: true, message: 'Vui lòng nhập email!' },
-                { type: 'email', message: 'Email không hợp lệ!' }
+                { required: true, message: 'Vui lòng nhập tên đăng nhập hoặc email!' }
               ]}
               className="mb-4"
               validateStatus=""
@@ -83,7 +91,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
             >
               <Input 
                 prefix={<UserOutlined className="text-blue-400" />} 
-                placeholder="Tên đăng nhập"
+                placeholder="Tên đăng nhập hoặc email"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
                   borderRadius: '16px',

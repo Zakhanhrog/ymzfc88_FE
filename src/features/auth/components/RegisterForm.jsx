@@ -1,4 +1,4 @@
-import { Form, Input, Button, Card, message, Checkbox } from 'antd';
+import { Form, Input, Button, Card, App, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, HomeOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,23 +7,26 @@ import { authService } from '../services/authService';
 const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { message } = App.useApp();
 
   const onFinish = async (values) => {
     setLoading(true);
+    
+    // Test thông báo trước
+    message.info('Đang xử lý đăng ký...');
+    
     try {
       const { confirmPassword, ...userData } = values;
-      const response = await authService.register(userData);
+      await authService.register(userData);
       
-      // Lưu token và user info
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      message.success('Đăng ký thành công! Vui lòng đăng nhập.');
       
-      message.success('Đăng ký thành công!');
-      
-      // Đóng modal và reload để cập nhật UI
-      onClose && onClose();
-      window.location.reload();
+      // Chuyển sang form đăng nhập thay vì tự động đăng nhập
+      setTimeout(() => {
+        handleSwitchToLogin();
+      }, 1500);
     } catch (error) {
+      console.error('Register error:', error);
       message.error(error.message || 'Đăng ký thất bại!');
     } finally {
       setLoading(false);

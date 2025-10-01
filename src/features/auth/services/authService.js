@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Cấu hình axios base URL (thay đổi theo API thực tế)
-const API_BASE_URL = 'https://api.bettinghub.com';
+// Cấu hình axios base URL cho backend local
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const authAPI = axios.create({
   baseURL: API_BASE_URL,
@@ -24,62 +24,83 @@ authAPI.interceptors.request.use(
   }
 );
 
-// Mock API functions (thay thế bằng API thực tế)
+// API functions sử dụng backend thực tế
 export const authService = {
   // Đăng nhập
   login: async (credentials) => {
     try {
-      // Tạm thời mock response
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Giả lập delay API
-      
-      if (credentials.email === 'admin@bettinghub.com' && credentials.password === '123456') {
-        const mockResponse = {
-          token: 'mock-jwt-token-' + Date.now(),
-          user: {
-            id: 1,
-            email: credentials.email,
-            name: 'Admin User',
-            role: 'user'
-          }
-        };
-        return mockResponse;
-      } else {
-        throw new Error('Email hoặc mật khẩu không chính xác');
-      }
+      const response = await authAPI.post('/auth/login', {
+        usernameOrEmail: credentials.usernameOrEmail,
+        password: credentials.password
+      });
+
+      const { data } = response.data;
+      return {
+        token: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          username: data.user.username,
+          fullName: data.user.fullName,
+          role: data.user.role.toLowerCase()
+        }
+      };
     } catch (error) {
-      throw error;
+      if (error.response && error.response.data) {
+        throw new Error(error.response.data.message || 'Đăng nhập thất bại');
+      }
+      throw new Error('Lỗi kết nối đến máy chủ');
     }
   },
 
   // Đăng ký
   register: async (userData) => {
     try {
-      // Tạm thời mock response
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockResponse = {
-        token: 'mock-jwt-token-' + Date.now(),
-        user: {
-          id: Date.now(),
-          email: userData.email,
-          name: userData.name,
-          role: 'user'
-        }
+      // Tạo username unique từ email và timestamp
+      const emailPrefix = userData.email.split('@')[0];
+      const timestamp = Date.now().toString().slice(-4);
+      const username = `${emailPrefix}${timestamp}`;
+
+      const response = await authAPI.post('/auth/register', {
+        username: username,
+        email: userData.email,
+        password: userData.password,
+        confirmPassword: userData.password,
+        fullName: userData.name,
+        phoneNumber: userData.phone
+      });
+
+      // Chỉ trả về thông báo thành công, không tự động đăng nhập
+      return {
+        success: true,
+        message: response.data.message || 'Đăng ký thành công'
       };
-      return mockResponse;
     } catch (error) {
-      throw error;
+      if (error.response && error.response.data) {
+        throw new Error(error.response.data.message || 'Đăng ký thất bại');
+      }
+      throw new Error('Lỗi kết nối đến máy chủ');
     }
   },
 
   // Đăng xuất
   logout: async () => {
     try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        await authAPI.post('/auth/logout', { refreshToken });
+      }
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       return true;
     } catch (error) {
-      throw error;
+      // Vẫn clear localStorage dù API thất bại
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      return true;
     }
   },
 

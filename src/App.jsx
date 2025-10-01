@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 
 // Pages
@@ -16,27 +16,29 @@ import 'antd/dist/reset.css';
 function App() {
   return (
     <ConfigProvider locale={viVN}>
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route 
-              path="/admin/dashboard" 
-              element={
-                <AdminProtectedRoute>
-                  <AdminDashboardPage />
-                </AdminProtectedRoute>
-              } 
-            />
-            
-            {/* Login và Register giờ là modal, không cần routes */}
-          </Routes>
-        </div>
-      </Router>
+      <AntApp>
+        <Router>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route 
+                path="/admin/dashboard" 
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboardPage />
+                  </AdminProtectedRoute>
+                } 
+              />
+              
+              {/* Login và Register giờ là modal, không cần routes */}
+            </Routes>
+          </div>
+        </Router>
+      </AntApp>
     </ConfigProvider>
   );
 }

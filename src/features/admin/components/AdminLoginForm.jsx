@@ -1,26 +1,29 @@
 import { useState } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, App } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { adminAuthService } from '../services/adminAuthService';
 
 const AdminLoginForm = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
 
   const onFinish = async (values) => {
     setLoading(true);
+    
+    // Test thông báo trước
+    message.info('Đang xử lý đăng nhập admin...');
+    
     try {
-      // Simulate admin login API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock admin credentials check
-      if (values.username === 'admin' && values.password === 'admin123') {
-        message.success('Đăng nhập thành công!');
-        localStorage.setItem('adminToken', 'admin-token-123');
-        onLogin && onLogin();
-      } else {
-        message.error('Tên đăng nhập hoặc mật khẩu không đúng!');
+      const result = await adminAuthService.login(values);
+      if (result.success) {
+        message.success('Đăng nhập admin thành công!');
+        setTimeout(() => {
+          onLogin && onLogin();
+        }, 1000);
       }
     } catch (error) {
-      message.error('Đăng nhập thất bại. Vui lòng thử lại!');
+      console.error('Admin login error:', error);
+      message.error(error.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);
     }
