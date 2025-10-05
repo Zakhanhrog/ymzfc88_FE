@@ -3,6 +3,7 @@ import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, HomeOutlined, 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { THEME_COLORS, getInputIconStyle, getFormButtonStyle, getButtonStyle } from '../../../utils/theme';
 
 const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [loading, setLoading] = useState(false);
@@ -62,7 +63,6 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       <div className="w-1/2 p-8 bg-white flex items-start pt-8 relative">
         <div className="w-full">
           <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-blue-600 mb-2">TH2</div>
             <h2 className="text-2xl font-bold text-gray-800">ĐĂNG KÝ</h2>
           </div>
 
@@ -86,7 +86,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               help=""
             >
               <Input 
-                prefix={<UserOutlined className="text-blue-400" />} 
+                prefix={<UserOutlined style={getInputIconStyle()} />} 
                 placeholder="Họ và tên"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -107,7 +107,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               help=""
             >
               <Input 
-                prefix={<MailOutlined className="text-blue-400" />} 
+                prefix={<MailOutlined style={getInputIconStyle()} />} 
                 placeholder="Email"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -128,7 +128,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               help=""
             >
               <Input 
-                prefix={<PhoneOutlined className="text-blue-400" />} 
+                prefix={<PhoneOutlined style={getInputIconStyle()} />} 
                 placeholder="Số điện thoại"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -149,7 +149,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               help=""
             >
               <Input.Password 
-                prefix={<LockOutlined className="text-blue-400" />} 
+                prefix={<LockOutlined style={getInputIconStyle()} />} 
                 placeholder="Mật khẩu"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -178,7 +178,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               help=""
             >
               <Input.Password 
-                prefix={<LockOutlined className="text-blue-400" />} 
+                prefix={<LockOutlined style={getInputIconStyle()} />} 
                 placeholder="Xác nhận mật khẩu"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -206,7 +206,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   Tôi đồng ý với{' '}
                   <a 
                     href="#" 
-                    className="text-blue-600 hover:text-blue-700"
+                    style={{ color: '#D30102' }}
+                    className="hover:underline"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -221,7 +222,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             <div className="flex justify-center mb-4">
               <Button 
                 type="link" 
-                className="text-blue-500 p-0"
+                className="p-0"
+                style={getButtonStyle('link')}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSwitchToLogin();
@@ -235,10 +237,16 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               <Button 
                 type="primary" 
                 htmlType="submit" 
-                className="w-full bg-blue-500 hover:bg-blue-600 font-semibold h-12"
+                className="w-full font-semibold h-12"
                 style={{
-                  borderRadius: '12px',
-                  border: 'none'
+                  ...getFormButtonStyle().base,
+                  borderRadius: '12px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = getFormButtonStyle().hover.backgroundColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = getFormButtonStyle().base.backgroundColor;
                 }}
                 loading={loading}
               >
@@ -258,7 +266,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               onClose && onClose();
               navigate('/');
             }}
-            className="text-blue-500 flex items-center gap-2 font-medium"
+            className="flex items-center gap-2 font-medium"
+            style={getButtonStyle('link')}
           >
             TRANG CHỦ
           </Button>
@@ -268,7 +277,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             onClick={(e) => {
               e.stopPropagation();
             }}
-            className="text-blue-500 flex items-center gap-2 font-medium"
+            className="flex items-center gap-2 font-medium"
+            style={getButtonStyle('link')}
           >
             CSKH
           </Button>

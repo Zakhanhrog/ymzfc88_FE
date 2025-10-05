@@ -4,6 +4,7 @@ import viVN from 'antd/locale/vi_VN';
 
 // Pages
 import HomePage from './features/home/pages/HomePage';
+import UserWalletPage from './features/wallet/pages/UserWalletPage';
 
 // Admin Pages
 import AdminLoginPage from './features/admin/pages/AdminLoginPage';
@@ -21,6 +22,7 @@ function App() {
           <div className="App">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/wallet" element={<UserWalletPage />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<Navigate to="/admin/login" replace />} />

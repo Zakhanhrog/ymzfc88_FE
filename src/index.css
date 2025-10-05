@@ -7,6 +7,51 @@
   background: transparent;
 }
 
+/* Sidebar scrollable styles */
+.sidebar-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.sidebar-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Sidebar Menu Button Styles */
+.sidebar-menu-item {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.sidebar-menu-item:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+.sidebar-menu-item.ant-menu-item-selected {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.sidebar-menu-item::after {
+  display: none !important;
+}
+
 .ant-layout-header {
   padding: 0;
   height: 80px;
@@ -226,3 +271,237 @@
   animation: marquee 20s linear infinite;
   padding-right: 2rem;
 }
+
+/* ========== SCROLLBAR HIDING ========== */
+/* Ẩn scrollbar hoàn toàn cho tất cả elements */
+
+/* Global scrollbar hiding */
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+/* HTML và Body */
+html, body {
+  overflow-x: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+/* Root element */
+#root {
+  overflow-x: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+#root::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+/* Ant Design Components */
+.ant-layout,
+.ant-layout-content,
+.ant-layout-sider,
+.ant-menu {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.ant-layout::-webkit-scrollbar,
+.ant-layout-content::-webkit-scrollbar,
+.ant-layout-sider::-webkit-scrollbar,
+.ant-menu::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+/* Game navigation container */
+.game-nav-container::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+/* ========== END SCROLLBAR HIDING ========== */
+
+/* ========== MENU STYLING ========== */
+/* Override Ant Design Menu colors để có màu nền trắng nhất quán */
+
+/* Menu container */
+.ant-menu-vertical {
+  background: white !important;
+  border-right: none !important;
+}
+
+/* Tất cả menu items có nền trắng */
+.ant-menu-item {
+  background: white !important;
+  color: #333 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Menu item hover */
+.ant-menu-item:hover {
+  background: #f5f5f5 !important;
+  color: #1890ff !important;
+}
+
+/* Menu item selected/active */
+.ant-menu-item-selected {
+  background: white !important;
+  color: #1890ff !important;
+  font-weight: bold !important;
+}
+
+/* Menu item selected hover */
+.ant-menu-item-selected:hover {
+  background: #f5f5f5 !important;
+  color: #1890ff !important;
+}
+
+/* Menu divider */
+.ant-menu-divider {
+  background: #f0f0f0 !important;
+  margin: 8px 0 !important;
+}
+
+/* Menu item content */
+.ant-menu-item .ant-menu-title-content {
+  color: inherit !important;
+}
+
+/* Menu icons */
+.ant-menu-item .anticon {
+  color: inherit !important;
+}
+
+/* Force override any nth-child styling */
+.ant-menu-item:nth-child(odd),
+.ant-menu-item:nth-child(even) {
+  background: white !important;
+}
+
+.ant-menu-item:nth-child(odd):hover,
+.ant-menu-item:nth-child(even):hover {
+  background: #f5f5f5 !important;
+}
+/* ========== END MENU STYLING ========== */
+
+/* Game category styling */
+.game-category-item {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.game-category-item:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+.game-category-item.active {
+  background: transparent !important;
+  font-weight: bold !important;
+  box-shadow: none !important;
+}
+
+.game-category-item.active .anticon {
+  color: #1890ff !important;
+}
+
+/* ========== ADMIN SIDEBAR STYLING ========== */
+.admin-sidebar .ant-layout-sider {
+  background: #001529 !important;
+}
+
+.admin-sidebar .ant-menu-dark {
+  background: #001529 !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: transparent !important;
+  margin: 4px 8px !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-item-selected {
+  background: #1890ff !important;
+  color: #fff !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-submenu-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: transparent !important;
+  margin: 4px 8px !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-submenu-open > .ant-menu-submenu-title {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-submenu .ant-menu-item {
+  margin: 2px 16px !important;
+  padding-left: 48px !important;
+}
+
+.admin-sidebar .ant-menu-dark .ant-menu-submenu-arrow {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Admin sidebar scrollbar */
+.admin-sidebar .ant-layout-sider-children {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
+}
+
+.admin-sidebar .ant-layout-sider-children::-webkit-scrollbar {
+  width: 6px !important;
+  display: block !important;
+}
+
+.admin-sidebar .ant-layout-sider-children::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.admin-sidebar .ant-layout-sider-children::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 3px !important;
+}
+
+.admin-sidebar .ant-layout-sider-children::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+/* ========== END ADMIN SIDEBAR STYLING ==========*/

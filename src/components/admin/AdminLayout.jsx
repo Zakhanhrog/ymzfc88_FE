@@ -1,52 +1,41 @@
 import { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Dropdown, Avatar } from 'antd';
+import { Layout, Button, Dropdown, Avatar, Typography } from 'antd';
 import {
-  DashboardOutlined,
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import AdminSidebar from './AdminSidebar';
+import { adminAuthService } from '../../features/admin/services/adminAuthService';
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
+const { Text } = Typography;
 
 const AdminLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [adminData, setAdminData] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     // Check admin authentication
     const adminToken = localStorage.getItem('adminToken');
     if (!adminToken) {
       navigate('/admin/login');
+      return;
     }
+
+    // Get admin data
+    const data = adminAuthService.getCurrentAdmin();
+    setAdminData(data);
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    adminAuthService.logout();
     navigate('/admin/login');
   };
-
-  const menuItems = [
-    {
-      key: '/admin/dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
-    },
-    {
-      key: '/admin/users',
-      icon: <UserOutlined />,
-      label: 'Quản lý người dùng',
-    },
-    {
-      key: '/admin/settings',
-      icon: <SettingOutlined />,
-      label: 'Cài đặt',
-    },
-  ];
 
   const userMenuItems = [
     {
@@ -70,45 +59,49 @@ const AdminLayout = ({ children }) => {
     },
   ];
 
-  const handleMenuClick = ({ key }) => {
-    navigate(key);
-  };
-
   return (
     <Layout className="min-h-screen">
-      <Sider 
-        trigger={null} 
-        collapsible 
-        collapsed={collapsed}
-        className="bg-white shadow-lg"
-        width={250}
-      >
-        <div className="p-4 text-center border-b">
-          <div className="text-xl font-bold text-blue-600">
-            {collapsed ? 'A' : 'ADMIN PANEL'}
-          </div>
-        </div>
-        <Menu
-          theme="light"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={handleMenuClick}
-          className="border-r-0"
-        />
-      </Sider>
+      <AdminSidebar 
+        collapsed={collapsed} 
+        onCollapse={setCollapsed}
+      />
       
-      <Layout>
-        <Header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+      <Layout style={{ marginLeft: collapsed ? 80 : 280, transition: 'margin-left 0.2s' }}>
+        <Header 
+          className="bg-white shadow-sm"
+          style={{
+            padding: '0 24px',
+            height: '64px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'fixed',
+            width: `calc(100% - ${collapsed ? 80 : 280}px)`,
+            top: 0,
+            zIndex: 99,
+            transition: 'width 0.2s'
+          }}
+        >
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            className="text-lg"
+            style={{ fontSize: '16px', width: 64, height: 64 }}
           />
           
-          <div className="flex items-center space-x-6 mr-4">
-            <span className="text-gray-600 text-base">Xin chào, Admin</span>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <div>
+                <Text strong>
+                  {adminData?.fullName || 'Admin'}
+                </Text>
+              </div>
+              <div>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {adminData?.email || 'admin@example.com'}
+                </Text>
+              </div>
+            </div>
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"
@@ -117,12 +110,21 @@ const AdminLayout = ({ children }) => {
               <Avatar 
                 icon={<UserOutlined />} 
                 className="bg-blue-600 cursor-pointer"
+                size="large"
               />
             </Dropdown>
           </div>
         </Header>
         
-        <Content className="p-6 bg-gray-50">
+        <Content 
+          style={{
+            margin: '64px 0 0 0',
+            padding: '24px',
+            background: '#f0f2f5',
+            minHeight: 'calc(100vh - 64px)',
+            overflow: 'auto'
+          }}
+        >
           {children}
         </Content>
       </Layout>

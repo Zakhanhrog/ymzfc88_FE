@@ -1,35 +1,56 @@
-import { Layout as AntLayout, Menu, Button, Dropdown, Avatar } from 'antd';
-import { UserOutlined, LogoutOutlined, HomeOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Layout as AntLayout, Button, Dropdown, Avatar } from 'antd';
+import { 
+  UserOutlined, 
+  LogoutOutlined, 
+  MenuOutlined
+} from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AuthModal from './AuthModal';
+import Sidebar from './Sidebar';
+import { getLogoStyle, getAvatarStyle, getButtonStyle, THEME_COLORS } from '../../utils/theme';
 
 const { Header, Content, Footer } = AntLayout;
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [activeGame, setActiveGame] = useState('HOT');
-
-  const gameCategories = [
-    { key: 'HOT', label: 'HOT', icon: <FireOutlined />, color: '#ff4d4f' },
-    { key: 'BANCA', label: 'BẮN CÁ', icon: null, color: '#1890ff' },
-    { key: 'CASINO', label: 'CASINO', icon: null, color: '#722ed1' },
-    { key: 'GAMEBAI', label: 'GAME BÀI', icon: null, color: '#52c41a' },
-    { key: 'NOHU', label: 'NỔ HŨ', icon: null, color: '#faad14' },
-    { key: 'XOSO', label: 'XỔ SỐ', icon: null, color: '#eb2f96' },
-    { key: 'THETHAO', label: 'THỂ THAO', icon: null, color: '#13c2c2' },
-    { key: 'ESPORTS', label: 'ESPORTS', icon: null, color: '#fa541c' },
-    { key: 'DAGA', label: 'ĐÁ GÀ', icon: null, color: '#a0d911' }
-  ];
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [userBalance, setUserBalance] = useState(0);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    // Kiểm tra trạng thái đăng nhập từ localStorage
+    // Kiểm tra trạng thái đăng nhập từ localStorage (backend thật)
     const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    
+    if (token) {
+      setIsLoggedIn(true);
+      
+      // Lấy thông tin user từ localStorage (đã được set bởi backend)
+      const user = localStorage.getItem('user');
+      if (user) {
+        try {
+          const userData = JSON.parse(user);
+          setUserName(userData.username || userData.name || 'User');
+          setUserBalance(userData.balance || 0);
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          setUserName('User');
+          setUserBalance(0);
+        }
+      } else {
+        // Nếu có token nhưng chưa có user data, set default
+        setUserName('User');
+        setUserBalance(0);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setUserName('');
+      setUserBalance(0);
+    }
   }, []);
 
   const handleLogout = () => {
@@ -37,6 +58,8 @@ const Layout = ({ children }) => {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
+    setUserName('');
+    setUserBalance(0);
     navigate('/');
     window.location.reload();
   };
@@ -54,26 +77,22 @@ const Layout = ({ children }) => {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: 'Đăng xuất',
-      onClick: handleLogout,
     },
   ];
 
-  const handleLoginOpen = () => {
-    setIsLoginModalOpen(true);
+  const handleUserMenuClick = ({ key }) => {
+    if (key === 'profile') {
+      navigate('/wallet');
+    } else if (key === 'logout') {
+      handleLogout();
+    }
   };
 
-  const handleRegisterOpen = () => {
-    setIsRegisterModalOpen(true);
-  };
-
-  const handleLoginClose = () => {
-    setIsLoginModalOpen(false);
-  };
-
-  const handleRegisterClose = () => {
-    setIsRegisterModalOpen(false);
-  };
-
+  const handleLoginOpen = () => setIsLoginModalOpen(true);
+  const handleRegisterOpen = () => setIsRegisterModalOpen(true);
+  const handleLoginClose = () => setIsLoginModalOpen(false);
+  const handleRegisterClose = () => setIsRegisterModalOpen(false);
+  
   const handleSwitchToRegister = () => {
     setIsLoginModalOpen(false);
     setIsRegisterModalOpen(true);
@@ -86,45 +105,156 @@ const Layout = ({ children }) => {
 
   const handleGameSelect = (gameKey) => {
     setActiveGame(gameKey);
-    // Navigate to specific game category or handle game selection
     console.log('Selected game:', gameKey);
   };
 
+  const handleSidebarToggle = () => setSidebarCollapsed(!sidebarCollapsed);
+
   return (
-    <AntLayout className="min-h-screen">
-      <Header className="bg-blue-600 px-4" style={{ height: '80px', lineHeight: '80px' }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-full">
-          <div className="flex items-center flex-1">
+    <AntLayout className="min-h-screen bg-gray-50">
+      {/* Header - Navbar trên cùng */}
+      <Header className="bg-white px-6 fixed w-full z-10 shadow-md" style={{ height: '64px', lineHeight: '64px' }}>
+        <div className="w-full flex items-center justify-between h-full">
+          {/* Logo với Menu Icon - căn gần lề trái */}
+          <div className="flex items-center pl-2">
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={handleSidebarToggle}
+              className="text-gray-700 hover:bg-gray-100 mr-4"
+              style={{
+                fontSize: '20px',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px'
+              }}
+            />
             <div 
-              className="text-white text-2xl font-bold cursor-pointer"
+              className="flex items-center cursor-pointer"
               onClick={() => navigate('/')}
             >
-              BettingHub
+              <img 
+                src="/logo.webp" 
+                alt="Logo" 
+                className="h-9 w-auto object-contain"
+                style={{ maxHeight: '36px' }}
+              />
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          {/* Buttons - căn gần lề phải */}
+          <div className="flex items-center gap-4 pr-2">
           {isLoggedIn ? (
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              placement="bottomRight"
-              arrow
-            >
-              <Avatar 
-                icon={<UserOutlined />} 
-                className="cursor-pointer bg-blue-500"
-                size="large"
-              />
-            </Dropdown>
+            <div className="flex items-center gap-3">
+              {/* Hiển thị tên user và số dư */}
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-gray-600">{userName}</span>
+                <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
+                  <span className="text-gray-600">
+                    {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND'
+                    }).format(userBalance).replace('₫', 'đ')}
+                  </span>
+                  <button 
+                    className="text-gray-500 hover:text-gray-700"
+                    onClick={() => {
+                      // Reload balance từ localStorage (đã được cập nhật bởi backend)
+                      const user = localStorage.getItem('user');
+                      if (user) {
+                        try {
+                          const userData = JSON.parse(user);
+                          setUserBalance(userData.balance || 0);
+                        } catch (error) {
+                          console.error('Error reloading balance:', error);
+                        }
+                      }
+                      // Có thể gọi API để lấy balance mới nhất từ backend
+                      // fetchLatestBalance();
+                    }}
+                  >
+                    🔄
+                  </button>
+                </div>
+              </div>
+              
+              {/* Nút Nạp tiền */}
+              <Button 
+                type="primary"
+                size="small"
+                icon="🧩"
+                onClick={() => navigate('/wallet?tab=deposit-withdraw')}
+                className="font-semibold px-4 py-1 h-8 text-sm"
+                style={{
+                  borderRadius: '20px',
+                  background: THEME_COLORS.primaryGradient,
+                  border: 'none'
+                }}
+              >
+                Nạp tiền
+              </Button>
+              
+              {/* Nút Rút tiền */}
+              <Button 
+                size="small"
+                icon="💳"
+                onClick={() => navigate('/wallet?tab=deposit-withdraw')}
+                className="font-semibold px-4 py-1 h-8 text-sm"
+                style={{
+                  borderRadius: '20px',
+                  borderColor: THEME_COLORS.primary,
+                  color: THEME_COLORS.primary
+                }}
+              >
+                Rút tiền
+              </Button>
+              
+              {/* Nút Chat */}
+              <Button
+                size="small"
+                shape="circle"
+                icon="💬"
+                className="relative"
+                onClick={() => console.log('Open chat')}
+              >
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  •
+                </span>
+              </Button>
+              
+              {/* Nút Đăng xuất */}
+              <Button 
+                size="small"
+                onClick={handleLogout}
+                className="font-semibold px-4 py-1 h-8 text-sm bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200"
+                style={{ borderRadius: '20px' }}
+              >
+                Đăng xuất
+              </Button>
+            </div>
           ) : (
             <div className="flex gap-3">
               <Button 
                 type="ghost" 
                 onClick={handleLoginOpen}
-                className="text-white border-white hover:bg-white hover:text-blue-600 font-semibold px-6 py-2 h-12 text-base shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                className="font-semibold px-5 py-1 h-10 text-sm shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
                 style={{
-                  borderRadius: '8px',
-                  borderWidth: '2px'
+                  borderRadius: '20px',
+                  borderWidth: '2px',
+                  ...getButtonStyle('ghost')
+                }}
+                onMouseEnter={(e) => {
+                  const hoverStyle = getButtonStyle('ghost').hover;
+                  e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor;
+                  e.currentTarget.style.color = hoverStyle.color;
+                }}
+                onMouseLeave={(e) => {
+                  const baseStyle = getButtonStyle('ghost');
+                  e.currentTarget.style.backgroundColor = baseStyle.backgroundColor;
+                  e.currentTarget.style.color = baseStyle.color;
                 }}
               >
                 Đăng nhập
@@ -132,67 +262,68 @@ const Layout = ({ children }) => {
               <Button 
                 type="primary"
                 onClick={handleRegisterOpen}
-                className="bg-white text-blue-600 border-white hover:bg-gray-100 font-bold px-8 py-2 h-12 text-base shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                className="text-white font-bold px-6 py-1 h-10 text-sm shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
                 style={{
-                  borderRadius: '8px',
-                  borderWidth: '2px'
+                  borderRadius: '20px',
+                  borderWidth: '2px',
+                  ...getButtonStyle('primary')
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = getButtonStyle('primary').hover.backgroundColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = getButtonStyle('primary').backgroundColor;
                 }}
               >
                 Đăng ký
               </Button>
             </div>
           )}
-        </div>
-      </div>
-      </Header>
-
-      {/* Sub Navigation - Game Categories */}
-      <div className="bg-white border-t border-gray-200 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center py-4 game-nav-container overflow-x-auto">
-            <div className="flex items-center space-x-6 min-w-max">
-              {gameCategories.map((category) => (
-                <div
-                  key={category.key}
-                  onClick={() => handleGameSelect(category.key)}
-                  className={`game-nav-button relative cursor-pointer px-4 py-3 transition-all duration-300 group ${
-                    activeGame === category.key
-                      ? (category.key === 'HOT' ? 'text-red-600 font-bold' : 'text-blue-600 font-bold')
-                      : 'text-gray-700 hover:text-blue-600'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {category.icon && (
-                      <span 
-                        className="text-lg" 
-                        style={{ color: activeGame === category.key ? category.color : 'inherit' }}
-                      >
-                        {category.icon}
-                      </span>
-                    )}
-                    <span className="text-base font-semibold">{category.label}</span>
-                  </div>
-                  
-                  {/* Underline effect */}
-                  <span 
-                    className="absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 w-0 group-hover:w-full"
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         </div>
-      </div>
-      
-      <Content className="flex-1">
-        {children}
-      </Content>
-      
-      <Footer className="text-center bg-gray-100">
-        <div className="text-gray-600">
-          BettingHub ©2025 - Nền tảng cá cược trực tuyến hàng đầu
-        </div>
-      </Footer>
+      </Header>
+
+      {/* Layout với Sidebar và Content */}
+      <AntLayout style={{ marginTop: '64px', background: '#f9fafb' }}>
+        {/* Sidebar bên trái */}
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onCollapse={setSidebarCollapsed}
+          activeGame={activeGame}
+          onGameSelect={handleGameSelect}
+          onLoginOpen={handleLoginOpen}
+          onRegisterOpen={handleRegisterOpen}
+          onLogout={handleLogout}
+          isLoggedIn={isLoggedIn}
+        />
+
+        {/* Content chính */}
+        <AntLayout style={{ 
+          marginLeft: sidebarCollapsed ? '84px' : '300px', 
+          marginRight: '40px',
+          transition: 'margin-left 0.3s ease',
+          minHeight: 'calc(100vh - 64px)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          paddingTop: '20px'
+        }}>
+          <Content style={{ 
+            background: 'transparent',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}>
+            {children}
+          </Content>
+          
+          <Footer className="text-center bg-transparent mt-8">
+            <div className="text-gray-500 py-6 text-sm">
+              ©2025 - Nền tảng cá cược trực tuyến hàng đầu
+            </div>
+          </Footer>
+        </AntLayout>
+      </AntLayout>
 
       {/* Auth Modals */}
       <AuthModal 

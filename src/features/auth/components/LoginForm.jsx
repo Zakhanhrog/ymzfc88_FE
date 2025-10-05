@@ -3,6 +3,7 @@ import { UserOutlined, LockOutlined, HomeOutlined, CustomerServiceOutlined } fro
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { THEME_COLORS, getInputIconStyle, getFormButtonStyle, getButtonStyle } from '../../../utils/theme';
 
 const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const [loading, setLoading] = useState(false);
@@ -67,7 +68,6 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
       <div className="w-1/2 p-8 bg-white flex items-start pt-12 relative">
         <div className="w-full">
           <div className="text-center mb-8">
-            <div className="text-3xl font-bold text-blue-600 mb-2">TH2</div>
             <h2 className="text-2xl font-bold text-gray-800">ĐĂNG NHẬP</h2>
           </div>
 
@@ -90,7 +90,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               help=""
             >
               <Input 
-                prefix={<UserOutlined className="text-blue-400" />} 
+                prefix={<UserOutlined style={getInputIconStyle()} />} 
                 placeholder="Tên đăng nhập hoặc email"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -111,7 +111,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               help=""
             >
               <Input.Password 
-                prefix={<LockOutlined className="text-blue-400" />} 
+                prefix={<LockOutlined style={getInputIconStyle()} />} 
                 placeholder="Mật khẩu"
                 className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
                 style={{ 
@@ -124,7 +124,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
             <div className="flex justify-between items-center my-6">
               <Button 
                 type="link" 
-                className="text-blue-500 p-0"
+                className="p-0"
+                style={getButtonStyle('link')}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSwitchToRegister();
@@ -134,7 +135,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               </Button>
               <Button 
                 type="link" 
-                className="text-blue-500 p-0"
+                className="p-0"
+                style={getButtonStyle('link')}
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -147,10 +149,13 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               <Button 
                 type="primary" 
                 htmlType="submit" 
-                className="w-full bg-blue-500 hover:bg-blue-600 font-semibold h-12"
-                style={{
-                  borderRadius: '16px',
-                  border: 'none'
+                className="w-full font-semibold h-12"
+                style={getFormButtonStyle().base}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = getFormButtonStyle().hover.backgroundColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = getFormButtonStyle().base.backgroundColor;
                 }}
                 loading={loading}
               >
@@ -170,7 +175,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               onClose && onClose();
               navigate('/');
             }}
-            className="text-blue-500 flex items-center gap-2 font-medium"
+            className="flex items-center gap-2 font-medium"
+            style={getButtonStyle('link')}
           >
             TRANG CHỦ
           </Button>
@@ -180,7 +186,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
             onClick={(e) => {
               e.stopPropagation();
             }}
-            className="text-blue-500 flex items-center gap-2 font-medium"
+            className="flex items-center gap-2 font-medium"
+            style={getButtonStyle('link')}
           >
             CSKH
           </Button>

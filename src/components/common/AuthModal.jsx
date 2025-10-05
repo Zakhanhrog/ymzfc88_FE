@@ -54,7 +54,7 @@ const AuthModal = ({
       footer={null}
       width={1000}
       centered
-      destroyOnClose={true}
+      destroyOnHidden={true}
       maskClosable={true}
       className="auth-modal"
       style={{ top: 20, minHeight: '750px' }}
