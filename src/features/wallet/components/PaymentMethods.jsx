@@ -224,54 +224,32 @@ const PaymentMethods = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card 
-        className="shadow-lg"
-        style={{ 
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          border: 'none'
-        }}
-        bodyStyle={{ padding: '24px' }}
-      >
-        <Row align="middle" justify="space-between">
-          <Col>
-            <div className="text-white">
-              <h2 className="text-2xl font-bold mb-2">Phương thức thanh toán</h2>
-              <p className="text-white/80">
-                Xem danh sách phương thức thanh toán có sẵn trong hệ thống
-              </p>
-            </div>
-          </Col>
-          <Col>
-            <Button 
-              type="primary"
-              size="large"
-              icon={<ReloadOutlined />}
-              onClick={loadPaymentMethods}
-              loading={loading}
-              className="bg-white/20 border-white/30 text-white hover:bg-white/30 font-semibold"
-              style={{ borderRadius: '12px' }}
-            >
-              Tải lại
-            </Button>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* Quick Add Cards - Removed since these are system payment methods */}
+    <div className="space-y-4">
+      {/* Title Header */}
+      <div className="text-center pb-3">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <BankOutlined className="text-2xl text-red-600" />
+          <h3 className="text-xl md:text-2xl font-bold mb-0 text-gray-800">Phương thức nạp tiền</h3>
+        </div>
+        <p className="text-sm text-gray-500">
+          Xem danh sách phương thức thanh toán có sẵn trong hệ thống
+        </p>
+      </div>
       
       {/* Payment Methods Table */}
       <Card 
-        title={
-          <div className="flex items-center gap-2">
-            <WalletOutlined style={{ color: THEME_COLORS.primary }} />
-            <span>Danh sách phương thức thanh toán</span>
-          </div>
+        className="shadow-sm"
+        style={{ borderRadius: '12px' }}
+        extra={
+          <Button 
+            size="small"
+            icon={<ReloadOutlined />}
+            onClick={loadPaymentMethods}
+            loading={loading}
+          >
+            Tải lại
+          </Button>
         }
-        className="shadow-lg"
-        style={{ borderRadius: '16px' }}
       >
         {paymentMethods.length > 0 ? (
           <Table

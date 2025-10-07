@@ -95,146 +95,111 @@ const WalletBalance = ({ onTabChange }) => {
   const winRate = totalDeposit > 0 ? ((totalDeposit / (totalDeposit + totalWithdraw)) * 100).toFixed(1) : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Số dư chính */}
+    <div className="space-y-4">
+      {/* Số dư chính - Simple & Clean */}
       <Card 
-        className="shadow-lg"
+        className="shadow-sm"
         style={{ 
-          borderRadius: '16px',
-          background: THEME_COLORS.primaryGradient,
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
           border: 'none'
         }}
-        styles={{ body: { padding: '32px' } }}
+        styles={{ body: { padding: window.innerWidth < 768 ? '20px' : '28px' } }}
       >
-        <Row align="middle" justify="space-between">
-          <Col>
-            <Space direction="vertical" size="small">
-              <div className="text-white/80 text-lg font-medium">
-                Số dư khả dụng
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-white text-4xl font-bold">
-                  {formatAmount(balance)}
-                </span>
-                <Button 
-                  type="text"
-                  icon={balanceVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                  onClick={onToggleBalance}
-                  className="text-white/60 hover:text-white hover:bg-white/10"
-                  size="large"
-                />
-              </div>
-            </Space>
-          </Col>
-          <Col>
-            <div className="text-white/60 text-6xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-white/80 text-sm md:text-base font-normal mb-2">
+              Số dư khả dụng
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-white text-2xl md:text-4xl font-bold">
+                {formatAmount(balance)}
+              </span>
+              <Button 
+                type="text"
+                icon={balanceVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                onClick={onToggleBalance}
+                className="text-white/60 hover:text-white hover:bg-white/10"
+              />
+            </div>
+          </div>
+          <div className="hidden md:block">
+            <div className="text-white/40 text-5xl">
               <WalletOutlined />
             </div>
-          </Col>
-        </Row>
-        
-        {/* Reload button */}
-        <div style={{ marginTop: 16, textAlign: 'right' }}>
-          <Button 
-            type="text"
-            icon={<ReloadOutlined />}
-            onClick={loadWalletBalance}
-            loading={loading}
-            className="text-white/60 hover:text-white hover:bg-white/10"
-          >
-            Làm mới
-          </Button>
+          </div>
         </div>
       </Card>
 
-      {/* Statistics */}
-      <Row gutter={[16, 16]}>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="Tổng nạp"
-              value={totalDeposit}
-              precision={0}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<ArrowUpOutlined />}
-              suffix="VNĐ"
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="Tổng rút"
-              value={totalWithdraw}
-              precision={0}
-              valueStyle={{ color: '#ff4d4f' }}
-              prefix={<ArrowDownOutlined />}
-              suffix="VNĐ"
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="Tổng thưởng"
-              value={totalBonus}
-              precision={0}
-              valueStyle={{ color: '#1890ff' }}
-              prefix={<GiftOutlined />}
-              suffix="VNĐ"
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic
-              title="Đang khóa"
-              value={frozenAmount}
-              precision={0}
-              valueStyle={{ color: '#faad14' }}
-              prefix="🔒"
-              suffix="VNĐ"
-            />
-          </Card>
-        </Col>
-      </Row>
+      {/* Statistics - Compact Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+          <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
+          <div className="text-lg md:text-xl font-bold text-green-600 flex items-center gap-1">
+            <ArrowUpOutlined className="text-sm" />
+            {balanceVisible ? totalDeposit.toLocaleString() : '****'}
+          </div>
+        </Card>
+        
+        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+          <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
+          <div className="text-lg md:text-xl font-bold text-red-600 flex items-center gap-1">
+            <ArrowDownOutlined className="text-sm" />
+            {balanceVisible ? totalWithdraw.toLocaleString() : '****'}
+          </div>
+        </Card>
+        
+        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+          <div className="text-xs text-gray-500 mb-1">Tổng thưởng</div>
+          <div className="text-lg md:text-xl font-bold text-blue-600 flex items-center gap-1">
+            <GiftOutlined className="text-sm" />
+            {balanceVisible ? totalBonus.toLocaleString() : '****'}
+          </div>
+        </Card>
+        
+        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+          <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
+          <div className="text-lg md:text-xl font-bold text-orange-500 flex items-center gap-1">
+            <span className="text-sm">⏳</span>
+            {balanceVisible ? frozenAmount.toLocaleString() : '****'}
+          </div>
+        </Card>
+      </div>
 
-      {/* Quick Actions - Chỉ giữ nạp/rút tiền */}
-      <Row gutter={[16, 16]}>
-        <Col xs={12}>
-          <Button 
-            type="primary"
-            size="large"
-            block
-            icon={<ArrowUpOutlined />}
-            className="h-16 font-semibold text-lg"
-            style={{
-              borderRadius: '12px',
-              background: THEME_COLORS.primaryGradient,
-              border: 'none'
-            }}
-            onClick={() => onTabChange && onTabChange('deposit-withdraw')}
-          >
-            Nạp tiền
-          </Button>
-        </Col>
-        <Col xs={12}>
-          <Button 
-            size="large"
-            block
-            icon={<ArrowDownOutlined />}
-            className="h-16 font-semibold text-lg"
-            style={{
-              borderRadius: '12px',
-              borderColor: THEME_COLORS.primary,
-              color: THEME_COLORS.primary
-            }}
-            onClick={() => onTabChange && onTabChange('deposit-withdraw')}
-          >
-            Rút tiền
-          </Button>
-        </Col>
-      </Row>
+      {/* Quick Actions - Simple Buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <Button 
+          type="primary"
+          size="large"
+          block
+          icon={<ArrowUpOutlined />}
+          className="h-12 font-semibold"
+          style={{
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            border: 'none'
+          }}
+          onClick={() => onTabChange && onTabChange('deposit-withdraw')}
+        >
+          Nạp tiền
+        </Button>
+        
+        <Button 
+          size="large"
+          block
+          icon={<ArrowDownOutlined />}
+          className="h-12 font-semibold"
+          style={{
+            borderRadius: '10px',
+            borderColor: '#dc2626',
+            color: '#dc2626',
+            background: 'white'
+          }}
+          onClick={() => onTabChange && onTabChange('withdraw')}
+        >
+          Rút tiền
+        </Button>
+      </div>
     </div>
   );
 };

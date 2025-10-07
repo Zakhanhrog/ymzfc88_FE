@@ -24,7 +24,8 @@ import {
   ReloadOutlined,
   SearchOutlined,
   FilterOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  FileImageOutlined
 } from '@ant-design/icons';
 import { formatCurrency, formatDate } from '../../../utils/helpers';
 import adminService from '../services/adminService';
@@ -47,6 +48,18 @@ const AdminDepositApproval = () => {
     dateRange: null,
     searchText: ''
   });
+
+  // Helper function để tạo URL cho ảnh
+  const getImageUrl = (deposit) => {
+    if (deposit.billImage) {
+      return `data:image/jpeg;base64,${deposit.billImage}`;
+    }
+    if (deposit.billImageUrl) {
+      const filename = deposit.billImageUrl.split('/').pop();
+      return `http://localhost:8080/api/files/bills/${filename}`;
+    }
+    return null;
+  };
 
   useEffect(() => {
     loadDeposits();
@@ -78,27 +91,34 @@ const AdminDepositApproval = () => {
     }
   };
 
-  const handleApprove = async (depositId, amount) => {
-    confirm({
-      title: 'Xác nhận duyệt nạp tiền',
-      icon: <ExclamationCircleOutlined />,
-      content: `Bạn có chắc chắn muốn duyệt lệnh nạp ${formatCurrency(amount)}?`,
-      onOk: async () => {
-        try {
-          const response = await adminService.approveDeposit(depositId);
-          if (response.success) {
-            message.success('Đã duyệt lệnh nạp tiền thành công');
-            loadDeposits();
-            loadStatistics();
-          }
-        } catch (error) {
-          message.error('Lỗi khi duyệt: ' + error.message);
-        }
+  const handleApprove = async (e, depositId, amount) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const confirmed = window.confirm(`Bạn có chắc chắn muốn duyệt lệnh nạp ${formatCurrency(amount)}?`);
+    if (!confirmed) {
+      return;
+    }
+    
+    try {
+      const response = await adminService.approveDeposit(depositId);
+      if (response.success) {
+        message.success('Đã duyệt lệnh nạp tiền thành công!');
+        loadDeposits();
+        loadStatistics();
+      } else {
+        message.error('Lỗi khi duyệt: ' + (response.message || 'Không xác định'));
       }
-    });
+    } catch (error) {
+      message.error('Lỗi khi duyệt: ' + error.message);
+    }
   };
 
-  const handleReject = async (depositId) => {
+  const handleReject = async (e, depositId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('handleReject clicked with depositId:', depositId);
     setSelectedDeposit(deposits.find(d => d.id === depositId));
     setApprovalModalVisible(true);
   };
@@ -107,12 +127,14 @@ const AdminDepositApproval = () => {
     try {
       const response = await adminService.rejectDeposit(selectedDeposit.id, rejectReason);
       if (response.success) {
-        message.success('Đã từ chối lệnh nạp tiền');
+        message.success('Đã từ chối lệnh nạp tiền thành công!');
         setApprovalModalVisible(false);
         setRejectReason('');
         setSelectedDeposit(null);
         loadDeposits();
         loadStatistics();
+      } else {
+        message.error('Lỗi khi từ chối: ' + (response.message || 'Không xác định'));
       }
     } catch (error) {
       message.error('Lỗi khi từ chối: ' + error.message);
@@ -178,10 +200,18 @@ const AdminDepositApproval = () => {
       title: 'Phương thức',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (method) => (
-        <div>
-          <div>{method?.name}</div>
-          <div className="text-gray-500 text-sm">{method?.type}</div>
+      render: (method, record) => (
+        <div className="flex items-center gap-2">
+          <div>
+            <div>{method?.name}</div>
+            <div className="text-gray-500 text-sm">{method?.type}</div>
+          </div>
+          {(record.billImage || record.billImageUrl) && (
+            <FileImageOutlined 
+              className="text-blue-500" 
+              title="Có ảnh bill chuyển khoản"
+            />
+          )}
         </div>
       )
     },
@@ -227,7 +257,7 @@ const AdminDepositApproval = () => {
                 type="primary"
                 size="small"
                 icon={<CheckOutlined />}
-                onClick={() => handleApprove(record.id, record.amount)}
+                onClick={(e) => handleApprove(e, record.id, record.amount)}
                 style={{ backgroundColor: '#52c41a' }}
               >
                 Duyệt
@@ -236,7 +266,7 @@ const AdminDepositApproval = () => {
                 danger
                 size="small"
                 icon={<CloseOutlined />}
-                onClick={() => handleReject(record.id)}
+                onClick={(e) => handleReject(e, record.id)}
               >
                 Từ chối
               </Button>
@@ -398,15 +428,22 @@ const AdminDepositApproval = () => {
               )}
             </Descriptions>
 
-            {selectedDeposit.billImageUrl && (
-              <div>
-                <h4>Ảnh bill chuyển khoản:</h4>
-                <Image
-                  src={selectedDeposit.billImageUrl}
-                  alt="Bill chuyển khoản"
-                  style={{ maxWidth: '100%', maxHeight: 400 }}
-                />
-              </div>
+            {(selectedDeposit.billImage || selectedDeposit.billImageUrl) && (
+              <Card title="Ảnh bill chuyển khoản" className="mt-4">
+                <div className="text-center">
+                  <Image
+                    src={getImageUrl(selectedDeposit)}
+                    alt="Bill chuyển khoản"
+                    style={{ maxWidth: '100%', maxHeight: 400 }}
+                    fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAHpenRVWQAAAABJRU5ErkJggg=="
+                  />
+                  {selectedDeposit.billImageName && (
+                    <p className="mt-2 text-gray-500 text-sm">
+                      Tên file: {selectedDeposit.billImageName}
+                    </p>
+                  )}
+                </div>
+              </Card>
             )}
 
             {selectedDeposit.status === 'PENDING' && (
@@ -414,9 +451,9 @@ const AdminDepositApproval = () => {
                 <Button
                   type="primary"
                   icon={<CheckOutlined />}
-                  onClick={() => {
+                  onClick={(e) => {
                     setDetailModalVisible(false);
-                    handleApprove(selectedDeposit.id, selectedDeposit.amount);
+                    handleApprove(e, selectedDeposit.id, selectedDeposit.amount);
                   }}
                   style={{ backgroundColor: '#52c41a' }}
                 >
@@ -425,9 +462,9 @@ const AdminDepositApproval = () => {
                 <Button
                   danger
                   icon={<CloseOutlined />}
-                  onClick={() => {
+                  onClick={(e) => {
                     setDetailModalVisible(false);
-                    handleReject(selectedDeposit.id);
+                    handleReject(e, selectedDeposit.id);
                   }}
                 >
                   Từ chối

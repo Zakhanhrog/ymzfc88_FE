@@ -110,25 +110,46 @@ const DepositWithdraw = () => {
     try {
       setLoading(true);
       
-      let billImageUrl = '';
+      let billImageBase64 = null;
       
-      // Nếu có upload file, convert thành base64 hoặc upload lên server
+      // Xử lý upload ảnh nếu có
       if (billImage) {
-        // Tạm thời convert thành base64, sau này có thể upload lên cloud storage
-        const reader = new FileReader();
-        billImageUrl = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(billImage);
-        });
+        try {
+          // Validate file size (max 5MB)
+          if (billImage.size > 5 * 1024 * 1024) {
+            message.error('Kích thước ảnh không được vượt quá 5MB');
+            return;
+          }
+          
+          // Validate file type
+          if (!billImage.type.startsWith('image/')) {
+            message.error('Chỉ được upload file ảnh (JPG, PNG, GIF)');
+            return;
+          }
+          
+          billImageBase64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              // Lấy phần base64 sau dấu ','
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.onerror = () => reject(new Error('Không thể đọc file ảnh'));
+            reader.readAsDataURL(billImage);
+          });
+        } catch (error) {
+          message.error('Lỗi khi xử lý ảnh: ' + error.message);
+          return;
+        }
       }
       
       const depositData = {
         paymentMethodId: selectedMethod.id,
-        amount: Number(amount), // Đảm bảo là number
+        amount: Number(amount),
         description: values.description || '',
         referenceCode: values.referenceCode || '',
-        billImage: billImageUrl
+        billImage: billImageBase64,
+        billImageName: billImage ? billImage.name : null
       };
       
       const response = await walletService.createDepositOrder(depositData);
@@ -136,6 +157,8 @@ const DepositWithdraw = () => {
         setTransactionResult(response.data);
         setCurrentStep(2);
         message.success('Đã tạo lệnh nạp tiền thành công!');
+      } else {
+        message.error('Lỗi: ' + (response.message || 'Không xác định'));
       }
     } catch (error) {
       message.error('Lỗi: ' + error.message);
@@ -345,12 +368,26 @@ const DepositWithdraw = () => {
       <div className="space-y-4">
         <Form.Item
           name="billImage"
-          label="Upload bill chuyển khoản (không bắt buộc)"
+          label="Upload ảnh chuyển khoản"
+          extra="Vui lòng upload ảnh bill chuyển khoản để admin duyệt nhanh hơn (định dạng: JPG, PNG, tối đa 5MB)"
         >
           <Upload
             listType="picture-card"
             maxCount={1}
-            beforeUpload={() => false}
+            accept="image/*"
+            beforeUpload={(file) => {
+              const isImage = file.type.startsWith('image/');
+              if (!isImage) {
+                message.error('Chỉ được upload file ảnh!');
+                return false;
+              }
+              const isLt5M = file.size / 1024 / 1024 < 5;
+              if (!isLt5M) {
+                message.error('Ảnh phải nhỏ hơn 5MB!');
+                return false;
+              }
+              return false; // Prevent auto upload
+            }}
             onChange={(info) => {
               if (info.fileList.length > 0) {
                 setBillImage(info.fileList[0].originFileObj);
@@ -358,11 +395,22 @@ const DepositWithdraw = () => {
                 setBillImage(null);
               }
             }}
+            onPreview={(file) => {
+              const src = file.url || file.preview;
+              if (src) {
+                const image = new Image();
+                image.src = src;
+                const imgWindow = window.open(src);
+                imgWindow?.document.write(image.outerHTML);
+              }
+            }}
           >
-            <div>
-              <UploadOutlined />
-              <div style={{ marginTop: 8 }}>Upload</div>
-            </div>
+            {billImage ? null : (
+              <div>
+                <UploadOutlined />
+                <div style={{ marginTop: 8 }}>Upload ảnh</div>
+              </div>
+            )}
           </Upload>
         </Form.Item>
 
@@ -373,6 +421,16 @@ const DepositWithdraw = () => {
           <Input.TextArea
             rows={3}
             placeholder="Nhập ghi chú cho giao dịch"
+            style={{ borderRadius: '8px' }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="referenceCode"
+          label="Mã tham chiếu/Mã giao dịch ngân hàng (không bắt buộc)"
+        >
+          <Input
+            placeholder="Nhập mã giao dịch từ ngân hàng (nếu có)"
             style={{ borderRadius: '8px' }}
           />
         </Form.Item>
@@ -567,21 +625,24 @@ const DepositWithdraw = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Card chính cho nạp tiền */}
-      <Card 
-        className="shadow-lg"
-        style={{ borderRadius: '16px' }}
-        styles={{ body: { padding: '24px' } }}
-      >
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-            <ArrowUpOutlined className="text-green-600" />
-            Nạp tiền vào ví
-          </h2>
-          <p className="text-gray-600">Chọn phương thức thanh toán và nhập số tiền để nạp vào ví</p>
+    <div className="space-y-4">
+      {/* Title Header */}
+      <div className="text-center pb-3">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <ArrowUpOutlined className="text-2xl text-green-600" />
+          <h3 className="text-xl md:text-2xl font-bold mb-0 text-gray-800">Nạp tiền vào ví</h3>
         </div>
+        <p className="text-sm text-gray-500">
+          Chọn phương thức thanh toán và nhập số tiền để nạp vào ví
+        </p>
+      </div>
 
+      {/* Content Card */}
+      <Card 
+        className="shadow-sm"
+        style={{ borderRadius: '12px' }}
+        styles={{ body: { padding: window.innerWidth < 768 ? '16px' : '24px' } }}
+      >
         {currentStep < 2 ? renderSteps() : renderTransactionInfo()}
       </Card>
     </div>

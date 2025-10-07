@@ -31,7 +31,6 @@ import adminService from '../services/adminService';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
-const { confirm } = Modal;
 
 const AdminWithdrawApproval = () => {
   const [withdraws, setWithdraws] = useState([]);
@@ -78,26 +77,27 @@ const AdminWithdrawApproval = () => {
   };
 
   const handleApprove = async (withdrawId, amount) => {
-    confirm({
-      title: 'Xác nhận duyệt rút tiền',
-      icon: <ExclamationCircleOutlined />,
-      content: `Bạn có chắc chắn muốn duyệt lệnh rút ${formatCurrency(amount)}?`,
-      onOk: async () => {
-        try {
-          const response = await adminService.approveWithdraw(withdrawId);
-          if (response.success) {
-            message.success('Đã duyệt lệnh rút tiền thành công');
-            loadWithdraws();
-            loadStatistics();
-          }
-        } catch (error) {
-          message.error('Lỗi khi duyệt: ' + error.message);
-        }
+    const confirmed = window.confirm(`Bạn có chắc chắn muốn duyệt lệnh rút ${formatCurrency(amount)}?`);
+    if (!confirmed) {
+      return;
+    }
+    
+    try {
+      const response = await adminService.approveWithdraw(withdrawId);
+      if (response.success) {
+        message.success('Đã duyệt lệnh rút tiền thành công!');
+        loadWithdraws();
+        loadStatistics();
+      } else {
+        message.error('Lỗi khi duyệt: ' + (response.message || 'Không xác định'));
       }
-    });
+    } catch (error) {
+      message.error('Lỗi khi duyệt: ' + error.message);
+    }
   };
 
   const handleReject = async (withdrawId) => {
+    console.log('handleReject clicked with withdrawId:', withdrawId);
     setSelectedWithdraw(withdraws.find(w => w.id === withdrawId));
     setApprovalModalVisible(true);
   };
@@ -106,12 +106,14 @@ const AdminWithdrawApproval = () => {
     try {
       const response = await adminService.rejectWithdraw(selectedWithdraw.id, rejectReason);
       if (response.success) {
-        message.success('Đã từ chối lệnh rút tiền');
+        message.success('Đã từ chối lệnh rút tiền thành công!');
         setApprovalModalVisible(false);
         setRejectReason('');
         setSelectedWithdraw(null);
         loadWithdraws();
         loadStatistics();
+      } else {
+        message.error('Lỗi khi từ chối: ' + (response.message || 'Không xác định'));
       }
     } catch (error) {
       message.error('Lỗi khi từ chối: ' + error.message);

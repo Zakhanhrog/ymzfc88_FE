@@ -47,9 +47,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   };
 
   return (
-    <div className="flex h-[700px]" onClick={(e) => e.stopPropagation()}>
-      {/* Left Side - Image */}
-      <div className="w-1/2 relative overflow-hidden">
+    <div className="flex h-[700px] md:h-[700px]" onClick={(e) => e.stopPropagation()}>
+      {/* Left Side - Image - Ẩn trên mobile */}
+      <div className="hidden md:block md:w-1/2 relative overflow-hidden">
         <div 
           className="w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
@@ -59,8 +59,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         </div>
       </div>
 
-      {/* Right Side - Register Form */}
-      <div className="w-1/2 p-8 bg-white flex items-start pt-8 relative">
+      {/* Right Side - Register Form - Full width trên mobile */}
+      <div className="w-full md:w-1/2 p-4 md:p-8 bg-white flex items-start pt-4 md:pt-8 relative">
         <div className="w-full">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">ĐĂNG KÝ</h2>
@@ -257,7 +257,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-between px-8">
+        <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex justify-between px-4 md:px-8">
           <Button 
             type="text" 
             icon={<HomeOutlined />}

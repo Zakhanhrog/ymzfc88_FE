@@ -52,12 +52,17 @@ const AuthModal = ({
       open={isOpen}
       onCancel={handleClose}
       footer={null}
-      width={1000}
+      width="90%"
+      style={{ 
+        top: 20, 
+        minHeight: '750px',
+        maxWidth: '1000px',
+        margin: '0 auto'
+      }}
       centered
       destroyOnHidden={true}
       maskClosable={true}
       className="auth-modal"
-      style={{ top: 20, minHeight: '750px' }}
       transitionName=""
       getContainer={false}
     >

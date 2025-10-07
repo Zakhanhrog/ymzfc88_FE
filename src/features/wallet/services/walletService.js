@@ -114,13 +114,34 @@ class WalletService {
   // Tạo lệnh nạp tiền
   async createDepositOrder(depositData) {
     try {
-      // Log dữ liệu gửi đi để debug
-      console.log('Sending deposit data:', depositData);
+      // Validate dữ liệu trước khi gửi
+      if (!depositData.paymentMethodId) {
+        throw new Error('Vui lòng chọn phương thức thanh toán');
+      }
+      if (!depositData.amount || depositData.amount < 10000) {
+        throw new Error('Số tiền nạp tối thiểu là 10,000 VNĐ');
+      }
+      
+      // Chuẩn bị dữ liệu gửi
+      const requestData = {
+        paymentMethodId: depositData.paymentMethodId,
+        amount: depositData.amount,
+        description: depositData.description || '',
+        referenceCode: depositData.referenceCode || '',
+        billImage: depositData.billImage || null,
+        billImageName: depositData.billImageName || null,
+        billImageUrl: depositData.billImageUrl || null
+      };
+      
+      console.log('Sending deposit data:', {
+        ...requestData,
+        billImage: requestData.billImage ? '[BASE64_DATA]' : null // Don't log full base64
+      });
       
       const response = await fetch(`${API_BASE_URL}/transactions/deposit`, {
         method: 'POST',
         headers: this.getHeaders(),
-        body: JSON.stringify(depositData)
+        body: JSON.stringify(requestData)
       });
       
       return await this.handleResponse(response);
