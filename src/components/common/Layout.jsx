@@ -245,7 +245,8 @@ const Layout = ({ children }) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  color: '#B2C0D1'
                 }}
               />
             )}
@@ -271,33 +272,40 @@ const Layout = ({ children }) => {
                 <>
                   {/* Desktop view - full layout theo ảnh mẫu */}
                   <div className="flex items-center gap-3">
-                    {/* Username và Balance với icon reload */}
-                    <div className="flex items-center gap-3 border border-gray-300 px-4 py-2 rounded-full bg-white">
-                      <span className="text-gray-600 text-sm font-medium">{userName}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500 text-sm font-normal">
-                          {new Intl.NumberFormat('vi-VN', {
-                            style: 'decimal',
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }).format(userBalance / 1000)}
-                        </span>
-                        <Button 
-                          type="text"
-                          size="small"
-                          icon={<ReloadOutlined />}
-                          onClick={() => fetchUserBalance()}
-                          className="text-gray-400 hover:text-gray-600"
-                          style={{
-                            padding: '0',
-                            height: '20px',
-                            width: '20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        />
-                      </div>
+                    {/* Username riêng biệt - có thể click */}
+                    <span 
+                      className="text-gray-600 text-base font-semibold cursor-pointer hover:underline transition-all duration-200" 
+                      style={{ color: '#B2C0D1' }}
+                      onClick={() => navigate('/wallet')}
+                      title="Xem thông tin ví cá nhân"
+                    >
+                      {userName}
+                    </span>
+                    
+                    {/* Balance với icon reload trong ô riêng */}
+                    <div className="flex items-center gap-2 border border-gray-300 px-4 py-2 rounded-full bg-white">
+                      <span className="text-gray-500 text-sm font-normal">
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'decimal',
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }).format(userBalance / 1000)}
+                      </span>
+                      <Button 
+                        type="text"
+                        size="small"
+                        icon={<ReloadOutlined />}
+                        onClick={() => fetchUserBalance()}
+                        className="text-gray-400 hover:text-gray-600"
+                        style={{
+                          padding: '0',
+                          height: '20px',
+                          width: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      />
                     </div>
                     
                     {/* Nạp tiền button */}
@@ -306,14 +314,14 @@ const Layout = ({ children }) => {
                       className="flex items-center gap-2 border-0 shadow-none"
                       style={{
                         background: 'transparent',
-                        color: '#9ca3af',
+                        color: '#B2C0D1',
                         fontSize: '16px',
-                        fontWeight: '500',
+                        fontWeight: '600',
                         padding: '8px 12px',
                         height: 'auto'
                       }}
                     >
-                      <UserOutlined style={{ fontSize: '20px' }} />
+                      <UserOutlined style={{ fontSize: '20px', color: '#B2C0D1' }} />
                       <span>Nạp tiền</span>
                     </Button>
                     
@@ -323,14 +331,14 @@ const Layout = ({ children }) => {
                       className="flex items-center gap-2 border-0 shadow-none"
                       style={{
                         background: 'transparent',
-                        color: '#9ca3af',
+                        color: '#B2C0D1',
                         fontSize: '16px',
-                        fontWeight: '500',
+                        fontWeight: '600',
                         padding: '8px 12px',
                         height: 'auto'
                       }}
                     >
-                      <GiftOutlined style={{ fontSize: '20px' }} />
+                      <GiftOutlined style={{ fontSize: '20px', color: '#B2C0D1' }} />
                       <span>Rút tiền</span>
                     </Button>
                     

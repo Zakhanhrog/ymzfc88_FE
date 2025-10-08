@@ -635,6 +635,9 @@ const DepositWithdraw = () => {
         <p className="text-sm text-gray-500">
           Chọn phương thức thanh toán và nhập số tiền để nạp vào ví
         </p>
+        <div className="mt-2 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 inline-block">
+          Quy đổi: 1,000đ = 1 điểm
+        </div>
       </div>
 
       {/* Content Card */}

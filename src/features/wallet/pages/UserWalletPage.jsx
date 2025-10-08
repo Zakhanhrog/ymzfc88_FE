@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+  import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
   Card, 
@@ -17,7 +17,8 @@ import {
   TrophyOutlined,
   UserOutlined,
   SafetyCertificateOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import Layout from '../../../components/common/Layout';
 import WalletBalance from '../components/WalletBalance';
@@ -25,6 +26,7 @@ import TransactionHistory from '../components/TransactionHistory';
 import DepositWithdraw from '../components/DepositWithdraw';
 import WithdrawForm from '../components/WithdrawForm';
 import KycVerification from '../components/KycVerification';
+import UserPointsPage from '../components/UserPointsPage';
 import kycService from '../services/kycService';
 
 const UserWalletPage = () => {
@@ -133,6 +135,16 @@ const UserWalletPage = () => {
       children: <WithdrawForm />
     },
     {
+      key: 'points',
+      label: (
+        <span className="flex items-center gap-2">
+          <StarOutlined />
+          Điểm
+        </span>
+      ),
+      children: <UserPointsPage />
+    },
+    {
       key: 'transaction-history',
       label: (
         <span className="flex items-center gap-2">
@@ -151,6 +163,21 @@ const UserWalletPage = () => {
         </span>
       ),
       children: <KycVerification />
+    },
+    {
+      key: 'settings',
+      label: (
+        <span className="flex items-center gap-2">
+          <SettingOutlined />
+          Cài đặt tài khoản
+        </span>
+      ),
+      children: (
+        <div className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Cài đặt tài khoản</h3>
+          <p className="text-gray-600">Trang cài đặt tài khoản đang được phát triển...</p>
+        </div>
+      )
     }
   ];
 
@@ -167,7 +194,7 @@ const UserWalletPage = () => {
           }}
           styles={{ body: { padding: window.innerWidth < 768 ? '16px' : '24px' } }}
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
             {/* User Info */}
             <div className="flex items-center gap-3 md:gap-4">
               <Avatar 
@@ -201,18 +228,7 @@ const UserWalletPage = () => {
               </div>
             </div>
             
-            {/* Settings button - Hidden on mobile */}
-            <div className="hidden md:block">
-              <Button 
-                type="primary"
-                size="large"
-                icon={<SettingOutlined />}
-                className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                style={{ borderRadius: '12px' }}
-              >
-                Cài đặt tài khoản
-              </Button>
-            </div>
+
           </div>
         </Card>
 
@@ -229,7 +245,13 @@ const UserWalletPage = () => {
             size={window.innerWidth < 768 ? 'middle' : 'large'}
             className="wallet-tabs"
             items={tabItems}
-            animated={false}
+            animated={{ 
+              inkBar: true, 
+              tabPane: true 
+            }}
+            tabBarStyle={{
+              marginBottom: '0px'
+            }}
           />
         </Card>
       </div>
@@ -237,22 +259,34 @@ const UserWalletPage = () => {
       <style dangerouslySetInnerHTML={{
         __html: `
           .wallet-tabs .ant-tabs-tab {
-            border-radius: 8px 8px 0 0 !important;
+            border-radius: 12px !important;
             border: none !important;
             background: #f3f4f6 !important;
-            margin-right: 4px !important;
+            margin-right: 8px !important;
             font-weight: 500 !important;
             font-size: 14px !important;
-            padding: 8px 12px !important;
+            padding: 12px 16px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
           }
           
           .wallet-tabs .ant-tabs-tab:hover {
             background: #e5e7eb !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
           }
           
           .wallet-tabs .ant-tabs-tab-active {
-            background: #dc2626 !important;
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
             color: white !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3) !important;
+          }
+          
+          .wallet-tabs .ant-tabs-tab-active:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
           }
           
           .wallet-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
@@ -260,23 +294,75 @@ const UserWalletPage = () => {
           }
           
           .wallet-tabs .ant-tabs-content {
-            padding: 16px 0 !important;
+            padding: 20px 0 !important;
+            border-radius: 16px !important;
+            background: #ffffff !important;
+            margin-top: 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
           }
           
           .wallet-tabs .ant-tabs-tabpane {
             background: transparent !important;
+            animation: fadeIn 0.3s ease-in-out !important;
+          }
+          
+          .wallet-tabs .ant-tabs-nav {
+            margin-bottom: 0 !important;
+          }
+          
+          .wallet-tabs .ant-tabs-nav-wrap {
+            background: transparent !important;
+            border-radius: 16px !important;
+            padding: 8px !important;
+          }
+          
+          .wallet-tabs .ant-tabs-ink-bar {
+            display: none !important;
+          }
+          
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
           
           /* Mobile responsive tabs */
           @media (max-width: 768px) {
             .wallet-tabs .ant-tabs-tab {
               font-size: 12px !important;
-              padding: 6px 8px !important;
-              margin-right: 2px !important;
+              padding: 8px 12px !important;
+              margin-right: 4px !important;
+              border-radius: 8px !important;
             }
             
-            .wallet-tabs .ant-tabs-nav {
-              margin-bottom: 12px !important;
+            .wallet-tabs .ant-tabs-nav-wrap {
+              padding: 4px !important;
+            }
+            
+            .wallet-tabs .ant-tabs-content {
+              margin-top: 4px !important;
+              padding: 16px 0 !important;
+            }
+          }
+          
+          /* Smooth transition cho tab content */
+          .wallet-tabs .ant-tabs-tabpane-active {
+            animation: slideInUp 0.3s ease-out !important;
+          }
+          
+          @keyframes slideInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
             }
           }
         `

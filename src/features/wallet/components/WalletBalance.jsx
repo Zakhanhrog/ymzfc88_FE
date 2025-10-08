@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Statistic, 
-  Button, 
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Button,
   Progress,
   Space,
   Tooltip,
@@ -19,25 +19,29 @@ import {
   TrophyOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import { THEME_COLORS } from '../../../utils/theme';
 import walletService from '../services/walletService';
+import pointService from '../../../services/pointService';
 
 const WalletBalance = ({ onTabChange }) => {
   const [walletData, setWalletData] = useState(null);
+  const [pointData, setPointData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
 
   useEffect(() => {
     loadWalletBalance();
+    loadUserPoints();
   }, []);
 
   const loadWalletBalance = async () => {
     try {
       setLoading(true);
       const response = await walletService.getWalletBalance();
-      
+
       if (response.success) {
         setWalletData(response.data);
       } else {
@@ -66,6 +70,28 @@ const WalletBalance = ({ onTabChange }) => {
     }
   };
 
+  const loadUserPoints = async () => {
+    try {
+      const response = await pointService.getMyPoints();
+      if (response.success) {
+        setPointData(response.data);
+      } else {
+        setPointData({
+          totalPoints: 0,
+          lifetimeEarned: 0,
+          lifetimeSpent: 0
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user points:', error);
+      setPointData({
+        totalPoints: 0,
+        lifetimeEarned: 0,
+        lifetimeSpent: 0
+      });
+    }
+  };
+
   const onToggleBalance = () => {
     setBalanceVisible(!balanceVisible);
   };
@@ -73,6 +99,11 @@ const WalletBalance = ({ onTabChange }) => {
   const formatAmount = (amount) => {
     if (!balanceVisible) return '****';
     return amount ? amount.toLocaleString() + ' VNĐ' : '0 VNĐ';
+  };
+
+  const formatPoints = (points) => {
+    if (!balanceVisible) return '****';
+    return points ? points.toLocaleString() + ' điểm' : '0 điểm';
   };
 
   if (loading && !walletData) {
@@ -92,47 +123,60 @@ const WalletBalance = ({ onTabChange }) => {
     frozenAmount = 0
   } = walletData || {};
 
+  const {
+    totalPoints = 0,
+    lifetimeEarned = 0,
+    lifetimeSpent = 0
+  } = pointData || {};
+
   const winRate = totalDeposit > 0 ? ((totalDeposit / (totalDeposit + totalWithdraw)) * 100).toFixed(1) : 0;
 
   return (
     <div className="space-y-4">
-      {/* Số dư chính - Simple & Clean */}
-      <Card 
+      {/* Điểm  */}
+      <Card
         className="shadow-sm"
-        style={{ 
+        style={{
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
           border: 'none'
         }}
         styles={{ body: { padding: window.innerWidth < 768 ? '20px' : '28px' } }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-white/80 text-sm md:text-base font-normal mb-2">
-              Số dư khả dụng
+            <div className="text-orange-800/80 text-sm md:text-base font-normal mb-2">
+              Điểm hiện tại
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-white text-2xl md:text-4xl font-bold">
-                {formatAmount(balance)}
+              <span className="text-orange-900 text-2xl md:text-4xl font-bold">
+                {formatPoints(totalPoints)}
               </span>
-              <Button 
-                type="text"
-                icon={balanceVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                onClick={onToggleBalance}
-                className="text-white/60 hover:text-white hover:bg-white/10"
-              />
+              <Tooltip title="Nạp 1.000 VNĐ = 1 điểm">
+                <Button
+                  type="text"
+                  size="small"
+                  className="text-orange-800/60 hover:text-orange-900 hover:bg-orange-900/10"
+                >
+                  ?
+                </Button>
+              </Tooltip>
+            </div>
+            <div className="mt-2 text-orange-800/70 text-xs">
+              Đã nhận: {balanceVisible ? lifetimeEarned.toLocaleString() : '****'} |
+              Đã dùng: {balanceVisible ? lifetimeSpent.toLocaleString() : '****'}
             </div>
           </div>
           <div className="hidden md:block">
-            <div className="text-white/40 text-5xl">
-              <WalletOutlined />
+            <div className="text-orange-900/40 text-5xl">
+              <StarOutlined />
             </div>
           </div>
         </div>
       </Card>
 
       {/* Statistics - Compact Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
           <div className="text-lg md:text-xl font-bold text-green-600 flex items-center gap-1">
@@ -140,7 +184,7 @@ const WalletBalance = ({ onTabChange }) => {
             {balanceVisible ? totalDeposit.toLocaleString() : '****'}
           </div>
         </Card>
-        
+
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
           <div className="text-lg md:text-xl font-bold text-red-600 flex items-center gap-1">
@@ -148,7 +192,7 @@ const WalletBalance = ({ onTabChange }) => {
             {balanceVisible ? totalWithdraw.toLocaleString() : '****'}
           </div>
         </Card>
-        
+
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Tổng thưởng</div>
           <div className="text-lg md:text-xl font-bold text-blue-600 flex items-center gap-1">
@@ -156,7 +200,7 @@ const WalletBalance = ({ onTabChange }) => {
             {balanceVisible ? totalBonus.toLocaleString() : '****'}
           </div>
         </Card>
-        
+
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
           <div className="text-lg md:text-xl font-bold text-orange-500 flex items-center gap-1">
@@ -164,11 +208,19 @@ const WalletBalance = ({ onTabChange }) => {
             {balanceVisible ? frozenAmount.toLocaleString() : '****'}
           </div>
         </Card>
+
+        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+          <div className="text-xs text-gray-500 mb-1">Điểm </div>
+          <div className="text-lg md:text-xl font-bold text-yellow-600 flex items-center gap-1">
+            <StarOutlined className="text-sm" />
+            {balanceVisible ? totalPoints.toLocaleString() : '****'}
+          </div>
+        </Card>
       </div>
 
       {/* Quick Actions - Simple Buttons */}
-      <div className="grid grid-cols-2 gap-3">
-        <Button 
+      <div className="grid grid-cols-3 gap-3">
+        <Button
           type="primary"
           size="large"
           block
@@ -183,8 +235,8 @@ const WalletBalance = ({ onTabChange }) => {
         >
           Nạp tiền
         </Button>
-        
-        <Button 
+
+        <Button
           size="large"
           block
           icon={<ArrowDownOutlined />}
@@ -198,6 +250,22 @@ const WalletBalance = ({ onTabChange }) => {
           onClick={() => onTabChange && onTabChange('withdraw')}
         >
           Rút tiền
+        </Button>
+
+        <Button
+          size="large"
+          block
+          icon={<StarOutlined />}
+          className="h-12 font-semibold"
+          style={{
+            borderRadius: '10px',
+            borderColor: '#FFD700',
+            color: '#FF8C00',
+            background: 'white'
+          }}
+          onClick={() => onTabChange && onTabChange('points')}
+        >
+          Điểm
         </Button>
       </div>
     </div>

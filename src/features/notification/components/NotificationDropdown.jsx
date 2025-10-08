@@ -247,12 +247,13 @@ const NotificationDropdown = () => {
       <Badge count={unreadCount} offset={[-5, 5]} overflowCount={99}>
         <Button
           type="text"
-          icon={<BellOutlined style={{ fontSize: '20px' }} />}
+          icon={<BellOutlined style={{ fontSize: '20px', color: '#B2C0D1' }} />}
           style={{
             height: '40px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            color: '#B2C0D1'
           }}
         />
       </Badge>

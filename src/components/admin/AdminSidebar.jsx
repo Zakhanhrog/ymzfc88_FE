@@ -20,7 +20,8 @@ import {
   MessageOutlined,
   BellOutlined,
   ToolOutlined,
-  SafetyCertificateOutlined
+  SafetyCertificateOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 
@@ -110,6 +111,11 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
           key: 'payment-methods',
           icon: <CreditCardOutlined />,
           label: 'Phương thức thanh toán',
+        },
+        {
+          key: 'points-management',
+          icon: <StarOutlined />,
+          label: 'Quản lý điểm ',
         }
       ]
     },
@@ -186,6 +192,11 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
     
+    // Check specific paths first
+    if (path.includes('/admin/points')) {
+      return ['points-management'];
+    }
+    
     if (path.includes('/admin/dashboard')) {
       if (tab) {
         return [tab];
@@ -200,10 +211,15 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
     
+    // Check specific paths first
+    if (path.includes('/admin/points')) {
+      return ['financial-management'];
+    }
+    
     if (tab === 'users' || tab === 'kyc-verification' || tab === 'user-roles' || tab === 'user-activities') {
       return ['user-management'];
     }
-    if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods') {
+    if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods' || tab === 'points-management') {
       return ['financial-management'];
     }
     if (tab === 'games' || tab === 'game-results' || tab === 'game-settings') {
@@ -253,6 +269,9 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
         break;
       case 'payment-methods':
         navigate('/admin/dashboard?tab=payment-methods');
+        break;
+      case 'points-management':
+        navigate('/admin/points');
         break;
       case 'games':
         navigate('/admin/dashboard?tab=games');

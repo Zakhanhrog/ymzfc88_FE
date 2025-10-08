@@ -137,9 +137,9 @@ export const adminService = {
   // ============ USER MANAGEMENT ============
 
   // Lấy danh sách users
-  getAllUsers: async () => {
+  getAllUsers: async (page = 0, size = 100) => {
     try {
-      const response = await adminAPI.get('/admin/users');
+      const response = await adminAPI.get(`/admin/users`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi lấy danh sách người dùng');

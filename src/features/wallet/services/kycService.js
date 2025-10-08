@@ -8,8 +8,6 @@ const getAuthHeader = () => {
   // Ưu tiên user token trước (vì đây là kycService cho user)
   const token = userToken || adminToken;
   
-  console.log('🔑 Token type:', userToken ? 'USER' : adminToken ? 'ADMIN' : 'NONE');
-  
   return {
     'Authorization': `Bearer ${token}`
   };
@@ -35,7 +33,6 @@ const kycService = {
 
       return data;
     } catch (error) {
-      console.error('Error submitting KYC:', error);
       throw error;
     }
   },
@@ -48,18 +45,13 @@ const kycService = {
         'Content-Type': 'application/json'
       };
       
-      console.log('📤 Calling /kyc/status with headers:', headers);
-      
       const response = await fetch(`${API_BASE_URL}/kyc/status`, {
         method: 'GET',
         headers: headers
       });
 
-      console.log('📥 Response status:', response.status);
-
       if (!response.ok) {
         if (response.status === 403) {
-          console.error('❌ 403 Forbidden - Token không hợp lệ hoặc không có quyền');
           return { success: false, data: null };
         }
         const data = await response.json().catch(() => ({}));
@@ -67,10 +59,8 @@ const kycService = {
       }
 
       const data = await response.json();
-      console.log('✅ Response data:', data);
       return data;
     } catch (error) {
-      console.error('Error getting KYC status:', error);
       // Return default response instead of throwing
       return { success: false, data: null };
     }
@@ -98,7 +88,6 @@ const kycService = {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error getting all KYC requests:', error);
       throw error;
     }
   },
@@ -125,7 +114,6 @@ const kycService = {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error getting pending KYC requests:', error);
       throw error;
     }
   },
@@ -155,7 +143,6 @@ const kycService = {
 
       return data;
     } catch (error) {
-      console.error('Error processing KYC:', error);
       throw error;
     }
   }

@@ -203,10 +203,25 @@ const AdminWithdrawApproval = () => {
       title: 'Phương thức',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (method) => (
+      render: (method, record) => (
         <div>
-          <div>{method?.name}</div>
-          <div className="text-gray-500 text-sm">{method?.type}</div>
+          <div className="font-semibold">{method?.name || 'N/A'}</div>
+          <div className="text-gray-500 text-xs">{method?.type}</div>
+          {record.accountName && (
+            <div className="text-blue-600 text-xs font-medium">
+              {record.accountName}
+            </div>
+          )}
+          {record.methodAccount && (
+            <div className="text-gray-600 text-xs font-mono">
+              {record.methodAccount}
+            </div>
+          )}
+          {record.bankCode && (
+            <div className="text-green-600 text-xs">
+              {record.bankCode}
+            </div>
+          )}
         </div>
       )
     },
@@ -409,10 +424,10 @@ const AdminWithdrawApproval = () => {
             <Card title="Thông tin tài khoản nhận" size="small">
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="Tên tài khoản">
-                  <span className="font-semibold">{selectedWithdraw.accountName}</span>
+                  <span className="font-semibold">{selectedWithdraw.accountName || 'N/A'}</span>
                 </Descriptions.Item>
                 <Descriptions.Item label="Số tài khoản/SĐT">
-                  <span className="font-mono">{selectedWithdraw.accountNumber}</span>
+                  <span className="font-mono">{selectedWithdraw.methodAccount || 'N/A'}</span>
                 </Descriptions.Item>
                 {selectedWithdraw.bankCode && (
                   <Descriptions.Item label="Mã ngân hàng">
@@ -420,7 +435,7 @@ const AdminWithdrawApproval = () => {
                   </Descriptions.Item>
                 )}
                 <Descriptions.Item label="Phương thức">
-                  {selectedWithdraw.paymentMethod?.name}
+                  {selectedWithdraw.paymentMethod?.name || 'N/A'}
                 </Descriptions.Item>
               </Descriptions>
             </Card>

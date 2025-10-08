@@ -184,14 +184,6 @@ const UserPaymentMethodManagement = () => {
         }}
         bodyStyle={{ padding: '20px' }}
         actions={[
-          <Tooltip title={method.isDefault ? 'Phương thức mặc định' : 'Đặt làm mặc định'}>
-            <Button
-              type="text"
-              icon={method.isDefault ? <StarFilled style={{ color: '#faad14' }} /> : <StarOutlined />}
-              onClick={() => !method.isDefault && handleSetDefaultPaymentMethod(method.id)}
-              disabled={method.isDefault}
-            />
-          </Tooltip>,
           <Tooltip title="Chỉnh sửa">
             <Button
               type="text"
@@ -253,6 +245,27 @@ const UserPaymentMethodManagement = () => {
               </div>
             )}
           </div>
+
+          {/* Set Default Button */}
+          {!method.isDefault && (
+            <div className="pt-2">
+              <Button
+                type="primary"
+                size="small"
+                icon={<StarOutlined />}
+                onClick={() => handleSetDefaultPaymentMethod(method.id)}
+                style={{
+                  background: 'linear-gradient(135deg, #faad14 0%, #fadb14 100%)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '500'
+                }}
+                className="w-full"
+              >
+                Đặt làm mặc định
+              </Button>
+            </div>
+          )}
 
           {/* Status */}
           <div className="flex items-center justify-between pt-2 border-t border-gray-100">

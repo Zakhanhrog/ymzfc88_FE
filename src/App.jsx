@@ -5,10 +5,12 @@ import viVN from 'antd/locale/vi_VN';
 // Pages
 import HomePage from './features/home/pages/HomePage';
 import UserWalletPage from './features/wallet/pages/UserWalletPage';
+import PointsPage from './features/points/pages/PointsPage';
 
 // Admin Pages
 import AdminLoginPage from './features/admin/pages/AdminLoginPage';
 import AdminDashboardPage from './features/admin/pages/AdminDashboardPage';
+import AdminPointManagementPage from './features/admin/pages/AdminPointManagementPage';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
 // Global styles
@@ -30,6 +32,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/wallet" element={<UserWalletPage />} />
+              <Route path="/points" element={<PointsPage />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
@@ -39,6 +42,14 @@ function App() {
                 element={
                   <AdminProtectedRoute>
                     <AdminDashboardPage />
+                  </AdminProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/points" 
+                element={
+                  <AdminProtectedRoute>
+                    <AdminPointManagementPage />
                   </AdminProtectedRoute>
                 } 
               />

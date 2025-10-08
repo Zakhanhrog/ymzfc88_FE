@@ -26,6 +26,7 @@ import {
   CreditCardOutlined,
   QrcodeOutlined,
   StarFilled,
+  StarOutlined,
   PlusOutlined,
   CheckCircleOutlined,
   WarningOutlined,
@@ -44,6 +45,7 @@ const WithdrawForm = () => {
   const [userPaymentMethods, setUserPaymentMethods] = useState([]);
   const [selectedUserMethod, setSelectedUserMethod] = useState(null);
   const [amount, setAmount] = useState(null);
+  const [points, setPoints] = useState(null);
   const [loading, setLoading] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
   const [showAddMethodModal, setShowAddMethodModal] = useState(false);
@@ -74,11 +76,9 @@ const WithdrawForm = () => {
   const checkWithdrawalLockStatus = async () => {
     try {
       setCheckingLockStatus(true);
-      console.log('🔍 Đang kiểm tra trạng thái khóa rút tiền...');
       
       const token = localStorage.getItem('token');
       if (!token) {
-        console.warn('⚠️ Không tìm thấy token');
         return;
       }
 
@@ -90,18 +90,12 @@ const WithdrawForm = () => {
         }
       });
       
-      console.log('📡 Response status:', response.status);
-      
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Response data:', result);
         
         if (result.success && result.data) {
           const isLocked = result.data.withdrawalLocked || false;
           const reason = result.data.withdrawalLockReason || '';
-          
-          console.log('🔒 Withdrawal Locked:', isLocked);
-          console.log('📝 Lock Reason:', reason);
           
           setWithdrawalLocked(isLocked);
           setLockReason(reason);
@@ -110,11 +104,9 @@ const WithdrawForm = () => {
             message.warning('Tài khoản của bạn đã bị khóa rút tiền!');
           }
         }
-      } else {
-        console.error('❌ Response not OK:', response.status);
       }
     } catch (error) {
-      console.error('❌ Error checking withdrawal lock status:', error);
+      // Silent error
     } finally {
       setCheckingLockStatus(false);
     }
@@ -129,6 +121,21 @@ const WithdrawForm = () => {
       }
     } catch (error) {
       message.error('Lỗi khi tải phương thức rút tiền: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetDefaultPaymentMethod = async (methodId) => {
+    try {
+      setLoading(true);
+      const response = await walletService.setDefaultUserPaymentMethod(methodId);
+      if (response.success) {
+        message.success('Đã đặt làm phương thức mặc định!');
+        loadUserPaymentMethods(); // Reload để cập nhật trạng thái
+      }
+    } catch (error) {
+      message.error('Lỗi: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -182,12 +189,12 @@ const WithdrawForm = () => {
   };
 
   const quickAmounts = [
-    { label: '100K', value: 100000 },
-    { label: '200K', value: 200000 },
-    { label: '500K', value: 500000 },
-    { label: '1M', value: 1000000 },
-    { label: '2M', value: 2000000 },
-    { label: '5M', value: 5000000 }
+    { label: '100K', value: 100000, points: 100 },
+    { label: '200K', value: 200000, points: 200 },
+    { label: '500K', value: 500000, points: 500 },
+    { label: '1M', value: 1000000, points: 1000 },
+    { label: '2M', value: 2000000, points: 2000 },
+    { label: '5M', value: 5000000, points: 5000 }
   ];
 
   const handleSubmitWithdraw = async (values) => {
@@ -197,21 +204,37 @@ const WithdrawForm = () => {
       return;
     }
 
+    // Validate số điểm và số tiền
+    if (!amount || !points) {
+      message.error('Vui lòng nhập số điểm và số tiền hợp lệ');
+      return;
+    }
+
+    // Kiểm tra tính nhất quán giữa điểm và tiền
+    const expectedAmount = pointsToMoney(points);
+    if (Math.abs(amount - expectedAmount) > 1) { // Cho phép sai lệch nhỏ do làm tròn
+      message.error('Số điểm và số tiền không khớp. Vui lòng kiểm tra lại.');
+      return;
+    }
+
     try {
       setLoading(true);
       
       const withdrawData = {
-        amount: values.amount.toString(), // Convert to string for BigDecimal
+        amount: amount.toString(), // Convert to string for BigDecimal
+        points: points, // Thêm số điểm vào data gửi lên backend
         userPaymentMethodId: values.userPaymentMethodId,
         description: values.description || ''
       };
+
+      console.log('Withdraw data with points:', withdrawData);
 
       const response = await walletService.createWithdrawOrder(withdrawData);
       
       if (response.success) {
         setTransactionResult(response.data);
         setCurrentStep(2);
-        message.success('Đã gửi yêu cầu rút tiền thành công!');
+        message.success(`Đã gửi yêu cầu rút ${points} điểm (${formatCurrency(amount)}) thành công!`);
       }
     } catch (error) {
       // Check if error message contains WITHDRAWAL_LOCKED
@@ -228,10 +251,53 @@ const WithdrawForm = () => {
     }
   };
 
+  // Convert functions between points and money
+  const pointsToMoney = (pointsValue) => {
+    return pointsValue * 1000; // 1 điểm = 1000đ
+  };
+
+  const moneyToPoints = (moneyValue) => {
+    return moneyValue / 1000; // 1000đ = 1 điểm
+  };
+
+  const handlePointsChange = (value) => {
+    setPoints(value);
+    if (value) {
+      const convertedAmount = pointsToMoney(value);
+      setAmount(convertedAmount);
+      form.setFieldsValue({ amount: convertedAmount });
+    } else {
+      setAmount(null);
+      form.setFieldsValue({ amount: null });
+    }
+  };
+
+  const handleAmountChange = (value) => {
+    setAmount(value);
+    if (value) {
+      const convertedPoints = moneyToPoints(value);
+      setPoints(convertedPoints);
+      form.setFieldsValue({ points: convertedPoints });
+    } else {
+      setPoints(null);
+      form.setFieldsValue({ points: null });
+    }
+  };
+
+  const handleQuickAmountSelect = (quickAmount) => {
+    setAmount(quickAmount.value);
+    setPoints(quickAmount.points);
+    form.setFieldsValue({ 
+      amount: quickAmount.value,
+      points: quickAmount.points
+    });
+  };
+
   const resetForm = () => {
     setCurrentStep(0);
     setSelectedUserMethod(null);
     setAmount(null);
+    setPoints(null);
     setTransactionResult(null);
     form.resetFields();
   };
@@ -331,6 +397,32 @@ const WithdrawForm = () => {
                   )}
                 </div>
 
+                {/* Set Default Button */}
+                {!method.isDefault && (
+                  <div className="pt-2 flex justify-end">
+                    <Button
+                      type="primary"
+                      size="small"
+                      icon={<StarOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card selection
+                        handleSetDefaultPaymentMethod(method.id);
+                      }}
+                      style={{
+                        background: 'linear-gradient(135deg, #faad14 0%, #fadb14 100%)',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: '500',
+                        fontSize: '10px',
+                        height: '24px',
+                        padding: '0 8px'
+                      }}
+                    >
+                      Đặt mặc định
+                    </Button>
+                  </div>
+                )}
+
                 {selectedUserMethod?.id === method.id && (
                   <div className="flex items-center gap-1 pt-2 border-t border-red-100">
                     <CheckCircleOutlined className="text-green-500 text-xs" />
@@ -382,6 +474,30 @@ const WithdrawForm = () => {
         </Form.Item>
 
         <Form.Item
+          name="points"
+          label="Số điểm muốn rút"
+          rules={[
+            { required: true, message: 'Vui lòng nhập số điểm' },
+            { type: 'number', min: 1, message: 'Số điểm tối thiểu là 1 điểm' }
+          ]}
+        >
+          <InputNumber
+            size="large"
+            style={{ width: '100%', borderRadius: '8px' }}
+            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+            parser={value => value.replace(/\$\s?|(,*)/g, '')}
+            placeholder="Nhập số điểm"
+            min={1}
+            onChange={handlePointsChange}
+            addonAfter="điểm"
+          />
+        </Form.Item>
+
+        <div className="text-center text-sm text-gray-500 mb-4">
+          <span>Quy đổi: 1,000đ = 1 điểm</span>
+        </div>
+
+        <Form.Item
           name="amount"
           label="Số tiền rút"
           rules={[
@@ -396,7 +512,8 @@ const WithdrawForm = () => {
             parser={value => value.replace(/\$\s?|(,*)/g, '')}
             placeholder="Nhập số tiền"
             min={10000}
-            onChange={(value) => setAmount(value)}
+            onChange={handleAmountChange}
+            addonAfter="VNĐ"
           />
         </Form.Item>
 
@@ -407,13 +524,16 @@ const WithdrawForm = () => {
             {quickAmounts.map(quick => (
               <Button
                 key={quick.value}
-                onClick={() => {
-                  form.setFieldsValue({ amount: quick.value });
-                  setAmount(quick.value);
+                onClick={() => handleQuickAmountSelect(quick)}
+                style={{ 
+                  borderRadius: '8px',
+                  height: 'auto',
+                  padding: '8px 12px'
                 }}
-                style={{ borderRadius: '8px' }}
+                className="flex flex-col items-center"
               >
-                {quick.label}
+                <div className="font-semibold">{quick.label}</div>
+                <div className="text-xs text-gray-500">{quick.points} điểm</div>
               </Button>
             ))}
           </div>
@@ -435,7 +555,8 @@ const WithdrawForm = () => {
           description={
             <ul className="space-y-1 mt-2">
               <li>• Thời gian xử lý: 1-24 giờ làm việc</li>
-              <li>• Số tiền tối thiểu: 10,000 VNĐ</li>
+              <li>• Số điểm tối thiểu: 1 điểm (10,000 VNĐ)</li>
+              <li>• Khi rút tiền sẽ trừ cả số điểm tương ứng</li>
               <li>• Đảm bảo thông tin tài khoản chính xác</li>
               <li>• Không thể hủy sau khi đã gửi yêu cầu</li>
             </ul>
@@ -458,7 +579,7 @@ const WithdrawForm = () => {
             size="large"
             htmlType="submit"
             loading={loading}
-            disabled={!amount || amount < 10000}
+            disabled={!amount || !points || amount < 10000 || loading}
             style={{
               flex: 2,
               background: THEME_COLORS.primaryGradient,
@@ -466,7 +587,7 @@ const WithdrawForm = () => {
               borderRadius: '8px'
             }}
           >
-            Xác nhận rút tiền
+            {loading ? 'Đang xử lý...' : `Rút ${points || 0} điểm`}
           </Button>
         </div>
       </Form>
@@ -481,8 +602,12 @@ const WithdrawForm = () => {
         subTitle={
           <div className="space-y-2">
             <p>Mã giao dịch: <strong>{transactionResult?.transactionId}</strong></p>
+            <p>Số điểm rút: <strong className="text-orange-600">{points} điểm</strong></p>
             <p>Số tiền: <strong className="text-red-600">{formatCurrency(transactionResult?.amount)}</strong></p>
             <p>Thời gian xử lý dự kiến: 1-24 giờ làm việc</p>
+            <p className="text-sm text-gray-500">
+              Đã trừ {points} điểm từ tài khoản của bạn
+            </p>
           </div>
         }
         extra={[

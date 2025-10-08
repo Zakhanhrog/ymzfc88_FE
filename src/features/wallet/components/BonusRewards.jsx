@@ -53,7 +53,7 @@ const BonusRewards = ({ formatCurrency }) => {
       id: 1,
       type: 'daily',
       title: 'Điểm danh hàng ngày',
-      description: 'Nhận thưởng mỗi ngày đăng nhập',
+      description: 'Nhận  mỗi ngày đăng nhập',
       icon: <CalendarOutlined className="text-orange-500" />,
       amount: 10000,
       status: 'available',
@@ -67,7 +67,7 @@ const BonusRewards = ({ formatCurrency }) => {
     {
       id: 2,
       type: 'deposit',
-      title: 'Thưởng nạp đầu',
+      title: ' nạp đầu',
       description: 'Thưởng 100% lần nạp đầu tiên',
       icon: <GiftOutlined className="text-green-500" />,
       amount: 1000000,

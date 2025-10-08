@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Layout, Button, Dropdown, Avatar, Typography } from 'antd';
+import { Layout, Button, Avatar } from 'antd';
 import {
   UserOutlined,
-  SettingOutlined,
-  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
@@ -12,11 +10,9 @@ import AdminSidebar from './AdminSidebar';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 
 const { Header, Content } = Layout;
-const { Text } = Typography;
 
 const AdminLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [adminData, setAdminData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,38 +22,7 @@ const AdminLayout = ({ children }) => {
       navigate('/admin/login');
       return;
     }
-
-    // Get admin data
-    const data = adminAuthService.getCurrentAdmin();
-    setAdminData(data);
   }, [navigate]);
-
-  const handleLogout = () => {
-    adminAuthService.logout();
-    navigate('/admin/login');
-  };
-
-  const userMenuItems = [
-    {
-      key: 'profile',
-      label: 'Thông tin cá nhân',
-      icon: <UserOutlined />,
-    },
-    {
-      key: 'settings',
-      label: 'Cài đặt',
-      icon: <SettingOutlined />,
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      label: 'Đăng xuất',
-      icon: <LogoutOutlined />,
-      onClick: handleLogout,
-    },
-  ];
 
   return (
     <Layout className="min-h-screen">
@@ -90,29 +55,11 @@ const AdminLayout = ({ children }) => {
           />
           
           <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <div>
-                <Text strong>
-                  {adminData?.fullName || 'Admin'}
-                </Text>
-              </div>
-              <div>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {adminData?.email || 'admin@example.com'}
-                </Text>
-              </div>
-            </div>
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              placement="bottomRight"
-              trigger={['click']}
-            >
-              <Avatar 
-                icon={<UserOutlined />} 
-                className="bg-blue-600 cursor-pointer"
-                size="large"
-              />
-            </Dropdown>
+            <Avatar 
+              icon={<UserOutlined />} 
+              className="bg-blue-600"
+              size="large"
+            />
           </div>
         </Header>
         
