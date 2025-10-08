@@ -13,6 +13,9 @@ import AdminDepositApproval from '../components/AdminDepositApproval';
 import AdminWithdrawApproval from '../components/AdminWithdrawApproval';
 import AdminUserManagement from '../components/AdminUserManagement';
 import AdminPaymentMethodManagement from '../components/AdminPaymentMethodManagement';
+import AdminKycVerification from '../components/AdminKycVerification';
+import AdminSystemSettings from '../components/AdminSystemSettings';
+import AdminNotificationManagement from '../components/AdminNotificationManagement';
 import { adminService } from '../services/adminService';
 
 const AdminDashboardPage = () => {
@@ -241,6 +244,23 @@ const AdminDashboardPage = () => {
             <AdminPaymentMethodManagement />
           </div>
         );
+
+      case 'kyc-verification':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">Xác thực tài khoản</h1>
+              <p className="text-gray-600">Duyệt yêu cầu xác thực tài khoản từ người dùng</p>
+            </div>
+            <AdminKycVerification />
+          </div>
+        );
+
+      case 'settings':
+        return <AdminSystemSettings />;
+
+      case 'notifications':
+        return <AdminNotificationManagement />;
 
       default:
         return (

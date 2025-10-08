@@ -36,7 +36,9 @@ import {
   UserAddOutlined,
   TeamOutlined,
   UserSwitchOutlined,
-  UserDeleteOutlined
+  UserDeleteOutlined,
+  LockOutlined,
+  UnlockOutlined
 } from '@ant-design/icons';
 import { adminService } from '../services/adminService';
 
@@ -66,11 +68,14 @@ const AdminUserManagement = () => {
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [lockAction, setLockAction] = useState(null); // 'lock' or 'unlock'
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [balanceForm] = Form.useForm();
+  const [lockForm] = Form.useForm();
 
   // Load data
   useEffect(() => {
@@ -256,6 +261,32 @@ const AdminUserManagement = () => {
     setShowBalanceModal(true);
   };
 
+  // Show lock/unlock modal
+  const showLockWithdrawalModal = (user, action) => {
+    setSelectedUser(user);
+    setLockAction(action);
+    // Truyền action trực tiếp để tránh race condition
+    handleLockWithdrawal(user, action);
+  };
+
+  // Handle lock/unlock withdrawal
+  const handleLockWithdrawal = async (user, action) => {
+    try {
+      if (action === 'lock') {
+        // Lock withdrawal - không cần lý do, sẽ dùng default từ settings
+        await adminService.lockWithdrawal(user?.id, '');
+        message.success('Khóa rút tiền thành công! Đang sử dụng lý do mặc định từ cài đặt hệ thống.');
+      } else {
+        // Unlock withdrawal
+        await adminService.unlockWithdrawal(user?.id);
+        message.success('Mở khóa rút tiền thành công');
+      }
+      loadUsers();
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
   // Table columns
   const columns = [
     {
@@ -278,7 +309,16 @@ const AdminUserManagement = () => {
       key: 'userInfo',
       render: (_, record) => (
         <div>
-          <div className="font-medium">{record.fullName}</div>
+          <div className="font-medium">
+            {record.fullName}
+            {record.withdrawalLocked && (
+              <Tooltip title={`Đã khóa rút tiền: ${record.withdrawalLockReason || 'Không có lý do'}`}>
+                <Tag color="red" style={{ marginLeft: 8 }} icon={<LockOutlined />}>
+                  Khóa rút
+                </Tag>
+              </Tooltip>
+            )}
+          </div>
           <div className="text-gray-500 text-sm">@{record.username}</div>
           <div className="text-gray-400 text-xs">{record.email}</div>
         </div>
@@ -377,6 +417,25 @@ const AdminUserManagement = () => {
               onClick={() => showBalanceUpdateModal(record)}
             />
           </Tooltip>
+          {record.withdrawalLocked ? (
+            <Tooltip title="Mở khóa rút tiền">
+              <Button
+                type="text"
+                icon={<UnlockOutlined />}
+                style={{ color: '#52c41a' }}
+                onClick={() => showLockWithdrawalModal(record, 'unlock')}
+              />
+            </Tooltip>
+          ) : (
+            <Tooltip title="Khóa rút tiền">
+              <Button
+                type="text"
+                danger
+                icon={<LockOutlined />}
+                onClick={() => showLockWithdrawalModal(record, 'lock')}
+              />
+            </Tooltip>
+          )}
           {record.status !== 'BANNED' && (
             <Popconfirm
               title="Bạn có chắc muốn xóa người dùng này?"

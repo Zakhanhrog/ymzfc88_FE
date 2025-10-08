@@ -37,7 +37,8 @@ const AdminWithdrawApproval = () => {
   const [loading, setLoading] = useState(false);
   const [selectedWithdraw, setSelectedWithdraw] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [approvalModalVisible, setApprovalModalVisible] = useState(false);
+  const [approveModalVisible, setApproveModalVisible] = useState(false);
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [statistics, setStatistics] = useState({});
   const [filters, setFilters] = useState({
@@ -76,16 +77,23 @@ const AdminWithdrawApproval = () => {
     }
   };
 
-  const handleApprove = async (withdrawId, amount) => {
-    const confirmed = window.confirm(`Bạn có chắc chắn muốn duyệt lệnh rút ${formatCurrency(amount)}?`);
-    if (!confirmed) {
-      return;
-    }
-    
+  const showApproveModal = (withdrawId) => {
+    setSelectedWithdraw(withdraws.find(w => w.id === withdrawId));
+    setApproveModalVisible(true);
+  };
+
+  const showRejectModal = (withdrawId) => {
+    setSelectedWithdraw(withdraws.find(w => w.id === withdrawId));
+    setRejectModalVisible(true);
+  };
+
+  const confirmApprove = async () => {
     try {
-      const response = await adminService.approveWithdraw(withdrawId);
+      const response = await adminService.approveWithdraw(selectedWithdraw.id);
       if (response.success) {
         message.success('Đã duyệt lệnh rút tiền thành công!');
+        setApproveModalVisible(false);
+        setSelectedWithdraw(null);
         loadWithdraws();
         loadStatistics();
       } else {
@@ -96,18 +104,17 @@ const AdminWithdrawApproval = () => {
     }
   };
 
-  const handleReject = async (withdrawId) => {
-    console.log('handleReject clicked with withdrawId:', withdrawId);
-    setSelectedWithdraw(withdraws.find(w => w.id === withdrawId));
-    setApprovalModalVisible(true);
-  };
-
   const confirmReject = async () => {
+    if (!rejectReason.trim()) {
+      message.error('Vui lòng nhập lý do từ chối');
+      return;
+    }
+    
     try {
       const response = await adminService.rejectWithdraw(selectedWithdraw.id, rejectReason);
       if (response.success) {
         message.success('Đã từ chối lệnh rút tiền thành công!');
-        setApprovalModalVisible(false);
+        setRejectModalVisible(false);
         setRejectReason('');
         setSelectedWithdraw(null);
         loadWithdraws();
@@ -247,7 +254,7 @@ const AdminWithdrawApproval = () => {
                 type="primary"
                 size="small"
                 icon={<CheckOutlined />}
-                onClick={() => handleApprove(record.id, record.amount)}
+                onClick={() => showApproveModal(record.id)}
                 style={{ backgroundColor: '#52c41a' }}
               >
                 Duyệt
@@ -256,7 +263,7 @@ const AdminWithdrawApproval = () => {
                 danger
                 size="small"
                 icon={<CloseOutlined />}
-                onClick={() => handleReject(record.id)}
+                onClick={() => showRejectModal(record.id)}
               >
                 Từ chối
               </Button>
@@ -448,7 +455,7 @@ const AdminWithdrawApproval = () => {
                   icon={<CheckOutlined />}
                   onClick={() => {
                     setDetailModalVisible(false);
-                    handleApprove(selectedWithdraw.id, selectedWithdraw.amount);
+                    showApproveModal(selectedWithdraw.id);
                   }}
                   style={{ backgroundColor: '#52c41a' }}
                 >
@@ -459,7 +466,7 @@ const AdminWithdrawApproval = () => {
                   icon={<CloseOutlined />}
                   onClick={() => {
                     setDetailModalVisible(false);
-                    handleReject(selectedWithdraw.id);
+                    showRejectModal(selectedWithdraw.id);
                   }}
                 >
                   Từ chối
@@ -470,13 +477,71 @@ const AdminWithdrawApproval = () => {
         )}
       </Modal>
 
+      {/* Approve Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <CheckOutlined className="text-green-600" />
+            <span>Duyệt lệnh rút tiền</span>
+          </div>
+        }
+        open={approveModalVisible}
+        onOk={confirmApprove}
+        onCancel={() => {
+          setApproveModalVisible(false);
+          setSelectedWithdraw(null);
+        }}
+        okText="Xác nhận duyệt"
+        cancelText="Hủy"
+        okButtonProps={{ 
+          style: { backgroundColor: '#52c41a' }
+        }}
+      >
+        {selectedWithdraw && (
+          <div className="space-y-4">
+            <Alert
+              message="Xác nhận duyệt"
+              description="Sau khi duyệt, số tiền sẽ được trừ khỏi tài khoản người dùng và chuyển đến tài khoản đã đăng ký."
+              type="success"
+              showIcon
+            />
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="Mã giao dịch">
+                <span className="font-mono text-blue-600">
+                  {selectedWithdraw.transactionCode}
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Người dùng">
+                <strong>{selectedWithdraw.username}</strong>
+              </Descriptions.Item>
+              <Descriptions.Item label="Số tiền rút">
+                <span className="font-bold text-red-600 text-lg">
+                  {formatCurrency(selectedWithdraw.amount)}
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Tài khoản nhận">
+                <div>
+                  <div className="font-semibold">{selectedWithdraw.accountName}</div>
+                  <div className="font-mono text-sm">{selectedWithdraw.accountNumber}</div>
+                </div>
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        )}
+      </Modal>
+
       {/* Reject Modal */}
       <Modal
-        title="Từ chối lệnh rút tiền"
-        open={approvalModalVisible}
+        title={
+          <div className="flex items-center gap-2">
+            <CloseOutlined className="text-red-600" />
+            <span>Từ chối lệnh rút tiền</span>
+          </div>
+        }
+        open={rejectModalVisible}
         onOk={confirmReject}
         onCancel={() => {
-          setApprovalModalVisible(false);
+          setRejectModalVisible(false);
           setRejectReason('');
           setSelectedWithdraw(null);
         }}
@@ -484,25 +549,42 @@ const AdminWithdrawApproval = () => {
         cancelText="Hủy"
         okType="danger"
       >
-        <div className="space-y-4">
-          <Alert
-            message="Cảnh báo"
-            description="Bạn đang từ chối lệnh rút tiền. Hành động này không thể hoàn tác."
-            type="warning"
-            showIcon
-          />
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Lý do từ chối <span className="text-red-500">*</span>
-            </label>
-            <TextArea
-              rows={4}
-              placeholder="Nhập lý do từ chối..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
+        {selectedWithdraw && (
+          <div className="space-y-4">
+            <Alert
+              message="Cảnh báo"
+              description="Bạn đang từ chối lệnh rút tiền. Hành động này không thể hoàn tác."
+              type="warning"
+              showIcon
             />
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Mã giao dịch">
+                <span className="font-mono text-blue-600">
+                  {selectedWithdraw.transactionCode}
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Người dùng">
+                <strong>{selectedWithdraw.username}</strong>
+              </Descriptions.Item>
+              <Descriptions.Item label="Số tiền">
+                <span className="font-bold text-red-600">
+                  {formatCurrency(selectedWithdraw.amount)}
+                </span>
+              </Descriptions.Item>
+            </Descriptions>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Lý do từ chối <span className="text-red-500">*</span>
+              </label>
+              <TextArea
+                rows={4}
+                placeholder="Nhập lý do từ chối..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </Modal>
     </div>
   );

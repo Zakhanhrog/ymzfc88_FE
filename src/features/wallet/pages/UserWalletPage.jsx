@@ -15,25 +15,74 @@ import {
   SettingOutlined,
   HistoryOutlined,
   TrophyOutlined,
-  UserOutlined
+  UserOutlined,
+  SafetyCertificateOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import Layout from '../../../components/common/Layout';
 import WalletBalance from '../components/WalletBalance';
 import TransactionHistory from '../components/TransactionHistory';
 import DepositWithdraw from '../components/DepositWithdraw';
 import WithdrawForm from '../components/WithdrawForm';
+import KycVerification from '../components/KycVerification';
+import kycService from '../services/kycService';
 
 const UserWalletPage = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('balance');
   const [userInfo, setUserInfo] = useState({
-    username: 'user123',
-    email: 'user@example.com',
-    phone: '0901234567',
-    vipLevel: 'Gold',
-    totalDeposit: 50000000,
-    totalWithdraw: 30000000
+    username: '',
+    email: '',
+    phone: '',
+    fullName: '',
+    idNumber: ''
   });
+  const [kycVerified, setKycVerified] = useState(false);
+
+  // Fetch user info from localStorage
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        setUserInfo({
+          username: userData.username || '',
+          email: userData.email || '',
+          phone: userData.phoneNumber || userData.phone || '',
+          fullName: userData.fullName || '',
+          idNumber: ''
+        });
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
+
+  // Fetch KYC status
+  useEffect(() => {
+    const fetchKycStatus = async () => {
+      try {
+        const response = await kycService.getKycStatus();
+        if (response.success && response.data) {
+          if (response.data.status === 'APPROVED') {
+            setKycVerified(true);
+          }
+          // Cập nhật thông tin từ KYC nếu có
+          if (response.data.fullName) {
+            setUserInfo(prev => ({
+              ...prev,
+              fullName: response.data.fullName,
+              idNumber: response.data.idNumber || ''
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching KYC status:', error);
+      }
+    };
+    
+    fetchKycStatus();
+  }, [activeTab]); // Re-fetch when tab changes
 
   // Effect để set active tab từ URL params
   useEffect(() => {
@@ -92,6 +141,16 @@ const UserWalletPage = () => {
         </span>
       ),
       children: <TransactionHistory />
+    },
+    {
+      key: 'kyc-verification',
+      label: (
+        <span className="flex items-center gap-2">
+          <SafetyCertificateOutlined />
+          Xác thực tài khoản
+        </span>
+      ),
+      children: <KycVerification />
     }
   ];
 
@@ -121,14 +180,23 @@ const UserWalletPage = () => {
               />
               <div>
                 <h2 className="text-white text-lg md:text-2xl font-bold mb-1">
-                  Chào mừng, {userInfo.username}
+                  Chào mừng, {userInfo.fullName || userInfo.username}
                 </h2>
                 <div className="text-white/90 text-xs md:text-sm space-y-0.5">
                   <div>Email: {userInfo.email}</div>
-                  <div>SĐT: {userInfo.phone}</div>
-                  <Tag color="gold" className="mt-1 text-xs">
-                    <TrophyOutlined /> VIP {userInfo.vipLevel}
-                  </Tag>
+                  {userInfo.phone && <div>SĐT: {userInfo.phone}</div>}
+                  {kycVerified && userInfo.idNumber && (
+                    <div>Số CCCD: {userInfo.idNumber}</div>
+                  )}
+                  {kycVerified ? (
+                    <Tag color="green" className="mt-1 text-xs">
+                      <CheckCircleOutlined /> Đã xác thực
+                    </Tag>
+                  ) : (
+                    <Tag color="orange" className="mt-1 text-xs">
+                      <SafetyCertificateOutlined /> Chưa xác thực
+                    </Tag>
+                  )}
                 </div>
               </div>
             </div>
@@ -161,6 +229,7 @@ const UserWalletPage = () => {
             size={window.innerWidth < 768 ? 'middle' : 'large'}
             className="wallet-tabs"
             items={tabItems}
+            animated={false}
           />
         </Card>
       </div>
@@ -175,7 +244,6 @@ const UserWalletPage = () => {
             font-weight: 500 !important;
             font-size: 14px !important;
             padding: 8px 12px !important;
-            transition: all 0.3s ease !important;
           }
           
           .wallet-tabs .ant-tabs-tab:hover {

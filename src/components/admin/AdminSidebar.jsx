@@ -19,7 +19,8 @@ import {
   TrophyOutlined,
   MessageOutlined,
   BellOutlined,
-  ToolOutlined
+  ToolOutlined,
+  SafetyCertificateOutlined
 } from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 
@@ -67,6 +68,11 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
           key: 'users',
           icon: <UserOutlined />,
           label: 'Danh sách người dùng',
+        },
+        {
+          key: 'kyc-verification',
+          icon: <SafetyCertificateOutlined />,
+          label: 'Xác thực tài khoản',
         },
         {
           key: 'user-roles',
@@ -194,7 +200,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
     
-    if (tab === 'users' || tab === 'user-roles' || tab === 'user-activities') {
+    if (tab === 'users' || tab === 'kyc-verification' || tab === 'user-roles' || tab === 'user-activities') {
       return ['user-management'];
     }
     if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods') {
@@ -226,6 +232,9 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
         break;
       case 'users':
         navigate('/admin/dashboard?tab=users');
+        break;
+      case 'kyc-verification':
+        navigate('/admin/dashboard?tab=kyc-verification');
         break;
       case 'user-roles':
         navigate('/admin/dashboard?tab=user-roles');

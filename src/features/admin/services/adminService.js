@@ -361,6 +361,100 @@ export const adminService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi lấy thông tin admin');
     }
+  },
+
+  // ============ WITHDRAWAL LOCK MANAGEMENT ============
+
+  // Khóa rút tiền cho người dùng
+  lockWithdrawal: async (userId, reason) => {
+    try {
+      const response = await adminAPI.post(`/admin/users/${userId}/lock-withdrawal?reason=${encodeURIComponent(reason)}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi khóa rút tiền');
+    }
+  },
+
+  // Mở khóa rút tiền cho người dùng
+  unlockWithdrawal: async (userId) => {
+    try {
+      const response = await adminAPI.post(`/admin/users/${userId}/unlock-withdrawal`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi mở khóa rút tiền');
+    }
+  },
+
+  // Kiểm tra trạng thái khóa rút tiền
+  getWithdrawalLockStatus: async (userId) => {
+    try {
+      const response = await adminAPI.get(`/admin/users/${userId}/withdrawal-lock-status`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy trạng thái khóa rút tiền');
+    }
+  },
+
+  // ============ SYSTEM SETTINGS MANAGEMENT ============
+
+  // Lấy tất cả cài đặt hệ thống
+  getAllSystemSettings: async () => {
+    try {
+      const response = await adminAPI.get('/admin/system-settings');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy cài đặt hệ thống');
+    }
+  },
+
+  // Lấy cài đặt theo category
+  getSystemSettingsByCategory: async (category) => {
+    try {
+      const response = await adminAPI.get(`/admin/system-settings/category/${category}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy cài đặt theo category');
+    }
+  },
+
+  // Lấy cài đặt theo key
+  getSystemSettingByKey: async (key) => {
+    try {
+      const response = await adminAPI.get(`/admin/system-settings/${key}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy cài đặt');
+    }
+  },
+
+  // Tạo hoặc cập nhật cài đặt
+  createOrUpdateSystemSetting: async (settingData) => {
+    try {
+      const response = await adminAPI.post('/admin/system-settings', settingData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật cài đặt');
+    }
+  },
+
+  // Xóa cài đặt
+  deleteSystemSetting: async (key) => {
+    try {
+      const response = await adminAPI.delete(`/admin/system-settings/${key}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi xóa cài đặt');
+    }
+  },
+
+  // Khởi tạo cài đặt mặc định
+  initializeDefaultSettings: async () => {
+    try {
+      const response = await adminAPI.post('/admin/system-settings/initialize');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi khởi tạo cài đặt mặc định');
+    }
   }
 };
 

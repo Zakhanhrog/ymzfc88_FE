@@ -40,7 +40,8 @@ const AdminDepositApproval = () => {
   const [loading, setLoading] = useState(false);
   const [selectedDeposit, setSelectedDeposit] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [approvalModalVisible, setApprovalModalVisible] = useState(false);
+  const [approveModalVisible, setApproveModalVisible] = useState(false);
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [statistics, setStatistics] = useState({});
   const [filters, setFilters] = useState({
@@ -91,19 +92,31 @@ const AdminDepositApproval = () => {
     }
   };
 
-  const handleApprove = async (e, depositId, amount) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const confirmed = window.confirm(`Bạn có chắc chắn muốn duyệt lệnh nạp ${formatCurrency(amount)}?`);
-    if (!confirmed) {
-      return;
+  const showApproveModal = (e, depositId) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-    
+    setSelectedDeposit(deposits.find(d => d.id === depositId));
+    setApproveModalVisible(true);
+  };
+
+  const showRejectModal = (e, depositId) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setSelectedDeposit(deposits.find(d => d.id === depositId));
+    setRejectModalVisible(true);
+  };
+
+  const confirmApprove = async () => {
     try {
-      const response = await adminService.approveDeposit(depositId);
+      const response = await adminService.approveDeposit(selectedDeposit.id);
       if (response.success) {
         message.success('Đã duyệt lệnh nạp tiền thành công!');
+        setApproveModalVisible(false);
+        setSelectedDeposit(null);
         loadDeposits();
         loadStatistics();
       } else {
@@ -114,21 +127,17 @@ const AdminDepositApproval = () => {
     }
   };
 
-  const handleReject = async (e, depositId) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('handleReject clicked with depositId:', depositId);
-    setSelectedDeposit(deposits.find(d => d.id === depositId));
-    setApprovalModalVisible(true);
-  };
-
   const confirmReject = async () => {
+    if (!rejectReason.trim()) {
+      message.error('Vui lòng nhập lý do từ chối');
+      return;
+    }
+    
     try {
       const response = await adminService.rejectDeposit(selectedDeposit.id, rejectReason);
       if (response.success) {
         message.success('Đã từ chối lệnh nạp tiền thành công!');
-        setApprovalModalVisible(false);
+        setRejectModalVisible(false);
         setRejectReason('');
         setSelectedDeposit(null);
         loadDeposits();
@@ -257,7 +266,7 @@ const AdminDepositApproval = () => {
                 type="primary"
                 size="small"
                 icon={<CheckOutlined />}
-                onClick={(e) => handleApprove(e, record.id, record.amount)}
+                onClick={(e) => showApproveModal(e, record.id)}
                 style={{ backgroundColor: '#52c41a' }}
               >
                 Duyệt
@@ -266,7 +275,7 @@ const AdminDepositApproval = () => {
                 danger
                 size="small"
                 icon={<CloseOutlined />}
-                onClick={(e) => handleReject(e, record.id)}
+                onClick={(e) => showRejectModal(e, record.id)}
               >
                 Từ chối
               </Button>
@@ -451,9 +460,9 @@ const AdminDepositApproval = () => {
                 <Button
                   type="primary"
                   icon={<CheckOutlined />}
-                  onClick={(e) => {
+                  onClick={() => {
                     setDetailModalVisible(false);
-                    handleApprove(e, selectedDeposit.id, selectedDeposit.amount);
+                    showApproveModal(null, selectedDeposit.id);
                   }}
                   style={{ backgroundColor: '#52c41a' }}
                 >
@@ -462,9 +471,9 @@ const AdminDepositApproval = () => {
                 <Button
                   danger
                   icon={<CloseOutlined />}
-                  onClick={(e) => {
+                  onClick={() => {
                     setDetailModalVisible(false);
-                    handleReject(e, selectedDeposit.id);
+                    showRejectModal(null, selectedDeposit.id);
                   }}
                 >
                   Từ chối
@@ -475,13 +484,68 @@ const AdminDepositApproval = () => {
         )}
       </Modal>
 
+      {/* Approve Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <CheckOutlined className="text-green-600" />
+            <span>Duyệt lệnh nạp tiền</span>
+          </div>
+        }
+        open={approveModalVisible}
+        onOk={confirmApprove}
+        onCancel={() => {
+          setApproveModalVisible(false);
+          setSelectedDeposit(null);
+        }}
+        okText="Xác nhận duyệt"
+        cancelText="Hủy"
+        okButtonProps={{ 
+          style: { backgroundColor: '#52c41a' }
+        }}
+      >
+        {selectedDeposit && (
+          <div className="space-y-4">
+            <Alert
+              message="Xác nhận duyệt"
+              description="Sau khi duyệt, số tiền sẽ được cộng vào tài khoản người dùng."
+              type="success"
+              showIcon
+            />
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="Mã giao dịch">
+                <span className="font-mono text-blue-600">
+                  {selectedDeposit.transactionCode}
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Người dùng">
+                <strong>{selectedDeposit.username}</strong>
+              </Descriptions.Item>
+              <Descriptions.Item label="Số tiền">
+                <span className="font-bold text-green-600 text-lg">
+                  {formatCurrency(selectedDeposit.amount)}
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Phương thức">
+                {selectedDeposit.paymentMethod?.name}
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        )}
+      </Modal>
+
       {/* Reject Modal */}
       <Modal
-        title="Từ chối lệnh nạp tiền"
-        open={approvalModalVisible}
+        title={
+          <div className="flex items-center gap-2">
+            <CloseOutlined className="text-red-600" />
+            <span>Từ chối lệnh nạp tiền</span>
+          </div>
+        }
+        open={rejectModalVisible}
         onOk={confirmReject}
         onCancel={() => {
-          setApprovalModalVisible(false);
+          setRejectModalVisible(false);
           setRejectReason('');
           setSelectedDeposit(null);
         }}
@@ -489,25 +553,42 @@ const AdminDepositApproval = () => {
         cancelText="Hủy"
         okType="danger"
       >
-        <div className="space-y-4">
-          <Alert
-            message="Cảnh báo"
-            description="Bạn đang từ chối lệnh nạp tiền. Hành động này không thể hoàn tác."
-            type="warning"
-            showIcon
-          />
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Lý do từ chối <span className="text-red-500">*</span>
-            </label>
-            <TextArea
-              rows={4}
-              placeholder="Nhập lý do từ chối..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
+        {selectedDeposit && (
+          <div className="space-y-4">
+            <Alert
+              message="Cảnh báo"
+              description="Bạn đang từ chối lệnh nạp tiền. Hành động này không thể hoàn tác."
+              type="warning"
+              showIcon
             />
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Mã giao dịch">
+                <span className="font-mono text-blue-600">
+                  {selectedDeposit.transactionCode}
+                </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Người dùng">
+                <strong>{selectedDeposit.username}</strong>
+              </Descriptions.Item>
+              <Descriptions.Item label="Số tiền">
+                <span className="font-bold text-green-600">
+                  {formatCurrency(selectedDeposit.amount)}
+                </span>
+              </Descriptions.Item>
+            </Descriptions>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Lý do từ chối <span className="text-red-500">*</span>
+              </label>
+              <TextArea
+                rows={4}
+                placeholder="Nhập lý do từ chối..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </Modal>
     </div>
   );

@@ -47,6 +47,9 @@ const WithdrawForm = () => {
   const [loading, setLoading] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
   const [showAddMethodModal, setShowAddMethodModal] = useState(false);
+  const [withdrawalLocked, setWithdrawalLocked] = useState(false);
+  const [lockReason, setLockReason] = useState('');
+  const [checkingLockStatus, setCheckingLockStatus] = useState(true);
   const [form] = Form.useForm();
   const [addMethodForm] = Form.useForm();
 
@@ -63,8 +66,59 @@ const WithdrawForm = () => {
   ];
 
   useEffect(() => {
+    // Mỗi lần component mount hoặc user quay lại trang này
+    checkWithdrawalLockStatus();
     loadUserPaymentMethods();
-  }, []);
+  }, []); // Empty dependency để chỉ chạy lần đầu
+
+  const checkWithdrawalLockStatus = async () => {
+    try {
+      setCheckingLockStatus(true);
+      console.log('🔍 Đang kiểm tra trạng thái khóa rút tiền...');
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.warn('⚠️ Không tìm thấy token');
+        return;
+      }
+
+      // Fetch latest user info từ backend
+      const response = await fetch('http://localhost:8080/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('📡 Response status:', response.status);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Response data:', result);
+        
+        if (result.success && result.data) {
+          const isLocked = result.data.withdrawalLocked || false;
+          const reason = result.data.withdrawalLockReason || '';
+          
+          console.log('🔒 Withdrawal Locked:', isLocked);
+          console.log('📝 Lock Reason:', reason);
+          
+          setWithdrawalLocked(isLocked);
+          setLockReason(reason);
+          
+          if (isLocked) {
+            message.warning('Tài khoản của bạn đã bị khóa rút tiền!');
+          }
+        }
+      } else {
+        console.error('❌ Response not OK:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Error checking withdrawal lock status:', error);
+    } finally {
+      setCheckingLockStatus(false);
+    }
+  };
 
   const loadUserPaymentMethods = async () => {
     try {
@@ -137,6 +191,12 @@ const WithdrawForm = () => {
   ];
 
   const handleSubmitWithdraw = async (values) => {
+    // Check if withdrawal is locked before submitting
+    if (withdrawalLocked) {
+      message.error('Tài khoản của bạn đã bị khóa rút tiền. Vui lòng liên hệ admin để biết thêm chi tiết.');
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -154,7 +214,15 @@ const WithdrawForm = () => {
         message.success('Đã gửi yêu cầu rút tiền thành công!');
       }
     } catch (error) {
-      message.error('Lỗi khi tạo lệnh rút tiền: ' + error.message);
+      // Check if error message contains WITHDRAWAL_LOCKED
+      if (error.message && error.message.includes('WITHDRAWAL_LOCKED')) {
+        const reason = error.message.replace('WITHDRAWAL_LOCKED: ', '');
+        setWithdrawalLocked(true);
+        setLockReason(reason);
+        message.error(reason);
+      } else {
+        message.error('Lỗi khi tạo lệnh rút tiền: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -465,6 +533,34 @@ const WithdrawForm = () => {
         </Text>
       </div>
 
+      {/* Loading when checking lock status */}
+      {checkingLockStatus && (
+        <Alert
+          message="Đang kiểm tra trạng thái tài khoản..."
+          type="info"
+          showIcon
+          style={{ marginBottom: '16px' }}
+        />
+      )}
+
+      {/* Withdrawal Locked Alert */}
+      {!checkingLockStatus && withdrawalLocked && (
+        <Alert
+          message="⚠️ TÀI KHOẢN ĐÃ BỊ KHÓA RÚT TIỀN"
+          description={
+            <div>
+              <p className="mb-2"><strong>Lý do:</strong> {lockReason || 'Không có lý do cụ thể'}</p>
+              <p className="mb-0 text-red-600"><strong>Vui lòng liên hệ với quản trị viên để được hỗ trợ.</strong></p>
+            </div>
+          }
+          type="error"
+          showIcon
+          icon={<WarningOutlined />}
+          style={{ marginBottom: '16px', border: '2px solid #ff4d4f' }}
+          banner
+        />
+      )}
+
       {/* Steps */}
       <Card style={{ borderRadius: '12px' }}>
         <Steps current={currentStep} className="mb-8">
@@ -482,12 +578,13 @@ const WithdrawForm = () => {
             <Button
               type="primary"
               size="large"
+              disabled={withdrawalLocked}
               onClick={() => {
                 form.setFieldsValue({ userPaymentMethodId: selectedUserMethod.id });
                 setCurrentStep(1);
               }}
               style={{
-                background: THEME_COLORS.primaryGradient,
+                background: withdrawalLocked ? '#d9d9d9' : THEME_COLORS.primaryGradient,
                 border: 'none',
                 borderRadius: '8px'
               }}

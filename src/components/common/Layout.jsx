@@ -8,12 +8,15 @@ import {
   SettingOutlined,
   GiftOutlined,
   PhoneOutlined,
-  StarOutlined
+  StarOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AuthModal from './AuthModal';
 import Sidebar from './Sidebar';
+import NotificationDropdown from '../../features/notification/components/NotificationDropdown';
 import { getLogoStyle, getAvatarStyle, getButtonStyle, THEME_COLORS } from '../../utils/theme';
 
 const { Header, Content, Footer } = AntLayout;
@@ -180,14 +183,6 @@ const Layout = ({ children }) => {
       <div className="flex justify-around items-center py-2">
         <button 
           className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-        >
-          <SettingOutlined className="text-xl mb-1" />
-          <span className="text-xs">Tuỳ chọn</span>
-        </button>
-        
-        <button 
-          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
           onClick={() => navigate('/')}
         >
           <HomeOutlined className="text-xl mb-1" />
@@ -196,7 +191,7 @@ const Layout = ({ children }) => {
         
         <button 
           className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => console.log('AE888 clicked')}
+          onClick={() => navigate('/')}
         >
           <StarOutlined className="text-xl mb-1" />
           <span className="text-xs">AE888</span>
@@ -216,6 +211,14 @@ const Layout = ({ children }) => {
         >
           <PhoneOutlined className="text-xl mb-1" />
           <span className="text-xs">Liên hệ</span>
+        </button>
+        
+        <button 
+          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
+          onClick={() => navigate('/wallet')}
+        >
+          <UserOutlined className="text-xl mb-1" />
+          <span className="text-xs">Cá nhân</span>
         </button>
       </div>
     </div>
@@ -331,6 +334,9 @@ const Layout = ({ children }) => {
                       <span>Rút tiền</span>
                     </Button>
                     
+                    {/* Notification Icon */}
+                    <NotificationDropdown />
+                    
                     {/* Đăng xuất button */}
                     <Button 
                       onClick={handleLogout}
@@ -363,6 +369,9 @@ const Layout = ({ children }) => {
                         currency: 'VND'
                       }).format(userBalance).replace('₫', 'đ')}
                     </span>
+                    
+                    {/* Notification Icon for mobile */}
+                    <NotificationDropdown />
                   </div>
                   
                   {/* Avatar với dropdown cho mobile */}
@@ -477,7 +486,6 @@ const Layout = ({ children }) => {
           marginLeft: !isMobile ? (sidebarCollapsed ? '84px' : '300px') : '0px', 
           marginRight: !isMobile ? '20px' : '0px',
           marginBottom: isMobile ? '80px' : '0', // Thêm margin bottom cho mobile bottom nav
-          transition: 'margin-left 0.3s ease',
           minHeight: 'calc(100vh - 64px)',
           overflowY: 'auto',
           overflowX: 'hidden',
@@ -503,28 +511,6 @@ const Layout = ({ children }) => {
 
       {/* Mobile Bottom Navigation */}
       {isMobile && <MobileBottomNav />}
-
-      {/* Sidebar overlay cho mobile khi mở tuỳ chọn */}
-      {isMobile && !sidebarCollapsed && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setSidebarCollapsed(true)}
-          />
-          <div className="fixed left-0 top-16 bottom-20 w-80 bg-white z-50 shadow-xl overflow-y-auto">
-            <Sidebar
-              collapsed={false}
-              onCollapse={setSidebarCollapsed}
-              activeGame={activeGame}
-              onGameSelect={handleGameSelect}
-              onLoginOpen={handleLoginOpen}
-              onRegisterOpen={handleRegisterOpen}
-              onLogout={handleLogout}
-              isLoggedIn={isLoggedIn}
-            />
-          </div>
-        </>
-      )}
 
       {/* Auth Modals */}
       <AuthModal 

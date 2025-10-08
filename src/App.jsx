@@ -16,7 +16,14 @@ import 'antd/dist/reset.css';
 
 function App() {
   return (
-    <ConfigProvider locale={viVN}>
+    <ConfigProvider 
+      locale={viVN}
+      theme={{
+        token: {
+          motion: false, // Tắt tất cả animation
+        },
+      }}
+    >
       <AntApp>
         <Router>
           <div className="App">
