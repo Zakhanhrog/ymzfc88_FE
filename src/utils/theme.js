@@ -124,7 +124,6 @@ export const LAYOUT = {
   sidebarCollapsedWidth: '64px',
   adminSidebarWidth: '280px',
   adminSidebarCollapsedWidth: '80px',
-  mobileBottomNavHeight: '80px',
   maxContentWidth: '1280px',
 };
 

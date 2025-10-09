@@ -152,7 +152,7 @@ p {
 
 /* Buttons */
 .ant-btn {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   font-weight: var(--weight-semibold) !important;
 }
@@ -167,12 +167,12 @@ p {
 
 /* Menu Items */
 .ant-menu-item {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
 .ant-menu-submenu-title {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
@@ -180,7 +180,7 @@ p {
 .ant-input,
 .ant-input-number-input,
 .ant-select-selection-item {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
@@ -191,7 +191,7 @@ p {
 
 /* Form Labels */
 .ant-form-item-label > label {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   font-weight: var(--weight-medium) !important;
   color: var(--text-primary) !important;
@@ -199,14 +199,14 @@ p {
 
 /* Card Titles */
 .ant-card-head-title {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-lg) !important;
   font-weight: var(--weight-semibold) !important;
 }
 
 /* Table */
 .ant-table {
-  font-family: var(--font-primary) !important;
+
 }
 
 .ant-table-thead > tr > th {
@@ -222,19 +222,19 @@ p {
 
 /* Modal */
 .ant-modal-title {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-xl) !important;
   font-weight: var(--weight-bold) !important;
 }
 
 .ant-modal-body {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
 /* Tabs */
 .ant-tabs-tab {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   font-weight: var(--weight-medium) !important;
 }
@@ -245,65 +245,65 @@ p {
 
 /* Tags */
 .ant-tag {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-sm) !important;
 }
 
 /* Descriptions */
 .ant-descriptions-item-label {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-sm) !important;
   font-weight: var(--weight-medium) !important;
 }
 
 .ant-descriptions-item-content {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
 /* Statistics */
 .ant-statistic-title {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-sm) !important;
   font-weight: var(--weight-medium) !important;
 }
 
 .ant-statistic-content {
-  font-family: var(--font-primary) !important;
+
 }
 
 /* Dropdown Menu */
 .ant-dropdown-menu-item {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
 /* Notification & Message */
 .ant-message {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
 .ant-notification-notice-message {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-md) !important;
   font-weight: var(--weight-semibold) !important;
 }
 
 .ant-notification-notice-description {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
 }
 
 /* Steps */
 .ant-steps-item-title {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   font-weight: var(--weight-medium) !important;
 }
 
 .ant-steps-item-description {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-sm) !important;
 }
 
@@ -311,7 +311,7 @@ p {
 .ant-pagination-item,
 .ant-pagination-total-text,
 .ant-select-item {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-sm) !important;
 }
 
@@ -322,11 +322,10 @@ p {
 
 /* ALL sidebar items - Base font Tahoma */
 .sidebar-scrollable .ant-menu-item {
-  font-family: var(--font-sidebar) !important;
+
 }
 
 .sidebar-scrollable .ant-menu-item span {
-  font-family: var(--font-sidebar) !important;
   font-size: var(--text-base2) !important;
 }
 
@@ -365,7 +364,7 @@ p {
 /* Admin menu specific */
 .admin-sidebar .ant-menu-item,
 .admin-sidebar .ant-menu-submenu-title {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   font-weight: var(--weight-normal) !important;
 }
@@ -376,20 +375,34 @@ p {
 
 /* Empty state */
 .ant-empty-description {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   color: var(--text-secondary) !important;
 }
 
 /* Alert */
 .ant-alert-message {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-base) !important;
   font-weight: var(--weight-medium) !important;
 }
 
 .ant-alert-description {
-  font-family: var(--font-primary) !important;
+
   font-size: var(--text-sm) !important;
+}
+
+/* ============================================ */
+/* FOOTER - Font Tahoma & Styling              */
+/* ============================================ */
+
+/* Footer headings - Font Tahoma */
+.footer-heading {
+  font-family: var(--font-sidebar) !important;
+}
+
+/* Footer links - Font Tahoma */
+.footer-link {
+  font-family: var(--font-sidebar) !important;
 }
 

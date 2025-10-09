@@ -362,7 +362,7 @@ const WithdrawForm = () => {
                   ? '#fef2f2' 
                   : 'white'
               }}
-              styles={{ body: { padding: window.innerWidth < 768 ? '12px' : '16px' } }}
+              styles={{ body: { padding: '16px' } }}
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">

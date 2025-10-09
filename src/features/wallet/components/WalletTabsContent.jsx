@@ -61,7 +61,7 @@ const WalletTabsContent = ({ activeTab, onTabChange }) => {
   return (
     <Card 
       className="shadow-md rounded-2xl"
-      bodyClassName={window.innerWidth < 768 ? 'p-3' : 'p-6'}
+      bodyClassName='p-6'
     >
       <Tabs
         activeKey={activeTab}

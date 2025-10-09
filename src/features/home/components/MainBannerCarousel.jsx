@@ -1,30 +1,29 @@
-import { Card, Carousel } from '../../../components/ui';
+import { Carousel } from '../../../components/ui';
 
 const MainBannerCarousel = ({ banners }) => {
   return (
-    <Card className="w-full shadow-lg overflow-hidden">
+    <div className="w-full rounded-lg overflow-hidden shadow-lg bg-transparent border border-gray-300">
       <Carousel 
         autoplay
         autoplaySpeed={4000}
         dots={true}
-        className="banner-carousel"
+        className="banner-carousel bg-transparent"
       >
         {banners.map((banner) => (
           <div key={banner.id}>
             <img 
               src={banner.url}
               alt={banner.alt}
-              className="w-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+              className="w-full object-cover cursor-pointer"
               style={{ 
-                aspectRatio: window.innerWidth < 768 ? '1156/400' : 'auto',
-                height: window.innerWidth < 768 ? 'auto' : '320px'
+                height: '350px'
               }}
               onClick={() => console.log('Main banner clicked:', banner.alt)}
             />
           </div>
         ))}
       </Carousel>
-    </Card>
+    </div>
   );
 };
 

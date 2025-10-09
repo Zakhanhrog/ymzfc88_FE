@@ -1,10 +1,8 @@
 import Layout from '../../../components/common/Layout';
 import MainBannerCarousel from '../components/MainBannerCarousel';
-import SideBanners from '../components/SideBanners';
 import NotificationMarquee from '../components/NotificationMarquee';
 import QuickActionButtons from '../components/QuickActionButtons';
 import CategoryButtons from '../components/CategoryButtons';
-import GameGrid from '../components/GameGrid';
 
 const HomePage = () => {
   // Banner chính (carousel)
@@ -35,56 +33,63 @@ const HomePage = () => {
       alt: 'Banner khuyến mãi 5'
     }
   ];
-
-  // Banner bên phải
+  
+  // 3 banner phụ từ folder banner
   const sideBanners = [
     {
       id: 1,
-      title: 'NẠP ĐẦU 100%',
-      url: 'https://img.alltocon.com/img/ae888/ads/622163a9-9274-4ca6-909c-76a6be75d923.webp',
-      gradient: 'from-yellow-400 to-orange-500'
+      url: '/banner/imgi_148_ddc4f0b5-3df9-4997-8ebe-a0a037db9354.webp',
+      alt: 'Banner phụ 1'
     },
     {
       id: 2,
-      title: 'NẠP ĐẦU 120%',
-      url: 'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=300&h=200&fit=crop',
-      gradient: 'from-purple-400 to-pink-500'
+      url: '/banner/imgi_149_40874e55-d637-4d69-852e-0199a44d4150.webp',
+      alt: 'Banner phụ 2'
     },
     {
       id: 3,
-      title: 'KHUYẾN MÃI ĐẶC BIỆT',
-      url: 'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?w=300&h=200&fit=crop',
-      gradient: 'from-blue-400 to-cyan-500'
+      url: '/banner/imgi_150_24406232-8114-4e87-b707-4e49bbb0ccf7.webp',
+      alt: 'Banner phụ 3'
     }
   ];
 
   return (
     <Layout>
       <div className="w-full">
-        {/* Notification Marquee */}
-        <NotificationMarquee />
-
         {/* Banner Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          {/* Main Banner Carousel - 2 cột */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-6 gap-4 mb-6">
+          {/* Banner chính - 5 cột */}
+          <div className="col-span-5">
             <MainBannerCarousel banners={mainBanners} />
           </div>
 
-          {/* Side Banners - 1 cột */}
-          <div className="lg:col-span-1">
-            <SideBanners banners={sideBanners} />
+          {/* Banner phụ - 1 cột */}
+          <div className="col-span-1">
+            <div className="space-y-1 h-[350px] flex flex-col justify-between border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent">
+              {sideBanners.map((banner) => (
+                <div key={banner.id} className="h-[120px] bg-gray-100 rounded-lg p-1.5 shadow-sm">
+                  <div className="w-full h-full rounded-lg overflow-hidden">
+                    <img 
+                      src={banner.url} 
+                      alt={banner.alt}
+                      className="w-full h-full object-contain cursor-pointer rounded-lg"
+                      onClick={() => console.log(`${banner.alt} clicked`)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* Notification Marquee */}
+        <NotificationMarquee />
 
         {/* Quick Action Buttons */}
         <QuickActionButtons />
 
         {/* Category Buttons */}
         <CategoryButtons />
-
-        {/* Game Grid */}
-        <GameGrid />
       </div>
     </Layout>
   );

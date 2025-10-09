@@ -75,24 +75,6 @@ const WalletTabsStyles = () => {
           }
         }
         
-        /* Mobile responsive tabs */
-        @media (max-width: 768px) {
-          .wallet-tabs .ant-tabs-tab {
-            font-size: 12px !important;
-            padding: 8px 12px !important;
-            margin-right: 4px !important;
-            border-radius: 8px !important;
-          }
-          
-          .wallet-tabs .ant-tabs-nav-wrap {
-            padding: 4px !important;
-          }
-          
-          .wallet-tabs .ant-tabs-content {
-            margin-top: 4px !important;
-            padding: 16px 0 !important;
-          }
-        }
         
         /* Smooth transition cho tab content */
         .wallet-tabs .ant-tabs-tabpane-active {

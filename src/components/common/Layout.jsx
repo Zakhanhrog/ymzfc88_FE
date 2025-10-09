@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 import AuthModal from './layout/AuthModal';
+import Footer from './layout/Footer';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -18,19 +19,6 @@ const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userBalance, setUserBalance] = useState(0);
   const [userName, setUserName] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Check if device is mobile
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
 
   // Lưu activeGame vào localStorage mỗi khi thay đổi
   useEffect(() => {
@@ -126,11 +114,10 @@ const Layout = ({ children }) => {
   const sidebarWidth = sidebarCollapsed ? '80px' : '280px';
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <Header
         isLoggedIn={isLoggedIn}
-        isMobile={isMobile}
         sidebarCollapsed={sidebarCollapsed}
         onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         onLoginOpen={() => setIsLoginModalOpen(true)}
@@ -141,35 +128,36 @@ const Layout = ({ children }) => {
         onLogout={handleLogout}
       />
 
-      {/* Sidebar - chỉ hiển thị trên desktop */}
-      {!isMobile && (
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onCollapse={setSidebarCollapsed}
-          activeGame={activeGame}
-          onGameSelect={handleGameSelect}
-        />
-      )}
+      {/* Sidebar */}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onCollapse={setSidebarCollapsed}
+        activeGame={activeGame}
+        onGameSelect={handleGameSelect}
+      />
 
       {/* Main Content */}
       <main 
-        className="pt-[80px] min-h-screen transition-all duration-300"
+        className="pt-[80px] flex-1 transition-all duration-300"
         style={{ 
-          marginLeft: !isMobile ? sidebarWidth : '0',
-          paddingRight: !isMobile ? '20px' : '0',
+          marginLeft: sidebarWidth,
+          paddingRight: '20px',
         }}
       >
-        <div className="p-5">
+        <div className="p-5 min-h-full">
           {children}
         </div>
-        
-        {/* Footer */}
-        <footer className="text-center py-6 mt-8">
-          <div className="text-gray-500 text-sm">
-            ©2025 - Nền tảng cá cược trực tuyến hàng đầu
-          </div>
-        </footer>
       </main>
+
+      {/* Footer */}
+      <div 
+        className="transition-all duration-300"
+        style={{ 
+          marginLeft: sidebarWidth,
+        }}
+      >
+        <Footer />
+      </div>
 
       {/* Auth Modals */}
       <AuthModal

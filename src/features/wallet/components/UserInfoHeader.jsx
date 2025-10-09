@@ -5,13 +5,13 @@ const UserInfoHeader = ({ userInfo, kycVerified }) => {
   return (
     <Card 
       className="mb-4 shadow-md bg-gradient-to-br from-red-500 to-red-600 border-none"
-      bodyClassName={`${window.innerWidth < 768 ? 'p-4' : 'p-6'}`}
+      bodyClassName='p-6'
     >
-      <div className="flex flex-col md:flex-row md:items-center gap-4">
+      <div className="flex flex-row items-center gap-4">
         {/* User Info */}
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-4">
           <Avatar 
-            size={window.innerWidth < 768 ? 60 : 80}
+            size={80}
             icon={<Icon icon="mdi:account" />}
             className="bg-white/20 border-2 border-white/30"
           />

@@ -41,6 +41,11 @@ const Sidebar = ({
   const handleMenuClick = (key) => {
     const menuActions = {
       'deposit': () => navigate('/wallet?tab=deposit-withdraw'),
+      'lottery': () => {
+        navigate('/lottery');
+        onGameSelect('lottery');
+        localStorage.setItem('activeGame', 'lottery');
+      },
       'daily': () => console.log('Mỗi Ngày clicked'),
       'lucky-wheel': () => console.log('Vòng Quay May Mắn clicked'),
       'reward-results': () => console.log('Kết Quả Trao Thưởng clicked'),
@@ -53,10 +58,11 @@ const Sidebar = ({
       onGameSelect(key);
       localStorage.setItem('activeGame', key); // Lưu vào localStorage
     }
+
   };
 
   if (collapsed) {
-    // Collapsed mode
+    // Collapsed mode - chỉ hiển thị trên desktop
     return (
       <div className={`fixed left-0 top-[80px] h-[calc(100vh-80px)] w-[80px] bg-white shadow-lg overflow-y-auto z-10 ${className}`}>
         <div className="p-2 space-y-2">
@@ -67,7 +73,7 @@ const Sidebar = ({
               className="w-full p-2 hover:bg-gray-100 rounded-lg transition-colors group relative"
               title={item.label}
             >
-              <img src={item.image} alt={item.label} className="w-12 h-12 mx-auto object-contain" />
+              <img src={item.image} alt={item.label} className="w-8 h-8 mx-auto object-contain" />
               {/* Tooltip on hover */}
               <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 {item.label}
@@ -90,7 +96,7 @@ const Sidebar = ({
               `}
               title={category.label}
             >
-              <Icon icon={category.icon} className="w-8 h-8 mx-auto" />
+              <Icon icon={category.icon} className="w-7 h-7 mx-auto" />
               {/* Tooltip on hover */}
               <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 {category.label}
@@ -104,7 +110,12 @@ const Sidebar = ({
 
   // Expanded mode
   return (
-    <div className={`fixed left-0 top-[80px] h-[calc(100vh-80px)] w-[280px] bg-white shadow-lg overflow-y-auto z-10 ${className}`}>
+    <div className={`
+      fixed left-0 top-[80px] h-[calc(100vh-80px)] w-[280px] bg-white shadow-lg overflow-y-auto z-30
+      transition-transform duration-300 ease-in-out
+      ${className}
+    `}>
+      
       {/* Banner */}
       <div className="p-4">
         <img 
@@ -123,7 +134,7 @@ const Sidebar = ({
             onClick={() => handleMenuClick(item.key)}
             className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            <img src={item.image} alt={item.label} className="w-10 h-10 object-contain" />
+            <img src={item.image} alt={item.label} className="w-8 h-8 object-contain" />
             <span className="font-medium text-[17px]" style={{ fontFamily: 'Tahoma, "Microsoft Sans Serif", Arial, sans-serif', color: '#B2C0D1' }}>
               {item.label}
             </span>

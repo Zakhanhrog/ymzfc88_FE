@@ -631,7 +631,7 @@ const DepositWithdraw = () => {
       <div className="text-center pb-3">
         <div className="flex items-center justify-center gap-2 mb-1">
           <ArrowUpOutlined className="text-2xl text-green-600" />
-          <h3 className="text-xl md:text-2xl font-bold mb-0 text-gray-800">Nạp tiền vào ví</h3>
+          <h3 className="text-2xl font-bold mb-0 text-gray-800">Nạp tiền vào ví</h3>
         </div>
         <p className="text-sm text-gray-500">
           Chọn phương thức thanh toán và nhập số tiền để nạp vào ví
@@ -645,7 +645,7 @@ const DepositWithdraw = () => {
       <Card 
         className="shadow-sm"
         style={{ borderRadius: '12px' }}
-        styles={{ body: { padding: window.innerWidth < 768 ? '16px' : '24px' } }}
+        styles={{ body: { padding: '24px' } }}
       >
         {currentStep < 2 ? renderSteps() : renderTransactionInfo()}
       </Card>

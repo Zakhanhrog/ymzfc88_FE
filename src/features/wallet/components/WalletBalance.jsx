@@ -142,7 +142,7 @@ const WalletBalance = ({ onTabChange }) => {
           background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
           border: 'none'
         }}
-        styles={{ body: { padding: window.innerWidth < 768 ? '20px' : '28px' } }}
+        styles={{ body: { padding: '28px' } }}
       >
         <div className="flex items-center justify-between">
           <div>

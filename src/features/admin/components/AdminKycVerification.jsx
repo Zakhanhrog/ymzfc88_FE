@@ -114,7 +114,6 @@ const AdminKycVerification = () => {
     REJECTED: { color: 'red', text: 'Từ chối', icon: <CloseCircleOutlined /> }
   };
 
-  const isMobile = window.innerWidth <= 768;
 
   const columns = [
     {
@@ -169,15 +168,15 @@ const AdminKycVerification = () => {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right',
-      width: isMobile ? 120 : 200,
+      width: 200,
       render: (_, record) => (
-        <Space size="small" direction={isMobile ? 'vertical' : 'horizontal'}>
+        <Space size="small" direction="horizontal">
           <Button
             size="small"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetails(record)}
           >
-            {!isMobile && 'Xem'}
+            {'Xem'}
           </Button>
           {record.status === 'PENDING' && (
             <>
@@ -187,7 +186,7 @@ const AdminKycVerification = () => {
                 icon={<CheckCircleOutlined />}
                 onClick={() => handleProcessKyc(record, 'approve')}
               >
-                {!isMobile && 'Duyệt'}
+                {'Duyệt'}
               </Button>
               <Button
                 size="small"
@@ -195,7 +194,7 @@ const AdminKycVerification = () => {
                 icon={<CloseCircleOutlined />}
                 onClick={() => handleProcessKyc(record, 'reject')}
               >
-                {!isMobile && 'Từ chối'}
+                {'Từ chối'}
               </Button>
             </>
           )}
@@ -260,7 +259,7 @@ const AdminKycVerification = () => {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={isMobile ? '95%' : 800}
+        width={800}
       >
         {selectedKyc && (
           <div>

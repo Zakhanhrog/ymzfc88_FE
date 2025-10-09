@@ -71,9 +71,9 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
   };
 
   return (
-    <div className="flex h-[700px] md:h-[700px]" onClick={(e) => e.stopPropagation()}>
-      {/* Left Side - Image - Ẩn trên mobile */}
-      <div className="hidden md:block md:w-1/2 relative overflow-hidden">
+    <div className="flex h-[700px]" onClick={(e) => e.stopPropagation()}>
+      {/* Left Side - Image */}
+      <div className="w-1/2 relative overflow-hidden">
         <div 
           className="w-full h-full bg-cover bg-center bg-no-repeat"
           style={{
@@ -83,7 +83,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full md:w-1/2 p-4 md:p-8 bg-white flex items-start pt-8 md:pt-12 relative">
+      <div className="w-1/2 p-8 bg-white flex items-start pt-12 relative">
         <div className="w-full">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-800">ĐĂNG NHẬP</h2>
@@ -145,7 +145,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex justify-between px-4 md:px-8">
+        <div className="absolute bottom-8 left-0 right-0 flex justify-between px-8">
           <button
             type="button"
             onClick={(e) => {

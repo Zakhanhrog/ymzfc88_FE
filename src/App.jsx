@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import HomePage from './features/home/pages/HomePage';
 import UserWalletPage from './features/wallet/pages/UserWalletPage';
 import PointsPage from './features/points/pages/PointsPage';
+import LotteryPage from './features/lottery/pages/LotteryPage';
 
 // Admin Pages
 import AdminLoginPage from './features/admin/pages/AdminLoginPage';
@@ -15,10 +16,11 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/wallet" element={<UserWalletPage />} />
-          <Route path="/points" element={<PointsPage />} />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/wallet" element={<UserWalletPage />} />
+              <Route path="/points" element={<PointsPage />} />
+              <Route path="/lottery" element={<LotteryPage />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<Navigate to="/admin/login" replace />} />

@@ -111,7 +111,6 @@ const KycVerification = () => {
     return false; // Prevent auto upload
   };
 
-  const isMobile = window.innerWidth <= 768;
 
   if (fetchingStatus) {
     return (
@@ -277,7 +276,7 @@ const KycVerification = () => {
           <Input
             prefix={<UserOutlined />}
             placeholder="Nguyễn Văn A"
-            size={isMobile ? 'middle' : 'large'}
+            size='large'
             style={{ borderRadius: '8px' }}
           />
         </Form.Item>
@@ -293,7 +292,7 @@ const KycVerification = () => {
           <Input
             prefix={<IdcardOutlined />}
             placeholder="001234567890"
-            size={isMobile ? 'middle' : 'large'}
+            size='large'
             style={{ borderRadius: '8px' }}
           />
         </Form.Item>
@@ -350,15 +349,15 @@ const KycVerification = () => {
           <Button
             type="primary"
             htmlType="submit"
-            size={isMobile ? 'middle' : 'large'}
+            size='large'
             loading={loading}
             block
             style={{
               borderRadius: '8px',
               background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
               border: 'none',
-              height: isMobile ? '40px' : '48px',
-              fontSize: isMobile ? '14px' : '16px',
+              height: '48px',
+              fontSize: '16px',
               fontWeight: '600'
             }}
           >

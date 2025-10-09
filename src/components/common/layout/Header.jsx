@@ -5,7 +5,6 @@ import NotificationDropdown from '../../../features/notification/components/Noti
 
 const Header = ({ 
   isLoggedIn, 
-  isMobile, 
   sidebarCollapsed,
   onSidebarToggle, 
   onLoginOpen, 
@@ -22,20 +21,18 @@ const Header = ({
       <div className="w-full h-full flex items-center justify-between">
         {/* Left: Logo & Menu Toggle */}
         <div className="flex items-center gap-4">
-          {!isMobile && (
-            <button
-              onClick={onSidebarToggle}
-              className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Icon icon="mdi:menu" className="w-6 h-6" />
-            </button>
-          )}
+          <button
+            onClick={onSidebarToggle}
+            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Icon icon="mdi:menu" className="w-6 h-6" />
+          </button>
           
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img 
               src="/logo.webp" 
               alt="Logo" 
-              className="h-9 w-auto object-contain"
+              className="h-9 w-auto object-contain transition-transform duration-300 hover:scale-110"
               style={{ maxHeight: '36px' }}
             />
           </div>
@@ -107,7 +104,7 @@ const Header = ({
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                size={isMobile ? 'sm' : 'md'}
+                size="md"
                 onClick={onLoginOpen}
                 className="shadow-md hover:shadow-lg"
               >
@@ -115,7 +112,7 @@ const Header = ({
               </Button>
               <Button
                 variant="primary"
-                size={isMobile ? 'sm' : 'md'}
+                size="md"
                 onClick={onRegisterOpen}
                 className="shadow-md hover:shadow-lg"
               >
