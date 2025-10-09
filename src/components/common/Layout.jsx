@@ -1,25 +1,13 @@
-import { Layout as AntLayout, Button, Dropdown, Avatar } from 'antd';
-import { 
-  UserOutlined, 
-  LogoutOutlined, 
-  MenuOutlined,
-  ReloadOutlined,
-  HomeOutlined,
-  SettingOutlined,
-  GiftOutlined,
-  PhoneOutlined,
-  StarOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined
-} from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Layout as AntLayout } from 'antd';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AppHeader from './layout/AppHeader';
+import MobileBottomNav from './layout/MobileBottomNav';
 import AuthModal from './AuthModal';
 import Sidebar from './Sidebar';
-import NotificationDropdown from '../../features/notification/components/NotificationDropdown';
-import { getLogoStyle, getAvatarStyle, getButtonStyle, THEME_COLORS } from '../../utils/theme';
+import { LAYOUT } from '../../utils/theme';
 
-const { Header, Content, Footer } = AntLayout;
+const { Content, Footer } = AntLayout;
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -131,30 +119,6 @@ const Layout = ({ children }) => {
     }
   };
 
-  const userMenuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'Thông tin cá nhân',
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Đăng xuất',
-    },
-  ];
-
-  const handleUserMenuClick = ({ key }) => {
-    if (key === 'profile') {
-      navigate('/wallet');
-    } else if (key === 'logout') {
-      handleLogout();
-    }
-  };
-
   const handleLoginOpen = () => setIsLoginModalOpen(true);
   const handleRegisterOpen = () => setIsRegisterModalOpen(true);
   const handleLoginClose = () => setIsLoginModalOpen(false);
@@ -177,304 +141,24 @@ const Layout = ({ children }) => {
 
   const handleSidebarToggle = () => setSidebarCollapsed(!sidebarCollapsed);
 
-  // Mobile Bottom Navigation Component
-  const MobileBottomNav = () => (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 md:hidden">
-      <div className="flex justify-around items-center py-2">
-        <button 
-          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => navigate('/')}
-        >
-          <HomeOutlined className="text-xl mb-1" />
-          <span className="text-xs">Trang chủ</span>
-        </button>
-        
-        <button 
-          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => navigate('/')}
-        >
-          <StarOutlined className="text-xl mb-1" />
-          <span className="text-xs">AE888</span>
-        </button>
-        
-        <button 
-          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => console.log('Khuyến mãi clicked')}
-        >
-          <GiftOutlined className="text-xl mb-1" />
-          <span className="text-xs">Khuyến mãi</span>
-        </button>
-        
-        <button 
-          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => console.log('Liên hệ clicked')}
-        >
-          <PhoneOutlined className="text-xl mb-1" />
-          <span className="text-xs">Liên hệ</span>
-        </button>
-        
-        <button 
-          className="flex flex-col items-center py-2 px-3 text-gray-600 hover:text-red-600 transition-colors"
-          onClick={() => navigate('/wallet')}
-        >
-          <UserOutlined className="text-xl mb-1" />
-          <span className="text-xs">Cá nhân</span>
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <AntLayout className="min-h-screen bg-gray-50">
       {/* Header - Navbar trên cùng */}
-      <Header className="bg-white px-6 fixed w-full z-10 border-b border-gray-200" style={{ height: '64px', lineHeight: '64px' }}>
-        <div className="w-full flex items-center justify-between h-full">
-          {/* Logo - luôn hiển thị */}
-          <div className="flex items-center pl-2">
-            {/* Menu button chỉ hiển thị trên desktop */}
-            {!isMobile && (
-              <Button
-                type="text"
-                icon={<MenuOutlined />}
-                onClick={handleSidebarToggle}
-                className="text-gray-700 hover:bg-gray-100 mr-4"
-                style={{
-                  fontSize: '20px',
-                  width: '44px',
-                  height: '44px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '8px',
-                  color: '#B2C0D1'
-                }}
-              />
-            )}
-            <div 
-              className="flex items-center cursor-pointer"
-              onClick={() => navigate('/')}
-            >
-              <img 
-                src="/logo.webp" 
-                alt="Logo" 
-                className="h-9 w-auto object-contain"
-                style={{ maxHeight: '36px' }}
-              />
-            </div>
-          </div>
-          
-          {/* Buttons - responsive */}
-          <div className="flex items-center gap-4 pr-2">
-          {isLoggedIn ? (
-            <div className="flex items-center gap-3">
-              {/* Hiển thị đầy đủ trên desktop, thu gọn trên mobile */}
-              {!isMobile ? (
-                <>
-                  {/* Desktop view - full layout theo ảnh mẫu */}
-                  <div className="flex items-center gap-3">
-                    {/* Username riêng biệt - có thể click */}
-                    <span 
-                      className="text-gray-600 text-base font-semibold cursor-pointer hover:underline transition-all duration-200" 
-                      style={{ color: '#B2C0D1' }}
-                      onClick={() => navigate('/wallet')}
-                      title="Xem thông tin ví cá nhân"
-                    >
-                      {userName}
-                    </span>
-                    
-                    {/* Balance với icon reload trong ô riêng */}
-                    <div className="flex items-center gap-2 border border-gray-300 px-4 py-2 rounded-full bg-white">
-                      <span className="text-gray-500 text-sm font-normal">
-                        {new Intl.NumberFormat('vi-VN', {
-                          style: 'decimal',
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        }).format(userBalance / 1000)}
-                      </span>
-                      <Button 
-                        type="text"
-                        size="small"
-                        icon={<ReloadOutlined />}
-                        onClick={() => fetchUserBalance()}
-                        className="text-gray-400 hover:text-gray-600"
-                        style={{
-                          padding: '0',
-                          height: '20px',
-                          width: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Nạp tiền button */}
-                    <Button 
-                      onClick={() => navigate('/wallet?tab=deposit-withdraw')}
-                      className="flex items-center gap-2 border-0 shadow-none"
-                      style={{
-                        background: 'transparent',
-                        color: '#B2C0D1',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        padding: '8px 12px',
-                        height: 'auto'
-                      }}
-                    >
-                      <UserOutlined style={{ fontSize: '20px', color: '#B2C0D1' }} />
-                      <span>Nạp tiền</span>
-                    </Button>
-                    
-                    {/* Rút tiền button */}
-                    <Button 
-                      onClick={() => navigate('/wallet?tab=withdraw')}
-                      className="flex items-center gap-2 border-0 shadow-none"
-                      style={{
-                        background: 'transparent',
-                        color: '#B2C0D1',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        padding: '8px 12px',
-                        height: 'auto'
-                      }}
-                    >
-                      <GiftOutlined style={{ fontSize: '20px', color: '#B2C0D1' }} />
-                      <span>Rút tiền</span>
-                    </Button>
-                    
-                    {/* Notification Icon */}
-                    <NotificationDropdown />
-                    
-                    {/* Đăng xuất button */}
-                    <Button 
-                      onClick={handleLogout}
-                      className="shadow-none hover:bg-gray-50"
-                      style={{
-                        background: 'white',
-                        color: '#9ca3af',
-                        fontSize: '14px',
-                        fontWeight: '400',
-                        padding: '6px 18px',
-                        height: '36px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '20px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      Đăng xuất
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Mobile view - compact layout với avatar dropdown */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-gray-700 text-base font-semibold">
-                      {new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                      }).format(userBalance).replace('₫', 'đ')}
-                    </span>
-                    
-                    {/* Notification Icon for mobile */}
-                    <NotificationDropdown />
-                  </div>
-                  
-                  {/* Avatar với dropdown cho mobile */}
-                  <Dropdown
-                    menu={{
-                      items: [
-                        {
-                          key: 'wallet',
-                          icon: <UserOutlined />,
-                          label: 'Ví của tôi',
-                          onClick: () => navigate('/wallet')
-                        },
-                        {
-                          key: 'deposit',
-                          icon: <ReloadOutlined />,
-                          label: 'Nạp tiền',
-                          onClick: () => navigate('/wallet?tab=deposit-withdraw')
-                        },
-                        {
-                          type: 'divider'
-                        },
-                        {
-                          key: 'logout',
-                          icon: <LogoutOutlined />,
-                          label: 'Đăng xuất',
-                          onClick: handleLogout
-                        }
-                      ]
-                    }}
-                    trigger={['click']}
-                    placement="bottomRight"
-                  >
-                    <Avatar 
-                      size={36}
-                      icon={<UserOutlined />}
-                      className="cursor-pointer bg-gray-500 hover:bg-gray-600 transition-colors"
-                      style={{
-                        backgroundColor: '#6b7280',
-                        color: 'white'
-                      }}
-                    />
-                  </Dropdown>
-                </>
-              )}
-            </div>
-          ) : (
-            <div className={`flex gap-3 ${isMobile ? 'mobile-auth-buttons' : ''}`}>
-              <Button 
-                type="ghost" 
-                onClick={handleLoginOpen}
-                className={`font-semibold ${isMobile ? 'px-4 py-1 h-9 text-sm' : 'px-5 py-1 h-10 text-sm'} shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105`}
-                style={{
-                  borderRadius: '20px',
-                  borderWidth: '2px',
-                  borderColor: '#4a5568',
-                  color: '#4a5568',
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#4a5568';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = '#4a5568';
-                }}
-              >
-                Đăng nhập
-              </Button>
-              <Button 
-                type="primary"
-                onClick={handleRegisterOpen}
-                className={`text-white font-bold ${isMobile ? 'px-5 py-1 h-9 text-sm' : 'px-6 py-1 h-10 text-sm'} shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105`}
-                style={{
-                  borderRadius: '20px',
-                  borderWidth: '2px',
-                  ...getButtonStyle('primary')
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = getButtonStyle('primary').hover.backgroundColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = getButtonStyle('primary').backgroundColor;
-                }}
-              >
-                Đăng ký
-              </Button>
-            </div>
-          )}
-          </div>
-        </div>
-      </Header>
+      <AppHeader 
+        isLoggedIn={isLoggedIn}
+        isMobile={isMobile}
+        sidebarCollapsed={sidebarCollapsed}
+        onSidebarToggle={handleSidebarToggle}
+        onLoginOpen={handleLoginOpen}
+        onRegisterOpen={handleRegisterOpen}
+        userName={userName}
+        userBalance={userBalance}
+        onRefreshBalance={fetchUserBalance}
+        onLogout={handleLogout}
+      />
 
       {/* Layout với Sidebar và Content */}
-      <AntLayout style={{ marginTop: '64px', background: '#f9fafb' }}>
+      <AntLayout style={{ marginTop: LAYOUT.headerHeight, background: '#f9fafb' }}>
         {/* Sidebar bên trái - chỉ hiển thị trên desktop */}
         {!isMobile && (
           <Sidebar
@@ -491,10 +175,10 @@ const Layout = ({ children }) => {
 
         {/* Content chính */}
         <AntLayout style={{ 
-          marginLeft: !isMobile ? (sidebarCollapsed ? '84px' : '300px') : '0px', 
+          marginLeft: !isMobile ? (sidebarCollapsed ? LAYOUT.sidebarCollapsedWidth : LAYOUT.sidebarWidth) : '0px', 
           marginRight: !isMobile ? '20px' : '0px',
-          marginBottom: isMobile ? '80px' : '0', // Thêm margin bottom cho mobile bottom nav
-          minHeight: 'calc(100vh - 64px)',
+          marginBottom: isMobile ? LAYOUT.mobileBottomNavHeight : '0',
+          minHeight: `calc(100vh - ${LAYOUT.headerHeight})`,
           overflowY: 'auto',
           overflowX: 'hidden',
           scrollbarWidth: 'none',
@@ -540,9 +224,9 @@ const Layout = ({ children }) => {
             
             .sidebar-scrollable {
               position: fixed !important;
-              top: 64px !important;
+              top: ${LAYOUT.headerHeight} !important;
               left: 0 !important;
-              bottom: 80px !important;
+              bottom: ${LAYOUT.mobileBottomNavHeight} !important;
               width: 320px !important;
               z-index: 60 !important;
             }

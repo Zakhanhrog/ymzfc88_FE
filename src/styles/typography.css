@@ -1,0 +1,371 @@
+/* ============================================ */
+/* GLOBAL TYPOGRAPHY STYLES                     */
+/* Áp dụng typography system toàn bộ app        */
+/* ============================================ */
+
+/* Import font families nếu cần */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Base typography */
+:root {
+  /* Font Families */
+  --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-secondary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+  --font-sidebar: Tahoma, "Microsoft Sans Serif", Arial, sans-serif;
+  
+  /* Font Sizes - TĂNG CỠ CHỮ ĐỂ DỄ ĐỌC */
+  --text-xs: 12px;
+  --text-xs2: 13px;
+  --text-sm: 14px;
+  --text-sm2: 15px;
+  --text-base: 16px;
+  --text-base2: 17px;
+  --text-md: 18px;
+  --text-md2: 20px;
+  --text-lg: 22px;
+  --text-lg2: 24px;
+  --text-xl: 28px;
+  --text-xl2: 32px;
+  --text-2xl: 36px;
+  --text-2xl2: 40px;
+  --text-3xl: 44px;
+  --text-3xl2: 52px;
+  
+  /* Font Weights */
+  --weight-thin: 100;
+  --weight-light: 300;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+  --weight-black: 900;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+}
+
+/* Body default */
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1, .h1 {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: #1f2937;
+  margin: 0;
+}
+
+h2, .h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: #1f2937;
+  margin: 0;
+}
+
+h3, .h3 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  color: #1f2937;
+  margin: 0;
+}
+
+h4, .h4 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  color: #1f2937;
+  margin: 0;
+}
+
+h5, .h5 {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+  color: #1f2937;
+  margin: 0;
+}
+
+h6, .h6 {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+  color: #1f2937;
+  margin: 0;
+}
+
+/* Paragraphs */
+p {
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-relaxed);
+  color: #1f2937;
+  margin: 0 0 1em 0;
+}
+
+/* Utility classes */
+.text-xs { font-size: var(--text-xs) !important; }
+.text-sm { font-size: var(--text-sm) !important; }
+.text-base { font-size: var(--text-base) !important; }
+.text-md { font-size: var(--text-md) !important; }
+.text-lg { font-size: var(--text-lg) !important; }
+.text-xl { font-size: var(--text-xl) !important; }
+.text-2xl { font-size: var(--text-2xl) !important; }
+.text-3xl { font-size: var(--text-3xl) !important; }
+
+.font-light { font-weight: var(--weight-light) !important; }
+.font-normal { font-weight: var(--weight-normal) !important; }
+.font-medium { font-weight: var(--weight-medium) !important; }
+.font-semibold { font-weight: var(--weight-semibold) !important; }
+.font-bold { font-weight: var(--weight-bold) !important; }
+
+.leading-tight { line-height: var(--leading-tight) !important; }
+.leading-normal { line-height: var(--leading-normal) !important; }
+.leading-relaxed { line-height: var(--leading-relaxed) !important; }
+
+/* Text colors */
+.text-primary { color: #1f2937 !important; }
+.text-secondary { color: #6B7280 !important; }
+.text-tertiary { color: #9ca3af !important; }
+.text-brand { color: #D30102 !important; }
+.text-white { color: #ffffff !important; }
+
+/* ============================================ */
+/* ANT DESIGN OVERRIDES - Đảm bảo thống nhất   */
+/* ============================================ */
+
+/* Buttons */
+.ant-btn {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-semibold) !important;
+}
+
+.ant-btn-sm {
+  font-size: var(--text-sm) !important;
+}
+
+.ant-btn-lg {
+  font-size: var(--text-md) !important;
+}
+
+/* Menu Items */
+.ant-menu-item {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+.ant-menu-submenu-title {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+/* Inputs */
+.ant-input,
+.ant-input-number-input,
+.ant-select-selection-item {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+.ant-input::placeholder,
+.ant-input-number-input::placeholder {
+  font-size: var(--text-sm) !important;
+}
+
+/* Form Labels */
+.ant-form-item-label > label {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-medium) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Card Titles */
+.ant-card-head-title {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-lg) !important;
+  font-weight: var(--weight-semibold) !important;
+}
+
+/* Table */
+.ant-table {
+  font-family: var(--font-primary) !important;
+}
+
+.ant-table-thead > tr > th {
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-semibold) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-table-tbody > tr > td {
+  font-size: var(--text-base) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Modal */
+.ant-modal-title {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-xl) !important;
+  font-weight: var(--weight-bold) !important;
+}
+
+.ant-modal-body {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+/* Tabs */
+.ant-tabs-tab {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-medium) !important;
+}
+
+.ant-tabs-tab-active {
+  font-weight: var(--weight-semibold) !important;
+}
+
+/* Tags */
+.ant-tag {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-sm) !important;
+}
+
+/* Descriptions */
+.ant-descriptions-item-label {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--weight-medium) !important;
+}
+
+.ant-descriptions-item-content {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+/* Statistics */
+.ant-statistic-title {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--weight-medium) !important;
+}
+
+.ant-statistic-content {
+  font-family: var(--font-primary) !important;
+}
+
+/* Dropdown Menu */
+.ant-dropdown-menu-item {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+/* Notification & Message */
+.ant-message {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+.ant-notification-notice-message {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-md) !important;
+  font-weight: var(--weight-semibold) !important;
+}
+
+.ant-notification-notice-description {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+}
+
+/* Steps */
+.ant-steps-item-title {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-medium) !important;
+}
+
+.ant-steps-item-description {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-sm) !important;
+}
+
+/* Pagination */
+.ant-pagination-item,
+.ant-pagination-total-text,
+.ant-select-item {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-sm) !important;
+}
+
+/* Sidebar specific - Font Tahoma */
+.sidebar-menu-item span {
+  font-family: var(--font-sidebar) !important;
+  font-size: var(--text-base2) !important;
+  font-weight: var(--weight-medium) !important;
+  color: #B2C0D1 !important;
+}
+
+.sidebar-menu-item.ant-menu-item-selected span {
+  font-weight: var(--weight-bold) !important;
+}
+
+/* Game categories - Màu đỏ khi active (từ HOT GAMES trở xuống) */
+.sidebar-menu-item.game-category-item.ant-menu-item-selected span {
+  color: #D30102 !important;
+  font-weight: var(--weight-bold) !important;
+}
+
+.sidebar-menu-item.game-category-item.ant-menu-item-selected {
+  background: rgba(211, 1, 2, 0.08) !important;
+  border-left: 3px solid #D30102 !important;
+}
+
+/* Admin menu specific */
+.admin-sidebar .ant-menu-item,
+.admin-sidebar .ant-menu-submenu-title {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-normal) !important;
+}
+
+.admin-sidebar .ant-menu-item-selected {
+  font-weight: var(--weight-semibold) !important;
+}
+
+/* Empty state */
+.ant-empty-description {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Alert */
+.ant-alert-message {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-base) !important;
+  font-weight: var(--weight-medium) !important;
+}
+
+.ant-alert-description {
+  font-family: var(--font-primary) !important;
+  font-size: var(--text-sm) !important;
+}
+

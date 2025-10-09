@@ -26,6 +26,7 @@ import {
   BankOutlined
 } from '@ant-design/icons';
 import { formatCurrency, formatDate } from '../../../utils/helpers';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import adminService from '../services/adminService';
 
 const { Option } = Select;

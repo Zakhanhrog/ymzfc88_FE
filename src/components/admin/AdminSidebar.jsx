@@ -1,31 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout, Menu } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  DashboardOutlined,
-  TeamOutlined,
-  UserOutlined,
-  DollarOutlined,
-  ShoppingOutlined,
-  BankOutlined,
-  SettingOutlined,
-  BarChartOutlined,
-  FileTextOutlined,
-  SafetyOutlined,
-  LogoutOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  CreditCardOutlined,
-  TrophyOutlined,
-  MessageOutlined,
-  BellOutlined,
-  ToolOutlined,
-  SafetyCertificateOutlined,
-  StarOutlined
-} from '@ant-design/icons';
+import * as AntIcons from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
+import { adminMenuItems } from './sidebar/adminMenuData';
+import { LAYOUT } from '../../utils/theme';
 
 const { Sider } = Layout;
+const { DashboardOutlined, LogoutOutlined } = AntIcons;
+
+// Helper function to convert icon name string to component
+const getIconComponent = (iconName) => {
+  const IconComponent = AntIcons[iconName];
+  return IconComponent ? <IconComponent /> : null;
+};
+
+// Convert menu data to include rendered icons
+const convertMenuItems = (items) => {
+  return items.map(item => ({
+    ...item,
+    icon: getIconComponent(item.icon),
+    children: item.children ? convertMenuItems(item.children) : undefined
+  }));
+};
 
 const AdminSidebar = ({ collapsed, onCollapse }) => {
   const navigate = useNavigate();
@@ -41,151 +38,6 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
   useEffect(() => {
     setOpenKeys(getOpenKeys());
   }, [location]);
-
-  const menuItems = [
-    {
-      key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
-      children: [
-        {
-          key: 'overview',
-          icon: <BarChartOutlined />,
-          label: 'Tổng quan',
-        },
-        {
-          key: 'analytics',
-          icon: <FileTextOutlined />,
-          label: 'Thống kê',
-        }
-      ]
-    },
-    {
-      key: 'user-management',
-      icon: <TeamOutlined />,
-      label: 'Quản lý người dùng',
-      children: [
-        {
-          key: 'users',
-          icon: <UserOutlined />,
-          label: 'Danh sách người dùng',
-        },
-        {
-          key: 'kyc-verification',
-          icon: <SafetyCertificateOutlined />,
-          label: 'Xác thực tài khoản',
-        },
-        {
-          key: 'user-roles',
-          icon: <SafetyOutlined />,
-          label: 'Phân quyền',
-        },
-        {
-          key: 'user-activities',
-          icon: <BarChartOutlined />,
-          label: 'Hoạt động người dùng',
-        }
-      ]
-    },
-    {
-      key: 'financial-management',
-      icon: <DollarOutlined />,
-      label: 'Quản lý tài chính',
-      children: [
-        {
-          key: 'deposits',
-          icon: <ArrowUpOutlined />,
-          label: 'Duyệt nạp tiền',
-        },
-        {
-          key: 'withdraws',
-          icon: <ArrowDownOutlined />,
-          label: 'Duyệt rút tiền',
-        },
-        {
-          key: 'transactions',
-          icon: <ShoppingOutlined />,
-          label: 'Lịch sử giao dịch',
-        },
-        {
-          key: 'payment-methods',
-          icon: <CreditCardOutlined />,
-          label: 'Phương thức thanh toán',
-        },
-        {
-          key: 'points-management',
-          icon: <StarOutlined />,
-          label: 'Quản lý điểm ',
-        }
-      ]
-    },
-    {
-      key: 'game-management',
-      icon: <TrophyOutlined />,
-      label: 'Quản lý game',
-      children: [
-        {
-          key: 'games',
-          icon: <TrophyOutlined />,
-          label: 'Danh sách game',
-        },
-        {
-          key: 'game-results',
-          icon: <BarChartOutlined />,
-          label: 'Kết quả game',
-        },
-        {
-          key: 'game-settings',
-          icon: <SettingOutlined />,
-          label: 'Cài đặt game',
-        }
-      ]
-    },
-    {
-      key: 'content-management',
-      icon: <FileTextOutlined />,
-      label: 'Quản lý nội dung',
-      children: [
-        {
-          key: 'banners',
-          icon: <FileTextOutlined />,
-          label: 'Banner',
-        },
-        {
-          key: 'news',
-          icon: <MessageOutlined />,
-          label: 'Tin tức',
-        },
-        {
-          key: 'notifications',
-          icon: <BellOutlined />,
-          label: 'Thông báo',
-        }
-      ]
-    },
-    {
-      key: 'system-management',
-      icon: <SettingOutlined />,
-      label: 'Quản lý hệ thống',
-      children: [
-        {
-          key: 'settings',
-          icon: <SettingOutlined />,
-          label: 'Cài đặt hệ thống',
-        },
-        {
-          key: 'maintenance',
-          icon: <ToolOutlined />,
-          label: 'Bảo trì',
-        },
-        {
-          key: 'logs',
-          icon: <FileTextOutlined />,
-          label: 'Nhật ký hệ thống',
-        }
-      ]
-    }
-  ];
 
   const getSelectedKeys = () => {
     const path = location.pathname;
@@ -239,72 +91,32 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
   };
 
   const handleMenuClick = ({ key }) => {
-    switch (key) {
-      case 'overview':
-        navigate('/admin/dashboard');
-        break;
-      case 'analytics':
-        navigate('/admin/dashboard?tab=analytics');
-        break;
-      case 'users':
-        navigate('/admin/dashboard?tab=users');
-        break;
-      case 'kyc-verification':
-        navigate('/admin/dashboard?tab=kyc-verification');
-        break;
-      case 'user-roles':
-        navigate('/admin/dashboard?tab=user-roles');
-        break;
-      case 'user-activities':
-        navigate('/admin/dashboard?tab=user-activities');
-        break;
-      case 'deposits':
-        navigate('/admin/dashboard?tab=deposits');
-        break;
-      case 'withdraws':
-        navigate('/admin/dashboard?tab=withdraws');
-        break;
-      case 'transactions':
-        navigate('/admin/dashboard?tab=transactions');
-        break;
-      case 'payment-methods':
-        navigate('/admin/dashboard?tab=payment-methods');
-        break;
-      case 'points-management':
-        navigate('/admin/points');
-        break;
-      case 'games':
-        navigate('/admin/dashboard?tab=games');
-        break;
-      case 'game-results':
-        navigate('/admin/dashboard?tab=game-results');
-        break;
-      case 'game-settings':
-        navigate('/admin/dashboard?tab=game-settings');
-        break;
-      case 'banners':
-        navigate('/admin/dashboard?tab=banners');
-        break;
-      case 'news':
-        navigate('/admin/dashboard?tab=news');
-        break;
-      case 'notifications':
-        navigate('/admin/dashboard?tab=notifications');
-        break;
-      case 'settings':
-        navigate('/admin/dashboard?tab=settings');
-        break;
-      case 'maintenance':
-        navigate('/admin/dashboard?tab=maintenance');
-        break;
-      case 'logs':
-        navigate('/admin/dashboard?tab=logs');
-        break;
-      case 'logout':
-        handleLogout();
-        break;
-      default:
-        break;
+    const menuActions = {
+      'overview': () => navigate('/admin/dashboard'),
+      'analytics': () => navigate('/admin/dashboard?tab=analytics'),
+      'users': () => navigate('/admin/dashboard?tab=users'),
+      'kyc-verification': () => navigate('/admin/dashboard?tab=kyc-verification'),
+      'user-roles': () => navigate('/admin/dashboard?tab=user-roles'),
+      'user-activities': () => navigate('/admin/dashboard?tab=user-activities'),
+      'deposits': () => navigate('/admin/dashboard?tab=deposits'),
+      'withdraws': () => navigate('/admin/dashboard?tab=withdraws'),
+      'transactions': () => navigate('/admin/dashboard?tab=transactions'),
+      'payment-methods': () => navigate('/admin/dashboard?tab=payment-methods'),
+      'points-management': () => navigate('/admin/points'),
+      'games': () => navigate('/admin/dashboard?tab=games'),
+      'game-results': () => navigate('/admin/dashboard?tab=game-results'),
+      'game-settings': () => navigate('/admin/dashboard?tab=game-settings'),
+      'banners': () => navigate('/admin/dashboard?tab=banners'),
+      'news': () => navigate('/admin/dashboard?tab=news'),
+      'notifications': () => navigate('/admin/dashboard?tab=notifications'),
+      'settings': () => navigate('/admin/dashboard?tab=settings'),
+      'maintenance': () => navigate('/admin/dashboard?tab=maintenance'),
+      'logs': () => navigate('/admin/dashboard?tab=logs'),
+      'logout': handleLogout
+    };
+
+    if (menuActions[key]) {
+      menuActions[key]();
     }
   };
 
@@ -318,8 +130,8 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       collapsed={collapsed}
       onCollapse={onCollapse}
       trigger={null}
-      width={280}
-      collapsedWidth={80}
+      width={parseInt(LAYOUT.adminSidebarWidth)}
+      collapsedWidth={parseInt(LAYOUT.adminSidebarCollapsedWidth)}
       className="admin-sidebar"
       style={{
         height: '100vh',
@@ -332,7 +144,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     >
       {/* Admin Logo */}
       <div className="admin-logo" style={{
-        height: '64px',
+        height: LAYOUT.headerHeight,
         display: 'flex',
         alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'flex-start',
@@ -357,9 +169,9 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
         openKeys={openKeys}
         onOpenChange={handleOpenChange}
         onClick={handleMenuClick}
-        items={menuItems}
+        items={convertMenuItems(adminMenuItems)}
         style={{
-          height: 'calc(100vh - 128px)',
+          height: `calc(100vh - ${LAYOUT.headerHeight} - 64px)`,
           borderRight: 0,
           overflow: 'auto'
         }}

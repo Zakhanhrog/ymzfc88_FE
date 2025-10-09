@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import { THEME_COLORS } from '../../../utils/theme';
 import { formatCurrency } from '../../../utils/helpers';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import walletService from '../services/walletService';
 
 const { Step } = Steps;

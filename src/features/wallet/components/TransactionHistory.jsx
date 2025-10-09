@@ -25,6 +25,7 @@ import {
   ReloadOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import walletService from '../services/walletService';
 
 const { RangePicker } = DatePicker;
@@ -208,34 +209,35 @@ const TransactionHistory = () => {
 
   const columns = [
     {
-      title: 'Mã giao dịch',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Mã giao dịch</span>,
       dataIndex: 'transactionCode',
       key: 'transactionCode',
       render: (text) => (
-        <span style={{ fontFamily: 'monospace', color: '#1890ff' }}>
+        <span style={{ fontFamily: 'monospace', color: '#1890ff', fontSize: FONT_SIZE.sm }}>
           {text}
         </span>
       ),
     },
     {
-      title: 'Loại',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Loại</span>,
       dataIndex: 'type',
       key: 'type',
       render: (type) => (
         <Space>
           {getTypeIcon(type)}
-          <span>{getTypeName(type)}</span>
+          <span style={{ fontSize: FONT_SIZE.base }}>{getTypeName(type)}</span>
         </Space>
       ),
     },
     {
-      title: 'Số tiền',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Số tiền</span>,
       dataIndex: 'amount',
       key: 'amount',
       render: (amount, record) => (
         <span style={{ 
           color: record.type === 'DEPOSIT' || record.type === 'BONUS' ? '#52c41a' : '#ff4d4f',
-          fontWeight: 'bold'
+          fontSize: FONT_SIZE.md,
+          fontWeight: FONT_WEIGHT.bold
         }}>
           {record.type === 'DEPOSIT' || record.type === 'BONUS' ? '+' : '-'}
           {amount?.toLocaleString()} VNĐ
@@ -243,35 +245,36 @@ const TransactionHistory = () => {
       ),
     },
     {
-      title: 'Phương thức',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Phương thức</span>,
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (paymentMethod) => paymentMethod?.name || 'N/A',
+      render: (paymentMethod) => <span style={{ ...BODY_STYLES.base }}>{paymentMethod?.name || 'N/A'}</span>,
     },
     {
-      title: 'Trạng thái',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Trạng thái</span>,
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color={getStatusColor(status)}>
+        <Tag color={getStatusColor(status)} style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>
           {getStatusText(status)}
         </Tag>
       ),
     },
     {
-      title: 'Thời gian',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Thời gian</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm'),
+      render: (date) => <span style={{ fontSize: FONT_SIZE.sm }}>{dayjs(date).format('DD/MM/YYYY HH:mm')}</span>,
     },
     {
-      title: 'Hành động',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Hành động</span>,
       key: 'action',
       render: (_, record) => (
         <Button
           type="link"
           icon={<EyeOutlined />}
           onClick={() => showTransactionDetail(record)}
+          style={{ fontSize: FONT_SIZE.base }}
         >
           Chi tiết
         </Button>
@@ -285,9 +288,9 @@ const TransactionHistory = () => {
       <div className="text-center pb-3">
         <div className="flex items-center justify-center gap-2 mb-1">
           <EyeOutlined className="text-2xl text-blue-600" />
-          <h3 className="text-xl md:text-2xl font-bold mb-0 text-gray-800">Lịch sử giao dịch</h3>
+          <h3 style={{ ...HEADING_STYLES.h3, marginBottom: 0 }}>Lịch sử giao dịch</h3>
         </div>
-        <p className="text-sm text-gray-500">
+        <p style={{ ...BODY_STYLES.small }}>
           Xem lại tất cả các giao dịch nạp tiền, rút tiền của bạn
         </p>
       </div>
@@ -295,33 +298,33 @@ const TransactionHistory = () => {
       {/* Statistics Cards - Responsive */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-          <div className="text-lg md:text-xl font-bold text-green-600 flex items-center gap-1">
-            <ArrowUpOutlined className="text-sm" />
+          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng nạp</div>
+          <div className="text-green-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
+            <ArrowUpOutlined style={{ fontSize: FONT_SIZE.sm }} />
             {stats.totalDeposit.toLocaleString()}
           </div>
         </Card>
         
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-          <div className="text-lg md:text-xl font-bold text-red-600 flex items-center gap-1">
-            <ArrowDownOutlined className="text-sm" />
+          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng rút</div>
+          <div className="text-red-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
+            <ArrowDownOutlined style={{ fontSize: FONT_SIZE.sm }} />
             {stats.totalWithdraw.toLocaleString()}
           </div>
         </Card>
         
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Tổng thưởng</div>
-          <div className="text-lg md:text-xl font-bold text-blue-600 flex items-center gap-1">
-            <ArrowUpOutlined className="text-sm" />
+          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng thưởng</div>
+          <div className="text-blue-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
+            <ArrowUpOutlined style={{ fontSize: FONT_SIZE.sm }} />
             {stats.totalBonus.toLocaleString()}
           </div>
         </Card>
         
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
-          <div className="text-lg md:text-xl font-bold text-orange-500 flex items-center gap-1">
-            <span className="text-sm">⏳</span>
+          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Đang chờ</div>
+          <div className="text-orange-500 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
+            <span style={{ fontSize: FONT_SIZE.sm }}>⏳</span>
             {stats.pendingCount} giao dịch
           </div>
         </Card>
@@ -335,6 +338,7 @@ const TransactionHistory = () => {
             onChange={(value) => handleFilterChange('type', value)}
             placeholder="Tất cả"
             size="middle"
+            style={{ fontSize: FONT_SIZE.base }}
           >
             <Option value="all">Tất cả</Option>
             <Option value="deposit">Nạp tiền</Option>
@@ -347,253 +351,128 @@ const TransactionHistory = () => {
             onChange={(value) => handleFilterChange('status', value)}
             placeholder="Tất cả"
             size="middle"
+            style={{ fontSize: FONT_SIZE.base }}
           >
             <Option value="all">Tất cả</Option>
-            <Option value="completed">Hoàn thành</Option>
             <Option value="pending">Đang chờ</Option>
+            <Option value="completed">Hoàn thành</Option>
             <Option value="failed">Thất bại</Option>
+            <Option value="cancelled">Đã hủy</Option>
           </Select>
           
-          <div className="col-span-2 md:col-span-2 flex gap-2">
-            <RangePicker
-              value={filters.dateRange}
-              onChange={(dates) => handleFilterChange('dateRange', dates)}
-              className="flex-1"
-              placeholder={['Từ ngày', 'Đến ngày']}
-              size="middle"
-            />
-          </div>
-        </div>
-        
-        <div className="flex gap-2">
+          <RangePicker
+            value={filters.dateRange}
+            onChange={(dates) => handleFilterChange('dateRange', dates)}
+            placeholder={['Từ ngày', 'Đến ngày']}
+            size="middle"
+            format="DD/MM/YYYY"
+            style={{ fontSize: FONT_SIZE.base }}
+          />
+          
           <Input
             prefix={<SearchOutlined />}
             placeholder="Tìm kiếm mã giao dịch..."
             value={filters.searchText}
             onChange={(e) => handleFilterChange('searchText', e.target.value)}
-            allowClear
             size="middle"
-            className="flex-1"
+            style={{ fontSize: FONT_SIZE.base }}
           />
+        </div>
+        
+        <div className="flex justify-end gap-2">
           <Button 
             icon={<FilterOutlined />} 
             onClick={resetFilters}
-            size="middle"
+            style={{ fontSize: FONT_SIZE.base }}
           >
             Đặt lại
           </Button>
           <Button 
             icon={<ReloadOutlined />} 
             onClick={loadTransactionHistory}
-            loading={loading}
-            size="middle"
+            type="primary"
+            style={{ fontSize: FONT_SIZE.base }}
           >
             Tải lại
           </Button>
         </div>
       </Card>
 
-      {/* Transaction Table - Desktop */}
-      <div className="hidden md:block">
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <Table
-            columns={columns}
-            dataSource={paginatedTransactions}
-            rowKey="id"
-            loading={loading}
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} giao dịch`,
-              onChange: handleTableChange,
-              onShowSizeChange: handleTableChange
-            }}
-          />
-        </Card>
-      </div>
-
-      {/* Transaction List - Mobile */}
-      <div className="md:hidden space-y-3">
+      {/* Table */}
+      <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
         {loading ? (
           <div className="text-center py-8">
             <Spin size="large" />
+            <p className="mt-4" style={{ ...BODY_STYLES.base, color: TEXT_COLORS.secondary }}>Đang tải dữ liệu...</p>
           </div>
-        ) : paginatedTransactions.length > 0 ? (
-          paginatedTransactions.map(transaction => (
-            <Card 
-              key={transaction.id}
-              className="shadow-sm"
-              style={{ borderRadius: '12px' }}
-              styles={{ body: { padding: '12px' } }}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {getTypeIcon(transaction.type)}
-                    <span className="font-semibold text-sm">{getTypeName(transaction.type)}</span>
-                  </div>
-                  <Tag color={getStatusColor(transaction.status)} className="text-xs">
-                    {getStatusText(transaction.status)}
-                  </Tag>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Mã GD:</span>
-                  <span className="font-mono text-xs text-blue-600">{transaction.transactionCode}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Số tiền:</span>
-                  <span className={`font-bold text-base ${
-                    transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? '+' : '-'}
-                    {transaction.amount?.toLocaleString()} đ
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Thời gian:</span>
-                  <span className="text-xs">{dayjs(transaction.createdAt).format('DD/MM/YYYY HH:mm')}</span>
-                </div>
-                
-                <Button
-                  type="link"
-                  icon={<EyeOutlined />}
-                  onClick={() => showTransactionDetail(transaction)}
-                  size="small"
-                  className="w-full mt-2"
-                >
-                  Xem chi tiết
-                </Button>
-              </div>
-            </Card>
-          ))
         ) : (
-          <Card style={{ textAlign: 'center', padding: '40px 0' }}>
-            <p className="text-gray-500">Chưa có giao dịch nào</p>
-          </Card>
+          <Table
+            columns={columns}
+            dataSource={paginatedTransactions}
+            pagination={{
+              ...pagination,
+              total: filteredTransactions.length,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => (
+                <span style={{ fontSize: FONT_SIZE.sm }}>
+                  {`${range[0]}-${range[1]} của ${total} giao dịch`}
+                </span>
+              ),
+            }}
+            rowKey="id"
+            onChange={handleTableChange}
+            scroll={{ x: 1000 }}
+          />
         )}
-        
-        {/* Mobile Pagination */}
-        {paginatedTransactions.length > 0 && (
-          <div className="flex justify-center gap-2 mt-4">
-            <Button
-              disabled={pagination.current === 1}
-              onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
-            >
-              Trước
-            </Button>
-            <span className="flex items-center px-3 text-sm">
-              {pagination.current} / {Math.ceil(filteredTransactions.length / pagination.pageSize)}
-            </span>
-            <Button
-              disabled={pagination.current >= Math.ceil(filteredTransactions.length / pagination.pageSize)}
-              onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
-            >
-              Sau
-            </Button>
-          </div>
-        )}
-      </div>
+      </Card>
 
-      {/* Transaction Detail Modal */}
+      {/* Detail Modal */}
       <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <EyeOutlined className="text-blue-600" />
-            <span>Chi tiết giao dịch</span>
-          </div>
-        }
+        title={<span style={{ ...HEADING_STYLES.h4 }}>Chi tiết giao dịch</span>}
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
-        footer={null}
-        width={window.innerWidth < 768 ? '95%' : 600}
+        footer={[
+          <Button key="close" onClick={() => setDetailModalVisible(false)} style={{ fontSize: FONT_SIZE.base }}>
+            Đóng
+          </Button>
+        ]}
+        width={700}
       >
         {selectedTransaction && (
-          <div className="space-y-4">
-            {/* Mã giao dịch */}
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">Mã giao dịch</div>
-              <div className="font-mono text-lg font-semibold text-blue-600">
-                {selectedTransaction.transactionCode}
-              </div>
-            </div>
-
-            {/* Số tiền - Highlight */}
-            <div className="text-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">Số tiền</div>
-              <div className={`text-3xl font-bold ${
-                selectedTransaction.type === 'DEPOSIT' || selectedTransaction.type === 'BONUS' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {selectedTransaction.type === 'DEPOSIT' || selectedTransaction.type === 'BONUS' ? '+' : '-'}
-                {selectedTransaction.amount?.toLocaleString()} đ
-              </div>
-            </div>
-
-            {/* Thông tin chi tiết */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Loại giao dịch</span>
-                <div className="flex items-center gap-2 font-medium">
-                  {getTypeIcon(selectedTransaction.type)}
-                  {getTypeName(selectedTransaction.type)}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Trạng thái</span>
-                <Tag color={getStatusColor(selectedTransaction.status)}>
-                  {getStatusText(selectedTransaction.status)}
-                </Tag>
-              </div>
-
-              {selectedTransaction.paymentMethod && (
-                <div className="flex items-center justify-between py-2 border-b">
-                  <span className="text-sm text-gray-600">Phương thức</span>
-                  <span className="font-medium">{selectedTransaction.paymentMethod.name}</span>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Thời gian tạo</span>
-                <span className="font-medium text-sm">
-                  {dayjs(selectedTransaction.createdAt).format('DD/MM/YYYY HH:mm:ss')}
-                </span>
-              </div>
-
-              {selectedTransaction.updatedAt && (
-                <div className="flex items-center justify-between py-2 border-b">
-                  <span className="text-sm text-gray-600">Cập nhật lần cuối</span>
-                  <span className="font-medium text-sm">
-                    {dayjs(selectedTransaction.updatedAt).format('DD/MM/YYYY HH:mm:ss')}
-                  </span>
-                </div>
-              )}
-
-              {selectedTransaction.description && (
-                <div className="py-2">
-                  <div className="text-sm text-gray-600 mb-1">Ghi chú</div>
-                  <div className="p-3 bg-gray-50 rounded-lg text-sm">
-                    {selectedTransaction.description}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Close button */}
-            <div className="pt-4">
-              <Button 
-                block 
-                size="large"
-                onClick={() => setDetailModalVisible(false)}
-                style={{ borderRadius: '8px' }}
-              >
-                Đóng
-              </Button>
-            </div>
-          </div>
+          <Descriptions bordered column={1} size="small">
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Mã giao dịch</span>}>
+              <span style={{ fontFamily: 'monospace', fontSize: FONT_SIZE.sm }}>{selectedTransaction.transactionCode}</span>
+            </Descriptions.Item>
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Loại giao dịch</span>}>
+              <span style={{ fontSize: FONT_SIZE.base }}>{getTypeName(selectedTransaction.type)}</span>
+            </Descriptions.Item>
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Số tiền</span>}>
+              <span style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: selectedTransaction.type === 'DEPOSIT' ? '#52c41a' : '#ff4d4f' }}>
+                {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
+                {selectedTransaction.amount?.toLocaleString()} VNĐ
+              </span>
+            </Descriptions.Item>
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Phương thức</span>}>
+              <span style={{ fontSize: FONT_SIZE.base }}>{selectedTransaction.paymentMethod?.name || 'N/A'}</span>
+            </Descriptions.Item>
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Trạng thái</span>}>
+              <Tag color={getStatusColor(selectedTransaction.status)} style={{ fontSize: FONT_SIZE.sm }}>
+                {getStatusText(selectedTransaction.status)}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Mô tả</span>}>
+              <span style={{ ...BODY_STYLES.base }}>{selectedTransaction.description || 'Không có'}</span>
+            </Descriptions.Item>
+            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Thời gian tạo</span>}>
+              <span style={{ fontSize: FONT_SIZE.base }}>{dayjs(selectedTransaction.createdAt).format('DD/MM/YYYY HH:mm:ss')}</span>
+            </Descriptions.Item>
+            {selectedTransaction.completedAt && (
+              <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Thời gian hoàn thành</span>}>
+                <span style={{ fontSize: FONT_SIZE.base }}>{dayjs(selectedTransaction.completedAt).format('DD/MM/YYYY HH:mm:ss')}</span>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
         )}
       </Modal>
     </div>

@@ -23,6 +23,7 @@ import {
   StarOutlined
 } from '@ant-design/icons';
 import { THEME_COLORS } from '../../../utils/theme';
+import { FONT_SIZE, FONT_WEIGHT, HEADING_STYLES, BODY_STYLES } from '../../../utils/typography';
 import walletService from '../services/walletService';
 import pointService from '../../../services/pointService';
 
@@ -110,7 +111,7 @@ const WalletBalance = ({ onTabChange }) => {
     return (
       <Card style={{ textAlign: 'center', padding: '60px 0' }}>
         <Spin size="large" />
-        <p style={{ marginTop: 16, color: '#666' }}>Đang tải thông tin ví...</p>
+        <p style={{ marginTop: 16, color: '#666', ...BODY_STYLES.base }}>Đang tải thông tin ví...</p>
       </Card>
     );
   }
@@ -145,11 +146,11 @@ const WalletBalance = ({ onTabChange }) => {
       >
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-orange-800/80 text-sm md:text-base font-normal mb-2">
+            <div className="text-orange-800/80 mb-2" style={{ fontSize: FONT_SIZE.base, fontWeight: FONT_WEIGHT.normal }}>
               Điểm hiện tại
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-orange-900 text-2xl md:text-4xl font-bold">
+              <span className="text-orange-900" style={{ fontSize: FONT_SIZE['2xl'], fontWeight: FONT_WEIGHT.bold }}>
                 {formatPoints(totalPoints)}
               </span>
               <Tooltip title="Nạp 1.000 VNĐ = 1 điểm">
@@ -162,7 +163,7 @@ const WalletBalance = ({ onTabChange }) => {
                 </Button>
               </Tooltip>
             </div>
-            <div className="mt-2 text-orange-800/70 text-xs">
+            <div className="mt-2 text-orange-800/70" style={{ fontSize: FONT_SIZE.xs }}>
               Đã nhận: {balanceVisible ? lifetimeEarned.toLocaleString() : '****'} |
               Đã dùng: {balanceVisible ? lifetimeSpent.toLocaleString() : '****'}
             </div>

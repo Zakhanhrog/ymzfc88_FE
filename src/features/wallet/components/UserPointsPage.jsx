@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Row, Col, Table, Tag, Empty, Spin, message } from 'antd';
 import { TrophyOutlined, StarOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
+import { THEME_COLORS } from '../../../utils/theme';
 import pointService from '../../../services/pointService';
 import moment from 'moment';
 
@@ -100,13 +102,14 @@ const UserPointsPage = () => {
 
   const columns = [
     {
-      title: 'Mã giao dịch',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Mã giao dịch</span>,
       dataIndex: 'transactionCode',
       key: 'transactionCode',
       width: 150,
+      render: (text) => <span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>{text}</span>
     },
     {
-      title: 'Loại',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Loại</span>,
       dataIndex: 'type',
       key: 'type',
       width: 120,
@@ -114,45 +117,50 @@ const UserPointsPage = () => {
         <Tag 
           color={getTransactionTypeColor(type)} 
           icon={getTransactionIcon(type)}
+          style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}
         >
           {record.typeDisplayName || type}
         </Tag>
       ),
     },
     {
-      title: 'Điểm thay đổi',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Điểm thay đổi</span>,
       dataIndex: 'points',
       key: 'points',
       width: 120,
       render: (points) => (
-        <span className={points >= 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+        <span 
+          className={points >= 0 ? 'text-green-600' : 'text-red-600'}
+          style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold }}
+        >
           {points >= 0 ? '+' : ''}{formatPoints(points)} điểm
         </span>
       ),
     },
     {
-      title: 'Số dư sau',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Số dư sau</span>,
       dataIndex: 'balanceAfter',
       key: 'balanceAfter',
       width: 120,
       render: (balance) => (
-        <span className="font-semibold">
+        <span style={{ fontSize: FONT_SIZE.base, fontWeight: FONT_WEIGHT.semibold }}>
           {formatPoints(balance)} điểm
         </span>
       ),
     },
     {
-      title: 'Mô tả',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Mô tả</span>,
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
+      render: (text) => <span style={{ ...BODY_STYLES.base }}>{text}</span>
     },
     {
-      title: 'Thời gian',
+      title: <span style={{ ...HEADING_STYLES.h6 }}>Thời gian</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 150,
-      render: (date) => moment(date).format('DD/MM/YYYY HH:mm'),
+      render: (date) => <span style={{ fontSize: FONT_SIZE.sm }}>{moment(date).format('DD/MM/YYYY HH:mm')}</span>,
     },
   ];
 
@@ -177,8 +185,8 @@ const UserPointsPage = () => {
           <div className="text-orange-900/40 text-6xl mb-4">
             <TrophyOutlined />
           </div>
-          <h1 className="text-orange-900 text-3xl font-bold mb-2">Điểm  của tôi</h1>
-          <p className="text-orange-800/70 mb-4">Quản lý và theo dõi điểm  của bạn</p>
+          <h1 className="text-orange-900 mb-2" style={{ ...HEADING_STYLES.h2 }}>Điểm của tôi</h1>
+          <p className="text-orange-800/70 mb-4" style={{ ...BODY_STYLES.base }}>Quản lý và theo dõi điểm của bạn</p>
         </div>
       </Card>
 
@@ -187,11 +195,11 @@ const UserPointsPage = () => {
         <Col xs={24} sm={8}>
           <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
             <Statistic
-              title="Tổng điểm hiện tại"
+              title={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Tổng điểm hiện tại</span>}
               value={totalPoints}
               formatter={(value) => formatPoints(value) + ' điểm'}
               prefix={<StarOutlined className="text-yellow-500" />}
-              valueStyle={{ color: '#1890ff', fontSize: '24px', fontWeight: 'bold' }}
+              valueStyle={{ color: '#1890ff', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold }}
               loading={loading}
             />
           </Card>
@@ -199,11 +207,11 @@ const UserPointsPage = () => {
         <Col xs={24} sm={8}>
           <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
             <Statistic
-              title="Tổng điểm đã nhận"
+              title={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Tổng điểm đã nhận</span>}
               value={lifetimeEarned}
               formatter={(value) => formatPoints(value) + ' điểm'}
               prefix={<ArrowUpOutlined className="text-green-500" />}
-              valueStyle={{ color: '#52c41a', fontSize: '20px', fontWeight: 'bold' }}
+              valueStyle={{ color: '#52c41a', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}
               loading={loading}
             />
           </Card>
@@ -211,11 +219,11 @@ const UserPointsPage = () => {
         <Col xs={24} sm={8}>
           <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
             <Statistic
-              title="Tổng điểm đã dùng"
+              title={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Tổng điểm đã dùng</span>}
               value={lifetimeSpent}
               formatter={(value) => formatPoints(value) + ' điểm'}
               prefix={<ArrowDownOutlined className="text-red-500" />}
-              valueStyle={{ color: '#f5222d', fontSize: '20px', fontWeight: 'bold' }}
+              valueStyle={{ color: '#f5222d', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}
               loading={loading}
             />
           </Card>
@@ -223,13 +231,17 @@ const UserPointsPage = () => {
       </Row>
 
       {/* Quy đổi điểm */}
-      <Card title="Quy đổi điểm" className="shadow-sm" style={{ borderRadius: '12px' }}>
+      <Card 
+        title={<span style={{ ...HEADING_STYLES.h5 }}>Quy đổi điểm</span>} 
+        className="shadow-sm" 
+        style={{ borderRadius: '12px' }}
+      >
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="text-blue-800 font-semibold mb-2">
+          <h4 className="text-blue-800 mb-2" style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold }}>
             <StarOutlined className="mr-2" />
             Quy tắc điểm
           </h4>
-          <ul className="text-blue-700 space-y-1 text-sm">
+          <ul className="text-blue-700 space-y-1" style={{ fontSize: FONT_SIZE.sm }}>
             <li>• Nạp tiền: 1.000 VNĐ = 1 điểm</li>
             <li>• Điểm sẽ được cộng tự động khi giao dịch nạp tiền được duyệt</li>
             <li>• Điểm có thể được sử dụng để đổi quà hoặc ưu đãi đặc biệt</li>
@@ -239,18 +251,18 @@ const UserPointsPage = () => {
 
       {/* Lịch sử thay đổi điểm */}
       <Card 
-        title="Lịch sử thay đổi điểm" 
+        title={<span style={{ ...HEADING_STYLES.h5 }}>Lịch sử thay đổi điểm</span>}
         className="shadow-sm" 
         style={{ borderRadius: '12px' }}
       >
         {historyLoading ? (
           <div className="text-center py-8">
             <Spin size="large" />
-            <p className="mt-4 text-gray-500">Đang tải lịch sử...</p>
+            <p className="mt-4" style={{ ...BODY_STYLES.base, color: TEXT_COLORS.secondary }}>Đang tải lịch sử...</p>
           </div>
         ) : pointHistory.length === 0 ? (
           <Empty 
-            description="Chưa có lịch sử thay đổi điểm"
+            description={<span style={{ ...BODY_STYLES.base }}>Chưa có lịch sử thay đổi điểm</span>}
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : (
@@ -263,7 +275,7 @@ const UserPointsPage = () => {
               showSizeChanger: false,
               showQuickJumper: true,
               showTotal: (total, range) => 
-                `${range[0]}-${range[1]} của ${total} giao dịch`,
+                <span style={{ fontSize: FONT_SIZE.sm }}>{`${range[0]}-${range[1]} của ${total} giao dịch`}</span>,
             }}
             onChange={handleTableChange}
             scroll={{ x: 800 }}

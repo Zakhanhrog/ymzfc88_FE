@@ -40,6 +40,7 @@ import {
   LockOutlined,
   UnlockOutlined
 } from '@ant-design/icons';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import { adminService } from '../services/adminService';
 
 const { Option } = Select;

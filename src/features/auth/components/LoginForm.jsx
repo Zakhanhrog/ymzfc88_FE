@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { THEME_COLORS, getInputIconStyle, getFormButtonStyle, getButtonStyle } from '../../../utils/theme';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 
 const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const [loading, setLoading] = useState(false);

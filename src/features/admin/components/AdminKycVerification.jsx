@@ -19,6 +19,7 @@ import {
   SafetyCertificateOutlined,
   ClockCircleOutlined
 } from '@ant-design/icons';
+import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import kycService from '../../wallet/services/kycService';
 
 const { TextArea } = Input;
