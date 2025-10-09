@@ -1,29 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge, Dropdown, List, Empty, Button, Spin, Tag, Typography, Space, Divider } from 'antd';
-import {
-  BellOutlined,
-  CheckOutlined,
-  AlertOutlined,
-  WarningOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { BellOutlined, CheckOutlined, CheckCircleOutlined, InfoCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import notificationService from '../services/notificationService';
 import moment from 'moment';
 import 'moment/locale/vi';
 
 moment.locale('vi');
 
-const { Text, Paragraph } = Typography;
-
 const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   useEffect(() => {
     loadUnreadCount();
-    // Poll for new notifications every 30 seconds
     const interval = setInterval(() => {
       loadUnreadCount();
     }, 30000);
@@ -31,11 +21,11 @@ const NotificationDropdown = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (dropdownVisible) {
+  const handleVisibleChange = (visible) => {
+    if (visible) {
       loadNotifications();
     }
-  }, [dropdownVisible]);
+  };
 
   const loadUnreadCount = async () => {
     try {
@@ -52,8 +42,16 @@ const NotificationDropdown = () => {
     setLoading(true);
     try {
       const response = await notificationService.getMyNotifications(0, 10);
-      if (response.success && response.data) {
-        setNotifications(response.data.content);
+      console.log('📬 Notification Response:', response); // DEBUG
+      
+      if (response && response.success && response.data) {
+        // Check if response.data is array or paginated object
+        const notificationList = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data.content || response.data.notifications || []);
+        
+        console.log('📬 Notifications List:', notificationList); // DEBUG
+        setNotifications(notificationList || []);
       }
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -65,7 +63,6 @@ const NotificationDropdown = () => {
   const handleMarkAsRead = async (notificationId) => {
     try {
       await notificationService.markAsRead(notificationId);
-      // Update UI
       setNotifications(prev =>
         prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
@@ -85,152 +82,68 @@ const NotificationDropdown = () => {
     }
   };
 
-  const getPriorityIcon = (priority) => {
-    switch (priority) {
-      case 'URGENT':
-        return <AlertOutlined style={{ color: '#ff4d4f' }} />;
-      case 'WARNING':
-        return <WarningOutlined style={{ color: '#faad14' }} />;
-      case 'INFO':
-      default:
-        return <InfoCircleOutlined style={{ color: '#52c41a' }} />;
-    }
-  };
-
-  const getPriorityColor = (priorityColor) => {
-    return priorityColor || '#52c41a';
+  const getNotificationIcon = (type) => {
+    const icons = {
+      INFO: <InfoCircleOutlined style={{ color: '#1890ff' }} />,
+      SUCCESS: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+      WARNING: <ExclamationCircleOutlined style={{ color: '#faad14' }} />,
+      ERROR: <CloseCircleOutlined style={{ color: '#ff4d4f' }} />,
+    };
+    return icons[type] || <BellOutlined style={{ color: '#666' }} />;
   };
 
   const notificationContent = (
-    <div
-      style={{
-        width: 400,
-        maxHeight: 500,
-        overflow: 'auto',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          padding: '12px 16px',
-          borderBottom: '1px solid #f0f0f0',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          position: 'sticky',
-          top: 0,
-          backgroundColor: '#fff',
-          zIndex: 1,
-        }}
-      >
-        <Text strong style={{ fontSize: '16px' }}>
-          <BellOutlined /> Thông báo
-        </Text>
+    <div className="w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-lg">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="font-bold text-lg">Thông báo</h3>
         {unreadCount > 0 && (
-          <Button
-            type="link"
-            size="small"
-            onClick={handleMarkAllAsRead}
-            icon={<CheckOutlined />}
-          >
-            Đánh dấu tất cả đã đọc
+          <Button type="link" size="small" onClick={handleMarkAllAsRead}>
+            Đánh dấu đã đọc
           </Button>
         )}
       </div>
 
-      {/* Notifications List */}
-      <Spin spinning={loading}>
-        {notifications.length === 0 ? (
-          <Empty
-            description="Không có thông báo"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            style={{ padding: '40px 0' }}
-          />
-        ) : (
-          <List
-            dataSource={notifications}
-            renderItem={(item) => (
-              <List.Item
-                key={item.id}
-                style={{
-                  padding: '12px 16px',
-                  cursor: 'pointer',
-                  backgroundColor: item.isRead ? '#fff' : '#f6ffed',
-                  borderLeft: `4px solid ${getPriorityColor(item.priorityColor)}`,
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#fafafa';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = item.isRead ? '#fff' : '#f6ffed';
-                }}
-                onClick={() => !item.isRead && handleMarkAsRead(item.id)}
-              >
-                <List.Item.Meta
-                  avatar={
-                    <div
-                      style={{
-                        fontSize: '24px',
-                        marginTop: '4px',
-                      }}
-                    >
-                      {getPriorityIcon(item.priority)}
-                    </div>
-                  }
-                  title={
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text strong style={{ fontSize: '14px' }}>
-                          {item.title}
-                        </Text>
-                        {!item.isRead && (
-                          <Badge status="processing" />
-                        )}
-                      </div>
-                      <Tag color={item.priorityColor} style={{ fontSize: '11px' }}>
-                        {item.priorityLabel}
-                      </Tag>
-                    </Space>
-                  }
-                  description={
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <Paragraph
-                        ellipsis={{ rows: 2 }}
-                        style={{ fontSize: '13px', marginBottom: 0, color: '#666' }}
-                      >
-                        {item.message}
-                      </Paragraph>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>
-                        {moment(item.createdAt).fromNow()}
-                      </Text>
-                    </Space>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        )}
-      </Spin>
-
-      {/* Footer */}
-      {notifications.length > 0 && (
-        <div
-          style={{
-            padding: '8px 16px',
-            borderTop: '1px solid #f0f0f0',
-            textAlign: 'center',
-            position: 'sticky',
-            bottom: 0,
-            backgroundColor: '#fff',
-          }}
-        >
-          <Button type="link" onClick={() => setDropdownVisible(false)}>
-            Đóng
-          </Button>
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Spin />
+        </div>
+      ) : notifications.length === 0 ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Không có thông báo"
+          style={{ padding: 32 }}
+        />
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                !notification.isRead ? 'bg-blue-50' : ''
+              }`}
+              onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
+            >
+              <div className="flex items-start gap-3">
+                {getNotificationIcon(notification.type)}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-semibold text-sm text-gray-900 line-clamp-1">
+                      {notification.title}
+                    </p>
+                    {!notification.isRead && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                    {notification.message}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {moment(notification.createdAt).fromNow()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -238,28 +151,16 @@ const NotificationDropdown = () => {
 
   return (
     <Dropdown
-      dropdownRender={() => notificationContent}
       trigger={['click']}
-      open={dropdownVisible}
-      onOpenChange={setDropdownVisible}
       placement="bottomRight"
+      overlay={notificationContent}
+      onVisibleChange={handleVisibleChange}
     >
-      <Badge count={unreadCount} offset={[-5, 5]} overflowCount={99}>
-        <Button
-          type="text"
-          icon={<BellOutlined style={{ fontSize: '20px', color: '#B2C0D1' }} />}
-          style={{
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#B2C0D1'
-          }}
-        />
+      <Badge count={unreadCount}>
+        <BellOutlined style={{ fontSize: 18, cursor: 'pointer' }} />
       </Badge>
     </Dropdown>
   );
 };
 
 export default NotificationDropdown;
-

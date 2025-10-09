@@ -1,9 +1,9 @@
-import { Spin } from 'antd';
+import { Spinner } from '../ui';
 
-const Loading = ({ size = 'large', tip = 'Đang tải...' }) => {
+const Loading = ({ size = 'lg', tip = 'Đang tải...' }) => {
   return (
     <div className="flex justify-center items-center min-h-[200px]">
-      <Spin size={size} tip={tip} />
+      <Spinner size={size} tip={tip} />
     </div>
   );
 };

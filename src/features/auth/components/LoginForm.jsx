@@ -1,33 +1,54 @@
-import { Form, Input, Button, Card, App } from 'antd';
-import { UserOutlined, LockOutlined, HomeOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Icon } from '@iconify/react';
+import { Button, Input } from '../../../components/ui';
 import { authService } from '../services/authService';
-import { THEME_COLORS, getInputIconStyle, getFormButtonStyle, getButtonStyle } from '../../../utils/theme';
-import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
+import { message } from '../../../utils/notification';
 
 const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    usernameOrEmail: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { message } = App.useApp();
 
-  const onFinish = async (values) => {
-    setLoading(true);
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.usernameOrEmail) {
+      newErrors.usernameOrEmail = 'Vui lòng nhập tên đăng nhập hoặc email!';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Vui lòng nhập mật khẩu!';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Mật khẩu tối thiểu 6 ký tự!';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    // Test thông báo trước
+    if (!validate()) {
+      const firstError = Object.values(errors)[0];
+      if (firstError) message.error(firstError);
+      return;
+    }
+
+    setLoading(true);
     message.info('Đang xử lý đăng nhập...');
     
     try {
-      const response = await authService.login(values);
+      const response = await authService.login(formData);
       
-      // Lưu token, refreshToken và user info
       localStorage.setItem('token', response.token);
       localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
       
       message.success('Đăng nhập thành công!');
       
-      // Đóng modal và reload để cập nhật UI
       setTimeout(() => {
         onClose && onClose();
         window.location.reload();
@@ -40,16 +61,13 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
-    // Hiển thị thông báo lỗi đầu tiên thay vì hiển thị inline
-    const firstError = errorInfo.errorFields[0];
-    if (firstError && firstError.errors[0]) {
-      message.error(firstError.errors[0]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
-  };
-
-  const handleSwitchToRegister = () => {
-    onSwitchToRegister && onSwitchToRegister();
   };
 
   return (
@@ -61,137 +79,93 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
           style={{
             backgroundImage: `url('https://th2club.net/images/1717680076846848.png.avif')`
           }}
-        >
-        </div>
+        />
       </div>
 
-      {/* Right Side - Login Form - Full width trên mobile */}
+      {/* Right Side - Login Form */}
       <div className="w-full md:w-1/2 p-4 md:p-8 bg-white flex items-start pt-8 md:pt-12 relative">
         <div className="w-full">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-800">ĐĂNG NHẬP</h2>
           </div>
 
-          <Form
-            name="login"
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            layout="vertical"
-            size="large"
-            className="space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Form.Item
+          <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
+            <Input
               name="usernameOrEmail"
-              rules={[
-                { required: true, message: 'Vui lòng nhập tên đăng nhập hoặc email!' }
-              ]}
-              className="mb-4"
-              validateStatus=""
-              help=""
-            >
-              <Input 
-                prefix={<UserOutlined style={getInputIconStyle()} />} 
-                placeholder="Tên đăng nhập hoặc email"
-                className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
-                style={{ 
-                  borderRadius: '16px',
-                  border: '1px solid #e5e7eb'
-                }}
-              />
-            </Form.Item>
+              value={formData.usernameOrEmail}
+              onChange={handleChange}
+              placeholder="Tên đăng nhập hoặc email"
+              prefix={<Icon icon="mdi:account" className="text-gray-400" />}
+              error={errors.usernameOrEmail}
+              className="h-12"
+            />
 
-            <Form.Item
+            <Input
+              type="password"
               name="password"
-              rules={[
-                { required: true, message: 'Vui lòng nhập mật khẩu!' },
-                { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự!' }
-              ]}
-              className="mb-6"
-              validateStatus=""
-              help=""
-            >
-              <Input.Password 
-                prefix={<LockOutlined style={getInputIconStyle()} />} 
-                placeholder="Mật khẩu"
-                className="rounded-2xl border-gray-200 placeholder:text-gray-400 w-full h-12"
-                style={{ 
-                  borderRadius: '16px',
-                  border: '1px solid #e5e7eb'
-                }}
-              />
-            </Form.Item>
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Mật khẩu"
+              prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
+              error={errors.password}
+              className="h-12"
+            />
 
             <div className="flex justify-between items-center my-6">
-              <Button 
-                type="link" 
-                className="p-0"
-                style={getButtonStyle('link')}
+              <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleSwitchToRegister();
+                  onSwitchToRegister && onSwitchToRegister();
                 }}
+                className="text-[#D30102] hover:underline font-medium"
               >
                 Đăng ký
-              </Button>
-              <Button 
-                type="link" 
-                className="p-0"
-                style={getButtonStyle('link')}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className="text-[#D30102] hover:underline font-medium"
               >
                 Quên mật khẩu
-              </Button>
+              </button>
             </div>
 
-            <Form.Item className="mb-6">
-              <Button 
-                type="primary" 
-                htmlType="submit" 
-                className="w-full font-semibold h-12"
-                style={getFormButtonStyle().base}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = getFormButtonStyle().hover.backgroundColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = getFormButtonStyle().base.backgroundColor;
-                }}
-                loading={loading}
-              >
-                ĐĂNG NHẬP
-              </Button>
-            </Form.Item>
-          </Form>
+            <Button 
+              type="submit"
+              variant="primary"
+              size="lg"
+              block
+              loading={loading}
+              className="font-semibold h-12"
+            >
+              ĐĂNG NHẬP
+            </Button>
+          </form>
         </div>
 
         {/* Bottom Navigation */}
         <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex justify-between px-4 md:px-8">
-          <Button 
-            type="text" 
-            icon={<HomeOutlined />}
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onClose && onClose();
               navigate('/');
             }}
-            className="flex items-center gap-2 font-medium"
-            style={getButtonStyle('link')}
+            className="flex items-center gap-2 font-medium text-[#D30102] hover:underline"
           >
+            <Icon icon="mdi:home" />
             TRANG CHỦ
-          </Button>
-          <Button 
-            type="text"
-            icon={<CustomerServiceOutlined />}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="flex items-center gap-2 font-medium"
-            style={getButtonStyle('link')}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 font-medium text-[#D30102] hover:underline"
           >
+            <Icon icon="mdi:headset" />
             CSKH
-          </Button>
+          </button>
         </div>
       </div>
     </div>

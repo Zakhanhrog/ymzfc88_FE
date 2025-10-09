@@ -1,46 +1,43 @@
-import { Card, Avatar, Tag } from 'antd';
-import { UserOutlined, CheckCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import { HEADING_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
+import { Card, Avatar, Tag } from '../../../components/ui';
+import { Icon } from '@iconify/react';
 
 const UserInfoHeader = ({ userInfo, kycVerified }) => {
   return (
     <Card 
-      className="mb-4 shadow-md"
-      style={{ 
-        borderRadius: '16px',
-        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-        border: 'none'
-      }}
-      styles={{ body: { padding: window.innerWidth < 768 ? '16px' : '24px' } }}
+      className="mb-4 shadow-md bg-gradient-to-br from-red-500 to-red-600 border-none"
+      bodyClassName={`${window.innerWidth < 768 ? 'p-4' : 'p-6'}`}
     >
       <div className="flex flex-col md:flex-row md:items-center gap-4">
         {/* User Info */}
         <div className="flex items-center gap-3 md:gap-4">
           <Avatar 
             size={window.innerWidth < 768 ? 60 : 80}
-            icon={<UserOutlined />} 
-            style={{ 
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              border: '2px solid rgba(255,255,255,0.3)'
-            }}
+            icon={<Icon icon="mdi:account" />}
+            className="bg-white/20 border-2 border-white/30"
           />
           <div>
-            <h2 className="text-white mb-1" style={{ fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold }}>
+            <h2 className="text-white mb-1 text-xl font-bold">
               Chào mừng, {userInfo.fullName || userInfo.username}
             </h2>
-            <div className="text-white/90 space-y-0.5" style={{ fontSize: FONT_SIZE.sm }}>
+            <div className="text-white/90 space-y-0.5 text-sm">
               <div>Email: {userInfo.email}</div>
               {userInfo.phone && <div>SĐT: {userInfo.phone}</div>}
               {kycVerified && userInfo.idNumber && (
                 <div>Số CCCD: {userInfo.idNumber}</div>
               )}
               {kycVerified ? (
-                <Tag color="green" className="mt-1" style={{ fontSize: FONT_SIZE.xs }}>
-                  <CheckCircleOutlined /> Đã xác thực
+                <Tag color="success" className="mt-1">
+                  <div className="flex items-center gap-1">
+                    <Icon icon="mdi:check-circle" />
+                    <span>Đã xác thực</span>
+                  </div>
                 </Tag>
               ) : (
-                <Tag color="orange" className="mt-1" style={{ fontSize: FONT_SIZE.xs }}>
-                  <SafetyCertificateOutlined /> Chưa xác thực
+                <Tag color="warning" className="mt-1">
+                  <div className="flex items-center gap-1">
+                    <Icon icon="mdi:shield-alert" />
+                    <span>Chưa xác thực</span>
+                  </div>
                 </Tag>
               )}
             </div>

@@ -1,5 +1,5 @@
-import { Card, Row, Col, Button, Tag, Divider } from 'antd';
-import { PlayCircleOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Card, Button, Tag } from '../../../components/ui';
+import { Icon } from '@iconify/react';
 
 const MatchCard = ({ match }) => {
   const formatDate = (dateString) => {
@@ -13,17 +13,17 @@ const MatchCard = ({ match }) => {
   };
 
   return (
-    <Card 
-      className="hover:shadow-lg transition-shadow mb-4"
-      size="small"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
+    <Card className="hover:shadow-lg transition-shadow mb-4">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex-1 min-w-[200px]">
           <div className="flex items-center gap-2 mb-2">
             <Tag color="blue">{match.league}</Tag>
             {match.status === 'live' && (
-              <Tag color="red" icon={<PlayCircleOutlined />}>
-                LIVE
+              <Tag color="error">
+                <div className="flex items-center gap-1">
+                  <Icon icon="mdi:play-circle" />
+                  <span>LIVE</span>
+                </div>
               </Tag>
             )}
           </div>
@@ -39,26 +39,20 @@ const MatchCard = ({ match }) => {
         
         <div className="text-right">
           <div className="text-sm text-gray-600 mb-2">Tỷ lệ cược</div>
-          <Row gutter={8}>
-            <Col span={8}>
-              <Button size="small" className="w-full">
-                <div className="text-xs">Thắng</div>
-                <div className="font-semibold">{match.odds.home}</div>
-              </Button>
-            </Col>
-            <Col span={8}>
-              <Button size="small" className="w-full">
-                <div className="text-xs">Hòa</div>
-                <div className="font-semibold">{match.odds.draw}</div>
-              </Button>
-            </Col>
-            <Col span={8}>
-              <Button size="small" className="w-full">
-                <div className="text-xs">Thua</div>
-                <div className="font-semibold">{match.odds.away}</div>
-              </Button>
-            </Col>
-          </Row>
+          <div className="grid grid-cols-3 gap-2">
+            <Button size="sm" variant="outline" className="flex flex-col items-center">
+              <div className="text-xs">Thắng</div>
+              <div className="font-semibold">{match.odds.home}</div>
+            </Button>
+            <Button size="sm" variant="outline" className="flex flex-col items-center">
+              <div className="text-xs">Hòa</div>
+              <div className="font-semibold">{match.odds.draw}</div>
+            </Button>
+            <Button size="sm" variant="outline" className="flex flex-col items-center">
+              <div className="text-xs">Thua</div>
+              <div className="font-semibold">{match.odds.away}</div>
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
@@ -70,7 +64,7 @@ const MatchList = ({ matches, title = "Trận đấu hot" }) => {
     <Card 
       title={
         <div className="flex items-center gap-2">
-          <TrophyOutlined className="text-blue-600" />
+          <Icon icon="mdi:trophy" className="text-blue-600 text-xl" />
           <span>{title}</span>
         </div>
       }

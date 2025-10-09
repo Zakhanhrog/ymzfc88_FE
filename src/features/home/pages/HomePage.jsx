@@ -48,48 +48,47 @@ const HomePage = () => {
       id: 2,
       title: 'NẠP ĐẦU 120%',
       url: 'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=300&h=200&fit=crop',
-      gradient: 'from-red-400 to-pink-500'
+      gradient: 'from-purple-400 to-pink-500'
     },
     {
       id: 3,
-      title: 'NẠP ĐẦU THƯỞNG 150%',
-      url: 'https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=300&h=200&fit=crop',
-      gradient: 'from-purple-400 to-red-500'
+      title: 'KHUYẾN MÃI ĐẶC BIỆT',
+      url: 'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?w=300&h=200&fit=crop',
+      gradient: 'from-blue-400 to-cyan-500'
     }
   ];
 
-  const notificationMessage = '📢 THÔNG BÁO: Khuyến mại nạp đầu 100% qua 10 vòng cược, đại lý thanh toán hàng tuần, nạp lại hàng ngày 5% qua 3 vòng cược, hoàn trả hàng ngày lên đến 1%, CẢM ƠN QUÝ KHÁCH !';
-
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
-        <div className="w-full px-4 lg:px-6">
-          {/* Banner Layout - Main + Side */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-2">
-            {/* Banner chính - 3 cột */}
-            <div className="lg:col-span-3">
-              <MainBannerCarousel banners={mainBanners} />
-            </div>
+      <div className="w-full">
+        {/* Notification Marquee */}
+        <NotificationMarquee />
 
-            {/* Banner bên phải - 1 cột - Ẩn trên mobile */}
-            <SideBanners banners={sideBanners} />
+        {/* Banner Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          {/* Main Banner Carousel - 2 cột */}
+          <div className="lg:col-span-2">
+            <MainBannerCarousel banners={mainBanners} />
           </div>
 
-          {/* Thông báo chạy ngang - Full Width */}
-          <NotificationMarquee message={notificationMessage} />
-
-          {/* Quick Action Buttons - Mobile Style */}
-          <QuickActionButtons />
-
-          {/* Horizontal Scrolling Categories - Mobile */}
-          <CategoryButtons />
-
-          {/* Game Categories */}
-          <GameGrid />
+          {/* Side Banners - 1 cột */}
+          <div className="lg:col-span-1">
+            <SideBanners banners={sideBanners} />
+          </div>
         </div>
+
+        {/* Quick Action Buttons */}
+        <QuickActionButtons />
+
+        {/* Category Buttons */}
+        <CategoryButtons />
+
+        {/* Game Grid */}
+        <GameGrid />
       </div>
     </Layout>
   );
 };
 
 export default HomePage;
+

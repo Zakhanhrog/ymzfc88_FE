@@ -1,16 +1,11 @@
-import { Card, Carousel } from 'antd';
+import { Card, Carousel } from '../../../components/ui';
 
 const MainBannerCarousel = ({ banners }) => {
   return (
-    <Card 
-      className="w-full shadow-lg overflow-hidden"
-      bodyStyle={{ padding: 0 }}
-      style={{ borderRadius: '12px' }}
-    >
+    <Card className="w-full shadow-lg overflow-hidden">
       <Carousel 
         autoplay
         autoplaySpeed={4000}
-        effect="fade"
         dots={true}
         className="banner-carousel"
       >

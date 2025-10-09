@@ -1,51 +1,46 @@
-import { Card, Row, Col, Statistic } from 'antd';
-import { TrophyOutlined, FireOutlined, EyeOutlined, DollarOutlined } from '@ant-design/icons';
+import { Card } from '../../../components/ui';
+import { Icon } from '@iconify/react';
 
 const StatsCard = ({ stats }) => {
   const statsData = [
     {
       title: 'Tổng trận đấu',
       value: stats?.totalMatches || 0,
-      icon: <TrophyOutlined className="text-blue-600" />,
-      color: 'blue'
+      icon: 'mdi:trophy',
+      color: 'text-blue-600'
     },
     {
       title: 'Trận hôm nay',
       value: stats?.todayMatches || 0,
-      icon: <FireOutlined className="text-orange-600" />,
-      color: 'orange'
+      icon: 'mdi:fire',
+      color: 'text-orange-600'
     },
     {
       title: 'Đang live',
       value: stats?.liveMatches || 0,
-      icon: <EyeOutlined className="text-red-600" />,
-      color: 'red'
+      icon: 'mdi:eye',
+      color: 'text-red-600'
     },
     {
       title: 'Tổng cược',
       value: stats?.totalBets || 0,
-      icon: <DollarOutlined className="text-green-600" />,
-      color: 'green'
+      icon: 'mdi:currency-usd',
+      color: 'text-green-600'
     }
   ];
 
   return (
-    <Row gutter={[16, 16]}>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       {statsData.map((stat, index) => (
-        <Col xs={12} sm={6} key={index}>
-          <Card className="text-center hover:shadow-lg transition-shadow">
-            <Statistic
-              title={stat.title}
-              value={stat.value}
-              prefix={stat.icon}
-              valueStyle={{ color: stat.color === 'blue' ? '#1890ff' : 
-                                  stat.color === 'orange' ? '#fa8c16' :
-                                  stat.color === 'red' ? '#f5222d' : '#52c41a' }}
-            />
-          </Card>
-        </Col>
+        <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+          <div className="flex flex-col items-center gap-2">
+            <Icon icon={stat.icon} className={`text-4xl ${stat.color}`} />
+            <div className="text-sm text-gray-600">{stat.title}</div>
+            <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+          </div>
+        </Card>
       ))}
-    </Row>
+    </div>
   );
 };
 

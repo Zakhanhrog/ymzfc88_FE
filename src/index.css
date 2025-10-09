@@ -67,7 +67,8 @@ strong, b, .font-bold, .ant-typography-title {
   font-size: 1.08em;
 }
 
-.font-semibold, .ant-menu-item-selected {
+/* COMMENTED OUT .ant-menu-item-selected - Conflicts với typography.css */
+.font-semibold {
   font-weight: 600; /* Trở lại 600 */
   letter-spacing: -0.03em;
   /* Tăng cỡ chữ cho semibold text lên nhiều hơn */
@@ -86,15 +87,15 @@ strong, b, .font-bold, .ant-typography-title {
   font-size: 1.06em;
 }
 
-.ant-layout-sider .ant-menu-item-selected,
+/* COMMENTED OUT - Conflicts với typography.css sidebar styling */
+/* .ant-layout-sider .ant-menu-item-selected,
 .ant-layout-sider .ant-menu-item-selected span,
 .ant-layout-sider .ant-menu-item-selected .ant-menu-title-content {
-  font-weight: 800; /* Đậm nhất cho sidebar selected */
+  font-weight: 800;
   letter-spacing: -0.035em;
-  color: #687B8E; /* Màu đậm nhất cho sidebar selected */
-  /* Tăng cỡ chữ cho sidebar selected lên nhiều hơn */
+  color: #687B8E;
   font-size: 1.08em;
-}
+} */
 
 /* Icon trong sidebar cũng đậm hơn */
 .ant-layout-sider .ant-menu-item .anticon {
@@ -104,11 +105,11 @@ strong, b, .font-bold, .ant-typography-title {
   font-size: 1.15em;
 }
 
-.ant-layout-sider .ant-menu-item-selected .anticon {
+/* COMMENTED OUT - Conflicts với typography.css sidebar styling */
+/* .ant-layout-sider .ant-menu-item-selected .anticon {
   color: #687B8E;
-  /* Tăng cỡ icon sidebar selected lên nhiều hơn */
   font-size: 1.2em;
-}
+} */
 /* ========== END SIDEBAR CONSISTENT STYLING ==========*/
 
 /* Global color variables */
@@ -179,11 +180,12 @@ body {
   transform: none;
 }
 
-.sidebar-menu-item.ant-menu-item-selected {
+/* COMMENTED OUT - Conflicts với typography.css sidebar styling */
+/* .sidebar-menu-item.ant-menu-item-selected {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-}
+} */
 
 .sidebar-menu-item::after {
   display: none !important;
@@ -513,23 +515,21 @@ body::-webkit-scrollbar {
   /* Loại bỏ text-shadow để tránh font "jumping" */
 }
 
+/* COMMENTED OUT - Conflicts với typography.css sidebar styling */
 /* Menu item selected/active với letter-spacing tighter */
-.ant-menu-item-selected {
+/* .ant-menu-item-selected {
   background: white;
-  color: #B2C0D1; /* Trở lại màu cũ */
-  font-weight: 700; /* Trở lại 700 */
+  color: #B2C0D1;
+  font-weight: 700;
   letter-spacing: -0.035em;
-  /* Loại bỏ text-shadow để tránh font "jumping" */
 }
 
-/* Menu item selected hover */
 .ant-menu-item-selected:hover {
   background: #f5f5f5;
-  color: #B2C0D1; /* Trở lại màu cũ */
-  font-weight: 700; /* Trở lại 700 */
+  color: #B2C0D1;
+  font-weight: 700;
   letter-spacing: -0.035em;
-  /* Loại bỏ text-shadow để tránh font "jumping" */
-}
+} */
 
 /* Menu divider */
 .ant-menu-divider {

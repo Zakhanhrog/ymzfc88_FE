@@ -1,7 +1,7 @@
-import { Modal } from 'antd';
-import React, { useState, useEffect } from 'react';
-import LoginForm from '../../features/auth/components/LoginForm';
-import RegisterForm from '../../features/auth/components/RegisterForm';
+import { useState, useEffect } from 'react';
+import { Modal } from '../../ui';
+import LoginForm from '../../../features/auth/components/LoginForm';
+import RegisterForm from '../../../features/auth/components/RegisterForm';
 
 const AuthModal = ({ 
   isLoginOpen, 
@@ -11,11 +11,10 @@ const AuthModal = ({
   onSwitchToRegister, 
   onSwitchToLogin 
 }) => {
-  const [currentView, setCurrentView] = useState('login'); // 'login' hoặc 'register'
+  const [currentView, setCurrentView] = useState('login');
   
   const isOpen = isLoginOpen || isRegisterOpen;
   
-  // Xác định view hiện tại dựa trên props
   useEffect(() => {
     if (isLoginOpen) {
       setCurrentView('login');
@@ -25,46 +24,33 @@ const AuthModal = ({
   }, [isLoginOpen, isRegisterOpen]);
 
   const handleClose = () => {
-    // Đóng modal dựa trên props hiện tại
     if (isLoginOpen) {
-      onLoginClose && onLoginClose();
+      onLoginClose?.();
     } else if (isRegisterOpen) {
-      onRegisterClose && onRegisterClose();
+      onRegisterClose?.();
     }
   };
 
   const handleSwitchToRegister = () => {
     setCurrentView('register');
-    // Chuyển đổi state đúng cách
-    if (onLoginClose) onLoginClose();
-    if (onSwitchToRegister) onSwitchToRegister();
+    onLoginClose?.();
+    onSwitchToRegister?.();
   };
 
   const handleSwitchToLogin = () => {
     setCurrentView('login');
-    // Chuyển đổi state đúng cách
-    if (onRegisterClose) onRegisterClose();
-    if (onSwitchToLogin) onSwitchToLogin();
+    onRegisterClose?.();
+    onSwitchToLogin?.();
   };
 
   return (
     <Modal
       open={isOpen}
-      onCancel={handleClose}
-      footer={null}
-      width="90%"
-      style={{ 
-        top: 20, 
-        minHeight: '750px',
-        maxWidth: '1000px',
-        margin: '0 auto'
-      }}
-      centered
-      destroyOnHidden={true}
+      onClose={handleClose}
+      width="max-w-4xl"
+      closable={true}
       maskClosable={true}
-      className="auth-modal"
-      transitionName=""
-      getContainer={false}
+      className="min-h-[750px]"
     >
       <div className="transition-all duration-300 ease-in-out">
         {currentView === 'login' ? (
@@ -84,3 +70,4 @@ const AuthModal = ({
 };
 
 export default AuthModal;
+

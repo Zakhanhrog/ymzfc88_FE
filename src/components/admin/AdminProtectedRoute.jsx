@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin } from 'antd';
+import { Spinner } from '../ui';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 
 const AdminProtectedRoute = ({ children }) => {
@@ -23,7 +23,7 @@ const AdminProtectedRoute = ({ children }) => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Spin size="large" />
+        <Spinner size="lg" />
       </div>
     );
   }

@@ -1,13 +1,5 @@
-import { Card, Tabs } from 'antd';
-import {
-  WalletOutlined,
-  ArrowDownOutlined,
-  CreditCardOutlined,
-  HistoryOutlined,
-  SettingOutlined,
-  SafetyCertificateOutlined,
-  StarOutlined
-} from '@ant-design/icons';
+import { Card, Tabs } from '../../../components/ui';
+import { Icon } from '@iconify/react';
 import WalletBalance from './WalletBalance';
 import TransactionHistory from './TransactionHistory';
 import DepositWithdraw from './DepositWithdraw';
@@ -19,72 +11,44 @@ const WalletTabsContent = ({ activeTab, onTabChange }) => {
   const tabItems = [
     {
       key: 'balance',
-      label: (
-        <span className="flex items-center gap-2">
-          <WalletOutlined />
-          Số dư ví
-        </span>
-      ),
+      label: 'Số dư ví',
+      icon: <Icon icon="mdi:wallet" />,
       children: <WalletBalance onTabChange={onTabChange} />
     },
     {
       key: 'deposit-withdraw',
-      label: (
-        <span className="flex items-center gap-2">
-          <CreditCardOutlined />
-          Nạp tiền
-        </span>
-      ),
+      label: 'Nạp tiền',
+      icon: <Icon icon="mdi:credit-card" />,
       children: <DepositWithdraw />
     },
     {
       key: 'withdraw',
-      label: (
-        <span className="flex items-center gap-2">
-          <ArrowDownOutlined />
-          Rút tiền
-        </span>
-      ),
+      label: 'Rút tiền',
+      icon: <Icon icon="mdi:arrow-down-circle" />,
       children: <WithdrawForm />
     },
     {
       key: 'points',
-      label: (
-        <span className="flex items-center gap-2">
-          <StarOutlined />
-          Điểm
-        </span>
-      ),
+      label: 'Điểm',
+      icon: <Icon icon="mdi:star" />,
       children: <UserPointsPage />
     },
     {
       key: 'transaction-history',
-      label: (
-        <span className="flex items-center gap-2">
-          <HistoryOutlined />
-          Lịch sử giao dịch
-        </span>
-      ),
+      label: 'Lịch sử giao dịch',
+      icon: <Icon icon="mdi:history" />,
       children: <TransactionHistory />
     },
     {
       key: 'kyc-verification',
-      label: (
-        <span className="flex items-center gap-2">
-          <SafetyCertificateOutlined />
-          Xác thực tài khoản
-        </span>
-      ),
+      label: 'Xác thực tài khoản',
+      icon: <Icon icon="mdi:shield-check" />,
       children: <KycVerification />
     },
     {
       key: 'settings',
-      label: (
-        <span className="flex items-center gap-2">
-          <SettingOutlined />
-          Cài đặt tài khoản
-        </span>
-      ),
+      label: 'Cài đặt tài khoản',
+      icon: <Icon icon="mdi:cog" />,
       children: (
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4">Cài đặt tài khoản</h3>
@@ -96,24 +60,14 @@ const WalletTabsContent = ({ activeTab, onTabChange }) => {
 
   return (
     <Card 
-      className="shadow-md"
-      style={{ borderRadius: '16px' }}
-      styles={{ body: { padding: window.innerWidth < 768 ? '12px' : '24px' } }}
+      className="shadow-md rounded-2xl"
+      bodyClassName={window.innerWidth < 768 ? 'p-3' : 'p-6'}
     >
       <Tabs
         activeKey={activeTab}
         onChange={onTabChange}
-        type="card"
-        size={window.innerWidth < 768 ? 'middle' : 'large'}
         className="wallet-tabs"
         items={tabItems}
-        animated={{ 
-          inkBar: true, 
-          tabPane: true 
-        }}
-        tabBarStyle={{
-          marginBottom: '0px'
-        }}
       />
     </Card>
   );

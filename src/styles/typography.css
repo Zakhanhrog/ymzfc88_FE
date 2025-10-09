@@ -315,27 +315,51 @@ p {
   font-size: var(--text-sm) !important;
 }
 
-/* Sidebar specific - Font Tahoma */
-.sidebar-menu-item span {
+/* ============================================ */
+/* SIDEBAR - Font Tahoma & Styling             */
+/* FIX: Chỉ item được chọn mới đậm/đỏ          */
+/* ============================================ */
+
+/* ALL sidebar items - Base font Tahoma */
+.sidebar-scrollable .ant-menu-item {
+  font-family: var(--font-sidebar) !important;
+}
+
+.sidebar-scrollable .ant-menu-item span {
   font-family: var(--font-sidebar) !important;
   font-size: var(--text-base2) !important;
+}
+
+/* DEFAULT state - TẤT CẢ items chưa selected */
+.sidebar-scrollable .ant-menu-item:not(.ant-menu-item-selected) span {
   font-weight: var(--weight-medium) !important;
   color: #B2C0D1 !important;
 }
 
-.sidebar-menu-item.ant-menu-item-selected span {
+/* Special items (không phải game) khi selected - xám, bold */
+.sidebar-scrollable .ant-menu-item:not(.game-category-item).ant-menu-item-selected span {
   font-weight: var(--weight-bold) !important;
+  color: #B2C0D1 !important;
 }
 
-/* Game categories - Màu đỏ khi active (từ HOT GAMES trở xuống) */
-.sidebar-menu-item.game-category-item.ant-menu-item-selected span {
+/* GAME CATEGORIES - CHỈ khi selected mới đỏ bold */
+.sidebar-scrollable .ant-menu-item.game-category-item.ant-menu-item-selected span {
+  font-weight: var(--weight-bold) !important;
   color: #D30102 !important;
-  font-weight: var(--weight-bold) !important;
 }
 
-.sidebar-menu-item.game-category-item.ant-menu-item-selected {
+.sidebar-scrollable .ant-menu-item.game-category-item.ant-menu-item-selected {
   background: rgba(211, 1, 2, 0.08) !important;
   border-left: 3px solid #D30102 !important;
+}
+
+/* Hover - chỉ khi CHƯA selected */
+.sidebar-scrollable .ant-menu-item.game-category-item:not(.ant-menu-item-selected):hover {
+  background: rgba(211, 1, 2, 0.04) !important;
+}
+
+.sidebar-scrollable .ant-menu-item.game-category-item:not(.ant-menu-item-selected):hover span {
+  color: #D30102 !important;
 }
 
 /* Admin menu specific */
