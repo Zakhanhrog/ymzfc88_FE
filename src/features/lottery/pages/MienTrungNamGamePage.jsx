@@ -60,11 +60,19 @@ const MienTrungNamGamePage = () => {
     { value: 10, label: '10X', color: 'bg-green-500' }
   ];
 
-  // Generate numbers 00-99 for selection
+  // Generate numbers for selection based on game type
   const generateNumbers = () => {
     const numbers = [];
-    for (let i = 0; i <= 99; i++) {
-      numbers.push(i.toString().padStart(2, '0'));
+    // Loto 3 số: 000-999
+    if (selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+      for (let i = 0; i <= 999; i++) {
+        numbers.push(i.toString().padStart(3, '0'));
+      }
+    } else {
+      // Loto 2 số: 00-99
+      for (let i = 0; i <= 99; i++) {
+        numbers.push(i.toString().padStart(2, '0'));
+      }
     }
     return numbers;
   };
@@ -81,12 +89,17 @@ const MienTrungNamGamePage = () => {
 
   const handleNumberInput = () => {
     // Parse input numbers separated by comma or space
+    const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s';
+    const numDigits = isLoto3s ? 3 : 2;
+    const maxValue = isLoto3s ? 999 : 99;
+    const regex = isLoto3s ? /^\d{3}$/ : /^\d{2}$/;
+    
     const inputNumbers = numberInput
       .split(/[,\s]+/)
       .map(num => num.trim())
       .filter(num => num.length > 0)
-      .map(num => num.padStart(2, '0'))
-      .filter(num => /^\d{2}$/.test(num) && parseInt(num) >= 0 && parseInt(num) <= 99);
+      .map(num => num.padStart(numDigits, '0'))
+      .filter(num => regex.test(num) && parseInt(num) >= 0 && parseInt(num) <= maxValue);
     
     setSelectedNumbers([...new Set(inputNumbers)]); // Remove duplicates
     setNumberInput('');
@@ -115,14 +128,43 @@ const MienTrungNamGamePage = () => {
   };
 
   const calculateTotalAmount = () => {
-    // Tính tổng tiền: số lô × số điểm × đơn giá 1 điểm
+    // Tính tổng tiền cược: số điểm × đơn giá × số lượng số
+    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+      // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
+      return betAmount * getPricePerPoint() * selectedNumbers.length;
+    }
+    // Logic cũ cho các game type khác
+    
     return selectedNumbers.length * betAmount * getPricePerPoint();
   };
 
   const calculateTotalPoints = () => {
-    // Tính tổng tiền thực tế rồi chia 1000 để quy thành điểm
+    // Tính tổng tiền cược đồng nhất với calculateTotalAmount
+    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+      return betAmount * getPricePerPoint() * selectedNumbers.length;
+    }
+    // Logic cũ cho các game type khác
     const totalMoney = selectedNumbers.length * betAmount * getPricePerPoint();
-    return Math.floor(totalMoney / 1000); // Chia 1000 để quy thành điểm
+    return Math.floor(totalMoney / 1000);
+  };
+
+  const calculateWinnings = () => {
+    // Logic mới: số điểm × tỷ lệ × số lượng số (áp dụng cho loto-2-so và loto-3s)
+    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+      // Ví dụ: 10 điểm × 99 × 3 số = 2,970
+      const totalWinIfAllWin = betAmount * getOdds() * selectedNumbers.length;
+      
+      console.log('Debug calculateWinnings (số điểm × tỷ lệ × số lượng):', {
+        gameType: selectedGameType,
+        betAmount,
+        selectedCount: selectedNumbers.length,
+        odds: getOdds(),
+        totalWinIfAllWin
+      });
+      return totalWinIfAllWin; // Tổng tiền thắng nếu tất cả số trúng
+    }
+    // Logic cũ cho các game type khác
+    return calculateTotalPoints() * getOdds();
   };
 
   const handleMultiplierClick = (multiplierValue) => {
@@ -217,7 +259,9 @@ const MienTrungNamGamePage = () => {
       return;
     }
 
-    const totalCost = calculateTotalPoints();
+    // Tính tổng tiền cược dựa trên game type
+    const isLotoNewLogic = selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s';
+    const totalCost = isLotoNewLogic ? calculateTotalAmount() : calculateTotalPoints();
     if (userPoints < totalCost) {
       showNotification('Số dư không đủ để đặt cược', 'error');
       return;
@@ -226,11 +270,30 @@ const MienTrungNamGamePage = () => {
     try {
       setPlacingBet(true);
 
+      // Tính số điểm cược thực tế dựa trên game type
+      // Backend sẽ nhận số điểm cược thực tế, không phải tổng tiền cược
+      const totalBetAmount = isLotoNewLogic
+        ? betAmount // Gửi số điểm cược thực tế cho loto-2-so và loto-3s
+        : betAmount * getPricePerPoint() * selectedNumbers.length;
+      
+      // Log bet data for debugging
+      console.log('Bet data before sending:', {
+        region: 'mienTrungNam',
+        betType: selectedGameType,
+        selectedNumbers,
+        betAmount: totalBetAmount,
+        pricePerPoint: getPricePerPoint(),
+        odds: getOdds(),
+        userPoints,
+        totalCost,
+        isLotoNewLogic
+      });
+      
       const betData = betService.formatBetData(
         'mienTrungNam',
         selectedGameType,
         selectedNumbers,
-        betAmount,
+        totalBetAmount, // Gửi số điểm
         getPricePerPoint(),
         getOdds()
       );
@@ -239,10 +302,11 @@ const MienTrungNamGamePage = () => {
 
       if (response.success) {
         setRecentBet(response.data);
-        showNotification('Đặt cược thành công! Kết quả sẽ có sau 5 giây', 'success');
         
-        // Cập nhật số dư user
+        // Load lại số dư từ backend (backend đã trừ tiền)
         await loadUserPoints();
+        
+        showNotification('Đặt cược thành công! Kết quả sẽ có sau 5 giây', 'success');
         
         // Reset form
         setSelectedNumbers([]);
@@ -619,16 +683,16 @@ const MienTrungNamGamePage = () => {
                       Số đã chọn: {selectedNumbers.join(', ')}
                     </div>
                   )}
-                  {selectedNumbers.length > 0 && (
-                    <>
-                      <div className="text-gray-600">
-                        Tổng tiền cược: {calculateTotalPoints().toLocaleString()}
-                      </div>
-                      <div className="text-gray-600">
-                        Tiền thắng: {(calculateTotalPoints() * getOdds()).toLocaleString()}
-                      </div>
-                    </>
-                  )}
+                {selectedNumbers.length > 0 && (
+                  <>
+                    <div className="text-gray-600">
+                      Tổng tiền cược: {calculateTotalAmount().toLocaleString()} điểm
+                    </div>
+                    <div className="text-gray-600">
+                      Tiền thắng (nếu tất cả trúng): {calculateWinnings().toLocaleString()}
+                    </div>
+                  </>
+                )}
                   <div className="text-gray-600">
                     Số dư: {loadingPoints ? 'Đang tải...' : userPoints.toLocaleString()}
                   </div>

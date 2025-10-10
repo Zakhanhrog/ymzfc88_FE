@@ -58,11 +58,19 @@ const MienBacGamePage = () => {
     { value: 10, label: '10X', color: 'bg-green-500' }
   ];
 
-  // Generate numbers 00-99 for selection
+  // Generate numbers for selection based on game type
   const generateNumbers = () => {
     const numbers = [];
-    for (let i = 0; i <= 99; i++) {
-      numbers.push(i.toString().padStart(2, '0'));
+    // Loto 3 số: 000-999
+    if (selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+      for (let i = 0; i <= 999; i++) {
+        numbers.push(i.toString().padStart(3, '0'));
+      }
+    } else {
+      // Loto 2 số: 00-99
+      for (let i = 0; i <= 99; i++) {
+        numbers.push(i.toString().padStart(2, '0'));
+      }
     }
     return numbers;
   };
@@ -79,12 +87,17 @@ const MienBacGamePage = () => {
 
   const handleNumberInput = () => {
     // Parse input numbers separated by comma or space
+    const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s';
+    const numDigits = isLoto3s ? 3 : 2;
+    const maxValue = isLoto3s ? 999 : 99;
+    const regex = isLoto3s ? /^\d{3}$/ : /^\d{2}$/;
+    
     const inputNumbers = numberInput
       .split(/[,\s]+/)
       .map(num => num.trim())
       .filter(num => num.length > 0)
-      .map(num => num.padStart(2, '0'))
-      .filter(num => /^\d{2}$/.test(num) && parseInt(num) >= 0 && parseInt(num) <= 99);
+      .map(num => num.padStart(numDigits, '0'))
+      .filter(num => regex.test(num) && parseInt(num) >= 0 && parseInt(num) <= maxValue);
     
     setSelectedNumbers([...new Set(inputNumbers)]); // Remove duplicates
     setNumberInput('');
@@ -114,7 +127,7 @@ const MienBacGamePage = () => {
 
   const calculateTotalAmount = () => {
     // Tính tổng tiền cược: số điểm × đơn giá × số lượng số
-    if (selectedGameType === 'loto2s') {
+    if (selectedGameType === 'loto2s' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
       // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
       return betAmount * getPricePerPoint() * selectedNumbers.length;
     }
@@ -124,7 +137,7 @@ const MienBacGamePage = () => {
 
   const calculateTotalPoints = () => {
     // Tính tổng tiền cược đồng nhất với calculateTotalAmount
-    if (selectedGameType === 'loto2s') {
+    if (selectedGameType === 'loto2s' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
       return betAmount * getPricePerPoint() * selectedNumbers.length;
     }
     // Logic cũ cho các game type khác
@@ -133,12 +146,13 @@ const MienBacGamePage = () => {
   };
 
   const calculateWinnings = () => {
-    // Logic mới: số điểm × tỷ lệ × số lượng số
-    if (selectedGameType === 'loto2s') {
+    // Logic mới: số điểm × tỷ lệ × số lượng số (áp dụng cho loto2s và loto3s)
+    if (selectedGameType === 'loto2s' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
       // Ví dụ: 10 điểm × 99 × 3 số = 2,970
       const totalWinIfAllWin = betAmount * getOdds() * selectedNumbers.length;
       
       console.log('Debug calculateWinnings (số điểm × tỷ lệ × số lượng):', {
+        gameType: selectedGameType,
         betAmount,
         selectedCount: selectedNumbers.length,
         odds: getOdds(),
@@ -243,7 +257,8 @@ const MienBacGamePage = () => {
     }
 
     // Tính tổng tiền cược dựa trên game type
-    const totalCost = selectedGameType === 'loto2s' ? calculateTotalAmount() : calculateTotalPoints();
+    const isLotoNewLogic = selectedGameType === 'loto2s' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s';
+    const totalCost = isLotoNewLogic ? calculateTotalAmount() : calculateTotalPoints();
     if (userPoints < totalCost) {
       showNotification('Số dư không đủ để đặt cược', 'error');
       return;
@@ -254,8 +269,8 @@ const MienBacGamePage = () => {
 
       // Tính số điểm cược thực tế dựa trên game type
       // Backend sẽ nhận số điểm cược thực tế, không phải tổng tiền cược
-      const totalBetAmount = selectedGameType === 'loto2s' 
-        ? betAmount // Gửi số điểm cược thực tế (1 điểm)
+      const totalBetAmount = isLotoNewLogic
+        ? betAmount // Gửi số điểm cược thực tế cho loto2s và loto3s
         : betAmount * getPricePerPoint() * selectedNumbers.length;
       
       // Log bet data for debugging
@@ -268,7 +283,7 @@ const MienBacGamePage = () => {
         odds: getOdds(),
         userPoints,
         totalCost,
-        isLoto2s: selectedGameType === 'loto2s'
+        isLotoNewLogic
       });
       
       const betData = betService.formatBetData(
