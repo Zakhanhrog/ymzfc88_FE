@@ -154,7 +154,9 @@ class BetService {
   }
 
   /**
-   * Hủy bet
+   * Hủy bet - CHỨC NĂNG ĐÃ BỊ VÔ HIỆU HÓA
+   * Đặt cược rồi thì không được hủy để tránh xung đột logic
+   * @deprecated Chức năng này đã bị vô hiệu hóa
    */
   async cancelBet(betId) {
     try {
@@ -214,6 +216,36 @@ class BetService {
   }
 
   /**
+   * Đánh dấu bet đã xem kết quả (dismiss)
+   */
+  async dismissBetResult(betId) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Vui lòng đăng nhập');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/bets/${betId}/dismiss`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Có lỗi xảy ra khi đóng kết quả');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error dismissing bet result:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Kiểm tra kết quả bet (admin - để test)
    */
   async checkBetResults() {
@@ -264,8 +296,8 @@ class BetService {
     const statusMap = {
       'PENDING': { text: 'Chờ kết quả', color: 'text-yellow-600', bg: 'bg-yellow-100' },
       'WON': { text: 'Thắng', color: 'text-green-600', bg: 'bg-green-100' },
-      'LOST': { text: 'Thua', color: 'text-red-600', bg: 'bg-red-100' },
-      'CANCELLED': { text: 'Đã hủy', color: 'text-gray-600', bg: 'bg-gray-100' }
+      'LOST': { text: 'Thua', color: 'text-red-600', bg: 'bg-red-100' }
+      // 'CANCELLED' đã bị loại bỏ - không cho phép hủy cược
     };
 
     return statusMap[status] || statusMap['PENDING'];

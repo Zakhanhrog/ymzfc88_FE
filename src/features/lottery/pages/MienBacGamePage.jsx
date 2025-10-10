@@ -21,6 +21,8 @@ const MienBacGamePage = () => {
   const [loadingOdds, setLoadingOdds] = useState(true);
   const [placingBet, setPlacingBet] = useState(false);
   const [recentBet, setRecentBet] = useState(null);
+  const [betHistory, setBetHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Game types for Miền Bắc
   const gameTypes = [
@@ -111,8 +113,9 @@ const MienBacGamePage = () => {
   };
 
   const calculateTotalAmount = () => {
-    // Tính tổng tiền cược: số điểm cược × đơn giá × số lượng lô
+    // Tính tổng tiền cược: số điểm × đơn giá × số lượng số
     if (selectedGameType === 'loto2s') {
+      // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
       return betAmount * getPricePerPoint() * selectedNumbers.length;
     }
     // Logic cũ cho các game type khác
@@ -120,7 +123,7 @@ const MienBacGamePage = () => {
   };
 
   const calculateTotalPoints = () => {
-    // Tính tổng tiền cược: số điểm cược × đơn giá × số lượng lô
+    // Tính tổng tiền cược đồng nhất với calculateTotalAmount
     if (selectedGameType === 'loto2s') {
       return betAmount * getPricePerPoint() * selectedNumbers.length;
     }
@@ -130,20 +133,18 @@ const MienBacGamePage = () => {
   };
 
   const calculateWinnings = () => {
-    // Tính tiền thắng: tổng tiền cược × tỷ lệ cược
+    // Logic mới: số điểm × tỷ lệ × số lượng số
     if (selectedGameType === 'loto2s') {
-      const totalAmount = calculateTotalAmount();
-      const odds = getOdds();
-      const winnings = totalAmount * odds;
-      console.log('Debug calculateWinnings:', {
+      // Ví dụ: 10 điểm × 99 × 3 số = 2,970
+      const totalWinIfAllWin = betAmount * getOdds() * selectedNumbers.length;
+      
+      console.log('Debug calculateWinnings (số điểm × tỷ lệ × số lượng):', {
         betAmount,
-        pricePerPoint: getPricePerPoint(),
         selectedCount: selectedNumbers.length,
-        totalAmount,
-        odds,
-        winnings
+        odds: getOdds(),
+        totalWinIfAllWin
       });
-      return winnings;
+      return totalWinIfAllWin; // Tổng tiền thắng nếu tất cả số trúng
     }
     // Logic cũ cho các game type khác
     return calculateTotalPoints() * getOdds();
@@ -158,7 +159,10 @@ const MienBacGamePage = () => {
   useEffect(() => {
     loadUserPoints();
     loadBettingOdds();
-  }, []);
+    if (activeTab === 'history') {
+      loadBetHistory();
+    }
+  }, [activeTab]);
 
   const loadUserPoints = async () => {
     try {
@@ -281,8 +285,8 @@ const MienBacGamePage = () => {
       if (response.success) {
         setRecentBet(response.data);
         
-        // Trừ tiền cược ngay lập tức (trừ tiền cược thực tế, không phải số điểm cược)
-        setUserPoints(prev => prev - totalCost);
+        // Load lại số dư từ backend (backend đã trừ tiền)
+        await loadUserPoints();
         
         showNotification('Đặt cược thành công! Kết quả sẽ có sau 5 giây', 'success');
         
@@ -311,24 +315,119 @@ const MienBacGamePage = () => {
       const response = await betService.checkSingleBetResult(betId);
       if (response.success) {
         const bet = response.data;
-        showNotification(response.message, bet.status === 'WON' ? 'success' : 'error');
         
-        // Nếu thắng, cộng tiền thắng vào số dư
-        if (bet.status === 'WON' && selectedGameType === 'loto2s') {
-          const winnings = calculateWinnings();
-          setUserPoints(prev => prev + winnings);
-        } else if (response.currentPoints !== undefined) {
-          // Cập nhật số điểm từ response cho các game type khác
+        // Tạo thông báo chi tiết
+        let notificationMessage = response.message;
+        if (bet.status === 'WON' && bet.winningNumbers) {
+          const winningNumbers = Array.isArray(bet.winningNumbers) ? bet.winningNumbers : JSON.parse(bet.winningNumbers || '[]');
+          if (winningNumbers.length > 0) {
+            notificationMessage = `🎉 Chúc mừng! Bạn đã trúng số: ${winningNumbers.join(', ')}. ${response.message}`;
+          }
+        }
+        
+        showNotification(notificationMessage, bet.status === 'WON' ? 'success' : 'error');
+        
+        // Cập nhật số dư từ backend response (backend đã xử lý tiền thắng)
+        if (response.currentPoints !== undefined) {
           setUserPoints(response.currentPoints);
         } else {
           // Fallback: load lại từ API
           await loadUserPoints();
+        }
+
+        // Cập nhật recent bet với kết quả mới
+        setRecentBet(bet);
+        
+        // Reload lịch sử nếu đang ở tab history
+        if (activeTab === 'history') {
+          loadBetHistory();
         }
       }
     } catch (error) {
       console.error('Error checking bet result:', error);
       showNotification('Có lỗi xảy ra khi kiểm tra kết quả', 'error');
     }
+  };
+
+  // Load lịch sử cược
+  const loadBetHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const response = await betService.getRecentBets(20);
+      if (response.success) {
+        setBetHistory(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading bet history:', error);
+      showNotification('Có lỗi xảy ra khi tải lịch sử', 'error');
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  // Dismiss bet result (đóng thông báo)
+  const dismissBetResult = async (betId) => {
+    try {
+      await betService.dismissBetResult(betId);
+      
+      // Nếu là recent bet thì clear
+      if (recentBet && recentBet.id === betId) {
+        setRecentBet(null);
+      }
+      
+      // Reload lịch sử
+      if (activeTab === 'history') {
+        loadBetHistory();
+      }
+      
+      showNotification('Đã đóng thông báo kết quả', 'success');
+    } catch (error) {
+      console.error('Error dismissing bet result:', error);
+      showNotification('Có lỗi xảy ra khi đóng thông báo', 'error');
+    }
+  };
+
+  // Format số để hiển thị
+  const formatSelectedNumbers = (selectedNumbers) => {
+    if (Array.isArray(selectedNumbers)) {
+      return selectedNumbers;
+    }
+    try {
+      return JSON.parse(selectedNumbers || '[]');
+    } catch {
+      return [];
+    }
+  };
+
+  // Format bet type để hiển thị
+  const formatBetType = (betType) => {
+    const betTypeMap = {
+      'loto2s': 'Loto 2s',
+      'loto-2-so': 'Loto 2 số',
+      'loto-xien-2': 'Loto xiên 2',
+      'loto-xien-3': 'Loto xiên 3',
+      'loto-xien-4': 'Loto xiên 4',
+      'loto-3s': 'Loto 3s',
+      'loto-4s': 'Loto 4s',
+      'giai-nhat': 'Giải nhất',
+      'dac-biet': 'Đặc biệt',
+      'dau-dac-biet': 'Đầu Đặc biệt',
+      'de-giai-7': 'Đề giải 7',
+      'dau-duoi': 'Đầu / đuôi',
+      '3s-giai-nhat': '3s giải nhất',
+      '3s-giai-6': '3s giải 6',
+      '3s-dau-duoi': '3s đầu đuôi',
+      '3s-dac-biet': '3s đặc biệt',
+      '4s-dac-biet': '4s đặc biệt',
+      'loto-truot-4': 'Loto trượt 4',
+      'loto-truot-5': 'Loto trượt 5',
+      'loto-truot-6': 'Loto trượt 6',
+      'loto-truot-7': 'Loto trượt 7',
+      'loto-truot-8': 'Loto trượt 8',
+      'loto-truot-9': 'Loto trượt 9',
+      'loto-truot-10': 'Loto trượt 10'
+    };
+    return betTypeMap[betType] || betType;
   };
 
   return (
@@ -527,114 +626,226 @@ const MienBacGamePage = () => {
             </button>
           </div>
 
-            <div className="p-4">
-              {/* Multipliers */}
-              <div className="mb-4">
-                <h3 className="text-base font-semibold mb-2">Hệ số</h3>
-                <div className="flex gap-2">
-                  {multipliers.map((mult) => (
-                    <button
-                      key={mult.value}
-                      onClick={() => handleMultiplierClick(mult.value)}
-                      className="w-10 h-10 rounded-full text-white font-bold transition-all text-base bg-gray-300 hover:bg-gray-400"
-                    >
-                      {mult.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bet Amount */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Số điểm cược
-                </label>
-                <input
-                  type="number"
-                  value={betAmount}
-                  onChange={(e) => setBetAmount(Number(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                  min="1"
-                />
-              </div>
-
-              {/* Summary */}
-              <div className="space-y-2 mb-4 text-base">
-                {selectedNumbers.length > 0 && (
-                  <div className="text-gray-600 text-sm">
-                    Số đã chọn: {selectedNumbers.join(', ')}
+          <div className="p-4">
+            {/* Tab Content */}
+            {activeTab === 'selection' ? (
+              <>
+                {/* Multipliers */}
+                <div className="mb-4">
+                  <h3 className="text-base font-semibold mb-2">Hệ số</h3>
+                  <div className="flex gap-2">
+                    {multipliers.map((mult) => (
+                      <button
+                        key={mult.value}
+                        onClick={() => handleMultiplierClick(mult.value)}
+                        className="w-10 h-10 rounded-full text-white font-bold transition-all text-base bg-gray-300 hover:bg-gray-400"
+                      >
+                        {mult.label}
+                      </button>
+                    ))}
                   </div>
-                )}
-                {selectedNumbers.length > 0 && (
-                  <>
-                    <div className="text-gray-600">
-                      Tổng tiền cược: {calculateTotalAmount().toLocaleString()} điểm
-                    </div>
-                    <div className="text-gray-600">
-                      Tiền thắng: {calculateWinnings().toLocaleString()}
-                    </div>
-                  </>
-                )}
-                <div className="text-gray-600">
-                  Số dư: {loadingPoints ? 'Đang tải...' : userPoints.toLocaleString()}
                 </div>
 
-                {/* Recent Bet Info */}
-                {recentBet && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="text-sm text-blue-800">
-                      <div className="font-medium mb-1">Cược gần đây:</div>
-                      <div>Số: {recentBet.selectedNumbers?.join(', ')}</div>
-                      <div>Tiền cược: {recentBet.totalAmount?.toLocaleString() || 0} điểm</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span>Trạng thái:</span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          recentBet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                          recentBet.status === 'WON' ? 'bg-green-100 text-green-800' :
-                          recentBet.status === 'LOST' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {recentBet.status === 'PENDING' ? 'Chờ kết quả' :
-                           recentBet.status === 'WON' ? 'Thắng' :
-                           recentBet.status === 'LOST' ? 'Thua' : recentBet.status}
-                        </span>
+                {/* Bet Amount */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số điểm cược
+                  </label>
+                  <input
+                    type="number"
+                    value={betAmount}
+                    onChange={(e) => setBetAmount(Number(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    min="1"
+                  />
+                </div>
+
+                {/* Summary */}
+                <div className="space-y-2 mb-4 text-base">
+                  {selectedNumbers.length > 0 && (
+                    <div className="text-gray-600 text-sm">
+                      Số đã chọn: {selectedNumbers.join(', ')}
+                    </div>
+                  )}
+                  {selectedNumbers.length > 0 && (
+                    <>
+                      <div className="text-gray-600">
+                        Tổng tiền cược: {calculateTotalAmount().toLocaleString()} điểm
+                      </div>
+                      <div className="text-gray-600">
+                        Tiền thắng (nếu tất cả trúng): {calculateWinnings().toLocaleString()}
+                      </div>
+                    </>
+                  )}
+                  <div className="text-gray-600">
+                    Số dư: {loadingPoints ? 'Đang tải...' : userPoints.toLocaleString()}
+                  </div>
+
+                  {/* Recent Bet Info */}
+                  {recentBet && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 relative">
+                      {/* Nút X để dismiss khi đã có kết quả */}
+                      {recentBet.status !== 'PENDING' && (
+                        <button
+                          onClick={() => dismissBetResult(recentBet.id)}
+                          className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                          title="Đóng thông báo"
+                        >
+                          <Icon icon="mdi:close" className="w-4 h-4 text-gray-600" />
+                        </button>
+                      )}
+                      
+                      <div className="text-sm text-blue-800">
+                        <div className="font-medium mb-1">Cược gần đây:</div>
+                        <div className="text-blue-700 font-medium">{formatBetType(recentBet.betType)}</div>
+                        <div>Số: {formatSelectedNumbers(recentBet.selectedNumbers)?.join(', ')}</div>
+                        <div>Tiền cược: {recentBet.totalAmount?.toLocaleString() || 0} điểm</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span>Trạng thái:</span>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            recentBet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            recentBet.status === 'WON' ? 'bg-green-100 text-green-800' :
+                            recentBet.status === 'LOST' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {recentBet.status === 'PENDING' ? 'Chờ kết quả' :
+                             recentBet.status === 'WON' ? 'Thắng cược' :
+                             recentBet.status === 'LOST' ? 'Thua cược' : recentBet.status}
+                          </span>
+                        </div>
+                        {recentBet.status === 'WON' && recentBet.winAmount && (
+                          <div className="text-green-700 font-medium mt-1">
+                            Tiền thắng: +{recentBet.winAmount.toLocaleString()} điểm
+                          </div>
+                        )}
+                        {recentBet.status === 'WON' && recentBet.winningNumbers && (
+                          <div className="text-green-700 mt-1">
+                            Số trúng: {formatSelectedNumbers(recentBet.winningNumbers)?.join(', ')}
+                          </div>
+                        )}
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setSelectedNumbers([]);
+                      setBetAmount(1);
+                    }}
+                    className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-base"
+                  >
+                    Cài lại
+                  </button>
+                  <button
+                    onClick={handlePlaceBet}
+                    disabled={placingBet || selectedNumbers.length === 0}
+                    className={`w-full py-2 text-white rounded-lg transition-colors font-medium text-base ${
+                      placingBet || selectedNumbers.length === 0
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-[#D30102] hover:bg-[#B80102]'
+                    }`}
+                  >
+                    {placingBet ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+                        <span>Đang đặt cược...</span>
+                      </div>
+                    ) : (
+                      'Đặt cược'
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* History Tab */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-semibold text-gray-800">Lịch sử cược</h3>
+                  <button
+                    onClick={loadBetHistory}
+                    className="text-blue-600 hover:text-blue-700 text-sm"
+                    disabled={loadingHistory}
+                  >
+                    <Icon icon={loadingHistory ? "mdi:loading" : "mdi:refresh"} className={`w-4 h-4 ${loadingHistory ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+                
+                <div className="text-sm text-gray-600 mb-2">
+                  Số dư: {loadingPoints ? 'Đang tải...' : userPoints.toLocaleString()} điểm
+                </div>
+
+                {loadingHistory ? (
+                  <div className="text-center py-4">
+                    <Icon icon="mdi:loading" className="w-6 h-6 animate-spin mx-auto text-blue-600" />
+                    <p className="text-sm text-gray-600 mt-2">Đang tải lịch sử...</p>
+                  </div>
+                ) : betHistory.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Icon icon="mdi:history" className="w-12 h-12 mx-auto text-gray-400" />
+                    <p className="text-sm text-gray-600 mt-2">Chưa có lịch sử cược</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {betHistory.map((bet) => (
+                      <div key={bet.id} className="p-3 bg-gray-50 rounded-lg border relative">
+                        {/* Nút X để dismiss bet đã có kết quả */}
+                        {bet.status !== 'PENDING' && (
+                          <button
+                            onClick={() => dismissBetResult(bet.id)}
+                            className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                            title="Xóa khỏi lịch sử"
+                          >
+                            <Icon icon="mdi:close" className="w-3 h-3 text-gray-600" />
+                          </button>
+                        )}
+                        
+                        <div className="text-xs text-gray-500 mb-1">
+                          {new Date(bet.createdAt).toLocaleString('vi-VN')}
+                        </div>
+                        
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-700">
+                            {formatBetType(bet.betType)} - Số: {formatSelectedNumbers(bet.selectedNumbers)?.join(', ')}
+                          </div>
+                          <div className="text-gray-600">
+                            Cược: {bet.totalAmount?.toLocaleString() || 0} điểm
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              bet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                              bet.status === 'WON' ? 'bg-green-100 text-green-800' :
+                              bet.status === 'LOST' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {bet.status === 'PENDING' ? 'Chờ kết quả' :
+                               bet.status === 'WON' ? 'Thắng cược' :
+                               bet.status === 'LOST' ? 'Thua cược' : bet.status}
+                            </span>
+                          </div>
+                          
+                          {bet.status === 'WON' && bet.winAmount && (
+                            <div className="text-green-700 font-medium text-xs mt-1">
+                              Thắng: +{bet.winAmount.toLocaleString()} điểm
+                            </div>
+                          )}
+                          
+                          {bet.status === 'WON' && bet.winningNumbers && (
+                            <div className="text-green-700 text-xs mt-1">
+                              Số trúng: {formatSelectedNumbers(bet.winningNumbers)?.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    setSelectedNumbers([]);
-                    setBetAmount(1);
-                  }}
-                  className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-base"
-                >
-                  Cài lại
-                </button>
-                <button
-                  onClick={handlePlaceBet}
-                  disabled={placingBet || selectedNumbers.length === 0}
-                  className={`w-full py-2 text-white rounded-lg transition-colors font-medium text-base ${
-                    placingBet || selectedNumbers.length === 0
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-[#D30102] hover:bg-[#B80102]'
-                  }`}
-                >
-                  {placingBet ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
-                      <span>Đang đặt cược...</span>
-                    </div>
-                  ) : (
-                    'Đặt cược'
-                  )}
-                </button>
-              </div>
-            </div>
+            )}
+          </div>
           </div>
         </div>
         </div>
