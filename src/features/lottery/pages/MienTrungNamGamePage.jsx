@@ -89,10 +89,22 @@ const MienTrungNamGamePage = () => {
 
   const handleNumberInput = () => {
     // Parse input numbers separated by comma or space
+    const isLoto4s = selectedGameType === 'loto-4s' || selectedGameType === 'loto4s';
     const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s';
-    const numDigits = isLoto3s ? 3 : 2;
-    const maxValue = isLoto3s ? 999 : 99;
-    const regex = isLoto3s ? /^\d{3}$/ : /^\d{2}$/;
+    
+    let numDigits = 2;
+    let maxValue = 99;
+    let regex = /^\d{2}$/;
+    
+    if (isLoto4s) {
+      numDigits = 4;
+      maxValue = 9999;
+      regex = /^\d{4}$/;
+    } else if (isLoto3s) {
+      numDigits = 3;
+      maxValue = 999;
+      regex = /^\d{3}$/;
+    }
     
     const inputNumbers = numberInput
       .split(/[,\s]+/)
@@ -129,7 +141,9 @@ const MienTrungNamGamePage = () => {
 
   const calculateTotalAmount = () => {
     // Tính tổng tiền cược: số điểm × đơn giá × số lượng số
-    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s'
+        || selectedGameType === 'loto-4s' || selectedGameType === 'loto4s'
+        || selectedGameType === 'dac-biet') {
       // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
       return betAmount * getPricePerPoint() * selectedNumbers.length;
     }
@@ -140,7 +154,9 @@ const MienTrungNamGamePage = () => {
 
   const calculateTotalPoints = () => {
     // Tính tổng tiền cược đồng nhất với calculateTotalAmount
-    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s'
+        || selectedGameType === 'loto-4s' || selectedGameType === 'loto4s'
+        || selectedGameType === 'dac-biet') {
       return betAmount * getPricePerPoint() * selectedNumbers.length;
     }
     // Logic cũ cho các game type khác
@@ -149,8 +165,10 @@ const MienTrungNamGamePage = () => {
   };
 
   const calculateWinnings = () => {
-    // Logic mới: số điểm × tỷ lệ × số lượng số (áp dụng cho loto-2-so và loto-3s)
-    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s') {
+    // Logic mới: số điểm × tỷ lệ × số lượng số (áp dụng cho loto-2-so, loto-3s, loto-4s, dac-biet)
+    if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s'
+        || selectedGameType === 'loto-4s' || selectedGameType === 'loto4s'
+        || selectedGameType === 'dac-biet') {
       // Ví dụ: 10 điểm × 99 × 3 số = 2,970
       const totalWinIfAllWin = betAmount * getOdds() * selectedNumbers.length;
       
@@ -260,7 +278,9 @@ const MienTrungNamGamePage = () => {
     }
 
     // Tính tổng tiền cược dựa trên game type
-    const isLotoNewLogic = selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s';
+    const isLotoNewLogic = selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s'
+                        || selectedGameType === 'loto-4s' || selectedGameType === 'loto4s'
+                        || selectedGameType === 'dac-biet';
     const totalCost = isLotoNewLogic ? calculateTotalAmount() : calculateTotalPoints();
     if (userPoints < totalCost) {
       showNotification('Số dư không đủ để đặt cược', 'error');
@@ -273,7 +293,7 @@ const MienTrungNamGamePage = () => {
       // Tính số điểm cược thực tế dựa trên game type
       // Backend sẽ nhận số điểm cược thực tế, không phải tổng tiền cược
       const totalBetAmount = isLotoNewLogic
-        ? betAmount // Gửi số điểm cược thực tế cho loto-2-so và loto-3s
+        ? betAmount // Gửi số điểm cược thực tế cho loto-2-so, loto-3s, loto-4s, dac-biet
         : betAmount * getPricePerPoint() * selectedNumbers.length;
       
       // Log bet data for debugging
@@ -545,32 +565,59 @@ const MienTrungNamGamePage = () => {
                 )}
               </div>
 
-              {/* Selection Mode Tabs */}
-              <div className="flex border-b border-gray-200 mb-4">
-                <button
-                  onClick={() => setSelectionMode('quick')}
-                  className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
-                    selectionMode === 'quick'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  Chọn số nhanh
-                </button>
-                <button
-                  onClick={() => setSelectionMode('input')}
-                  className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
-                    selectionMode === 'input'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  Nhập số
-                </button>
-              </div>
+              {/* Selection Mode Tabs - Ẩn khi chọn loto-4s */}
+              {!(selectedGameType === 'loto-4s' || selectedGameType === 'loto4s') && (
+                <div className="flex border-b border-gray-200 mb-4">
+                  <button
+                    onClick={() => setSelectionMode('quick')}
+                    className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
+                      selectionMode === 'quick'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    Chọn số nhanh
+                  </button>
+                  <button
+                    onClick={() => setSelectionMode('input')}
+                    className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
+                      selectionMode === 'input'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    Nhập số
+                  </button>
+                </div>
+              )}
 
               {/* Selection Content */}
-              {selectionMode === 'quick' ? (
+              {(selectedGameType === 'loto-4s' || selectedGameType === 'loto4s') ? (
+                /* Loto 4s: CHỈ CHO NHẬP TAY */
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-base font-medium text-gray-800 mb-2">Loto 4 số - Nhập tay (0000-9999):</h3>
+                    <p className="text-sm text-gray-600">
+                      Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 0001, 0123, 9999 hoặc 0001 0123 9999
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <textarea
+                      value={numberInput}
+                      onChange={(e) => setNumberInput(e.target.value)}
+                      placeholder="Nhập các số 4 chữ số (0000-9999)..."
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      rows={4}
+                    />
+                    <button
+                      onClick={handleNumberInput}
+                      className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-base"
+                    >
+                      Áp dụng số đã nhập
+                    </button>
+                  </div>
+                </div>
+              ) : selectionMode === 'quick' ? (
                 /* Number Grid */
                 <div className="grid grid-cols-10 gap-1.5">
                   {numbers.map((number) => (
@@ -588,7 +635,7 @@ const MienTrungNamGamePage = () => {
                   ))}
                 </div>
               ) : (
-                /* Number Input */
+                /* Number Input - Loto 2s hoặc 3s */
                 <div>
                   <div className="mb-3">
                     <h3 className="text-base font-medium text-gray-800 mb-2">Cách chơi:</h3>
