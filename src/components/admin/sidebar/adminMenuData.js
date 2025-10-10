@@ -97,6 +97,11 @@ export const adminMenuItems = [
         key: 'game-settings',
         icon: 'SettingOutlined',
         label: 'Cài đặt game',
+      },
+      {
+        key: 'betting-odds',
+        icon: 'PercentageOutlined',
+        label: 'Tỷ lệ cược',
       }
     ]
   },

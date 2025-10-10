@@ -54,11 +54,7 @@ const Header = ({
               {/* Balance */}
               <div className="flex items-center gap-2 border border-gray-300 px-4 py-2 rounded-full bg-white">
                 <span className="font-bold text-[#D30102] text-base">
-                  {new Intl.NumberFormat('vi-VN', {
-                    style: 'decimal',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  }).format(userBalance / 1000)}
+                  {userBalance.toLocaleString()} điểm
                 </span>
                 <button
                   onClick={onRefreshBalance}

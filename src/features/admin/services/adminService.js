@@ -223,15 +223,8 @@ export const adminService = {
     }
   },
 
-  // Cập nhật số dư người dùng
-  updateUserBalance: async (userId, balance) => {
-    try {
-      const response = await adminAPI.put(`/admin/users/${userId}/balance?balance=${balance}`);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật số dư');
-    }
-  },
+  // Note: updateUserBalance đã bị xóa khỏi BE - hệ thống chỉ dùng points
+  // Admin có thể cộng/trừ points qua PointService thay thế
 
   // Lấy thống kê người dùng
   getUserStats: async () => {

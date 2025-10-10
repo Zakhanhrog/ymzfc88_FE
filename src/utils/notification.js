@@ -104,5 +104,8 @@ export const message = {
   info: (content, duration) => showMessage(content, 'info', duration),
 };
 
+// Alias for backward compatibility
+export const showNotification = showMessage;
+
 export default message;
 

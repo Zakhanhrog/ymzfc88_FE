@@ -48,7 +48,7 @@ const WalletBalance = ({ onTabChange }) => {
       } else {
         // Fallback data nếu không thể tải được
         setWalletData({
-          balance: 0,
+          points: 0,
           totalDeposit: 0,
           totalWithdraw: 0,
           totalBonus: 0,
@@ -59,13 +59,13 @@ const WalletBalance = ({ onTabChange }) => {
     } catch (error) {
       // Fallback data khi có lỗi
       setWalletData({
-        balance: 0,
+        points: 0,
         totalDeposit: 0,
         totalWithdraw: 0,
         totalBonus: 0,
         frozenAmount: 0
       });
-      message.error('Lỗi khi tải số dư ví: ' + error.message);
+      message.error('Lỗi khi tải thông tin ví: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -117,7 +117,7 @@ const WalletBalance = ({ onTabChange }) => {
   }
 
   const {
-    balance = 0,
+    points = 0,
     totalDeposit = 0,
     totalWithdraw = 0,
     totalBonus = 0,
@@ -129,6 +129,9 @@ const WalletBalance = ({ onTabChange }) => {
     lifetimeEarned = 0,
     lifetimeSpent = 0
   } = pointData || {};
+  
+  // Dùng points từ wallet data hoặc point data
+  const displayPoints = points || totalPoints;
 
   const winRate = totalDeposit > 0 ? ((totalDeposit / (totalDeposit + totalWithdraw)) * 100).toFixed(1) : 0;
 
@@ -151,9 +154,9 @@ const WalletBalance = ({ onTabChange }) => {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-orange-900" style={{ fontSize: FONT_SIZE['2xl'], fontWeight: FONT_WEIGHT.bold }}>
-                {formatPoints(totalPoints)}
+                {formatPoints(displayPoints)}
               </span>
-              <Tooltip title="Nạp 1.000 VNĐ = 1 điểm">
+              <Tooltip title="1000 VNĐ = 1 điểm. Dùng điểm để đặt cược và rút tiền">
                 <Button
                   type="text"
                   size="small"
@@ -211,10 +214,10 @@ const WalletBalance = ({ onTabChange }) => {
         </Card>
 
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Điểm </div>
+          <div className="text-xs text-gray-500 mb-1">Điểm hiện tại</div>
           <div className="text-lg md:text-xl font-bold text-yellow-600 flex items-center gap-1">
             <StarOutlined className="text-sm" />
-            {balanceVisible ? totalPoints.toLocaleString() : '****'}
+            {balanceVisible ? displayPoints.toLocaleString() : '****'}
           </div>
         </Card>
       </div>

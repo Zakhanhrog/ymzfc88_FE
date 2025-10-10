@@ -4,6 +4,7 @@ import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 import AuthModal from './layout/AuthModal';
 import Footer from './layout/Footer';
+import pointService from '../../services/pointService';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Layout = ({ children }) => {
   });
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [userBalance, setUserBalance] = useState(0);
+  const [userPoints, setUserPoints] = useState(0);
   const [userName, setUserName] = useState('');
 
   // Lưu activeGame vào localStorage mỗi khi thay đổi
@@ -25,35 +26,49 @@ const Layout = ({ children }) => {
     localStorage.setItem('activeGame', activeGame);
   }, [activeGame]);
 
-  // Function để fetch user balance từ API
-  const fetchUserBalance = async () => {
+  // Function để fetch user points từ API
+  const fetchUserPoints = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('http://localhost:8080/api/wallet/balance', {
+      // Thử gọi API wallet/balance trước (có points)
+      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
         }
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          setUserBalance(data.data.balance || 0);
+      
+      if (walletResponse.ok) {
+        const walletData = await walletResponse.json();
+        if (walletData.success && walletData.data.points !== undefined) {
+          setUserPoints(walletData.data.points || 0);
           
+          // Lưu vào localStorage
           const user = localStorage.getItem('user');
           if (user) {
             const userData = JSON.parse(user);
-            userData.balance = data.data.balance || 0;
+            userData.points = walletData.data.points || 0;
             localStorage.setItem('user', JSON.stringify(userData));
           }
+          return;
+        }
+      }
+      
+      // Fallback: gọi pointService
+      const response = await pointService.getMyPoints();
+      if (response.success) {
+        setUserPoints(response.data.totalPoints || 0);
+        
+        // Lưu vào localStorage
+        const user = localStorage.getItem('user');
+        if (user) {
+          const userData = JSON.parse(user);
+          userData.points = response.data.totalPoints || 0;
+          localStorage.setItem('user', JSON.stringify(userData));
         }
       }
     } catch (error) {
-      console.error('Error fetching user balance:', error);
+      console.error('Error fetching user points:', error);
     }
   };
 
@@ -68,28 +83,28 @@ const Layout = ({ children }) => {
         try {
           const userData = JSON.parse(user);
           setUserName(userData.username || userData.name || 'User');
-          setUserBalance(userData.balance || 0);
+          setUserPoints(userData.points || 0);
         } catch (error) {
           console.error('Error parsing user data:', error);
           setUserName('User');
-          setUserBalance(0);
+          setUserPoints(0);
         }
       } else {
         setUserName('User');
-        setUserBalance(0);
+        setUserPoints(0);
       }
 
-      fetchUserBalance();
+      fetchUserPoints();
 
       const interval = setInterval(() => {
-        fetchUserBalance();
+        fetchUserPoints();
       }, 30000);
 
       return () => clearInterval(interval);
     } else {
       setIsLoggedIn(false);
       setUserName('');
-      setUserBalance(0);
+      setUserPoints(0);
     }
   }, []);
 
@@ -100,7 +115,7 @@ const Layout = ({ children }) => {
       localStorage.removeItem('user');
       setIsLoggedIn(false);
       setUserName('');
-      setUserBalance(0);
+      setUserPoints(0);
       navigate('/');
       window.location.reload();
     }
@@ -123,8 +138,8 @@ const Layout = ({ children }) => {
         onLoginOpen={() => setIsLoginModalOpen(true)}
         onRegisterOpen={() => setIsRegisterModalOpen(true)}
         userName={userName}
-        userBalance={userBalance}
-        onRefreshBalance={fetchUserBalance}
+        userBalance={userPoints}
+        onRefreshBalance={fetchUserPoints}
         onLogout={handleLogout}
       />
 

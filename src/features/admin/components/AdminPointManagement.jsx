@@ -72,6 +72,29 @@ const AdminPointManagement = () => {
   const loadUserPoints = async (userId) => {
     try {
       setLoading(true);
+      
+      // Thử gọi API trực tiếp để lấy user info (có points)
+      const userResponse = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.success && userData.data.points !== undefined) {
+          setUserPoints({
+            totalPoints: userData.data.points || 0,
+            lifetimeEarned: 0, // Có thể lấy từ API khác sau
+            lifetimeSpent: 0   // Có thể lấy từ API khác sau
+          });
+          return;
+        }
+      }
+      
+      // Fallback: gọi pointService
       const response = await pointService.getUserPoints(userId);
       if (response.success) {
         setUserPoints(response.data);

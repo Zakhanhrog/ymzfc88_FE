@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
 
 const LotteryPage = () => {
+  const navigate = useNavigate();
   const [selectedRegion, setSelectedRegion] = useState('bac');
 
   const regions = {
@@ -23,12 +25,6 @@ const LotteryPage = () => {
       color: 'from-blue-500 to-blue-600',
       games: [
         {
-          id: 'binh-duong',
-          name: 'Xổ Số Bình Dương',
-          image: '/game/binhduong.png',
-          description: 'Xổ số Bình Dương'
-        },
-        {
           id: 'gia-lai',
           name: 'Xổ Số Gia Lai', 
           image: '/game/gialai.png',
@@ -47,6 +43,12 @@ const LotteryPage = () => {
       color: 'from-green-500 to-green-600', 
       games: [
         {
+          id: 'binh-duong',
+          name: 'Xổ Số Bình Dương',
+          image: '/game/binhduong.png',
+          description: 'Xổ số Bình Dương'
+        },
+        {
           id: 'tra-vinh',
           name: 'Xổ Số Trà Vinh',
           image: '/game/travinh.png',
@@ -64,7 +66,13 @@ const LotteryPage = () => {
 
   const handleGameSelect = (gameId) => {
     console.log('Selected game:', gameId);
-    // TODO: Navigate to game detail or start game
+    if (gameId === 'mien-bac') {
+      navigate('/lottery/mien-bac');
+    } else if (['binh-duong', 'gia-lai', 'ninh-thuan', 'tra-vinh', 'vinh-long'].includes(gameId)) {
+      // Tất cả các cổng game Miền Trung và Nam đều vào trang chung với tên cổng
+      const gameName = regions.trung.games.concat(regions.nam.games).find(game => game.id === gameId)?.name || '';
+      navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(gameName)}`);
+    }
   };
 
   return (

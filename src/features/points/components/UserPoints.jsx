@@ -20,6 +20,29 @@ const UserPoints = () => {
   const loadMyPoints = async () => {
     try {
       setLoading(true);
+      
+      // Thử gọi API wallet/balance trước (có points)
+      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (walletResponse.ok) {
+        const walletData = await walletResponse.json();
+        if (walletData.success && walletData.data.points !== undefined) {
+          setPointData({
+            totalPoints: walletData.data.points || 0,
+            lifetimeEarned: 0, // Có thể lấy từ API khác sau
+            lifetimeSpent: 0   // Có thể lấy từ API khác sau
+          });
+          return;
+        }
+      }
+      
+      // Fallback: gọi pointService
       const response = await pointService.getMyPoints();
       if (response.success) {
         setPointData(response.data);
