@@ -191,6 +191,59 @@ const MienBacGamePage = () => {
         // Kết hợp: cụm cũ + cụm mới + số còn lại
         setSelectedNumbers([...existingGroups, ...newGroups, ...remainingNumbers]);
       }
+    } else if (selectedGameType === 'loto-truot-4') {
+      // Logic đặc biệt cho loto trượt 4: tạo cụm 4 số (giống loto xiên 4)
+      
+      // Tách các cụm đã tạo và số đơn lẻ
+      const existingGroups = selectedNumbers.filter(n => {
+        const parts = n.split(',');
+        return parts.length === 4; // Chỉ lấy cụm 4 số
+      });
+      const singleNumbers = selectedNumbers.filter(n => {
+        const parts = n.split(',');
+        return parts.length < 4; // Lấy số đơn lẻ, cặp, cụm 3 chưa hoàn chỉnh
+      });
+      
+      if (singleNumbers.includes(number)) {
+        // Bỏ chọn số đơn lẻ
+        const newSingleNumbers = singleNumbers.filter(n => n !== number);
+        setSelectedNumbers([...existingGroups, ...newSingleNumbers]);
+      } else {
+        // Thêm số mới vào danh sách số đơn lẻ
+        const newSingleNumbers = [...singleNumbers, number];
+        
+        // Tạo cụm từ các số đơn lẻ (mỗi 4 số thành 1 cụm)
+        const newGroups = [];
+        const remainingNumbers = [];
+        
+        // Tạo cụm từ các số đơn lẻ (mỗi 4 số thành 1 cụm)
+        for (let i = 0; i < newSingleNumbers.length; i += 4) {
+          if (i + 3 < newSingleNumbers.length) {
+            // Có đủ 4 số để tạo cụm
+            const group = [newSingleNumbers[i], newSingleNumbers[i + 1], newSingleNumbers[i + 2], newSingleNumbers[i + 3]].sort().join(',');
+            
+            // Kiểm tra cụm này đã tồn tại chưa
+            const allExistingGroups = [...existingGroups, ...newGroups];
+            const isDuplicate = allExistingGroups.includes(group);
+            
+            if (!isDuplicate) {
+              newGroups.push(group);
+            } else {
+              // Nếu trùng, bỏ chọn cả 4 số và thông báo
+              const [num1, num2, num3, num4] = group.split(',');
+              showNotification(`Cụm số (${num1}, ${num2}, ${num3}, ${num4}) đã tồn tại!`, 'warning');
+            }
+          } else {
+            // Số còn lại, giữ lại để chờ số tiếp theo
+            for (let j = i; j < newSingleNumbers.length; j++) {
+              remainingNumbers.push(newSingleNumbers[j]);
+            }
+          }
+        }
+        
+        // Kết hợp: cụm cũ + cụm mới + số còn lại
+        setSelectedNumbers([...existingGroups, ...newGroups, ...remainingNumbers]);
+      }
     } else {
       // Logic thông thường cho các loại khác
       if (selectedNumbers.includes(number)) {
@@ -279,8 +332,12 @@ const MienBacGamePage = () => {
       // Kết hợp cụm hiện tại với cụm mới (không trùng)
       setSelectedNumbers([...existingGroups, ...uniqueGroups]);
       setNumberInput('');
-    } else if (selectedGameType === 'loto-xien-4') {
-      // Logic đặc biệt cho loto xiên 4: nhập cụm 4 số
+    } else if (selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4') {
+      
+      // Xác định số lượng số trong mỗi cụm
+      let requiredNumbers = 4; // mặc định
+      
+      // Logic đặc biệt cho loto xiên 4 và loto trượt: nhập cụm số
       const inputGroups = numberInput
         .split(';')
         .map(group => group.trim())
@@ -292,7 +349,7 @@ const MienBacGamePage = () => {
             .map(num => num.padStart(2, '0'))
             .filter(num => /^\d{2}$/.test(num) && parseInt(num) >= 0 && parseInt(num) <= 99);
           
-          if (numbers.length === 4) {
+          if (numbers.length === requiredNumbers) {
             return numbers.sort().join(',');
           }
           return null;
@@ -302,7 +359,7 @@ const MienBacGamePage = () => {
       // Lọc bỏ các cụm trùng lặp (bao gồm cả với cụm hiện tại)
       const existingGroups = selectedNumbers.filter(n => {
         const parts = n.split(',');
-        return parts.length === 4;
+        return parts.length === requiredNumbers;
       });
       const duplicateGroups = inputGroups.filter(group => existingGroups.includes(group));
       const uniqueGroups = inputGroups.filter(group => !existingGroups.includes(group));
@@ -310,8 +367,8 @@ const MienBacGamePage = () => {
       // Thông báo các cụm trùng
       if (duplicateGroups.length > 0) {
         const duplicateText = duplicateGroups.map(group => {
-          const [num1, num2, num3, num4] = group.split(',');
-          return `(${num1}, ${num2}, ${num3}, ${num4})`;
+          const nums = group.split(',');
+          return `(${nums.join(', ')})`;
         }).join(', ');
         showNotification(`Các cụm số ${duplicateText} đã tồn tại!`, 'warning');
       }
@@ -382,7 +439,8 @@ const MienBacGamePage = () => {
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat') {
+        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+        || selectedGameType === 'loto-truot-4') {
       
       let count = selectedNumbers.length;
       
@@ -399,13 +457,15 @@ const MienBacGamePage = () => {
         }).length;
       }
       
-      // Đối với loto xiên 4, đếm số cụm (không tính số đơn lẻ chưa thành cụm)
-      if (selectedGameType === 'loto-xien-4') {
+      // Đối với loto xiên 4 và loto trượt 4, đếm số cụm (không tính số đơn lẻ chưa thành cụm)
+      if (selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4') {
         count = selectedNumbers.filter(item => {
           const parts = item.split(',');
           return parts.length === 4; // Chỉ đếm cụm 4 số hoàn chỉnh
         }).length;
       }
+      
+      // Loto trượt 5,6,7,8,9,10: đếm số cụm hoàn chỉnh
       
       // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
       return betAmount * getPricePerPoint() * count;
@@ -424,7 +484,8 @@ const MienBacGamePage = () => {
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat') {
+        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+        || selectedGameType === 'loto-truot-4') {
       
       let count = selectedNumbers.length;
       
@@ -441,13 +502,15 @@ const MienBacGamePage = () => {
         }).length;
       }
       
-      // Đối với loto xiên 4, đếm số cụm (không tính số đơn lẻ chưa thành cụm)
-      if (selectedGameType === 'loto-xien-4') {
+      // Đối với loto xiên 4 và loto trượt 4, đếm số cụm (không tính số đơn lẻ chưa thành cụm)
+      if (selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4') {
         count = selectedNumbers.filter(item => {
           const parts = item.split(',');
           return parts.length === 4; // Chỉ đếm cụm 4 số hoàn chỉnh
         }).length;
       }
+      
+      // Loto trượt 5,6,7,8,9,10: đếm số cụm hoàn chỉnh
       
       return betAmount * getPricePerPoint() * count;
     }
@@ -464,8 +527,10 @@ const MienBacGamePage = () => {
         || selectedGameType === 'loto-xien-3'
         || selectedGameType === 'loto-xien-4'
         || selectedGameType === '3s-dac-biet'
+        || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat') {
+        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+        || selectedGameType === 'loto-truot-4') {
       
       let count = selectedNumbers.length;
       
@@ -482,8 +547,8 @@ const MienBacGamePage = () => {
         }).length;
       }
       
-      // Đối với loto xiên 4, đếm số cụm (không tính số đơn lẻ chưa thành cụm)
-      if (selectedGameType === 'loto-xien-4') {
+      // Đối với loto xiên 4 và loto trượt 4, đếm số cụm
+      if (selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4') {
         count = selectedNumbers.filter(item => {
           const parts = item.split(',');
           return parts.length === 4; // Chỉ đếm cụm 4 số hoàn chỉnh
@@ -625,6 +690,18 @@ const MienBacGamePage = () => {
         return;
       }
     }
+    
+    // Đối với loto trượt 4-10, cần ít nhất 1 cụm hoàn thành
+    if (selectedGameType === 'loto-truot-4') {
+      const completedGroups = selectedNumbers.filter(item => {
+        const parts = item.split(',');
+        return parts.length === 4;
+      });
+      if (completedGroups.length === 0) {
+        showNotification('Vui lòng chọn ít nhất 1 cụm 4 số hoàn chỉnh', 'error');
+        return;
+      }
+    }
 
     if (betAmount <= 0) {
       showNotification('Số điểm cược phải lớn hơn 0', 'error');
@@ -639,7 +716,8 @@ const MienBacGamePage = () => {
         || selectedGameType === 'loto-xien-4'
         || selectedGameType === '3s-dac-biet'
                         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-                        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat';
+                        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+                        || selectedGameType === 'loto-truot-4';
     const totalCost = isLotoNewLogic ? calculateTotalAmount() : calculateTotalPoints();
     if (userPoints < totalCost) {
       showNotification('Số dư không đủ để đặt cược', 'error');
@@ -667,6 +745,11 @@ const MienBacGamePage = () => {
           return parts.length === 3;
         });
       } else if (selectedGameType === 'loto-xien-4') {
+        numbersToSend = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 4;
+        });
+      } else if (selectedGameType === 'loto-truot-4') {
         numbersToSend = selectedNumbers.filter(item => {
           const parts = item.split(',');
           return parts.length === 4;
@@ -990,6 +1073,8 @@ const MienBacGamePage = () => {
                         'Nhập các cụm 3 số, mỗi cụm cách nhau bởi dấu ;. Ví dụ: 78,40,12; 80,99,23' :
                         selectedGameType === 'loto-xien-4' ? 
                         'Nhập các cụm 4 số, mỗi cụm cách nhau bởi dấu ;. Ví dụ: 78,40,12,56; 80,99,23,45' :
+                        selectedGameType === 'loto-truot-4' ? 
+                        'Loto trượt 4: Nhập cụm 4 số, CẢ 4 số đều KHÔNG trúng → THẮNG. Ví dụ: 12,23,34,45; 56,67,78,89' :
                         selectedGameType === '3s-giai-nhat' ? 
                         'Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 001,845,999 hoặc 001 845 999' :
                         selectedGameType === '3s-dac-biet' ? 
@@ -1008,6 +1093,8 @@ const MienBacGamePage = () => {
                         'Nhập các cụm 3 số (00-99). Ví dụ: 78,40,12; 80,99,23' :
                         selectedGameType === 'loto-xien-4' ? 
                         'Nhập các cụm 4 số (00-99). Ví dụ: 78,40,12,56; 80,99,23,45' :
+                        selectedGameType === 'loto-truot-4' ? 
+                        'Loto trượt 4: Nhập cụm 4 số. Ví dụ: 12,23,34,45; 56,67,78,89' :
                         selectedGameType === '3s-giai-nhat' ? 
                         'Nhập các số 3 chữ số (000-999)...' :
                         selectedGameType === '3s-dac-biet' ? 
@@ -1113,6 +1200,14 @@ const MienBacGamePage = () => {
                           }
                           return item;
                         }).join('; ') :
+                        selectedGameType === 'loto-truot-4' ?
+                        selectedNumbers.map(item => {
+                          const parts = item.split(',');
+                          if (parts.length === 4) {
+                            return `(${item})`;
+                          }
+                          return item;
+                        }).join('; ') :
                         selectedNumbers.join(', ')
                       }
                     </div>
@@ -1200,7 +1295,12 @@ const MienBacGamePage = () => {
                       (selectedGameType === 'loto-xien-4' && selectedNumbers.filter(item => {
                         const parts = item.split(',');
                         return parts.length === 4;
-                      }).length === 0)}
+                      }).length === 0) ||
+                      (selectedGameType === 'loto-truot-4' && selectedNumbers.filter(item => {
+                        const parts = item.split(',');
+                        return parts.length === 4;
+                      }).length === 0)
+                    }
                     className={`w-full py-2 text-white rounded-lg transition-colors font-medium text-base ${
                       placingBet || selectedNumbers.length === 0 || 
                       (selectedGameType === 'loto-xien-2' && selectedNumbers.filter(item => item.includes(',')).length === 0) ||
@@ -1211,6 +1311,14 @@ const MienBacGamePage = () => {
                       (selectedGameType === 'loto-xien-4' && selectedNumbers.filter(item => {
                         const parts = item.split(',');
                         return parts.length === 4;
+                      }).length === 0) ||
+                      (selectedGameType === 'loto-truot-4' && selectedNumbers.filter(item => {
+                        const parts = item.split(',');
+                        return parts.length === 4;
+                      }).length === 0) ||
+                      (selectedGameType === 'loto-truot-10' && selectedNumbers.filter(item => {
+                        const parts = item.split(',');
+                        return parts.length === 10;
                       }).length === 0)
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-[#D30102] hover:bg-[#B80102]'

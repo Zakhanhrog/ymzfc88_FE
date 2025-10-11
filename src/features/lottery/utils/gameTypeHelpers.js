@@ -23,13 +23,7 @@ export const MIEN_BAC_GAME_TYPES = [
   { id: '3s-dau-duoi', name: '3s đầu đuôi', description: '3 số đầu đuôi' },
   { id: '3s-dac-biet', name: '3s đặc biệt', description: '3 số đặc biệt' },
   { id: '4s-dac-biet', name: '4s đặc biệt', description: '4 số đặc biệt' },
-  { id: 'loto-truot-4', name: 'Loto trượt 4', description: 'Lô trượt 4' },
-  { id: 'loto-truot-5', name: 'Loto trượt 5', description: 'Lô trượt 5' },
-  { id: 'loto-truot-6', name: 'Loto trượt 6', description: 'Lô trượt 6' },
-  { id: 'loto-truot-7', name: 'Loto trượt 7', description: 'Lô trượt 7' },
-  { id: 'loto-truot-8', name: 'Loto trượt 8', description: 'Lô trượt 8' },
-  { id: 'loto-truot-9', name: 'Loto trượt 9', description: 'Lô trượt 9' },
-  { id: 'loto-truot-10', name: 'Loto trượt 10', description: 'Lô trượt 10' }
+  { id: 'loto-truot-4', name: 'Loto trượt 4', description: 'Lô trượt 4' }
 ];
 
 /**
@@ -50,13 +44,7 @@ export const MIEN_TRUNG_NAM_GAME_TYPES = [
   { id: '3s-dau-duoi', name: '3s đầu đuôi', description: '3 số đầu đuôi' },
   { id: '3s-dac-biet', name: '3s đặc biệt', description: '3 số đặc biệt' },
   { id: '4s-dac-biet', name: '4s đặc biệt', description: '4 số đặc biệt' },
-  { id: 'loto-truot-4', name: 'Loto trượt 4', description: 'Lô trượt 4' },
-  { id: 'loto-truot-5', name: 'Loto trượt 5', description: 'Lô trượt 5' },
-  { id: 'loto-truot-6', name: 'Loto trượt 6', description: 'Lô trượt 6' },
-  { id: 'loto-truot-7', name: 'Loto trượt 7', description: 'Lô trượt 7' },
-  { id: 'loto-truot-8', name: 'Loto trượt 8', description: 'Lô trượt 8' },
-  { id: 'loto-truot-9', name: 'Loto trượt 9', description: 'Lô trượt 9' },
-  { id: 'loto-truot-10', name: 'Loto trượt 10', description: 'Lô trượt 10' }
+  { id: 'loto-truot-4', name: 'Loto trượt 4', description: 'Lô trượt 4' }
 ];
 
 /**
