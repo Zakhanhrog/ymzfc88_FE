@@ -5,6 +5,9 @@ import pointService from '../../../services/pointService';
 import bettingOddsService from '../../../services/bettingOddsService';
 import betService from '../../../services/betService';
 import { showNotification } from '../../../utils/notification';
+import { MIEN_TRUNG_NAM_GAME_TYPES, BET_MULTIPLIERS, isInputOnlyGameType } from '../utils/gameTypeHelpers';
+import { getNumbersForGameType } from '../utils/numberGenerator';
+import { formatBetTypeMienTrungNam, formatSelectedNumbers } from '../utils/betFormatter';
 
 const MienTrungNamGamePage = () => {
   const navigate = useNavigate();
@@ -28,56 +31,14 @@ const MienTrungNamGamePage = () => {
   const [betHistory, setBetHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Game types for Miền Trung & Nam
-  const gameTypes = [
-    { id: 'loto-2-so', name: 'Loto 2 số', description: 'Lô 2 số' },
-    { id: 'loto-xien-2', name: 'Loto xiên 2', description: 'Xiên 2 số' },
-    { id: 'loto-xien-3', name: 'Loto xiên 3', description: 'Xiên 3 số' },
-    { id: 'loto-xien-4', name: 'Loto xiên 4', description: 'Xiên 4 số' },
-    { id: 'loto-3s', name: 'Loto 3s', description: 'Lô 3 số' },
-    { id: 'loto-4s', name: 'Loto 4s', description: 'Lô 4 số' },
-    { id: 'dac-biet', name: 'Đặc biệt', description: 'Đề đặc biệt' },
-    { id: 'dau-duoi', name: 'Đầu / đuôi', description: 'Đầu đuôi' },
-    { id: 'dau-dac-biet', name: 'Đầu đặc biệt', description: 'Đề đầu đặc biệt' },
-    { id: 'de-giai-8', name: 'Đề giải 8', description: 'Đề giải 8' },
-    { id: '3s-giai-7', name: '3s giải 7', description: '3 số giải 7' },
-    { id: '3s-dau-duoi', name: '3s đầu đuôi', description: '3 số đầu đuôi' },
-    { id: '3s-dac-biet', name: '3s đặc biệt', description: '3 số đặc biệt' },
-    { id: '4s-dac-biet', name: '4s đặc biệt', description: '4 số đặc biệt' },
-    { id: 'loto-truot-4', name: 'Loto trượt 4', description: 'Lô trượt 4' },
-    { id: 'loto-truot-5', name: 'Loto trượt 5', description: 'Lô trượt 5' },
-    { id: 'loto-truot-6', name: 'Loto trượt 6', description: 'Lô trượt 6' },
-    { id: 'loto-truot-7', name: 'Loto trượt 7', description: 'Lô trượt 7' },
-    { id: 'loto-truot-8', name: 'Loto trượt 8', description: 'Lô trượt 8' },
-    { id: 'loto-truot-9', name: 'Loto trượt 9', description: 'Lô trượt 9' },
-    { id: 'loto-truot-10', name: 'Loto trượt 10', description: 'Lô trượt 10' }
-  ];
+  // Game types for Miền Trung & Nam - REFACTORED: sử dụng constant từ gameTypeHelpers
+  const gameTypes = MIEN_TRUNG_NAM_GAME_TYPES;
 
-  const multipliers = [
-    { value: 1, label: '1X', color: 'bg-purple-500' },
-    { value: 3, label: '3X', color: 'bg-red-500' },
-    { value: 5, label: '5X', color: 'bg-orange-500' },
-    { value: 10, label: '10X', color: 'bg-green-500' }
-  ];
+  // Multipliers - REFACTORED: sử dụng constant từ gameTypeHelpers
+  const multipliers = BET_MULTIPLIERS;
 
-  // Generate numbers for selection based on game type
-  const generateNumbers = () => {
-    const numbers = [];
-    // Loto 3 số: 000-999
-    if (selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet') {
-      for (let i = 0; i <= 999; i++) {
-        numbers.push(i.toString().padStart(3, '0'));
-      }
-    } else {
-      // Loto 2 số: 00-99
-      for (let i = 0; i <= 99; i++) {
-        numbers.push(i.toString().padStart(2, '0'));
-      }
-    }
-    return numbers;
-  };
-
-  const numbers = generateNumbers();
+  // Generate numbers for selection - REFACTORED: sử dụng helper từ numberGenerator
+  const numbers = getNumbersForGameType(selectedGameType);
 
   const handleNumberSelect = (number) => {
     if (selectedGameType === 'loto-xien-2') {
@@ -836,54 +797,7 @@ const MienTrungNamGamePage = () => {
     }
   };
 
-  // Format số để hiển thị
-  const formatSelectedNumbers = (selectedNumbers) => {
-    if (Array.isArray(selectedNumbers)) {
-      return selectedNumbers;
-    }
-    try {
-      return JSON.parse(selectedNumbers || '[]');
-    } catch {
-      return [];
-    }
-  };
-
-  // Format bet type để hiển thị
-  const formatBetType = (betType) => {
-    const betTypeMap = {
-      'loto-2-so': 'Loto 2 số',
-      'loto-xien-2': 'Loto xiên 2',
-      'loto-xien-3': 'Loto xiên 3',
-      'loto-xien-4': 'Loto xiên 4',
-      'loto-3s': 'Loto 3 số',
-      'loto-3-so': 'Loto 3 số',
-      'loto-4s': 'Loto 4 số',
-      'loto-4-so': 'Loto 4 số',
-      'giai-nhat': 'Giải nhất',
-      'dac-biet': 'Đặc biệt',
-      'dau-dac-biet': 'Đầu đặc biệt',
-      'de-giai-7': 'Đề giải 7',
-      'de-giai-8': 'Đề giải 8',
-      'dau-duoi': 'Đầu / đuôi',
-      '3s-giai-7': '3s giải 7',
-      '3-so-giai-nhat': '3 số giải nhất',
-      '3-so-giai-6': '3 số giải 6',
-      '3s-dau-duoi': '3s đầu đuôi',
-      '3-so-dau-duoi': '3 số đầu đuôi',
-      '3s-dac-biet': '3s đặc biệt',
-      '3-so-dac-biet': '3 số đặc biệt',
-      '4s-dac-biet': '4s đặc biệt',
-      '4-so-dac-biet': '4 số đặc biệt',
-      'loto-truot-4': 'Loto trượt 4',
-      'loto-truot-5': 'Loto trượt 5',
-      'loto-truot-6': 'Loto trượt 6',
-      'loto-truot-7': 'Loto trượt 7',
-      'loto-truot-8': 'Loto trượt 8',
-      'loto-truot-9': 'Loto trượt 9',
-      'loto-truot-10': 'Loto trượt 10'
-    };
-    return betTypeMap[betType] || betType;
-  };
+  // REFACTORED: Các function format đã chuyển sang betFormatter utils
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1224,7 +1138,7 @@ const MienTrungNamGamePage = () => {
                       
                       <div className="text-sm text-blue-800">
                         <div className="font-medium mb-1">Cược gần đây:</div>
-                        <div className="text-blue-700 font-medium">{formatBetType(recentBet.betType)}</div>
+                        <div className="text-blue-700 font-medium">{formatBetTypeMienTrungNam(recentBet.betType)}</div>
                         <div>Số: {formatSelectedNumbers(recentBet.selectedNumbers)?.join(', ')}</div>
                         <div>Tiền cược: {recentBet.totalAmount?.toLocaleString() || 0} điểm</div>
                         <div className="flex items-center gap-2 mt-1">
@@ -1353,7 +1267,7 @@ const MienTrungNamGamePage = () => {
                         
                         <div className="text-sm">
                           <div className="font-medium text-gray-700">
-                            {formatBetType(bet.betType)} - Số: {formatSelectedNumbers(bet.selectedNumbers)?.join(', ')}
+                            {formatBetTypeMienTrungNam(bet.betType)} - Số: {formatSelectedNumbers(bet.selectedNumbers)?.join(', ')}
                           </div>
                           <div className="text-gray-600">
                             Cược: {bet.totalAmount?.toLocaleString() || 0} điểm
