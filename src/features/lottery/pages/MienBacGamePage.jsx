@@ -244,6 +244,114 @@ const MienBacGamePage = () => {
         // Kết hợp: cụm cũ + cụm mới + số còn lại
         setSelectedNumbers([...existingGroups, ...newGroups, ...remainingNumbers]);
       }
+    } else if (selectedGameType === 'loto-truot-8') {
+      // Logic đặc biệt cho loto trượt 8: tạo cụm 8 số
+      
+      // Tách các cụm đã tạo và số đơn lẻ
+      const existingGroups = selectedNumbers.filter(n => {
+        const parts = n.split(',');
+        return parts.length === 8; // Chỉ lấy cụm 8 số
+      });
+      const singleNumbers = selectedNumbers.filter(n => {
+        const parts = n.split(',');
+        return parts.length < 8; // Lấy số đơn lẻ chưa hoàn chỉnh
+      });
+      
+      if (singleNumbers.includes(number)) {
+        // Bỏ chọn số đơn lẻ
+        const newSingleNumbers = singleNumbers.filter(n => n !== number);
+        setSelectedNumbers([...existingGroups, ...newSingleNumbers]);
+      } else {
+        // Thêm số mới vào danh sách số đơn lẻ
+        const newSingleNumbers = [...singleNumbers, number];
+        
+        // Tạo cụm từ các số đơn lẻ (mỗi 8 số thành 1 cụm)
+        const newGroups = [];
+        const remainingNumbers = [];
+        
+        for (let i = 0; i < newSingleNumbers.length; i += 8) {
+          if (i + 7 < newSingleNumbers.length) {
+            // Có đủ 8 số để tạo cụm
+            const group = [
+              newSingleNumbers[i], newSingleNumbers[i + 1], newSingleNumbers[i + 2], newSingleNumbers[i + 3],
+              newSingleNumbers[i + 4], newSingleNumbers[i + 5], newSingleNumbers[i + 6], newSingleNumbers[i + 7]
+            ].sort().join(',');
+            
+            // Kiểm tra cụm này đã tồn tại chưa
+            const allExistingGroups = [...existingGroups, ...newGroups];
+            const isDuplicate = allExistingGroups.includes(group);
+            
+            if (!isDuplicate) {
+              newGroups.push(group);
+            } else {
+              const numbers = group.split(',');
+              showNotification(`Cụm số (${numbers.join(', ')}) đã tồn tại!`, 'warning');
+            }
+          } else {
+            // Số còn lại, giữ lại để chờ số tiếp theo
+            for (let j = i; j < newSingleNumbers.length; j++) {
+              remainingNumbers.push(newSingleNumbers[j]);
+            }
+          }
+        }
+        
+        // Kết hợp: cụm cũ + cụm mới + số còn lại
+        setSelectedNumbers([...existingGroups, ...newGroups, ...remainingNumbers]);
+      }
+    } else if (selectedGameType === 'loto-truot-10') {
+      // Logic đặc biệt cho loto trượt 10: tạo cụm 10 số
+      
+      // Tách các cụm đã tạo và số đơn lẻ
+      const existingGroups = selectedNumbers.filter(n => {
+        const parts = n.split(',');
+        return parts.length === 10; // Chỉ lấy cụm 10 số
+      });
+      const singleNumbers = selectedNumbers.filter(n => {
+        const parts = n.split(',');
+        return parts.length < 10; // Lấy số đơn lẻ chưa hoàn chỉnh
+      });
+      
+      if (singleNumbers.includes(number)) {
+        // Bỏ chọn số đơn lẻ
+        const newSingleNumbers = singleNumbers.filter(n => n !== number);
+        setSelectedNumbers([...existingGroups, ...newSingleNumbers]);
+      } else {
+        // Thêm số mới vào danh sách số đơn lẻ
+        const newSingleNumbers = [...singleNumbers, number];
+        
+        // Tạo cụm từ các số đơn lẻ (mỗi 10 số thành 1 cụm)
+        const newGroups = [];
+        const remainingNumbers = [];
+        
+        for (let i = 0; i < newSingleNumbers.length; i += 10) {
+          if (i + 9 < newSingleNumbers.length) {
+            // Có đủ 10 số để tạo cụm
+            const group = [
+              newSingleNumbers[i], newSingleNumbers[i + 1], newSingleNumbers[i + 2], newSingleNumbers[i + 3], newSingleNumbers[i + 4],
+              newSingleNumbers[i + 5], newSingleNumbers[i + 6], newSingleNumbers[i + 7], newSingleNumbers[i + 8], newSingleNumbers[i + 9]
+            ].sort().join(',');
+            
+            // Kiểm tra cụm này đã tồn tại chưa
+            const allExistingGroups = [...existingGroups, ...newGroups];
+            const isDuplicate = allExistingGroups.includes(group);
+            
+            if (!isDuplicate) {
+              newGroups.push(group);
+            } else {
+              const numbers = group.split(',');
+              showNotification(`Cụm số (${numbers.join(', ')}) đã tồn tại!`, 'warning');
+            }
+          } else {
+            // Số còn lại, giữ lại để chờ số tiếp theo
+            for (let j = i; j < newSingleNumbers.length; j++) {
+              remainingNumbers.push(newSingleNumbers[j]);
+            }
+          }
+        }
+        
+        // Kết hợp: cụm cũ + cụm mới + số còn lại
+        setSelectedNumbers([...existingGroups, ...newGroups, ...remainingNumbers]);
+      }
     } else {
       // Logic thông thường cho các loại khác
       if (selectedNumbers.includes(number)) {
@@ -332,10 +440,13 @@ const MienBacGamePage = () => {
       // Kết hợp cụm hiện tại với cụm mới (không trùng)
       setSelectedNumbers([...existingGroups, ...uniqueGroups]);
       setNumberInput('');
-    } else if (selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4') {
+    } else if (selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4' 
+               || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       // Xác định số lượng số trong mỗi cụm
       let requiredNumbers = 4; // mặc định
+      if (selectedGameType === 'loto-truot-8') requiredNumbers = 8;
+      if (selectedGameType === 'loto-truot-10') requiredNumbers = 10;
       
       // Logic đặc biệt cho loto xiên 4 và loto trượt: nhập cụm số
       const inputGroups = numberInput
@@ -379,7 +490,7 @@ const MienBacGamePage = () => {
     } else {
       // Parse input numbers separated by comma or space
       const isLoto4s = selectedGameType === 'loto-4s' || selectedGameType === 'loto4s' || selectedGameType === '4s-dac-biet';
-      const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-giai-nhat' || selectedGameType === '3s-dac-biet';
+      const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-giai-nhat' || selectedGameType === '3s-giai-6' || selectedGameType === '3s-dau-duoi' || selectedGameType === '3s-dac-biet';
       
       let numDigits = 2;
       let maxValue = 99;
@@ -440,9 +551,22 @@ const MienBacGamePage = () => {
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-        || selectedGameType === 'loto-truot-4') {
+        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi'
+        || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       let count = selectedNumbers.length;
+      
+      // ĐẶC BIỆT: multiplier cho các loại đặc biệt
+      let multiplier = 1;
+      if (selectedGameType === 'de-giai-7') {
+        multiplier = 4; // Giải 7 có 4 số
+      } else if (selectedGameType === '3s-giai-6') {
+        multiplier = 3; // Giải 6 có 3 số
+      } else if (selectedGameType === 'dau-duoi') {
+        multiplier = 5; // Giải đặc biệt (1) + Giải 7 (4) = 5 số
+      } else if (selectedGameType === '3s-dau-duoi') {
+        multiplier = 4; // Giải đặc biệt (1) + Giải 6 (3) = 4 số
+      }
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
       if (selectedGameType === 'loto-xien-2') {
@@ -465,10 +589,25 @@ const MienBacGamePage = () => {
         }).length;
       }
       
-      // Loto trượt 5,6,7,8,9,10: đếm số cụm hoàn chỉnh
+      // Loto trượt 8: đếm số cụm 8 số hoàn chỉnh
+      if (selectedGameType === 'loto-truot-8') {
+        count = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 8; // Chỉ đếm cụm 8 số hoàn chỉnh
+        }).length;
+      }
+      
+      // Loto trượt 10: đếm số cụm 10 số hoàn chỉnh
+      if (selectedGameType === 'loto-truot-10') {
+        count = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 10; // Chỉ đếm cụm 10 số hoàn chỉnh
+        }).length;
+      }
       
       // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
-      return betAmount * getPricePerPoint() * count;
+      // Ví dụ de-giai-7: 10 điểm × 27 × 1 số × 4 = 1,080 điểm
+      return betAmount * getPricePerPoint() * count * multiplier;
     }
     // Logic cũ cho các game type khác
     return selectedNumbers.length * betAmount * getPricePerPoint();
@@ -485,9 +624,21 @@ const MienBacGamePage = () => {
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-        || selectedGameType === 'loto-truot-4') {
+        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi'
+        || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       let count = selectedNumbers.length;
+      
+      let multiplier = 1;
+      if (selectedGameType === 'de-giai-7') {
+        multiplier = 4;
+      } else if (selectedGameType === '3s-giai-6') {
+        multiplier = 3;
+      } else if (selectedGameType === 'dau-duoi') {
+        multiplier = 5;
+      } else if (selectedGameType === '3s-dau-duoi') {
+        multiplier = 4;
+      }
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
       if (selectedGameType === 'loto-xien-2') {
@@ -510,9 +661,31 @@ const MienBacGamePage = () => {
         }).length;
       }
       
-      // Loto trượt 5,6,7,8,9,10: đếm số cụm hoàn chỉnh
+      // Loto trượt 8: đếm số cụm 8 số hoàn chỉnh
+      if (selectedGameType === 'loto-truot-8') {
+        count = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 8;
+        }).length;
+      }
       
-      return betAmount * getPricePerPoint() * count;
+      // Loto trượt 10: đếm số cụm 10 số hoàn chỉnh
+      if (selectedGameType === 'loto-truot-10') {
+        count = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 10;
+        }).length;
+      }
+      
+      console.log('Debug calculateTotalAmount:', {
+        selectedGameType,
+        betAmount,
+        count,
+        multiplier,
+        pricePerPoint: getPricePerPoint(),
+        result: betAmount * getPricePerPoint() * count * multiplier
+      });
+      return betAmount * getPricePerPoint() * count * multiplier;
     }
     // Logic cũ cho các game type khác
     const totalMoney = selectedNumbers.length * betAmount * getPricePerPoint();
@@ -530,9 +703,12 @@ const MienBacGamePage = () => {
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-        || selectedGameType === 'loto-truot-4') {
+        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi'
+        || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       let count = selectedNumbers.length;
+      
+      // LƯU Ý: de-giai-7 tiền THẮNG KHÔNG × 4, 3s-giai-6 KHÔNG × 3, dau-duoi KHÔNG × 5, 3s-dau-duoi KHÔNG × 4 (chỉ tiền cược nhân)
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
       if (selectedGameType === 'loto-xien-2') {
@@ -555,6 +731,22 @@ const MienBacGamePage = () => {
         }).length;
       }
       
+      // Loto trượt 8: đếm số cụm 8 số hoàn chỉnh
+      if (selectedGameType === 'loto-truot-8') {
+        count = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 8;
+        }).length;
+      }
+      
+      // Loto trượt 10: đếm số cụm 10 số hoàn chỉnh
+      if (selectedGameType === 'loto-truot-10') {
+        count = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 10;
+        }).length;
+      }
+      
       // Ví dụ: 10 điểm × 99 × 3 số = 2,970
       const totalWinIfAllWin = betAmount * getOdds() * count;
       
@@ -563,7 +755,8 @@ const MienBacGamePage = () => {
         betAmount,
         selectedCount: count,
         odds: getOdds(),
-        totalWinIfAllWin
+        totalWinIfAllWin,
+        bettingOddsData: bettingOddsData[selectedGameType]
       });
       return totalWinIfAllWin; // Tổng tiền thắng nếu tất cả số trúng
     }
@@ -702,6 +895,28 @@ const MienBacGamePage = () => {
         return;
       }
     }
+    
+    if (selectedGameType === 'loto-truot-8') {
+      const completedGroups = selectedNumbers.filter(item => {
+        const parts = item.split(',');
+        return parts.length === 8;
+      });
+      if (completedGroups.length === 0) {
+        showNotification('Vui lòng chọn ít nhất 1 cụm 8 số hoàn chỉnh', 'error');
+        return;
+      }
+    }
+    
+    if (selectedGameType === 'loto-truot-10') {
+      const completedGroups = selectedNumbers.filter(item => {
+        const parts = item.split(',');
+        return parts.length === 10;
+      });
+      if (completedGroups.length === 0) {
+        showNotification('Vui lòng chọn ít nhất 1 cụm 10 số hoàn chỉnh', 'error');
+        return;
+      }
+    }
 
     if (betAmount <= 0) {
       showNotification('Số điểm cược phải lớn hơn 0', 'error');
@@ -717,7 +932,8 @@ const MienBacGamePage = () => {
         || selectedGameType === '3s-dac-biet'
                         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
                         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-                        || selectedGameType === 'loto-truot-4';
+                        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi'
+                        || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10';
     const totalCost = isLotoNewLogic ? calculateTotalAmount() : calculateTotalPoints();
     if (userPoints < totalCost) {
       showNotification('Số dư không đủ để đặt cược', 'error');
@@ -753,6 +969,16 @@ const MienBacGamePage = () => {
         numbersToSend = selectedNumbers.filter(item => {
           const parts = item.split(',');
           return parts.length === 4;
+        });
+      } else if (selectedGameType === 'loto-truot-8') {
+        numbersToSend = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 8;
+        });
+      } else if (selectedGameType === 'loto-truot-10') {
+        numbersToSend = selectedNumbers.filter(item => {
+          const parts = item.split(',');
+          return parts.length === 10;
         });
       }
       
@@ -1043,7 +1269,7 @@ const MienBacGamePage = () => {
               ) : selectionMode === 'quick' ? (
                 /* Number Grid */
                 <div className={`grid gap-1.5 ${
-                  selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-giai-nhat' || selectedGameType === '3s-dac-biet'
+                  selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-giai-nhat' || selectedGameType === '3s-giai-6' || selectedGameType === '3s-dau-duoi' || selectedGameType === '3s-dac-biet'
                     ? 'grid-cols-10 max-h-96 overflow-y-auto' 
                     : 'grid-cols-10'
                 }`}>
@@ -1075,6 +1301,18 @@ const MienBacGamePage = () => {
                         'Nhập các cụm 4 số, mỗi cụm cách nhau bởi dấu ;. Ví dụ: 78,40,12,56; 80,99,23,45' :
                         selectedGameType === 'loto-truot-4' ? 
                         'Loto trượt 4: Nhập cụm 4 số, CẢ 4 số đều KHÔNG trúng → THẮNG. Ví dụ: 12,23,34,45; 56,67,78,89' :
+                        selectedGameType === 'loto-truot-8' ? 
+                        'Loto trượt 8: Nhập cụm 8 số, CẢ 8 số đều KHÔNG trúng → THẮNG. Ví dụ: 01,12,23,34,45,56,67,78; 11,22,33,44,55,66,77,88' :
+                        selectedGameType === 'loto-truot-10' ? 
+                        'Loto trượt 10: Nhập cụm 10 số, CẢ 10 số đều KHÔNG trúng → THẮNG. Ví dụ: 00,11,22,33,44,55,66,77,88,99' :
+                        selectedGameType === 'de-giai-7' ? 
+                        'Đề giải 7: Chọn số 00-99, so với TẤT CẢ 4 số giải 7. Tiền cược tự động × 4 (vì giải 7 có 4 số). Ví dụ: 12,34,56' :
+                        selectedGameType === '3s-giai-6' ? 
+                        '3s giải 6: Chọn số 000-999, so với TẤT CẢ 3 số giải 6. Tiền cược tự động × 3 (vì giải 6 có 3 số). Ví dụ: 034,005,095' :
+                        selectedGameType === 'dau-duoi' ? 
+                        'Đầu/đuôi: Chọn số 00-99, so với 2 số cuối giải đặc biệt + TẤT CẢ 4 số giải 7. Tiền cược tự động × 5 (vì có 5 số). Ví dụ: 12,34,56' :
+                        selectedGameType === '3s-dau-duoi' ? 
+                        '3s đầu đuôi: Chọn số 000-999, so với 3 số cuối giải đặc biệt + TẤT CẢ 3 số giải 6. Tiền cược tự động × 4 (vì có 4 số). Ví dụ: 345,034,005' :
                         selectedGameType === '3s-giai-nhat' ? 
                         'Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 001,845,999 hoặc 001 845 999' :
                         selectedGameType === '3s-dac-biet' ? 
@@ -1095,6 +1333,18 @@ const MienBacGamePage = () => {
                         'Nhập các cụm 4 số (00-99). Ví dụ: 78,40,12,56; 80,99,23,45' :
                         selectedGameType === 'loto-truot-4' ? 
                         'Loto trượt 4: Nhập cụm 4 số. Ví dụ: 12,23,34,45; 56,67,78,89' :
+                        selectedGameType === 'loto-truot-8' ? 
+                        'Loto trượt 8: Nhập cụm 8 số. Ví dụ: 01,12,23,34,45,56,67,78; 11,22,33,44,55,66,77,88' :
+                        selectedGameType === 'loto-truot-10' ? 
+                        'Loto trượt 10: Nhập cụm 10 số. Ví dụ: 00,11,22,33,44,55,66,77,88,99' :
+                        selectedGameType === 'de-giai-7' ? 
+                        'Đề giải 7: Nhập các số (00-99). Ví dụ: 12,34,56. Lưu ý: Tiền cược tự động × 4' :
+                        selectedGameType === '3s-giai-6' ? 
+                        '3s giải 6: Nhập các số (000-999). Ví dụ: 034,005,095. Lưu ý: Tiền cược tự động × 3' :
+                        selectedGameType === 'dau-duoi' ? 
+                        'Đầu/đuôi: Nhập các số (00-99). Ví dụ: 12,34,56. Lưu ý: Tiền cược tự động × 5' :
+                        selectedGameType === '3s-dau-duoi' ? 
+                        '3s đầu đuôi: Nhập các số (000-999). Ví dụ: 345,034,005. Lưu ý: Tiền cược tự động × 4' :
                         selectedGameType === '3s-giai-nhat' ? 
                         'Nhập các số 3 chữ số (000-999)...' :
                         selectedGameType === '3s-dac-biet' ? 
@@ -1208,6 +1458,22 @@ const MienBacGamePage = () => {
                           }
                           return item;
                         }).join('; ') :
+                        selectedGameType === 'loto-truot-8' ?
+                        selectedNumbers.map(item => {
+                          const parts = item.split(',');
+                          if (parts.length === 8) {
+                            return `(${item})`;
+                          }
+                          return item;
+                        }).join('; ') :
+                        selectedGameType === 'loto-truot-10' ?
+                        selectedNumbers.map(item => {
+                          const parts = item.split(',');
+                          if (parts.length === 10) {
+                            return `(${item})`;
+                          }
+                          return item;
+                        }).join('; ') :
                         selectedNumbers.join(', ')
                       }
                     </div>
@@ -1216,6 +1482,18 @@ const MienBacGamePage = () => {
                     <>
                       <div className="text-gray-600">
                         Tổng tiền cược: {calculateTotalAmount().toLocaleString()} điểm
+                        {selectedGameType === 'de-giai-7' && (
+                          <span className="text-red-500 text-xs ml-1">(đã × 4)</span>
+                        )}
+                        {selectedGameType === '3s-giai-6' && (
+                          <span className="text-red-500 text-xs ml-1">(đã × 3)</span>
+                        )}
+                        {selectedGameType === 'dau-duoi' && (
+                          <span className="text-red-500 text-xs ml-1">(đã × 5)</span>
+                        )}
+                        {selectedGameType === '3s-dau-duoi' && (
+                          <span className="text-red-500 text-xs ml-1">(đã × 4)</span>
+                        )}
                       </div>
                       <div className="text-gray-600">
                         Tiền thắng (nếu tất cả trúng): {calculateWinnings().toLocaleString()}
@@ -1299,6 +1577,14 @@ const MienBacGamePage = () => {
                       (selectedGameType === 'loto-truot-4' && selectedNumbers.filter(item => {
                         const parts = item.split(',');
                         return parts.length === 4;
+                      }).length === 0) ||
+                      (selectedGameType === 'loto-truot-8' && selectedNumbers.filter(item => {
+                        const parts = item.split(',');
+                        return parts.length === 8;
+                      }).length === 0) ||
+                      (selectedGameType === 'loto-truot-10' && selectedNumbers.filter(item => {
+                        const parts = item.split(',');
+                        return parts.length === 10;
                       }).length === 0)
                     }
                     className={`w-full py-2 text-white rounded-lg transition-colors font-medium text-base ${
@@ -1315,6 +1601,10 @@ const MienBacGamePage = () => {
                       (selectedGameType === 'loto-truot-4' && selectedNumbers.filter(item => {
                         const parts = item.split(',');
                         return parts.length === 4;
+                      }).length === 0) ||
+                      (selectedGameType === 'loto-truot-8' && selectedNumbers.filter(item => {
+                        const parts = item.split(',');
+                        return parts.length === 8;
                       }).length === 0) ||
                       (selectedGameType === 'loto-truot-10' && selectedNumbers.filter(item => {
                         const parts = item.split(',');
