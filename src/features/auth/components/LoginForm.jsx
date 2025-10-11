@@ -5,7 +5,7 @@ import { Button, Input } from '../../../components/ui';
 import { authService } from '../services/authService';
 import { message } from '../../../utils/notification';
 
-const LoginForm = ({ onClose, onSwitchToRegister }) => {
+const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     usernameOrEmail: '',
@@ -51,7 +51,14 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
       
       setTimeout(() => {
         onClose && onClose();
-        window.location.reload();
+        
+        if (redirectAfterLogin) {
+          // Redirect to the original page after login
+          navigate(redirectAfterLogin);
+        } else {
+          // Default behavior: reload page
+          window.location.reload();
+        }
       }, 1000);
     } catch (error) {
       console.error('Login error:', error);

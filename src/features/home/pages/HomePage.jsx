@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '../../../components/common/Layout';
 import MainBannerCarousel from '../components/MainBannerCarousel';
 import NotificationMarquee from '../components/NotificationMarquee';
@@ -5,6 +7,23 @@ import QuickActionButtons from '../components/QuickActionButtons';
 import CategoryButtons from '../components/CategoryButtons';
 
 const HomePage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Check if we need to show login modal from ProtectedRoute redirect
+  useEffect(() => {
+    if (location.state?.showLoginModal) {
+      // Trigger login modal by dispatching custom event
+      const event = new CustomEvent('showLoginModal', {
+        detail: { redirectAfterLogin: location.state.redirectAfterLogin }
+      });
+      window.dispatchEvent(event);
+      
+      // Clear the state to prevent showing modal on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
+
   // Banner chính (carousel)
   const mainBanners = [
     {

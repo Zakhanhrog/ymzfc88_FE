@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 import AuthModal from './layout/AuthModal';
@@ -8,13 +8,29 @@ import pointService from '../../services/pointService';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
   
-  // Load activeGame từ localStorage
+  // Load activeGame từ localStorage hoặc route hiện tại
   const [activeGame, setActiveGame] = useState(() => {
-    return localStorage.getItem('activeGame') || 'HOT';
+    const getActiveGameFromPath = (pathname) => {
+      if (pathname.startsWith('/lottery')) {
+        return 'lottery';
+      } else if (pathname.startsWith('/wallet')) {
+        return 'deposit';
+      } else if (pathname.startsWith('/points')) {
+        return 'daily';
+      } else if (pathname === '/') {
+        return 'HOT';
+      }
+      return 'HOT';
+    };
+    
+    // Ưu tiên route hiện tại, fallback về localStorage
+    return getActiveGameFromPath(location.pathname) || localStorage.getItem('activeGame') || 'HOT';
   });
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -25,6 +41,27 @@ const Layout = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('activeGame', activeGame);
   }, [activeGame]);
+
+  // Reset activeGame dựa trên route hiện tại khi route thay đổi
+  useEffect(() => {
+    const getActiveGameFromPath = (pathname) => {
+      if (pathname.startsWith('/lottery')) {
+        return 'lottery';
+      } else if (pathname.startsWith('/wallet')) {
+        return 'deposit';
+      } else if (pathname.startsWith('/points')) {
+        return 'daily';
+      } else if (pathname === '/') {
+        return 'HOT';
+      }
+      return 'HOT';
+    };
+
+    const newActiveGame = getActiveGameFromPath(location.pathname);
+    if (newActiveGame !== activeGame) {
+      setActiveGame(newActiveGame);
+    }
+  }, [location.pathname]);
 
   // Function để fetch user points từ API
   const fetchUserPoints = async () => {
@@ -108,6 +145,20 @@ const Layout = ({ children }) => {
     }
   }, []);
 
+  // Listen for custom event to show login modal
+  useEffect(() => {
+    const handleShowLoginModal = (event) => {
+      setRedirectAfterLogin(event.detail?.redirectAfterLogin || null);
+      setIsLoginModalOpen(true);
+    };
+
+    window.addEventListener('showLoginModal', handleShowLoginModal);
+
+    return () => {
+      window.removeEventListener('showLoginModal', handleShowLoginModal);
+    };
+  }, []);
+
   const handleLogout = () => {
     if (window.confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
       localStorage.removeItem('token');
@@ -178,8 +229,14 @@ const Layout = ({ children }) => {
       <AuthModal
         isLoginOpen={isLoginModalOpen}
         isRegisterOpen={isRegisterModalOpen}
-        onLoginClose={() => setIsLoginModalOpen(false)}
-        onRegisterClose={() => setIsRegisterModalOpen(false)}
+        onLoginClose={() => {
+          setIsLoginModalOpen(false);
+          setRedirectAfterLogin(null);
+        }}
+        onRegisterClose={() => {
+          setIsRegisterModalOpen(false);
+          setRedirectAfterLogin(null);
+        }}
         onSwitchToRegister={() => {
           setIsLoginModalOpen(false);
           setIsRegisterModalOpen(true);
@@ -188,6 +245,7 @@ const Layout = ({ children }) => {
           setIsRegisterModalOpen(false);
           setIsLoginModalOpen(true);
         }}
+        redirectAfterLogin={redirectAfterLogin}
       />
     </div>
   );

@@ -14,6 +14,7 @@ import AdminDashboardPage from './features/admin/pages/AdminDashboardPage';
 import AdminPointManagementPage from './features/admin/pages/AdminPointManagementPage';
 import AdminBettingOddsPage from './features/admin/pages/AdminBettingOddsPage';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -21,11 +22,46 @@ function App() {
       <div className="App">
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/wallet" element={<UserWalletPage />} />
-              <Route path="/points" element={<PointsPage />} />
-              <Route path="/lottery" element={<LotteryPage />} />
-              <Route path="/lottery/mien-bac" element={<MienBacGamePage />} />
-              <Route path="/lottery/mien-trung-nam" element={<MienTrungNamGamePage />} />
+              <Route 
+                path="/wallet" 
+                element={
+                  <ProtectedRoute>
+                    <UserWalletPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/points" 
+                element={
+                  <ProtectedRoute>
+                    <PointsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/lottery" 
+                element={
+                  <ProtectedRoute>
+                    <LotteryPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/lottery/mien-bac" 
+                element={
+                  <ProtectedRoute>
+                    <MienBacGamePage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/lottery/mien-trung-nam" 
+                element={
+                  <ProtectedRoute>
+                    <MienTrungNamGamePage />
+                  </ProtectedRoute>
+                } 
+              />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<Navigate to="/admin/login" replace />} />

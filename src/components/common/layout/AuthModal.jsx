@@ -9,7 +9,8 @@ const AuthModal = ({
   onLoginClose, 
   onRegisterClose, 
   onSwitchToRegister, 
-  onSwitchToLogin 
+  onSwitchToLogin,
+  redirectAfterLogin 
 }) => {
   const [currentView, setCurrentView] = useState('login');
   
@@ -57,11 +58,13 @@ const AuthModal = ({
           <LoginForm 
             onClose={handleClose} 
             onSwitchToRegister={handleSwitchToRegister}
+            redirectAfterLogin={redirectAfterLogin}
           />
         ) : (
           <RegisterForm 
             onClose={handleClose} 
             onSwitchToLogin={handleSwitchToLogin}
+            redirectAfterLogin={redirectAfterLogin}
           />
         )}
       </div>

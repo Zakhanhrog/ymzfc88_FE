@@ -44,7 +44,6 @@ const Sidebar = ({
       'lottery': () => {
         navigate('/lottery');
         onGameSelect('lottery');
-        localStorage.setItem('activeGame', 'lottery');
       },
       'daily': () => console.log('Mỗi Ngày clicked'),
       'lucky-wheel': () => console.log('Vòng Quay May Mắn clicked'),
@@ -56,7 +55,7 @@ const Sidebar = ({
       menuActions[key]();
     } else {
       onGameSelect(key);
-      localStorage.setItem('activeGame', key); // Lưu vào localStorage
+      // Không cần lưu vào localStorage nữa vì Layout sẽ tự động quản lý
     }
 
   };
