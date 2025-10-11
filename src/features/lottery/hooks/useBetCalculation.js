@@ -31,7 +31,7 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi' || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7'
+        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi' || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7' || selectedGameType === '3s-dau-duoi-mien-trung-nam'
         || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       let count = selectedNumbers.length;
@@ -46,6 +46,8 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         multiplier = 5; // Giải đặc biệt (1) + Giải 7 (4) = 5 số
       } else if (selectedGameType === '3s-dau-duoi') {
         multiplier = 4; // Giải đặc biệt (1) + Giải 6 (3) = 4 số
+      } else if (selectedGameType === '3s-dau-duoi-mien-trung-nam') {
+        multiplier = 2; // Giải đặc biệt (1) + Giải 7 (1) = 2 số
       }
       
       // Đối với loto xiên 2, đếm số cặp
@@ -110,7 +112,7 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi' || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7'
+        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi' || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7' || selectedGameType === '3s-dau-duoi-mien-trung-nam'
         || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       let count = selectedNumbers.length;
@@ -183,7 +185,7 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
         || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
-        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi' || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7'
+        || selectedGameType === '3s-giai-6' || selectedGameType === 'de-giai-7' || selectedGameType === 'dau-duoi' || selectedGameType === '3s-dau-duoi' || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7' || selectedGameType === '3s-dau-duoi-mien-trung-nam'
         || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       
       let count = selectedNumbers.length;

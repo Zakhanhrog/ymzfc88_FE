@@ -29,7 +29,7 @@ export const generateDauDuoiNumbers = () => {
  */
 export const getNumbersForGameType = (gameType) => {
   // Loto 3 số: 000-999
-  if (gameType === 'loto-3s' || gameType === 'loto3s' || gameType === '3s-giai-nhat' || gameType === '3s-giai-6' || gameType === '3s-dau-duoi' || gameType === '3s-dac-biet' || gameType === '3s-giai-7') {
+  if (gameType === 'loto-3s' || gameType === 'loto3s' || gameType === '3s-giai-nhat' || gameType === '3s-giai-6' || gameType === '3s-dau-duoi' || gameType === '3s-dac-biet' || gameType === '3s-giai-7' || gameType === '3s-dau-duoi-mien-trung-nam') {
     return generateLoto3sNumbers();
   }
   
@@ -49,7 +49,7 @@ export const formatNumber = (number, gameType) => {
   if (gameType === 'loto-4s' || gameType === 'loto4s' || gameType === '4s-dac-biet') {
     return number.padStart(4, '0');
   }
-  if (gameType === 'loto-3s' || gameType === 'loto3s' || gameType === '3s-giai-nhat' || gameType === '3s-giai-6' || gameType === '3s-dau-duoi' || gameType === '3s-dac-biet' || gameType === '3s-giai-7') {
+  if (gameType === 'loto-3s' || gameType === 'loto3s' || gameType === '3s-giai-nhat' || gameType === '3s-giai-6' || gameType === '3s-dau-duoi' || gameType === '3s-dac-biet' || gameType === '3s-giai-7' || gameType === '3s-dau-duoi-mien-trung-nam') {
     return number.padStart(3, '0');
   }
   return number.padStart(2, '0');

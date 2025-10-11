@@ -479,7 +479,7 @@ const MienTrungNamGamePage = () => {
     } else {
       // Parse input numbers separated by comma or space
       const isLoto4s = selectedGameType === 'loto-4s' || selectedGameType === 'loto4s' || selectedGameType === '4s-dac-biet';
-      const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7';
+      const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7' || selectedGameType === '3s-dau-duoi-mien-trung-nam';
       
       let numDigits = 2;
       let maxValue = 99;
@@ -540,9 +540,20 @@ const MienTrungNamGamePage = () => {
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
         || selectedGameType === 'de-giai-8'
+        || selectedGameType === 'dau-duoi-mien-trung-nam'
         || selectedGameType === '3s-giai-7'
+        || selectedGameType === '3s-dau-duoi-mien-trung-nam'
         || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       let count = selectedNumbers.length;
+      
+      // ĐẶC BIỆT: multiplier cho các loại đặc biệt
+      let multiplier = 1;
+      if (selectedGameType === 'dau-duoi-mien-trung-nam') {
+        multiplier = 2; // Giải đặc biệt (1) + Giải 8 (1) = 2 số
+      }
+      if (selectedGameType === '3s-dau-duoi-mien-trung-nam') {
+        multiplier = 2; // Giải đặc biệt (1) + Giải 7 (1) = 2 số
+      }
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
       if (selectedGameType === 'loto-xien-2') {
@@ -582,7 +593,19 @@ const MienTrungNamGamePage = () => {
       }
       
       // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
-      return betAmount * getPricePerPoint() * count;
+      const result = betAmount * getPricePerPoint() * count * multiplier;
+      
+      console.log('Debug calculateTotalAmount:', {
+        selectedGameType,
+        betAmount,
+        count,
+        multiplier,
+        pricePerPoint: getPricePerPoint(),
+        bettingOddsData: bettingOddsData[selectedGameType],
+        result
+      });
+      
+      return result;
     }
     // Logic cũ cho các game type khác
     
@@ -600,9 +623,20 @@ const MienTrungNamGamePage = () => {
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
         || selectedGameType === 'de-giai-8'
+        || selectedGameType === 'dau-duoi-mien-trung-nam'
         || selectedGameType === '3s-giai-7'
+        || selectedGameType === '3s-dau-duoi-mien-trung-nam'
         || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       let count = selectedNumbers.length;
+      
+      // ĐẶC BIỆT: multiplier cho các loại đặc biệt
+      let multiplier = 1;
+      if (selectedGameType === 'dau-duoi-mien-trung-nam') {
+        multiplier = 2; // Giải đặc biệt (1) + Giải 8 (1) = 2 số
+      }
+      if (selectedGameType === '3s-dau-duoi-mien-trung-nam') {
+        multiplier = 2; // Giải đặc biệt (1) + Giải 7 (1) = 2 số
+      }
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
       if (selectedGameType === 'loto-xien-2') {
@@ -657,7 +691,9 @@ const MienTrungNamGamePage = () => {
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
         || selectedGameType === 'de-giai-8'
+        || selectedGameType === 'dau-duoi-mien-trung-nam'
         || selectedGameType === '3s-giai-7'
+        || selectedGameType === '3s-dau-duoi-mien-trung-nam'
         || selectedGameType === 'loto-truot-4' || selectedGameType === 'loto-truot-8' || selectedGameType === 'loto-truot-10') {
       let count = selectedNumbers.length;
       
@@ -704,6 +740,7 @@ const MienTrungNamGamePage = () => {
         betAmount,
         selectedCount: count,
         odds: getOdds(),
+        bettingOddsData: bettingOddsData[selectedGameType],
         totalWinIfAllWin
       });
       return totalWinIfAllWin; // Tổng tiền thắng nếu tất cả số trúng
@@ -780,6 +817,8 @@ const MienTrungNamGamePage = () => {
           };
         });
         setBettingOddsData(oddsMap);
+        console.log('Loaded betting odds data:', oddsMap);
+        console.log('dau-duoi-mien-trung-nam data:', oddsMap['dau-duoi-mien-trung-nam']);
       } else {
         console.error('Error loading betting odds:', response.message);
         // Use default values if API fails
@@ -1311,7 +1350,7 @@ const MienTrungNamGamePage = () => {
               ) : selectionMode === 'quick' ? (
                 /* Number Grid */
                 <div className={`grid gap-1.5 ${
-                  selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7'
+                  selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7' || selectedGameType === '3s-dau-duoi-mien-trung-nam'
                     ? 'grid-cols-10 max-h-96 overflow-y-auto' 
                     : 'grid-cols-10'
                 }`}>
@@ -1359,6 +1398,10 @@ const MienTrungNamGamePage = () => {
                         'Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 001,845,999 hoặc 001 845 999' :
                         selectedGameType === '3s-giai-7' ? 
                         'Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 001,845,999 hoặc 001 845 999' :
+                        selectedGameType === '3s-dau-duoi-mien-trung-nam' ? 
+                        '3s đầu đuôi: Chọn số 000-999, so với 3 số cuối giải đặc biệt + 1 số giải 7. Tiền cược tự động × 2 (vì có 2 số). Ví dụ: 001,845,999' :
+                        selectedGameType === 'dau-duoi-mien-trung-nam' ? 
+                        'Đầu/đuôi: Chọn số 00-99, so với 2 số cuối giải đặc biệt + giải 8. Tiền cược tự động × 2 (vì có 2 số). Ví dụ: 12,34,56' :
                         'Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 10,20,30 hoặc 10 20 30'
                       }
                     </p>
@@ -1390,7 +1433,11 @@ const MienTrungNamGamePage = () => {
                         selectedGameType === '3s-dac-biet' ? 
                         'Nhập các số 3 chữ số (000-999)...' :
                         selectedGameType === '3s-giai-7' ? 
-                        'Nhập các số 3 chữ số (000-999)...' :
+                        'Nhập các số 3 chữ số (000-999)...' : 
+                        selectedGameType === '3s-dau-duoi-mien-trung-nam' ? 
+                        '3s đầu đuôi: Nhập các số (000-999). So với 3 số cuối giải đặc biệt + 1 số giải 7. Lưu ý: Tiền cược tự động × 2' :
+                        selectedGameType === 'dau-duoi-mien-trung-nam' ? 
+                        'Đầu/đuôi: Nhập các số (00-99). Ví dụ: 12,34,56. Lưu ý: Tiền cược tự động × 2' :
                         'Nhập các số bạn muốn chọn...'
                       }
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -1556,6 +1603,12 @@ const MienTrungNamGamePage = () => {
                   <>
                     <div className="text-gray-600">
                       Tổng tiền cược: {calculateTotalAmount().toLocaleString()} điểm
+                      {selectedGameType === 'dau-duoi-mien-trung-nam' && (
+                        <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                      )}
+                      {selectedGameType === '3s-dau-duoi-mien-trung-nam' && (
+                        <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                      )}
                     </div>
                     <div className="text-gray-600">
                       Tiền thắng (nếu tất cả trúng): {calculateWinnings().toLocaleString()}
