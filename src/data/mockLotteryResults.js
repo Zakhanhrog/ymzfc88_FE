@@ -1,36 +1,37 @@
 // Dữ liệu mẫu kết quả xổ số để test chức năng đặt cược
 export const mockLotteryResults = {
-  // Kết quả Miền Bắc - 09/10/2025
+  // Kết quả Miền Bắc - 09/10/2025 (7 giải)
   mienBac: {
     date: "2025-10-09",
     region: "Miền Bắc",
     period: "Kỳ 09/10/2025",
     results: {
-      "dac-biet": "09565", // Giải đặc biệt
-      "giai-nhat": "14729", // Giải nhất
-      "giai-nhi": ["68722", "61754"], // Giải nhì (2 số)
-      "giai-ba": ["41093", "33880", "22844", "39220", "89108", "22328"], // Giải ba (6 số)
-      "giai-tu": ["4631", "1236", "6574", "0622"], // Giải tư (4 số)
-      "giai-nam": ["6850", "3557", "0740", "6760", "9439", "9164"], // Giải năm (6 số)
-      "giai-sau": ["592", "108", "449"], // Giải sáu (3 số)
-      "giai-bay": ["76", "24", "77", "01"] // Giải bảy (4 số)
+      "dac-biet": "00943", // Giải đặc biệt
+      "giai-nhat": "43213", // Giải nhất
+      "giai-nhi": ["66146", "15901"], // Giải nhì (2 số)
+      "giai-ba": ["22906", "04955", "93893", "32538", "25660", "85773"], // Giải ba (6 số)
+      "giai-tu": ["8964", "0803", "4867", "2405"], // Giải tư (4 số)
+      "giai-nam": ["9122", "6281", "8813", "6672", "8101", "7293"], // Giải năm (6 số)
+      "giai-sau": ["803", "301", "325"], // Giải sáu (3 số)
+      "giai-bay": ["84", "09", "69", "79"] // Giải bảy (4 số)
     }
   },
 
-  // Kết quả Miền Trung & Nam - 09/10/2025 (dữ liệu mẫu)
+  // Kết quả Miền Trung & Nam - 09/10/2025 (8 giải)
   mienTrungNam: {
     date: "2025-10-09", 
     region: "Miền Trung & Nam",
     period: "Kỳ 09/10/2025",
     results: {
-      "dac-biet": "12345", // Giải đặc biệt
-      "giai-nhat": "67890", // Giải nhất
-      "giai-nhi": ["12345", "67890"], // Giải nhì
-      "giai-ba": ["11111", "22222", "33333", "44444", "55555", "66666"], // Giải ba
-      "giai-tu": ["7777", "8888", "9999", "0000"], // Giải tư
-      "giai-nam": ["1111", "2222", "3333", "4444", "5555", "6666"], // Giải năm
-      "giai-sau": ["777", "888", "999"], // Giải sáu
-      "giai-bay": ["11", "22", "33", "44"] // Giải bảy
+      "dac-biet": "042293", // Giải đặc biệt (6 số)
+      "giai-nhat": "02518", // Giải nhất (5 số)
+      "giai-nhi": ["49226"], // Giải nhì (1 số)
+      "giai-ba": ["03856", "04216"], // Giải ba (2 số)
+      "giai-tu": ["00810", "02321", "00681", "51728", "24507", "58068", "96136"], // Giải tư (7 số)
+      "giai-nam": ["8877"], // Giải năm (1 số)
+      "giai-sau": ["5934", "7442", "3430"], // Giải sáu (3 số)
+      "giai-bay": ["884"], // Giải bảy (1 số)
+      "giai-tam": ["40"] // Giải tám (1 số)
     }
   }
 };
@@ -56,14 +57,19 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
     case 'loto-2-so':
       // Kiểm tra 2 số cuối của giải đặc biệt và các giải khác
       const lastTwoDigits = results["dac-biet"].slice(-2);
+      const giaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      const giaiNamArray = Array.isArray(results["giai-nam"]) ? results["giai-nam"] : [results["giai-nam"]];
+      const giaiBayArray = Array.isArray(results["giai-bay"]) ? results["giai-bay"] : [results["giai-bay"]];
+      
       winningNumbers = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num)) ||
+        giaiNhiArray.some(giai => giai.endsWith(num)) ||
         results["giai-ba"].some(giai => giai.endsWith(num)) ||
         results["giai-tu"].some(giai => giai.endsWith(num)) ||
-        results["giai-nam"].some(giai => giai.endsWith(num)) ||
+        giaiNamArray.some(giai => giai.endsWith(num)) ||
         results["giai-sau"].some(giai => giai.endsWith(num)) ||
-        results["giai-bay"].some(giai => giai.endsWith(num))
+        giaiBayArray.some(giai => giai.endsWith(num)) ||
+        (results["giai-tam"] && results["giai-tam"].some(giai => giai.endsWith(num)))
       );
       isWin = winningNumbers.length > 0;
       prize = isWin ? 99 : 0; // Tỷ lệ 1:99
@@ -99,14 +105,19 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
 
     case 'loto-xien-2':
       // Xiên 2 - cần trúng cả 2 số
+      const xien2GiaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      const xien2GiaiNamArray = Array.isArray(results["giai-nam"]) ? results["giai-nam"] : [results["giai-nam"]];
+      const xien2GiaiBayArray = Array.isArray(results["giai-bay"]) ? results["giai-bay"] : [results["giai-bay"]];
+      
       const xien2Wins = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num)) ||
+        xien2GiaiNhiArray.some(giai => giai.endsWith(num)) ||
         results["giai-ba"].some(giai => giai.endsWith(num)) ||
         results["giai-tu"].some(giai => giai.endsWith(num)) ||
-        results["giai-nam"].some(giai => giai.endsWith(num)) ||
+        xien2GiaiNamArray.some(giai => giai.endsWith(num)) ||
         results["giai-sau"].some(giai => giai.endsWith(num)) ||
-        results["giai-bay"].some(giai => giai.endsWith(num))
+        xien2GiaiBayArray.some(giai => giai.endsWith(num)) ||
+        (results["giai-tam"] && results["giai-tam"].some(giai => giai.endsWith(num)))
       );
       isWin = xien2Wins.length === 2;
       winningNumbers = xien2Wins;
@@ -115,14 +126,19 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
 
     case 'loto-xien-3':
       // Xiên 3 - cần trúng cả 3 số
+      const xien3GiaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      const xien3GiaiNamArray = Array.isArray(results["giai-nam"]) ? results["giai-nam"] : [results["giai-nam"]];
+      const xien3GiaiBayArray = Array.isArray(results["giai-bay"]) ? results["giai-bay"] : [results["giai-bay"]];
+      
       const xien3Wins = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num)) ||
+        xien3GiaiNhiArray.some(giai => giai.endsWith(num)) ||
         results["giai-ba"].some(giai => giai.endsWith(num)) ||
         results["giai-tu"].some(giai => giai.endsWith(num)) ||
-        results["giai-nam"].some(giai => giai.endsWith(num)) ||
+        xien3GiaiNamArray.some(giai => giai.endsWith(num)) ||
         results["giai-sau"].some(giai => giai.endsWith(num)) ||
-        results["giai-bay"].some(giai => giai.endsWith(num))
+        xien3GiaiBayArray.some(giai => giai.endsWith(num)) ||
+        (results["giai-tam"] && results["giai-tam"].some(giai => giai.endsWith(num)))
       );
       isWin = xien3Wins.length === 3;
       winningNumbers = xien3Wins;
@@ -131,14 +147,19 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
 
     case 'loto-xien-4':
       // Xiên 4 - cần trúng cả 4 số
+      const xien4GiaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      const xien4GiaiNamArray = Array.isArray(results["giai-nam"]) ? results["giai-nam"] : [results["giai-nam"]];
+      const xien4GiaiBayArray = Array.isArray(results["giai-bay"]) ? results["giai-bay"] : [results["giai-bay"]];
+      
       const xien4Wins = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num)) ||
+        xien4GiaiNhiArray.some(giai => giai.endsWith(num)) ||
         results["giai-ba"].some(giai => giai.endsWith(num)) ||
         results["giai-tu"].some(giai => giai.endsWith(num)) ||
-        results["giai-nam"].some(giai => giai.endsWith(num)) ||
+        xien4GiaiNamArray.some(giai => giai.endsWith(num)) ||
         results["giai-sau"].some(giai => giai.endsWith(num)) ||
-        results["giai-bay"].some(giai => giai.endsWith(num))
+        xien4GiaiBayArray.some(giai => giai.endsWith(num)) ||
+        (results["giai-tam"] && results["giai-tam"].some(giai => giai.endsWith(num)))
       );
       isWin = xien4Wins.length === 4;
       winningNumbers = xien4Wins;
@@ -149,9 +170,11 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
     case 'loto3s':
       // Lô 3 số - kiểm tra 3 số cuối
       const lastThreeDigits = results["dac-biet"].slice(-3);
+      const loto3sGiaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      
       winningNumbers = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num)) ||
+        loto3sGiaiNhiArray.some(giai => giai.endsWith(num)) ||
         results["giai-ba"].some(giai => giai.endsWith(num))
       );
       isWin = winningNumbers.length > 0;
@@ -162,9 +185,11 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
     case 'loto4s':
       // Lô 4 số - kiểm tra 4 số cuối
       const lastFourDigits = results["dac-biet"].slice(-4);
+      const loto4sGiaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      
       winningNumbers = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num))
+        loto4sGiaiNhiArray.some(giai => giai.endsWith(num))
       );
       isWin = winningNumbers.length > 0;
       prize = isWin ? 9999 : 0; // Tỷ lệ 1:9999
@@ -172,14 +197,19 @@ export const checkWinningNumbers = (region, betType, selectedNumbers) => {
 
     default:
       // Mặc định kiểm tra lô 2 số
+      const defaultGiaiNhiArray = Array.isArray(results["giai-nhi"]) ? results["giai-nhi"] : [results["giai-nhi"]];
+      const defaultGiaiNamArray = Array.isArray(results["giai-nam"]) ? results["giai-nam"] : [results["giai-nam"]];
+      const defaultGiaiBayArray = Array.isArray(results["giai-bay"]) ? results["giai-bay"] : [results["giai-bay"]];
+      
       winningNumbers = selectedNumbers.filter(num => 
         results["giai-nhat"].endsWith(num) ||
-        results["giai-nhi"].some(giai => giai.endsWith(num)) ||
+        defaultGiaiNhiArray.some(giai => giai.endsWith(num)) ||
         results["giai-ba"].some(giai => giai.endsWith(num)) ||
         results["giai-tu"].some(giai => giai.endsWith(num)) ||
-        results["giai-nam"].some(giai => giai.endsWith(num)) ||
+        defaultGiaiNamArray.some(giai => giai.endsWith(num)) ||
         results["giai-sau"].some(giai => giai.endsWith(num)) ||
-        results["giai-bay"].some(giai => giai.endsWith(num))
+        defaultGiaiBayArray.some(giai => giai.endsWith(num)) ||
+        (results["giai-tam"] && results["giai-tam"].some(giai => giai.endsWith(num)))
       );
       isWin = winningNumbers.length > 0;
       prize = isWin ? 99 : 0;
@@ -199,19 +229,26 @@ export const formatLotteryResult = (region) => {
   const result = getLotteryResult(region);
   if (!result) return null;
 
+  const formattedResults = {
+    "Giải đặc biệt": result.results["dac-biet"],
+    "Giải nhất": result.results["giai-nhat"],
+    "Giải nhì": Array.isArray(result.results["giai-nhi"]) ? result.results["giai-nhi"].join(", ") : result.results["giai-nhi"],
+    "Giải ba": result.results["giai-ba"].join(", "),
+    "Giải tư": result.results["giai-tu"].join(", "),
+    "Giải năm": Array.isArray(result.results["giai-nam"]) ? result.results["giai-nam"].join(", ") : result.results["giai-nam"],
+    "Giải sáu": result.results["giai-sau"].join(", "),
+    "Giải bảy": Array.isArray(result.results["giai-bay"]) ? result.results["giai-bay"].join(", ") : result.results["giai-bay"]
+  };
+
+  // Thêm giải tám cho miền Trung Nam
+  if (region === 'mienTrungNam' && result.results["giai-tam"]) {
+    formattedResults["Giải tám"] = result.results["giai-tam"].join(", ");
+  }
+
   return {
     date: result.date,
     region: result.region,
     period: result.period,
-    results: {
-      "Giải đặc biệt": result.results["dac-biet"],
-      "Giải nhất": result.results["giai-nhat"],
-      "Giải nhì": result.results["giai-nhi"].join(", "),
-      "Giải ba": result.results["giai-ba"].join(", "),
-      "Giải tư": result.results["giai-tu"].join(", "),
-      "Giải năm": result.results["giai-nam"].join(", "),
-      "Giải sáu": result.results["giai-sau"].join(", "),
-      "Giải bảy": result.results["giai-bay"].join(", ")
-    }
+    results: formattedResults
   };
 };
