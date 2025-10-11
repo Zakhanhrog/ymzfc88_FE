@@ -15,6 +15,7 @@ import AdminPaymentMethodManagement from './AdminPaymentMethodManagement';
 import AdminKycVerification from './AdminKycVerification';
 import AdminSystemSettings from './AdminSystemSettings';
 import AdminNotificationManagement from './AdminNotificationManagement';
+import AdminBetManagement from './AdminBetManagement';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const renderContent = () => {
@@ -139,6 +140,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Duyệt yêu cầu xác thực tài khoản từ người dùng" 
             />
             <AdminKycVerification />
+          </div>
+        );
+
+      case 'bet-management':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader 
+              title="Quản lý cược" 
+              description="Quản lý và thay đổi kết quả các lệnh cược của người dùng" 
+            />
+            <AdminBetManagement />
           </div>
         );
 

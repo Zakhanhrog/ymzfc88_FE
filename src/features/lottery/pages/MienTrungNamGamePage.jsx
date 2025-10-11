@@ -1093,16 +1093,16 @@ const MienTrungNamGamePage = () => {
         // Load lại số dư từ backend (backend đã trừ tiền)
         await loadUserPoints();
         
-        showNotification('Đặt cược thành công! Kết quả sẽ có sau 5 giây', 'success');
+        showNotification('Đặt cược thành công! Kết quả sẽ có sau 1 phút', 'success');
         
         // Reset form
         setSelectedNumbers([]);
         setBetAmount(1);
         
-        // Sau 5 giây kiểm tra kết quả
+        // Sau 1 phút kiểm tra kết quả
         setTimeout(() => {
           checkBetResult(response.data.id);
-        }, 5000);
+        }, 60000);
         
       } else {
         showNotification(response.message || 'Có lỗi xảy ra khi đặt cược', 'error');

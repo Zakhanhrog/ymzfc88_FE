@@ -89,6 +89,11 @@ export const adminMenuItems = [
         label: 'Danh sách game',
       },
       {
+        key: 'bet-management',
+        icon: 'ShoppingOutlined',
+        label: 'Quản lý cược',
+      },
+      {
         key: 'game-results',
         icon: 'BarChartOutlined',
         label: 'Kết quả game',

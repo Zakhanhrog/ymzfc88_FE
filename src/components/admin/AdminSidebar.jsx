@@ -53,6 +53,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       return ['betting-odds'];
     }
     
+    
     if (path.includes('/admin/dashboard')) {
       if (tab) {
         return [tab];
@@ -76,13 +77,14 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       return ['game-management'];
     }
     
+    
     if (tab === 'users' || tab === 'kyc-verification' || tab === 'user-roles' || tab === 'user-activities') {
       return ['user-management'];
     }
     if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods' || tab === 'points-management') {
       return ['financial-management'];
     }
-    if (tab === 'games' || tab === 'game-results' || tab === 'game-settings' || tab === 'betting-odds') {
+    if (tab === 'games' || tab === 'bet-management' || tab === 'game-results' || tab === 'game-settings' || tab === 'betting-odds') {
       return ['game-management'];
     }
     if (tab === 'banners' || tab === 'news' || tab === 'notifications') {
@@ -112,6 +114,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'payment-methods': () => navigate('/admin/dashboard?tab=payment-methods'),
       'points-management': () => navigate('/admin/points'),
       'games': () => navigate('/admin/dashboard?tab=games'),
+      'bet-management': () => navigate('/admin/dashboard?tab=bet-management'),
       'game-results': () => navigate('/admin/dashboard?tab=game-results'),
       'game-settings': () => navigate('/admin/dashboard?tab=game-settings'),
       'betting-odds': () => navigate('/admin/betting-odds'),
