@@ -323,7 +323,7 @@ const MienTrungNamGamePage = () => {
     } else {
       // Parse input numbers separated by comma or space
       const isLoto4s = selectedGameType === 'loto-4s' || selectedGameType === 'loto4s' || selectedGameType === '4s-dac-biet';
-      const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet';
+      const isLoto3s = selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7';
       
       let numDigits = 2;
       let maxValue = 99;
@@ -382,7 +382,9 @@ const MienTrungNamGamePage = () => {
         || selectedGameType === 'loto-xien-4'
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
-        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet') {
+        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
+        || selectedGameType === 'de-giai-8'
+        || selectedGameType === '3s-giai-7') {
       let count = selectedNumbers.length;
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
@@ -423,7 +425,9 @@ const MienTrungNamGamePage = () => {
         || selectedGameType === 'loto-xien-4'
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
-        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet') {
+        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
+        || selectedGameType === 'de-giai-8'
+        || selectedGameType === '3s-giai-7') {
       let count = selectedNumbers.length;
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
@@ -455,14 +459,17 @@ const MienTrungNamGamePage = () => {
   };
 
   const calculateWinnings = () => {
-    // Logic mới: số điểm × tỷ lệ × số lượng số (áp dụng cho loto-2-so, loto-3s, loto-4s, dac-biet, dau-dac-biet)
+    // Logic mới: số điểm × tỷ lệ × số lượng số (áp dụng cho loto-2-so, loto-3s, loto-4s, dac-biet, dau-dac-biet, de-giai-8, 3s-giai-7)
     if (selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s'
         || selectedGameType === 'loto-4s' || selectedGameType === 'loto4s'
         || selectedGameType === 'loto-xien-2'
         || selectedGameType === 'loto-xien-3'
         || selectedGameType === 'loto-xien-4'
         || selectedGameType === '3s-dac-biet'
-        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet') {
+        || selectedGameType === '4s-dac-biet'
+        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
+        || selectedGameType === 'de-giai-8'
+        || selectedGameType === '3s-giai-7') {
       let count = selectedNumbers.length;
       
       // Đối với loto xiên 2, đếm số cặp (không tính số đơn lẻ chưa thành cặp)
@@ -634,7 +641,10 @@ const MienTrungNamGamePage = () => {
         || selectedGameType === 'loto-xien-3'
         || selectedGameType === 'loto-xien-4'
         || selectedGameType === '3s-dac-biet'
-                        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet';
+        || selectedGameType === '4s-dac-biet'
+                        || selectedGameType === 'dac-biet' || selectedGameType === 'dau-dac-biet'
+        || selectedGameType === 'de-giai-8'
+        || selectedGameType === '3s-giai-7';
     const totalCost = isLotoNewLogic ? calculateTotalAmount() : calculateTotalPoints();
     if (userPoints < totalCost) {
       showNotification('Số dư không đủ để đặt cược', 'error');
@@ -955,7 +965,7 @@ const MienTrungNamGamePage = () => {
               ) : selectionMode === 'quick' ? (
                 /* Number Grid */
                 <div className={`grid gap-1.5 ${
-                  selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet'
+                  selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7'
                     ? 'grid-cols-10 max-h-96 overflow-y-auto' 
                     : 'grid-cols-10'
                 }`}>

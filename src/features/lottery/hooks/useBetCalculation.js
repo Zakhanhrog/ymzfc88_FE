@@ -30,7 +30,8 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat') {
+        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+        || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7') {
       
       let count = selectedNumbers.length;
       
@@ -71,7 +72,8 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat') {
+        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+        || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7') {
       
       let count = selectedNumbers.length;
       
@@ -110,7 +112,8 @@ export const useBetCalculation = (selectedGameType, selectedNumbers, betAmount, 
         || selectedGameType === '3s-dac-biet'
         || selectedGameType === '4s-dac-biet'
         || selectedGameType === 'giai-nhat' || selectedGameType === 'dac-biet'
-        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat') {
+        || selectedGameType === 'dau-dac-biet' || selectedGameType === '3s-giai-nhat'
+        || selectedGameType === 'de-giai-8' || selectedGameType === '3s-giai-7') {
       
       let count = selectedNumbers.length;
       
