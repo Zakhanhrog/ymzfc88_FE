@@ -222,7 +222,7 @@ const Layout = ({ children }) => {
         </div>
         
         {/* Mobile layout */}
-        <div className="md:hidden p-3 pb-20 min-h-full w-full">
+        <div className="md:hidden p-3 pb-24 min-h-full w-full">
           {children}
         </div>
       </main>

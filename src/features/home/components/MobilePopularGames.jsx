@@ -6,9 +6,10 @@ const MobilePopularGames = () => {
 
   const popularGames = [
     {
-      id: 'game-1',
-      name: 'Game 1',
-      image: '/images/games/gamephobien/imgi_7_25e25786-cd43-42a4-83eb-b6632bc87916.png',
+    
+      id: 'game-12',
+      name: 'Miền Bắc',
+      image: '/images/games/gamephobien/xoso.jpg',
       category: 'popular'
     },
     {
@@ -70,11 +71,22 @@ const MobilePopularGames = () => {
       name: 'Game 11',
       image: '/images/games/gamephobien/imgi_17_8d1e6090-b826-49b1-9b68-c826509ba573.png',
       category: 'popular'
+    },
+    {
+      id: 'game-1',
+      name: 'Game 1',
+      image: '/images/games/gamephobien/imgi_7_25e25786-cd43-42a4-83eb-b6632bc87916.png',
+      category: 'popular'
     }
   ];
 
   const handleGameClick = (gameId) => {
-    navigate(`/games/${gameId}`);
+    // Điều hướng đến trang xổ số khi ấn vào ảnh đầu tiên (Miền Bắc)
+    if (gameId === 'game-12') {
+      navigate('/lottery');
+    } else {
+      navigate(`/games/${gameId}`);
+    }
   };
 
   return (

@@ -6,7 +6,7 @@ const MobileBannerCarousel = ({ banners }) => {
       <Carousel 
         autoplay
         autoplaySpeed={4000}
-        dots={true}
+        dots={false}
         className="banner-carousel bg-transparent"
       >
         {banners.map((banner) => (

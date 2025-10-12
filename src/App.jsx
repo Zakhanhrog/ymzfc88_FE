@@ -3,9 +3,10 @@ import { App as AntApp } from 'antd';
 
 // Pages
 import HomePage from './features/home/pages/HomePage';
-import UserWalletPage from './features/wallet/pages/UserWalletPage';
+import ResponsiveWalletWrapper from './features/wallet/components/ResponsiveWalletWrapper';
+import MobileKycPage from './features/wallet/pages/MobileKycPage';
 import PointsPage from './features/points/pages/PointsPage';
-import LotteryPage from './features/lottery/pages/LotteryPage';
+import ResponsiveLotteryWrapper from './features/lottery/components/ResponsiveLotteryWrapper';
 import MienBacGamePage from './features/lottery/pages/MienBacGamePage';
 import MienTrungNamGamePage from './features/lottery/pages/MienTrungNamGamePage';
 
@@ -29,7 +30,15 @@ function App() {
                 path="/wallet" 
                 element={
                   <ProtectedRoute>
-                    <UserWalletPage />
+                    <ResponsiveWalletWrapper />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/kyc" 
+                element={
+                  <ProtectedRoute>
+                    <MobileKycPage />
                   </ProtectedRoute>
                 } 
               />
@@ -45,7 +54,7 @@ function App() {
                 path="/lottery" 
                 element={
                   <ProtectedRoute>
-                    <LotteryPage />
+                    <ResponsiveLotteryWrapper />
                   </ProtectedRoute>
                 } 
               />

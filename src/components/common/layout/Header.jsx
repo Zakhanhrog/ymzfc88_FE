@@ -1,7 +1,11 @@
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Button } from '../../ui';
 import NotificationDropdown from '../../../features/notification/components/NotificationDropdown';
+import MobileNotificationModal from '../../../features/notification/components/MobileNotificationModal';
+import MobileProfilePage from '../../../features/profile/components/MobileProfilePage';
+import { useNotificationCount } from '../../../hooks/useNotificationCount';
 
 const Header = ({ 
   isLoggedIn, 
@@ -15,6 +19,9 @@ const Header = ({
   onLogout
 }) => {
   const navigate = useNavigate();
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const { unreadCount } = useNotificationCount();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-[60px] md:h-[70px] bg-white border-b border-gray-200 z-20 px-4 md:px-6">
@@ -121,17 +128,28 @@ const Header = ({
                 </div>
                 
                 {/* User icon */}
-                <button className="w-8 h-8 flex items-center justify-center">
+                <button 
+                  onClick={() => setShowProfileModal(true)}
+                  className="w-8 h-8 flex items-center justify-center"
+                >
                   <Icon icon="mdi:account-circle" className="w-6 h-6 text-gray-600" />
                 </button>
                 
                 {/* Notification icon */}
                 <div className="relative">
-                  <button className="w-8 h-8 flex items-center justify-center">
+                  <button 
+                    onClick={() => setShowNotificationModal(true)}
+                    data-notification-button
+                    className="w-8 h-8 flex items-center justify-center"
+                  >
                     <Icon icon="mdi:forum" className="w-6 h-6 text-gray-600" />
                   </button>
                   {/* Notification badge */}
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">9</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </div>
               </div>
             </>
@@ -158,6 +176,22 @@ const Header = ({
           )}
         </div>
       </div>
+
+      {/* Mobile Notification Modal */}
+      <MobileNotificationModal 
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+      />
+
+      {/* Mobile Profile Modal */}
+      <MobileProfilePage 
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        userName={userName}
+        userBalance={userBalance}
+        onRefreshBalance={onRefreshBalance}
+        onLogout={onLogout}
+      />
     </header>
   );
 };

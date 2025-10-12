@@ -110,7 +110,7 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
       {/* Login Form */}
       <div className="bg-gray-50 -mt-8 mx-4 rounded-t-2xl relative z-10">
         <div className="p-6 pt-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Đăng nhập</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-6 text-center">Đăng nhập</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username Field */}
@@ -177,10 +177,10 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
             <Button 
               type="submit"
               variant="primary"
-              size="lg"
+              size="sm"
               block
               loading={loading}
-              className="h-12 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-full transition-colors text-sm mt-6"
+              className="h-10 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full transition-colors text-xs mt-6"
             >
               Đăng nhập
             </Button>
@@ -189,13 +189,13 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
             <Button 
               type="button"
               variant="outline"
-              size="lg"
+              size="sm"
               block
               onClick={(e) => {
                 e.stopPropagation();
                 onSwitchToRegister && onSwitchToRegister();
               }}
-              className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-colors text-sm"
+              className="h-10 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-colors text-xs"
             >
               Đăng ký
             </Button>

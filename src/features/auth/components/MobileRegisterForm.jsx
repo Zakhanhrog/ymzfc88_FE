@@ -138,13 +138,13 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
 
       {/* Register Form */}
       <div className="bg-gray-50 -mt-8 mx-4 rounded-t-2xl relative z-10">
-        <div className="p-6 pt-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">Đăng ký</h2>
+        <div className="p-4 pt-6 pb-20">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">Đăng ký</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Username Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 * Tên đăng nhập
               </label>
               <div className="relative">
@@ -162,7 +162,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 * Email
               </label>
               <div className="relative">
@@ -181,7 +181,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
 
             {/* Phone Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 * Số điện thoại
               </label>
               <div className="relative">
@@ -200,7 +200,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 * Mật khẩu
               </label>
               <div className="relative">
@@ -228,7 +228,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 * Xác nhận mật khẩu
               </label>
               <div className="relative">
@@ -273,10 +273,10 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
             <Button 
               type="submit"
               variant="primary"
-              size="lg"
+              size="sm"
               block
               loading={loading}
-              className="h-12 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-full transition-colors text-sm mt-6"
+              className="h-10 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full transition-colors text-xs mt-6"
             >
               Đăng ký
             </Button>
@@ -285,13 +285,13 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
             <Button 
               type="button"
               variant="outline"
-              size="lg"
+              size="sm"
               block
               onClick={(e) => {
                 e.stopPropagation();
                 onSwitchToLogin && onSwitchToLogin();
               }}
-              className="h-12 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-colors text-sm"
+              className="h-10 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-colors text-xs"
             >
               Đăng nhập
             </Button>
