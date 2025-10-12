@@ -18,6 +18,7 @@ import AdminBettingOddsPage from './features/admin/pages/AdminBettingOddsPage';
 import AdminLotteryResultManagement from './features/admin/components/AdminLotteryResultManagement';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import NotFoundPage from './components/common/NotFoundPage';
 
 function App() {
   return (
@@ -110,6 +111,9 @@ function App() {
               </AdminProtectedRoute>
             } 
           />
+          
+          {/* 404 Route - Must be last */}
+          <Route path="*" element={<NotFoundPage />} />
               </Routes>
         </div>
       </Router>

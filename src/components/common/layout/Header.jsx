@@ -10,7 +10,7 @@ import { useNotificationCount } from '../../../hooks/useNotificationCount';
 const Header = ({ 
   isLoggedIn, 
   sidebarCollapsed,
-  onSidebarToggle, 
+  onSidebarToggle,
   onLoginOpen, 
   onRegisterOpen,
   userName,

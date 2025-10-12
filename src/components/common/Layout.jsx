@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
+import MobileSidebar from './layout/MobileSidebar';
 import AuthModal from './layout/AuthModal';
 import Footer from './layout/Footer';
 import MobileFooter from './layout/MobileFooter';
@@ -36,6 +37,7 @@ const Layout = ({ children }) => {
   });
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [userPoints, setUserPoints] = useState(0);
   const [userName, setUserName] = useState('');
 
@@ -196,6 +198,15 @@ const Layout = ({ children }) => {
         onLogout={handleLogout}
       />
 
+      {/* Mobile Sidebar */}
+      <MobileSidebar
+        isOpen={showMobileSidebar}
+        onClose={() => setShowMobileSidebar(false)}
+        isLoggedIn={isLoggedIn}
+        userName={userName}
+        userBalance={userPoints}
+      />
+
       {/* Sidebar - Hidden on mobile */}
       <div className="hidden md:block">
         <Sidebar
@@ -264,7 +275,7 @@ const Layout = ({ children }) => {
       />
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      <MobileBottomNav onMenuClick={() => setShowMobileSidebar(true)} />
     </div>
   );
 };

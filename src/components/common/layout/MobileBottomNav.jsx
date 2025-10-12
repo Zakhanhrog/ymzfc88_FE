@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const MobileBottomNav = () => {
+const MobileBottomNav = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -10,7 +10,7 @@ const MobileBottomNav = () => {
       id: 'menu',
       label: 'Tùy Chọn',
       icon: '/mbnav/nav-menu.png',
-      path: '/menu'
+      isMenu: true
     },
     {
       id: 'home',
@@ -39,8 +39,12 @@ const MobileBottomNav = () => {
     }
   ];
 
-  const handleNavClick = (path) => {
-    navigate(path);
+  const handleNavClick = (item) => {
+    if (item.isMenu) {
+      onMenuClick?.();
+    } else {
+      navigate(item.path);
+    }
   };
 
 
@@ -64,7 +68,7 @@ const MobileBottomNav = () => {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleNavClick(item.path)}
+                onClick={() => handleNavClick(item)}
                 className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 flex-1 relative ${
                   item.isActive ? 'text-red-500' : 'text-gray-600'
                 }`}

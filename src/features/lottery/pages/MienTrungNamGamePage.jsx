@@ -40,6 +40,8 @@ const MienTrungNamGamePage = () => {
   const [recentBet, setRecentBet] = useState(null);
   const [betHistory, setBetHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showGameTypeDrawer, setShowGameTypeDrawer] = useState(false);
+  const [showBetConfirmModal, setShowBetConfirmModal] = useState(false);
 
   // Game types for Miền Trung & Nam - REFACTORED: sử dụng constant từ gameTypeHelpers
   const gameTypes = MIEN_TRUNG_NAM_GAME_TYPES;
@@ -1190,27 +1192,82 @@ const MienTrungNamGamePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Custom Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <button
-          onClick={() => navigate('/lottery')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <Icon icon="mdi:arrow-left" className="w-5 h-5" />
-          Quay lại
-        </button>
+      <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/lottery')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+            <span className="hidden sm:inline">Quay lại</span>
+          </button>
+          
+          {/* Button to show game type drawer on mobile */}
+          <button
+            onClick={() => setShowGameTypeDrawer(true)}
+            className="md:hidden ml-2 px-3 py-2 bg-yellow-100 text-gray-900 rounded-lg text-sm font-medium"
+          >
+            {getCurrentGameType()?.name}
+          </button>
+        </div>
         
         <div className="text-right">
-          <div className="text-sm text-gray-600">hung5285</div>
-          <div className="text-sm font-semibold text-[#D30102]">
+          <div className="text-xs md:text-sm text-gray-600">hung5285</div>
+          <div className="text-sm md:text-base font-semibold text-[#D30102]">
             {loadingPoints ? 'Đang tải...' : `${userPoints.toLocaleString()} điểm`}
           </div>
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-80px)] bg-gray-50 justify-center pt-6">
-        <div className="flex max-w-7xl w-full gap-4 items-start">
-          {/* Left Sidebar - Game Types */}
-          <div className="w-56 bg-white shadow-lg overflow-y-auto rounded-lg">
+      {/* Game Type Drawer for Mobile */}
+      {showGameTypeDrawer && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in"
+            onClick={() => setShowGameTypeDrawer(false)}
+          />
+          
+          {/* Drawer */}
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-lg overflow-y-auto animate-slide-in-left">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-800">{portName} - Loại chơi</h3>
+              <button
+                onClick={() => setShowGameTypeDrawer(false)}
+                className="p-1 hover:bg-gray-100 rounded-full"
+              >
+                <Icon icon="mdi:close" className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <div className="space-y-1">
+                {gameTypes.map((gameType) => (
+                  <button
+                    key={gameType.id}
+                    onClick={() => {
+                      setSelectedGameType(gameType.id);
+                      setShowGameTypeDrawer(false);
+                    }}
+                    className={`w-full text-left p-3 rounded-lg transition-all text-base ${
+                      selectedGameType === gameType.id
+                        ? 'bg-yellow-100 text-gray-900 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    {gameType.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex md:h-[calc(100vh-80px)] bg-gray-50 md:justify-center md:pt-6">
+        <div className="flex flex-col md:flex-row max-w-7xl w-full md:gap-4 items-start">
+          {/* Left Sidebar - Game Types (Desktop only) */}
+          <div className="hidden md:block w-56 bg-white shadow-lg overflow-y-auto rounded-lg">
             <div className="p-4 border-b border-gray-200">
               <h3 className="text-base font-semibold text-gray-800">{portName}</h3>
             </div>
@@ -1236,26 +1293,26 @@ const MienTrungNamGamePage = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 max-w-4xl mx-auto p-4 overflow-y-auto bg-white shadow-lg rounded-lg">
+          <div className="flex-1 w-full md:max-w-4xl md:mx-auto px-2 py-2 md:p-4 md:overflow-y-auto bg-white md:shadow-lg md:rounded-lg order-1">
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#D30102] to-[#B80102] text-white p-4 rounded-lg mb-4 relative overflow-hidden">
-              <div className="flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#D30102] to-[#B80102] text-white p-3 md:p-4 rounded-lg mb-4 relative overflow-hidden">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h1 className="text-lg font-bold mb-1">{portName}</h1>
-                  <div className="flex items-center gap-3 text-red-100 text-sm">
+                  <h1 className="text-base md:text-lg font-bold mb-1">{portName}</h1>
+                  <div className="flex items-center gap-2 md:gap-3 text-red-100 text-xs md:text-sm">
                     <span>Thứ 6</span>
                     <span>Lượt xổ: 10/10/2025</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-red-700 px-3 py-1.5 rounded-lg">
-                    <span className="text-base font-mono">17 : 40 : 09</span>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="bg-red-700 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
+                    <span className="text-sm md:text-base font-mono">17 : 40 : 09</span>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right hidden sm:block">
                     <div className="text-xs text-red-100">Kỳ 09/10/2025, giải đặc biệt</div>
                     <div className="flex gap-1 mt-1">
                       {['0', '9', '5', '6', '5'].map((num, index) => (
-                        <div key={index} className="w-6 h-6 bg-red-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        <div key={index} className="w-5 h-5 md:w-6 md:h-6 bg-red-700 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm">
                           {num}
                         </div>
                       ))}
@@ -1266,22 +1323,26 @@ const MienTrungNamGamePage = () => {
             </div>
 
             {/* Game Selection */}
-            <div className="bg-white rounded-lg p-4 mb-4 shadow-sm">
+            <div className="bg-white rounded-lg p-3 md:p-4 mb-4 shadow-sm">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold">{getCurrentGameType()?.name}</h2>
+                <h2 className="text-sm md:text-base font-semibold">{getCurrentGameType()?.name}</h2>
               </div>
               
               <div className="mb-3">
                 {loadingOdds ? (
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+                  <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm">
+                    <Icon icon="mdi:loading" className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
                     <span>Đang tải tỷ lệ cược...</span>
                   </div>
                 ) : (
                   <>
-                    <span className="text-gray-600 text-sm">Tỷ lệ cược: 1 ăn {getOdds()}</span>
-                    <br />
-                    <span className="text-gray-600 text-sm">Đơn giá: {getPricePerPoint().toLocaleString()}đ/điểm</span>
+                    <span className="text-gray-600 text-xs md:text-sm">Tỷ lệ cược: 1 ăn {getOdds()}</span>
+                    {(selectedGameType === 'loto-2-so' || selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === 'loto-4s' || selectedGameType === 'loto4s') && (
+                      <>
+                        <br />
+                        <span className="text-gray-600 text-xs md:text-sm">Đơn giá: {getPricePerPoint().toLocaleString()}đ/điểm</span>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -1291,23 +1352,23 @@ const MienTrungNamGamePage = () => {
                 <div className="flex border-b border-gray-200 mb-4">
                   <button
                     onClick={() => setSelectionMode('quick')}
-                    className={`flex-1 py-3 px-2 text-center font-medium transition-colors text-sm ${
+                    className={`flex-1 py-2 md:py-3 px-3 md:px-4 text-center font-medium transition-colors text-sm md:text-base ${
                       selectionMode === 'quick'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Nhanh
+                    Chọn số nhanh
                   </button>
                   <button
                     onClick={() => setSelectionMode('input')}
-                    className={`flex-1 py-3 px-2 text-center font-medium transition-colors text-sm ${
+                    className={`flex-1 py-2 md:py-3 px-3 md:px-4 text-center font-medium transition-colors text-sm md:text-base ${
                       selectionMode === 'input'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Nhập tay
+                    Nhập số
                   </button>
                 </div>
               )}
@@ -1317,41 +1378,41 @@ const MienTrungNamGamePage = () => {
                 /* Loto 4s và 4s đặc biệt: CHỈ CHO NHẬP TAY */
                 <div>
                   <div className="mb-3">
-                    <h3 className="text-base font-medium text-gray-800 mb-2">
+                    <h3 className="text-sm md:text-base font-medium text-gray-800 mb-2">
                       {selectedGameType === '4s-dac-biet' ? '4s đặc biệt - Nhập tay (0000-9999):' : 'Loto 4 số - Nhập tay (0000-9999):'}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs md:text-sm text-gray-600">
                       Giữa mỗi cược cần phân cách bởi dấu , hoặc khoảng trống. Ví dụ: 0001, 0123, 9999 hoặc 0001 0123 9999
                     </p>
                   </div>
-                  <div className="space-y-3">
+                  <div className="relative">
                     <textarea
                       value={numberInput}
                       onChange={(e) => setNumberInput(e.target.value)}
                       placeholder="Nhập các số 4 chữ số (0000-9999)..."
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      className="w-full p-2 md:p-3 pb-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm md:text-base"
                       rows={4}
                     />
                     <button
                       onClick={handleNumberInput}
-                      className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-base"
+                      className="absolute bottom-5 right-2 px-4 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors font-medium text-sm"
                     >
-                      Áp dụng số đã nhập
+                      Áp dụng
                     </button>
                   </div>
                 </div>
               ) : selectionMode === 'quick' ? (
                 /* Number Grid */
-                <div className={`grid gap-1.5 ${
+                <div className={`grid gap-1 md:gap-1.5 ${
                   selectedGameType === 'loto-3s' || selectedGameType === 'loto3s' || selectedGameType === '3s-dac-biet' || selectedGameType === '3s-giai-7' || selectedGameType === '3s-dau-duoi-mien-trung-nam'
-                    ? 'grid-cols-10 max-h-96 overflow-y-auto' 
+                    ? 'grid-cols-10 max-h-64 md:max-h-96 overflow-y-auto' 
                     : 'grid-cols-10'
                 }`}>
                   {numbers.map((number) => (
                     <button
                       key={number}
                       onClick={() => handleNumberSelect(number)}
-                      className={`w-10 h-10 rounded-lg font-medium transition-all text-base ${
+                      className={`w-8 h-8 md:w-10 md:h-10 rounded-lg font-medium transition-all text-xs md:text-base ${
                         selectedNumbers.includes(number)
                           ? 'bg-red-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1365,8 +1426,8 @@ const MienTrungNamGamePage = () => {
                 /* Number Input - Loto 2s hoặc 3s */
                 <div>
                   <div className="mb-3">
-                    <h3 className="text-base font-medium text-gray-800 mb-2">Cách chơi:</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-sm md:text-base font-medium text-gray-800 mb-2">Cách chơi:</h3>
+                    <p className="text-xs md:text-sm text-gray-600">
                       {selectedGameType === 'loto-xien-2' ? 
                         'Nhập các cặp số, mỗi cặp cách nhau bởi dấu ;. Ví dụ: 78,40; 80,99' :
                         selectedGameType === 'loto-xien-3' ? 
@@ -1399,7 +1460,7 @@ const MienTrungNamGamePage = () => {
                       }
                     </p>
                   </div>
-                  <div className="space-y-3">
+                  <div className="relative">
                     <textarea
                       value={numberInput}
                       onChange={(e) => setNumberInput(e.target.value)}
@@ -1433,28 +1494,112 @@ const MienTrungNamGamePage = () => {
                         'Đầu/đuôi: Nhập các số (00-99). Ví dụ: 12,34,56. Lưu ý: Tiền cược tự động × 2' :
                         'Nhập các số bạn muốn chọn...'
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      className="w-full p-2 md:p-3 pb-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm md:text-base"
                       rows={4}
                     />
                     <button
                       onClick={handleNumberInput}
-                      className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-base"
+                      className="absolute bottom-5 right-2 px-4 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors font-medium text-sm"
                     >
-                      Áp dụng số đã nhập
+                      Áp dụng
                     </button>
                   </div>
                 </div>
               ) : null}
+
+              {/* Mobile Summary - Hiển thị ngay trong phần chọn số (chỉ mobile) */}
+              <div className="md:hidden mt-4 p-3 bg-gray-50 rounded-lg">
+                {selectedNumbers.length > 0 && (
+                  <div className="space-y-2 text-sm">
+                    <div className="text-gray-700">
+                      <span className="font-medium text-gray-600">Số đã chọn:</span>
+                      <div className="mt-2 p-2.5 bg-yellow-50 border border-yellow-200 rounded-md text-gray-900 font-bold text-base">
+                        {selectedGameType === 'loto-xien-2' ? 
+                          selectedNumbers.map(item => 
+                            item.includes(',') ? `(${item})` : item
+                          ).join('; ') : 
+                          selectedGameType === 'loto-xien-3' ?
+                          selectedNumbers.map(item => {
+                            const parts = item.split(',');
+                            if (parts.length === 3) {
+                              return `(${item})`;
+                            }
+                            return item;
+                          }).join('; ') :
+                          selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4' ?
+                          selectedNumbers.map(item => {
+                            const parts = item.split(',');
+                            if (parts.length === 4) {
+                              return `(${item})`;
+                            }
+                            return item;
+                          }).join('; ') :
+                          selectedGameType === 'loto-truot-8' ?
+                          selectedNumbers.map(item => {
+                            const parts = item.split(',');
+                            if (parts.length === 8) {
+                              return `(${item})`;
+                            }
+                            return item;
+                          }).join('; ') :
+                          selectedGameType === 'loto-truot-10' ?
+                          selectedNumbers.map(item => {
+                            const parts = item.split(',');
+                            if (parts.length === 10) {
+                              return `(${item})`;
+                            }
+                            return item;
+                          }).join('; ') :
+                          selectedNumbers.join(', ')
+                        }
+                      </div>
+                    </div>
+                    <div className="text-gray-700">
+                      <span className="font-medium">Tổng tiền cược:</span> {calculateTotalAmount().toLocaleString()} điểm
+                      {(selectedGameType === 'dau-duoi-mien-trung-nam' || selectedGameType === '3s-dau-duoi-mien-trung-nam') && (
+                        <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                      )}
+                    </div>
+                    <div className="text-gray-700">
+                      <span className="font-medium">Tiền thắng (nếu tất cả trúng):</span> {calculateWinnings().toLocaleString()} điểm
+                    </div>
+                  </div>
+                )}
+                
+                {/* Nút Cài lại và Xác nhận - chỉ mobile */}
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => {
+                      setSelectedNumbers([]);
+                      setBetAmount(1);
+                    }}
+                    className="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-base"
+                  >
+                    Cài lại
+                  </button>
+                  <button
+                    onClick={() => setShowBetConfirmModal(true)}
+                    disabled={selectedNumbers.length === 0}
+                    className={`flex-1 py-2.5 rounded-lg font-medium text-base transition-colors ${
+                      selectedNumbers.length === 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    Xác nhận
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right Sidebar - Bet Summary */}
-          <div className="w-72 bg-white shadow-lg overflow-y-auto rounded-lg">
+          {/* Right Sidebar - Bet Summary (Desktop only) */}
+          <div className="hidden md:block w-72 bg-white shadow-lg overflow-y-auto rounded-lg order-2 mb-4 md:mb-0">
           {/* Tabs */}
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 sticky top-0 bg-white z-10 px-2 md:px-0">
             <button
               onClick={() => setActiveTab('selection')}
-              className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
+              className={`flex-1 py-2 md:py-3 px-3 md:px-4 text-center font-medium transition-colors text-sm md:text-base ${
                 activeTab === 'selection'
                   ? 'bg-[#D30102] text-white'
                   : 'text-gray-600 hover:text-gray-900'
@@ -1464,7 +1609,7 @@ const MienTrungNamGamePage = () => {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
+              className={`flex-1 py-2 md:py-3 px-3 md:px-4 text-center font-medium transition-colors text-sm md:text-base ${
                 activeTab === 'history'
                   ? 'bg-[#D30102] text-white'
                   : 'text-gray-600 hover:text-gray-900'
@@ -1474,19 +1619,19 @@ const MienTrungNamGamePage = () => {
             </button>
           </div>
 
-          <div className="p-4">
+          <div className="p-3 md:p-4">
             {/* Tab Content */}
             {activeTab === 'selection' ? (
               <>
                 {/* Multipliers */}
-                <div className="mb-4">
-                  <h3 className="text-base font-semibold mb-2">Hệ số</h3>
+                <div className="mb-3 md:mb-4">
+                  <h3 className="text-sm md:text-base font-semibold mb-2">Hệ số</h3>
                   <div className="flex gap-2">
                     {multipliers.map((mult) => (
                       <button
                         key={mult.value}
                         onClick={() => handleMultiplierClick(mult.value)}
-                        className="w-10 h-10 rounded-full text-white font-bold transition-all text-base bg-gray-300 hover:bg-gray-400"
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-full text-white font-bold transition-all text-sm md:text-base bg-gray-300 hover:bg-gray-400"
                       >
                         {mult.label}
                       </button>
@@ -1495,21 +1640,21 @@ const MienTrungNamGamePage = () => {
                 </div>
 
                 {/* Bet Amount */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-3 md:mb-4">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                     Số điểm cược
                   </label>
                   <input
                     type="number"
                     value={betAmount}
                     onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
                     min="1"
                   />
                 </div>
 
                 {/* Summary */}
-                <div className="space-y-2 mb-4 text-base">
+                <div className="space-y-2 mb-3 md:mb-4 text-sm md:text-base">
                   {selectedNumbers.length > 0 && (
                     <div className="text-gray-600 text-sm">
                       Số đã chọn: {selectedGameType === 'loto-xien-2' ? 
@@ -1614,19 +1759,19 @@ const MienTrungNamGamePage = () => {
 
                   {/* Recent Bet Info */}
                   {recentBet && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 relative">
+                    <div className="mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 rounded-lg border border-blue-200 relative">
                       {/* Nút X để dismiss khi đã có kết quả */}
                       {recentBet.status !== 'PENDING' && (
                         <button
                           onClick={() => dismissBetResult(recentBet.id)}
-                          className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                          className="absolute top-1 md:top-2 right-1 md:right-2 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
                           title="Đóng thông báo"
                         >
-                          <Icon icon="mdi:close" className="w-4 h-4 text-gray-600" />
+                          <Icon icon="mdi:close" className="w-3 h-3 md:w-4 md:h-4 text-gray-600" />
                         </button>
                       )}
                       
-                      <div className="text-sm text-blue-800">
+                      <div className="text-xs md:text-sm text-blue-800">
                         <div className="font-medium mb-1">Cược gần đây:</div>
                         <div className="text-blue-700 font-medium">{formatBetTypeMienTrungNam(recentBet.betType)}</div>
                         <div>Số: {formatSelectedNumbers(recentBet.selectedNumbers)?.join(', ')}</div>
@@ -1666,7 +1811,7 @@ const MienTrungNamGamePage = () => {
                       setSelectedNumbers([]);
                       setBetAmount(1);
                     }}
-                    className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-base"
+                    className="w-full py-2 md:py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm md:text-base"
                   >
                     Cài lại
                   </button>
@@ -1710,7 +1855,7 @@ const MienTrungNamGamePage = () => {
                         const parts = item.split(',');
                         return parts.length === 10;
                       }).length === 0)}
-                    className={`w-full py-2 text-white rounded-lg transition-colors font-medium text-base ${
+                    className={`w-full py-2 md:py-2.5 text-white rounded-lg transition-colors font-medium text-sm md:text-base ${
                       placingBet || selectedNumbers.length === 0 || 
                       (selectedGameType === 'loto-xien-2' && selectedNumbers.filter(item => item.includes(',')).length === 0) ||
                       (selectedGameType === 'loto-xien-3' && selectedNumbers.filter(item => {
@@ -1766,55 +1911,55 @@ const MienTrungNamGamePage = () => {
               </>
             ) : (
               /* History Tab */
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-gray-800">Lịch sử cược</h3>
+                  <h3 className="text-sm md:text-base font-semibold text-gray-800">Lịch sử cược</h3>
                   <button
                     onClick={() => {
                       loadBetHistory();
                       loadCurrentLotteryResult();
                     }}
-                    className="text-blue-600 hover:text-blue-700 text-sm"
+                    className="text-blue-600 hover:text-blue-700 text-xs md:text-sm"
                     disabled={loadingHistory}
                   >
                     <Icon icon={loadingHistory ? "mdi:loading" : "mdi:refresh"} className={`w-4 h-4 ${loadingHistory ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
                 
-                <div className="text-sm text-gray-600 mb-2">
+                <div className="text-xs md:text-sm text-gray-600 mb-2">
                   Số dư: {loadingPoints ? 'Đang tải...' : userPoints.toLocaleString()} điểm
                 </div>
 
                 {loadingHistory ? (
                   <div className="text-center py-4">
-                    <Icon icon="mdi:loading" className="w-6 h-6 animate-spin mx-auto text-blue-600" />
-                    <p className="text-sm text-gray-600 mt-2">Đang tải lịch sử...</p>
+                    <Icon icon="mdi:loading" className="w-5 h-5 md:w-6 md:h-6 animate-spin mx-auto text-blue-600" />
+                    <p className="text-xs md:text-sm text-gray-600 mt-2">Đang tải lịch sử...</p>
                   </div>
                 ) : betHistory.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Icon icon="mdi:history" className="w-12 h-12 mx-auto text-gray-400" />
-                    <p className="text-sm text-gray-600 mt-2">Chưa có lịch sử cược</p>
+                  <div className="text-center py-6 md:py-8">
+                    <Icon icon="mdi:history" className="w-10 h-10 md:w-12 md:h-12 mx-auto text-gray-400" />
+                    <p className="text-xs md:text-sm text-gray-600 mt-2">Chưa có lịch sử cược</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  <div className="space-y-2 max-h-[300px] md:max-h-[400px] overflow-y-auto">
                     {betHistory.map((bet) => (
-                      <div key={bet.id} className="p-3 bg-gray-50 rounded-lg border relative">
+                      <div key={bet.id} className="p-2 md:p-3 bg-gray-50 rounded-lg border relative">
                         {/* Nút X để dismiss bet đã có kết quả */}
                         {bet.status !== 'PENDING' && (
                           <button
                             onClick={() => dismissBetResult(bet.id)}
-                            className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                            className="absolute top-1 md:top-2 right-1 md:right-2 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
                             title="Xóa khỏi lịch sử"
                           >
-                            <Icon icon="mdi:close" className="w-3 h-3 text-gray-600" />
+                            <Icon icon="mdi:close" className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-600" />
                           </button>
                         )}
                         
-                        <div className="text-xs text-gray-500 mb-1">
+                        <div className="text-[10px] md:text-xs text-gray-500 mb-1">
                           {new Date(bet.createdAt).toLocaleString('vi-VN')}
                         </div>
                         
-                        <div className="text-sm">
+                        <div className="text-xs md:text-sm">
                           <div className="font-medium text-gray-700">
                             {formatBetTypeMienTrungNam(bet.betType)} - Số: {formatSelectedNumbers(bet.selectedNumbers)?.join(', ')}
                           </div>
@@ -1857,6 +2002,155 @@ const MienTrungNamGamePage = () => {
           </div>
         </div>
         </div>
+
+        {/* Modal Xác nhận đặt cược (chỉ mobile) */}
+        {showBetConfirmModal && (
+          <div className="md:hidden fixed inset-0 z-50 flex items-end">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in"
+              onClick={() => setShowBetConfirmModal(false)}
+            />
+            
+            {/* Modal Content */}
+            <div className="relative w-full bg-white rounded-t-2xl shadow-xl">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="text-lg font-semibold text-gray-900">Xác nhận đặt cược</h3>
+                <button
+                  onClick={() => setShowBetConfirmModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <Icon icon="mdi:close" className="w-6 h-6 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-4 max-h-[70vh] overflow-y-auto">
+                {/* Hệ số */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold mb-2 text-gray-700">Hệ số</h4>
+                  <div className="flex gap-2">
+                    {multipliers.map((mult) => (
+                      <button
+                        key={mult.value}
+                        onClick={() => handleMultiplierClick(mult.value)}
+                        className="w-12 h-12 rounded-full text-white font-bold transition-all text-base bg-gray-300 hover:bg-gray-400"
+                      >
+                        {mult.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Số điểm cược */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Số điểm cược
+                  </label>
+                  <input
+                    type="number"
+                    value={betAmount}
+                    onChange={(e) => setBetAmount(Number(e.target.value))}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    min="1"
+                  />
+                </div>
+
+                {/* Summary */}
+                <div className="space-y-3 bg-gray-50 rounded-lg p-3">
+                  {selectedNumbers.length > 0 && (
+                    <>
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-700">Số đã chọn:</span>
+                        <div className="mt-1 text-gray-600">
+                          {selectedGameType === 'loto-xien-2' ? 
+                            selectedNumbers.map(item => 
+                              item.includes(',') ? `(${item})` : item
+                            ).join('; ') : 
+                            selectedGameType === 'loto-xien-3' ?
+                            selectedNumbers.map(item => {
+                              const parts = item.split(',');
+                              if (parts.length === 3) {
+                                return `(${item})`;
+                              }
+                              return item;
+                            }).join('; ') :
+                            selectedGameType === 'loto-xien-4' || selectedGameType === 'loto-truot-4' ?
+                            selectedNumbers.map(item => {
+                              const parts = item.split(',');
+                              if (parts.length === 4) {
+                                return `(${item})`;
+                              }
+                              return item;
+                            }).join('; ') :
+                            selectedGameType === 'loto-truot-8' ?
+                            selectedNumbers.map(item => {
+                              const parts = item.split(',');
+                              if (parts.length === 8) {
+                                return `(${item})`;
+                              }
+                              return item;
+                            }).join('; ') :
+                            selectedGameType === 'loto-truot-10' ?
+                            selectedNumbers.map(item => {
+                              const parts = item.split(',');
+                              if (parts.length === 10) {
+                                return `(${item})`;
+                              }
+                              return item;
+                            }).join('; ') :
+                            selectedNumbers.join(', ')
+                          }
+                        </div>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-700">Tổng tiền cược:</span>
+                        <span className="ml-2 text-[#D30102] font-bold">{calculateTotalAmount().toLocaleString()} điểm</span>
+                        {(selectedGameType === 'dau-duoi-mien-trung-nam' || selectedGameType === '3s-dau-duoi-mien-trung-nam') && (
+                          <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                        )}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-700">Tiền thắng (nếu tất cả trúng):</span>
+                        <span className="ml-2 text-green-600 font-bold">{calculateWinnings().toLocaleString()} điểm</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="text-sm pt-2 border-t">
+                    <span className="font-medium text-gray-700">Số dư hiện tại:</span>
+                    <span className="ml-2 text-gray-900 font-bold">{userPoints.toLocaleString()} điểm</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer - Action Button */}
+              <div className="p-4 border-t">
+                <button
+                  onClick={() => {
+                    handlePlaceBet();
+                    setShowBetConfirmModal(false);
+                  }}
+                  disabled={placingBet || selectedNumbers.length === 0}
+                  className={`w-full py-3 text-white rounded-lg transition-colors font-medium text-base ${
+                    placingBet || selectedNumbers.length === 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-[#D30102] hover:bg-[#B80102]'
+                  }`}
+                >
+                  {placingBet ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
+                      <span>Đang đặt cược...</span>
+                    </div>
+                  ) : (
+                    'Đặt cược'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
   );
 };
