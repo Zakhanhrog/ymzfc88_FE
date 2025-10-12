@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import adminLotteryResultService from '../services/adminLotteryResultService';
+import LotteryResultFormTable from '../../../components/admin/LotteryResultFormTable';
 
 const AdminLotteryResultManagement = () => {
   const [results, setResults] = useState([]);
@@ -180,6 +181,14 @@ const AdminLotteryResultManagement = () => {
       region,
       province: region === 'mienBac' ? '' : formData.province,
       results: JSON.stringify(template, null, 2)
+    });
+  };
+
+  // Handle results change from form table
+  const handleResultsChange = (jsonResults) => {
+    setFormData({
+      ...formData,
+      results: jsonResults
     });
   };
 
@@ -377,9 +386,13 @@ const AdminLotteryResultManagement = () => {
                 </div>
                 <div className="mb-4">
                   <strong>Kết quả:</strong>
-                  <pre className="bg-gray-100 p-4 rounded mt-2 overflow-x-auto">
-                    {JSON.stringify(JSON.parse(selectedResult.results), null, 2)}
-                  </pre>
+                  <div className="mt-2">
+                    <LotteryResultFormTable
+                      initialResults={selectedResult.results}
+                      isEditing={false}
+                      isReadOnly={true}
+                    />
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
@@ -434,16 +447,14 @@ const AdminLotteryResultManagement = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Kết quả (JSON) *</label>
-                  <textarea
-                    value={formData.results}
-                    onChange={(e) => setFormData({ ...formData, results: e.target.value })}
-                    className="w-full border rounded px-3 py-2 font-mono text-sm"
-                    rows="15"
-                    required
+                  <label className="block mb-2 font-semibold">Kết quả xổ số *</label>
+                  <LotteryResultFormTable
+                    initialResults={formData.results}
+                    onResultsChange={handleResultsChange}
+                    isEditing={modalMode === 'edit'}
                   />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Nhập kết quả theo định dạng JSON. Xem template bên dưới.
+                  <p className="text-sm text-gray-500 mt-2">
+                    Nhập số vào các ô tương ứng với từng giải thưởng. Các ô trống sẽ không được lưu.
                   </p>
                 </div>
 

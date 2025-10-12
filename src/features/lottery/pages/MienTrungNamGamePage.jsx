@@ -1291,23 +1291,23 @@ const MienTrungNamGamePage = () => {
                 <div className="flex border-b border-gray-200 mb-4">
                   <button
                     onClick={() => setSelectionMode('quick')}
-                    className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
+                    className={`flex-1 py-3 px-2 text-center font-medium transition-colors text-sm ${
                       selectionMode === 'quick'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Chọn số nhanh
+                    Nhanh
                   </button>
                   <button
                     onClick={() => setSelectionMode('input')}
-                    className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-base ${
+                    className={`flex-1 py-3 px-2 text-center font-medium transition-colors text-sm ${
                       selectionMode === 'input'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
-                    Nhập số
+                    Nhập tay
                   </button>
                 </div>
               )}
@@ -1361,7 +1361,7 @@ const MienTrungNamGamePage = () => {
                     </button>
                   ))}
                 </div>
-              ) : (
+              ) : selectionMode === 'input' ? (
                 /* Number Input - Loto 2s hoặc 3s */
                 <div>
                   <div className="mb-3">
@@ -1444,7 +1444,7 @@ const MienTrungNamGamePage = () => {
                     </button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -1770,7 +1770,10 @@ const MienTrungNamGamePage = () => {
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-semibold text-gray-800">Lịch sử cược</h3>
                   <button
-                    onClick={loadBetHistory}
+                    onClick={() => {
+                      loadBetHistory();
+                      loadCurrentLotteryResult();
+                    }}
                     className="text-blue-600 hover:text-blue-700 text-sm"
                     disabled={loadingHistory}
                   >
