@@ -16,6 +16,7 @@ import AdminKycVerification from './AdminKycVerification';
 import AdminSystemSettings from './AdminSystemSettings';
 import AdminNotificationManagement from './AdminNotificationManagement';
 import AdminBetManagement from './AdminBetManagement';
+import AdminLotteryResultManagement from './AdminLotteryResultManagement';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const renderContent = () => {
@@ -151,6 +152,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Quản lý và thay đổi kết quả các lệnh cược của người dùng" 
             />
             <AdminBetManagement />
+          </div>
+        );
+
+      case 'game-results':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader 
+              title="Quản lý kết quả xổ số" 
+              description="Quản lý kết quả xổ số cho từng vùng miền và tỉnh" 
+            />
+            <AdminLotteryResultManagement />
           </div>
         );
 

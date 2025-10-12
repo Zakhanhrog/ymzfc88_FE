@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Form, Input, Button, Card, App } from 'antd';
+import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { adminAuthService } from '../services/adminAuthService';
 
 const AdminLoginForm = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
-  const { message } = App.useApp();
 
   const onFinish = async (values) => {
     setLoading(true);

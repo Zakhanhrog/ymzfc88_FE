@@ -3,9 +3,9 @@ import betService from '../../../services/betService';
 
 /**
  * Hook quản lý lịch sử bet
- * GIỮ NGUYÊN 100% logic từ MienBacGamePage.jsx
+ * Tự động load khi có userId và luôn fetch fresh data khi vào trang
  */
-export const useBetHistory = (userId, shouldFetch = false) => {
+export const useBetHistory = (userId, shouldFetch = true) => {
   const [betHistory, setBetHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -24,10 +24,17 @@ export const useBetHistory = (userId, shouldFetch = false) => {
   };
 
   useEffect(() => {
-    if (shouldFetch) {
+    if (userId && shouldFetch) {
       fetchBetHistory();
     }
   }, [userId, shouldFetch]);
+
+  // Auto-refresh khi component mount lại (khi user vào lại trang)
+  useEffect(() => {
+    if (userId) {
+      fetchBetHistory();
+    }
+  }, [userId]);
 
   return {
     betHistory,

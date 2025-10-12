@@ -677,14 +677,6 @@ const MienBacGamePage = () => {
         }).length;
       }
       
-      console.log('Debug calculateTotalAmount:', {
-        selectedGameType,
-        betAmount,
-        count,
-        multiplier,
-        pricePerPoint: getPricePerPoint(),
-        result: betAmount * getPricePerPoint() * count * multiplier
-      });
       return betAmount * getPricePerPoint() * count * multiplier;
     }
     // Logic cũ cho các game type khác
@@ -750,14 +742,6 @@ const MienBacGamePage = () => {
       // Ví dụ: 10 điểm × 99 × 3 số = 2,970
       const totalWinIfAllWin = betAmount * getOdds() * count;
       
-      console.log('Debug calculateWinnings (số điểm × tỷ lệ × số lượng):', {
-        gameType: selectedGameType,
-        betAmount,
-        selectedCount: count,
-        odds: getOdds(),
-        totalWinIfAllWin,
-        bettingOddsData: bettingOddsData[selectedGameType]
-      });
       return totalWinIfAllWin; // Tổng tiền thắng nếu tất cả số trúng
     }
     // Logic cũ cho các game type khác
@@ -769,14 +753,28 @@ const MienBacGamePage = () => {
     setBetAmount(prev => prev + multiplierValue);
   };
 
-  // Load user points và betting odds khi component mount
+  // Load user points, betting odds và bet history khi component mount
   useEffect(() => {
     loadUserPoints();
     loadBettingOdds();
+    loadBetHistory(); // Luôn load lịch sử khi vào trang
+  }, []);
+
+  // Load lại lịch sử khi chuyển sang tab history
+  useEffect(() => {
     if (activeTab === 'history') {
       loadBetHistory();
     }
   }, [activeTab]);
+
+  // Auto-refresh lịch sử cược mỗi 30 giây để cập nhật kết quả
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadBetHistory();
+    }, 30000); // 30 giây
+
+    return () => clearInterval(interval);
+  }, []);
 
   const loadUserPoints = async () => {
     try {

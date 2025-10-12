@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { App as AntApp } from 'antd';
 
 // Pages
 import HomePage from './features/home/pages/HomePage';
@@ -13,14 +14,16 @@ import AdminLoginPage from './features/admin/pages/AdminLoginPage';
 import AdminDashboardPage from './features/admin/pages/AdminDashboardPage';
 import AdminPointManagementPage from './features/admin/pages/AdminPointManagementPage';
 import AdminBettingOddsPage from './features/admin/pages/AdminBettingOddsPage';
+import AdminLotteryResultManagement from './features/admin/components/AdminLotteryResultManagement';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-            <Routes>
+    <AntApp>
+      <Router>
+        <div className="App">
+              <Routes>
               <Route path="/" element={<HomePage />} />
               <Route 
                 path="/wallet" 
@@ -90,9 +93,18 @@ function App() {
               </AdminProtectedRoute>
             } 
           />
-        </Routes>
-      </div>
-    </Router>
+          <Route 
+            path="/admin/lottery-results" 
+            element={
+              <AdminProtectedRoute>
+                <AdminLotteryResultManagement />
+              </AdminProtectedRoute>
+            } 
+          />
+              </Routes>
+        </div>
+      </Router>
+    </AntApp>
   );
 }
 

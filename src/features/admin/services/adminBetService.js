@@ -64,22 +64,20 @@ class AdminBetService {
     }
   }
 
+
   /**
-   * Nhập kết quả xổ số cho bet
-   * CHỈ cho phép nhập khi bet có status = PENDING
-   * Hệ thống sẽ tự động check thắng/thua khi đến thời gian
+   * Cập nhật số đã chọn của bet
+   * CHỈ cho phép cập nhật khi bet có status = PENDING
    */
-  async updateBetResult(betId, winningNumbers = []) {
+  async updateBetSelectedNumbers(betId, selectedNumbers = []) {
     try {
       const response = await adminAPI.post(
-        `/admin/bets/${betId}/update-result`,
-        {
-          winningNumbers
-        }
+        `/admin/bets/${betId}/update-selected-numbers`,
+        selectedNumbers
       );
       return response.data;
     } catch (error) {
-      console.error('Error updating bet result:', error);
+      console.error('Error updating bet selected numbers:', error);
       throw error.response?.data || error;
     }
   }
@@ -94,6 +92,19 @@ class AdminBetService {
       return response.data;
     } catch (error) {
       console.error('Error deleting bet:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Kiểm tra kết quả tất cả bet đang chờ (manual trigger)
+   */
+  async checkAllBetResults() {
+    try {
+      const response = await adminAPI.post('/admin/bets/check-results');
+      return response.data;
+    } catch (error) {
+      console.error('Error checking bet results:', error);
       throw error.response?.data || error;
     }
   }
@@ -203,6 +214,89 @@ class AdminBetService {
       'mienTrungNam': 'Miền Trung Nam'
     };
     return names[region] || region;
+  }
+
+  /**
+   * Format số đã chọn theo loại cược
+   * Đặc biệt xử lý cho các loại cược phức tạp như xiên
+   */
+  formatSelectedNumbers(betType, selectedNumbers) {
+    if (!selectedNumbers || selectedNumbers.length === 0) {
+      return 'Không có';
+    }
+
+    // Các loại cược xiên - hiển thị theo cụm
+    if (betType === 'loto-xien-2') {
+      // Xiên 2: hiển thị theo cặp (mỗi 2 số = 1 cụm)
+      const groups = [];
+      for (let i = 0; i < selectedNumbers.length; i += 2) {
+        if (i + 1 < selectedNumbers.length) {
+          groups.push(`(${selectedNumbers[i]}, ${selectedNumbers[i + 1]})`);
+        } else {
+          groups.push(`(${selectedNumbers[i]})`);
+        }
+      }
+      return groups.join(' + ');
+    }
+
+    if (betType === 'loto-xien-3') {
+      // Xiên 3: hiển thị theo nhóm 3 số
+      const groups = [];
+      for (let i = 0; i < selectedNumbers.length; i += 3) {
+        const group = selectedNumbers.slice(i, i + 3);
+        groups.push(`(${group.join(', ')})`);
+      }
+      return groups.join(' + ');
+    }
+
+    if (betType === 'loto-xien-4') {
+      // Xiên 4: hiển thị theo nhóm 4 số
+      const groups = [];
+      for (let i = 0; i < selectedNumbers.length; i += 4) {
+        const group = selectedNumbers.slice(i, i + 4);
+        groups.push(`(${group.join(', ')})`);
+      }
+      return groups.join(' + ');
+    }
+
+    // Các loại cược khác - hiển thị bình thường
+    return selectedNumbers.join(', ');
+  }
+
+  /**
+   * Parse số đã chọn từ string về array
+   * Xử lý cả định dạng xiên và bình thường
+   */
+  parseSelectedNumbers(betType, selectedNumbersString) {
+    if (!selectedNumbersString || selectedNumbersString.trim() === '') {
+      return [];
+    }
+
+    // Loại bỏ khoảng trắng và split theo dấu phẩy
+    let numbers = selectedNumbersString.split(',')
+      .map(n => n.trim())
+      .filter(n => n.length > 0);
+
+    // Đối với xiên, có thể có format như "12, 34, 56, 78" hoặc "(12, 34), (56, 78)"
+    if (betType.includes('xien')) {
+      // Nếu có dấu ngoặc đơn, parse theo format xiên
+      if (selectedNumbersString.includes('(')) {
+        const groups = selectedNumbersString.split('+')
+          .map(g => g.trim())
+          .map(g => g.replace(/[()]/g, ''))
+          .filter(g => g.length > 0);
+        
+        numbers = [];
+        groups.forEach(group => {
+          const groupNumbers = group.split(',')
+            .map(n => n.trim())
+            .filter(n => n.length > 0);
+          numbers.push(...groupNumbers);
+        });
+      }
+    }
+
+    return numbers;
   }
 }
 

@@ -14,8 +14,18 @@ const MienTrungNamGamePage = () => {
   const [searchParams] = useSearchParams();
   const [selectedGameType, setSelectedGameType] = useState('loto-2-so');
   
-  // Lấy tên cổng từ URL parameters
+  // Lấy tên cổng và province từ URL parameters
   const portName = searchParams.get('name') || 'Miền Trung & Nam';
+  const portId = searchParams.get('port'); // gia-lai, binh-duong, ninh-thuan, tra-vinh, vinh-long
+  
+  // Map port ID sang province format cho backend
+  const getProvinceFromPort = (portId) => {
+    if (!portId) return null;
+    // Convert từ format URL (gia-lai) sang format backend (gialai)
+    return portId.replace(/-/g, '');
+  };
+  
+  const province = getProvinceFromPort(portId);
   const [selectedNumbers, setSelectedNumbers] = useState([]);
   const [betMultiplier, setBetMultiplier] = useState(1);
   const [betAmount, setBetAmount] = useState(1);
@@ -595,15 +605,6 @@ const MienTrungNamGamePage = () => {
       // Ví dụ: 10 điểm × 27 × 3 số = 810 điểm
       const result = betAmount * getPricePerPoint() * count * multiplier;
       
-      console.log('Debug calculateTotalAmount:', {
-        selectedGameType,
-        betAmount,
-        count,
-        multiplier,
-        pricePerPoint: getPricePerPoint(),
-        bettingOddsData: bettingOddsData[selectedGameType],
-        result
-      });
       
       return result;
     }
@@ -735,14 +736,6 @@ const MienTrungNamGamePage = () => {
       // Ví dụ: 10 điểm × 99 × 3 số = 2,970
       const totalWinIfAllWin = betAmount * getOdds() * count;
       
-      console.log('Debug calculateWinnings (số điểm × tỷ lệ × số lượng):', {
-        gameType: selectedGameType,
-        betAmount,
-        selectedCount: count,
-        odds: getOdds(),
-        bettingOddsData: bettingOddsData[selectedGameType],
-        totalWinIfAllWin
-      });
       return totalWinIfAllWin; // Tổng tiền thắng nếu tất cả số trúng
     }
     // Logic cũ cho các game type khác
@@ -754,14 +747,28 @@ const MienTrungNamGamePage = () => {
     setBetAmount(prev => prev + multiplierValue);
   };
 
-  // Load user points và betting odds khi component mount
+  // Load user points, betting odds và bet history khi component mount
   useEffect(() => {
     loadUserPoints();
     loadBettingOdds();
+    loadBetHistory(); // Luôn load lịch sử khi vào trang
+  }, []);
+
+  // Load lại lịch sử khi chuyển sang tab history
+  useEffect(() => {
     if (activeTab === 'history') {
       loadBetHistory();
     }
   }, [activeTab]);
+
+  // Auto-refresh lịch sử cược mỗi 30 giây để cập nhật kết quả
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadBetHistory();
+    }, 30000); // 30 giây
+
+    return () => clearInterval(interval);
+  }, []);
 
   const loadUserPoints = async () => {
     try {
@@ -817,8 +824,6 @@ const MienTrungNamGamePage = () => {
           };
         });
         setBettingOddsData(oddsMap);
-        console.log('Loaded betting odds data:', oddsMap);
-        console.log('dau-duoi-mien-trung-nam data:', oddsMap['dau-duoi-mien-trung-nam']);
       } else {
         console.error('Error loading betting odds:', response.message);
         // Use default values if API fails
@@ -1063,27 +1068,15 @@ const MienTrungNamGamePage = () => {
         });
       }
       
-      // Log bet data for debugging
-      console.log('Bet data before sending:', {
+      const betData = {
         region: 'mienTrungNam',
+        province: province, // Thêm province
         betType: selectedGameType,
         selectedNumbers: numbersToSend,
         betAmount: totalBetAmount,
         pricePerPoint: getPricePerPoint(),
-        odds: getOdds(),
-        userPoints,
-        totalCost,
-        isLotoNewLogic
-      });
-      
-      const betData = betService.formatBetData(
-        'mienTrungNam',
-        selectedGameType,
-        numbersToSend, // Gửi các cặp/cụm đã hoàn thành
-        totalBetAmount, // Gửi số điểm
-        getPricePerPoint(),
-        getOdds()
-      );
+        odds: getOdds()
+      };
 
       const response = await betService.placeBet(betData);
 
