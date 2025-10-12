@@ -417,6 +417,12 @@ body {
   padding-right: 2rem;
 }
 
+.animate-marquee-slow {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+  padding-right: 2rem;
+}
+
 /* ========== SCROLLBAR HIDING ========== */
 /* Ẩn scrollbar hoàn toàn cho tất cả elements */
 
@@ -659,4 +665,15 @@ body::-webkit-scrollbar {
   background-color: rgba(255, 255, 255, 0.3) !important;
 }
 /* ========== END ADMIN SIDEBAR STYLING ==========*/
+
+/* ========== POPULAR GAMES CAROUSEL STYLING ========== */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+/* ========== END POPULAR GAMES CAROUSEL STYLING ========== */
 

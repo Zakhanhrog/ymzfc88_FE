@@ -87,25 +87,32 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   };
 
   return (
-    <div className="flex h-[700px] md:h-[700px]" onClick={(e) => e.stopPropagation()}>
-      {/* Left Side - Image */}
-      <div className="hidden md:block md:w-1/2 relative overflow-hidden">
-        <div 
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://th2club.net/images/1717680076846848.png.avif')`
-          }}
-        />
+    <div className="flex h-[700px] w-[900px] bg-white rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      {/* Left Side - Promotional Banner */}
+      <div 
+        className="w-1/2 relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url('/images/banners/login-bg.jpg')` }}
+      >
       </div>
 
       {/* Right Side - Register Form */}
-      <div className="w-full md:w-1/2 p-4 md:p-8 bg-white flex items-start pt-4 md:pt-8 relative overflow-y-auto">
-        <div className="w-full">
+      <div className="w-1/2 p-8 bg-gray-50 flex flex-col relative overflow-y-auto">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-colors z-10"
+        >
+          <Icon icon="mdi:close" className="text-blue-600 text-lg" />
+        </button>
+
+        <div className="flex-1 flex flex-col justify-center">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">ĐĂNG KÝ</h2>
+            <h2 className="text-lg font-bold text-gray-800 uppercase" style={{ fontFamily: 'Arial, sans-serif' }}>
+              ĐĂNG KÝ
+            </h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3" onClick={(e) => e.stopPropagation()}>
+          <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
             <Input
               name="name"
               value={formData.name}
@@ -113,6 +120,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               placeholder="Họ và tên"
               prefix={<Icon icon="mdi:account" className="text-gray-400" />}
               error={errors.name}
+              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
 
             <Input
@@ -122,6 +131,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               placeholder="Tên đăng nhập"
               prefix={<Icon icon="mdi:account-circle" className="text-gray-400" />}
               error={errors.username}
+              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
 
             <Input
@@ -132,6 +143,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               placeholder="Email"
               prefix={<Icon icon="mdi:email" className="text-gray-400" />}
               error={errors.email}
+              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
 
             <Input
@@ -141,6 +154,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               placeholder="Số điện thoại"
               prefix={<Icon icon="mdi:phone" className="text-gray-400" />}
               error={errors.phoneNumber}
+              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
 
             <Input
@@ -151,6 +166,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               placeholder="Mật khẩu"
               prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
               error={errors.password}
+              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
 
             <Input
@@ -161,6 +178,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               placeholder="Xác nhận mật khẩu"
               prefix={<Icon icon="mdi:lock-check" className="text-gray-400" />}
               error={errors.confirmPassword}
+              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
 
             <div className="flex items-start gap-2 py-2">
@@ -169,13 +188,13 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                 name="agreedToTerms"
                 checked={formData.agreedToTerms}
                 onChange={handleChange}
-                className="mt-1 w-4 h-4 text-[#D30102] border-gray-300 rounded focus:ring-[#D30102]"
+                className="mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
               />
-              <label className="text-sm text-gray-600">
-                Tôi đồng ý với <a href="#" className="text-[#D30102] hover:underline">Điều khoản sử dụng</a> và <a href="#" className="text-[#D30102] hover:underline">Chính sách bảo mật</a>
+              <label className="text-sm text-gray-600" style={{ fontFamily: 'Arial, sans-serif' }}>
+                Tôi đồng ý với <a href="#" className="text-red-600 hover:underline">Điều khoản sử dụng</a> và <a href="#" className="text-red-600 hover:underline">Chính sách bảo mật</a>
               </label>
             </div>
-            {errors.agreedToTerms && <p className="text-sm text-red-600 -mt-2">{errors.agreedToTerms}</p>}
+            {errors.agreedToTerms && <p className="text-sm text-red-600 -mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>{errors.agreedToTerms}</p>}
 
             <div className="flex items-center justify-center py-2">
               <button
@@ -184,7 +203,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   e.stopPropagation();
                   onSwitchToLogin && onSwitchToLogin();
                 }}
-                className="text-sm text-[#D30102] hover:underline font-medium"
+                className="text-sm text-red-600 hover:underline font-medium"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               >
                 Đã có tài khoản? Đăng nhập ngay
               </button>
@@ -196,7 +216,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               size="lg"
               block
               loading={loading}
-              className="font-semibold h-12"
+              className="h-10 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             >
               ĐĂNG KÝ
             </Button>
@@ -204,7 +225,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-between px-4 md:px-8">
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <button
             type="button"
             onClick={(e) => {
@@ -212,17 +233,19 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               onClose && onClose();
               navigate('/');
             }}
-            className="flex items-center gap-2 font-medium text-[#D30102] hover:underline text-sm"
+            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
-            <Icon icon="mdi:home" />
+            <Icon icon="mdi:home" className="text-red-600 text-sm" />
             TRANG CHỦ
           </button>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 font-medium text-[#D30102] hover:underline text-sm"
+            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
-            <Icon icon="mdi:headset" />
+            <Icon icon="mdi:headset" className="text-red-600 text-sm" />
             CSKH
           </button>
         </div>

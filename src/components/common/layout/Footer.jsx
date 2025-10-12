@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="space-y-4">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <img src="/logo.webp" alt="AE888" className="h-10" />
+              <img src="/images/logos/logo.webp" alt="AE888" className="h-10" />
             </div>
             
             {/* Copyright */}
@@ -20,7 +20,7 @@ const Footer = () => {
             
             {/* Gaming Curacao Badge */}
             <div className="flex items-center">
-              <img src="/footer/GAMINGCURACAO.png" alt="Gaming Curacao" className="h-8" />
+              <img src="/images/footer/GAMINGCURACAO.png" alt="Gaming Curacao" className="h-8" />
             </div>
           </div>
 
@@ -66,16 +66,16 @@ const Footer = () => {
             <h3 className="footer-heading font-semibold text-black mb-4 text-md">Follow US</h3>
             <div className="grid grid-cols-2 gap-2">
               <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 transition-colors">
-                <img src="/footer/imgi_332_sns-fb.png" alt="Facebook" className="w-6 h-6" />
+                <img src="/images/footer/imgi_332_sns-fb.png" alt="Facebook" className="w-6 h-6" />
               </a>
               <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-red-50 transition-colors">
-                <img src="/footer/imgi_333_sns-yt.png" alt="YouTube" className="w-6 h-6" />
+                <img src="/images/footer/imgi_333_sns-yt.png" alt="YouTube" className="w-6 h-6" />
               </a>
               <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-pink-50 transition-colors">
-                <img src="/footer/imgi_334_sns-ig.png" alt="Instagram" className="w-6 h-6" />
+                <img src="/images/footer/imgi_334_sns-ig.png" alt="Instagram" className="w-6 h-6" />
               </a>
               <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <img src="/footer/imgi_335_sns-tk.png" alt="TikTok" className="w-6 h-6" />
+                <img src="/images/footer/imgi_335_sns-tk.png" alt="TikTok" className="w-6 h-6" />
               </a>
             </div>
           </div>
@@ -93,20 +93,20 @@ const Footer = () => {
               <div className="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                 18+
               </div>
-              <img src="/footer/ResponsibleGaming.png" alt="Responsible Gaming" className="h-8" />
+              <img src="/images/footer/ResponsibleGaming.png" alt="Responsible Gaming" className="h-8" />
             </div>
           </div>
 
           {/* Security */}
           <div>
             <h3 className="font-bold text-black mb-4">Security</h3>
-            <img src="/footer/Security.png" alt="Security" className="h-8" />
+            <img src="/images/footer/Security.png" alt="Security" className="h-8" />
           </div>
 
           {/* Certification */}
           <div>
             <h3 className="font-bold text-black mb-4">Certification</h3>
-            <img src="/footer/Certification.png" alt="Certification" className="h-8" />
+            <img src="/images/footer/Certification.png" alt="Certification" className="h-8" />
           </div>
         </div>
       </div>

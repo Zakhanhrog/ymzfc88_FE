@@ -53,10 +53,8 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
         onClose && onClose();
         
         if (redirectAfterLogin) {
-          // Redirect to the original page after login
           navigate(redirectAfterLogin);
         } else {
-          // Default behavior: reload page
           window.location.reload();
         }
       }, 1000);
@@ -71,52 +69,65 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   return (
-    <div className="flex h-[700px]" onClick={(e) => e.stopPropagation()}>
-      {/* Left Side - Image */}
-      <div className="w-1/2 relative overflow-hidden">
-        <div 
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://th2club.net/images/1717680076846848.png.avif')`
-          }}
-        />
+    <div className="flex h-[600px] w-[800px] bg-white rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      {/* Left Side - Promotional Banner */}
+      <div 
+        className="w-1/2 relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url('/images/banners/login-bg.jpg')` }}
+      >
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-1/2 p-8 bg-white flex items-start pt-12 relative">
-        <div className="w-full">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800">ĐĂNG NHẬP</h2>
+      <div className="w-1/2 p-8 bg-gray-50 flex flex-col relative">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-colors"
+        >
+          <Icon icon="mdi:close" className="text-blue-600 text-lg" />
+        </button>
+
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="text-center mb-6">
+            <h2 className="text-lg font-bold text-gray-800 uppercase" style={{ fontFamily: 'Arial, sans-serif' }}>
+              ĐĂNG NHẬP
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
-            <Input
-              name="usernameOrEmail"
-              value={formData.usernameOrEmail}
-              onChange={handleChange}
-              placeholder="Tên đăng nhập hoặc email"
-              prefix={<Icon icon="mdi:account" className="text-gray-400" />}
-              error={errors.usernameOrEmail}
-              className="h-12"
-            />
+            <div className="relative">
+              <Input
+                name="usernameOrEmail"
+                value={formData.usernameOrEmail}
+                onChange={handleChange}
+                placeholder="Tên đăng nhập hoặc email"
+                prefix={<Icon icon="mdi:account" className="text-gray-400" />}
+                error={errors.usernameOrEmail}
+                className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              />
+            </div>
 
-            <Input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Mật khẩu"
-              prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
-              error={errors.password}
-              className="h-12"
-            />
+            <div className="relative">
+              <Input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Mật khẩu"
+                prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
+                suffix={<Icon icon="mdi:eye" className="text-gray-400 cursor-pointer" />}
+                error={errors.password}
+                className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              />
+            </div>
 
             <div className="flex justify-between items-center my-6">
               <button
@@ -125,14 +136,16 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
                   e.stopPropagation();
                   onSwitchToRegister && onSwitchToRegister();
                 }}
-                className="text-[#D30102] hover:underline font-medium"
+                className="text-red-600 hover:underline font-medium text-sm"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               >
                 Đăng ký
               </button>
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}
-                className="text-[#D30102] hover:underline font-medium"
+                className="text-red-600 hover:underline font-medium text-sm"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               >
                 Quên mật khẩu
               </button>
@@ -144,7 +157,8 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
               size="lg"
               block
               loading={loading}
-              className="font-semibold h-12"
+              className="h-10 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             >
               ĐĂNG NHẬP
             </Button>
@@ -152,7 +166,7 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-between px-8">
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <button
             type="button"
             onClick={(e) => {
@@ -160,17 +174,19 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
               onClose && onClose();
               navigate('/');
             }}
-            className="flex items-center gap-2 font-medium text-[#D30102] hover:underline"
+            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
-            <Icon icon="mdi:home" />
+            <Icon icon="mdi:home" className="text-red-600 text-sm" />
             TRANG CHỦ
           </button>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 font-medium text-[#D30102] hover:underline"
+            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
-            <Icon icon="mdi:headset" />
+            <Icon icon="mdi:headset" className="text-red-600 text-sm" />
             CSKH
           </button>
         </div>

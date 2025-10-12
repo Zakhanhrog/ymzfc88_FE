@@ -171,7 +171,7 @@ const WalletBalance = ({ onTabChange }) => {
               Đã dùng: {balanceVisible ? lifetimeSpent.toLocaleString() : '****'}
             </div>
           </div>
-          <div className="hidden md:block">
+          <div>
             <div className="text-orange-900/40 text-5xl">
               <StarOutlined />
             </div>
@@ -180,10 +180,10 @@ const WalletBalance = ({ onTabChange }) => {
       </Card>
 
       {/* Statistics - Compact Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-5 gap-3">
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-          <div className="text-lg md:text-xl font-bold text-green-600 flex items-center gap-1">
+          <div className="text-xl font-bold text-green-600 flex items-center gap-1">
             <ArrowUpOutlined className="text-sm" />
             {balanceVisible ? totalDeposit.toLocaleString() : '****'}
           </div>
@@ -191,7 +191,7 @@ const WalletBalance = ({ onTabChange }) => {
 
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-          <div className="text-lg md:text-xl font-bold text-red-600 flex items-center gap-1">
+          <div className="text-xl font-bold text-red-600 flex items-center gap-1">
             <ArrowDownOutlined className="text-sm" />
             {balanceVisible ? totalWithdraw.toLocaleString() : '****'}
           </div>
@@ -199,7 +199,7 @@ const WalletBalance = ({ onTabChange }) => {
 
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Tổng thưởng</div>
-          <div className="text-lg md:text-xl font-bold text-blue-600 flex items-center gap-1">
+          <div className="text-xl font-bold text-blue-600 flex items-center gap-1">
             <GiftOutlined className="text-sm" />
             {balanceVisible ? totalBonus.toLocaleString() : '****'}
           </div>
@@ -207,7 +207,7 @@ const WalletBalance = ({ onTabChange }) => {
 
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
-          <div className="text-lg md:text-xl font-bold text-orange-500 flex items-center gap-1">
+          <div className="text-xl font-bold text-orange-500 flex items-center gap-1">
             <span className="text-sm">⏳</span>
             {balanceVisible ? frozenAmount.toLocaleString() : '****'}
           </div>
@@ -215,7 +215,7 @@ const WalletBalance = ({ onTabChange }) => {
 
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div className="text-xs text-gray-500 mb-1">Điểm hiện tại</div>
-          <div className="text-lg md:text-xl font-bold text-yellow-600 flex items-center gap-1">
+          <div className="text-xl font-bold text-yellow-600 flex items-center gap-1">
             <StarOutlined className="text-sm" />
             {balanceVisible ? displayPoints.toLocaleString() : '****'}
           </div>

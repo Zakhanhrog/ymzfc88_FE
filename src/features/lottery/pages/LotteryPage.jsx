@@ -15,7 +15,7 @@ const LotteryPage = () => {
         {
           id: 'mien-bac',
           name: 'Xổ Số Miền Bắc',
-          image: '/game/mienbac.png',
+          image: '/images/games/mienbac.png',
           description: 'Xổ số miền Bắc hàng ngày'
         }
       ]
@@ -27,13 +27,13 @@ const LotteryPage = () => {
         {
           id: 'gia-lai',
           name: 'Xổ Số Gia Lai', 
-          image: '/game/gialai.png',
+          image: '/images/games/gialai.png',
           description: 'Xổ số Gia Lai'
         },
         {
           id: 'ninh-thuan',
           name: 'Xổ Số Ninh Thuận',
-          image: '/game/ninhthuan.png', 
+          image: '/images/games/ninhthuan.png', 
           description: 'Xổ số Ninh Thuận'
         }
       ]
@@ -45,19 +45,19 @@ const LotteryPage = () => {
         {
           id: 'binh-duong',
           name: 'Xổ Số Bình Dương',
-          image: '/game/binhduong.png',
+          image: '/images/games/binhduong.png',
           description: 'Xổ số Bình Dương'
         },
         {
           id: 'tra-vinh',
           name: 'Xổ Số Trà Vinh',
-          image: '/game/travinh.png',
+          image: '/images/games/travinh.png',
           description: 'Xổ số Trà Vinh'
         },
         {
           id: 'vinh-long',
           name: 'Xổ Số Vĩnh Long',
-          image: '/game/vinhlong.png',
+          image: '/images/games/vinhlong.png',
           description: 'Xổ số Vĩnh Long'
         }
       ]

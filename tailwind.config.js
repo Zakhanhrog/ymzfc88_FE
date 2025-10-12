@@ -30,6 +30,24 @@ export default {
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
+        'fadeIn': 'fadeIn 0.3s ease-in-out',
+        'slideInLeft': 'slideInLeft 0.3s ease-in-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideInLeft: {
+          '0%': { 
+            opacity: '0',
+            transform: 'translateX(-10px)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translateX(0)'
+          },
+        },
       }
     },
   },

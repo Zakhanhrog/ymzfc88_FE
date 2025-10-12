@@ -73,7 +73,7 @@ const UserWalletPage = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 px-2 py-4 md:p-6">
+      <div className="min-h-screen bg-gray-50 px-6 py-4">
         {/* Header thông tin người dùng - Responsive */}
         <UserInfoHeader userInfo={userInfo} kycVerified={kycVerified} />
 

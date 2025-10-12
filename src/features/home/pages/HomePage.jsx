@@ -2,8 +2,14 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '../../../components/common/Layout';
 import MainBannerCarousel from '../components/MainBannerCarousel';
+import MobileBannerCarousel from '../components/MobileBannerCarousel';
 import NotificationMarquee from '../components/NotificationMarquee';
-import QuickActionButtons from '../components/QuickActionButtons';
+import PopularGamesCarousel from '../components/PopularGamesCarousel';
+import CategoryGamesGrid from '../components/CategoryGamesGrid';
+import AdditionalGamesGrid from '../components/AdditionalGamesGrid';
+import QuickActionsSection from '../components/QuickActionsSection';
+import CategoryNavigation from '../components/CategoryNavigation';
+import MobilePopularGames from '../components/MobilePopularGames';
 import CategoryButtons from '../components/CategoryButtons';
 
 const HomePage = () => {
@@ -28,27 +34,27 @@ const HomePage = () => {
   const mainBanners = [
     {
       id: 1,
-      url: '/banner1.webp',
+      url: '/images/banners/banner1.webp',
       alt: 'Banner khuyến mãi 1'
     },
     {
       id: 2,
-      url: '/banner2.webp',
+      url: '/images/banners/banner2.webp',
       alt: 'Banner khuyến mãi 2'
     },
     {
       id: 3,
-      url: '/banner3.webp',
+      url: '/images/banners/banner3.webp',
       alt: 'Banner khuyến mãi 3'
     },
     {
       id: 4,
-      url: '/banner4.webp',
+      url: '/images/banners/banner4.webp',
       alt: 'Banner khuyến mãi 4'
     },
     {
       id: 5,
-      url: '/banner5.webp',
+      url: '/images/banners/banner5.webp',
       alt: 'Banner khuyến mãi 5'
     }
   ];
@@ -57,17 +63,17 @@ const HomePage = () => {
   const sideBanners = [
     {
       id: 1,
-      url: '/banner/imgi_148_ddc4f0b5-3df9-4997-8ebe-a0a037db9354.webp',
+      url: '/images/banners/imgi_148_ddc4f0b5-3df9-4997-8ebe-a0a037db9354.webp',
       alt: 'Banner phụ 1'
     },
     {
       id: 2,
-      url: '/banner/imgi_149_40874e55-d637-4d69-852e-0199a44d4150.webp',
+      url: '/images/banners/imgi_149_40874e55-d637-4d69-852e-0199a44d4150.webp',
       alt: 'Banner phụ 2'
     },
     {
       id: 3,
-      url: '/banner/imgi_150_24406232-8114-4e87-b707-4e49bbb0ccf7.webp',
+      url: '/images/banners/imgi_150_24406232-8114-4e87-b707-4e49bbb0ccf7.webp',
       alt: 'Banner phụ 3'
     }
   ];
@@ -76,7 +82,9 @@ const HomePage = () => {
     <Layout>
       <div className="w-full">
         {/* Banner Section */}
-        <div className="grid grid-cols-6 gap-4 mb-6">
+        
+        {/* Desktop Banner Layout */}
+        <div className="hidden md:grid grid-cols-6 gap-4 mb-6">
           {/* Banner chính - 5 cột */}
           <div className="col-span-5">
             <MainBannerCarousel banners={mainBanners} />
@@ -101,11 +109,41 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* Mobile Banner Layout */}
+        <div className="md:hidden mb-1">
+          <MobileBannerCarousel banners={mainBanners} />
+        </div>
+
         {/* Notification Marquee */}
         <NotificationMarquee />
 
-        {/* Quick Action Buttons */}
-        <QuickActionButtons />
+        {/* Quick Actions Section */}
+        <QuickActionsSection />
+
+        {/* Category Navigation */}
+        <CategoryNavigation />
+
+        {/* Mobile Popular Games */}
+        <MobilePopularGames />
+
+        {/* Desktop Components */}
+        {/* Popular Games Carousel */}
+        <div className="hidden md:block">
+          <PopularGamesCarousel />
+        </div>
+
+        {/* Category Games Grid */}
+        <div className="hidden md:block">
+          <CategoryGamesGrid />
+        </div>
+
+        {/* Spacing between major sections */}
+        <div className="hidden md:block h-8"></div>
+
+        {/* Additional Games Grid */}
+        <div className="hidden md:block">
+          <AdditionalGamesGrid />
+        </div>
 
         {/* Category Buttons */}
         <CategoryButtons />

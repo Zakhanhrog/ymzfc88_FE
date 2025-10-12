@@ -59,20 +59,20 @@ const GameGrid = () => {
             style={{ ...BUTTON_TEXT_STYLES.small }}
           >
             <Icon icon="mdi:magnify" className="text-sm" />
-            <span className="hidden sm:inline">MÃ DỰ THƯỞNG</span>
+            <span>MÃ DỰ THƯỞNG</span>
           </button>
           <button 
             className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-transform"
             style={{ ...BUTTON_TEXT_STYLES.small }}
           >
             <Icon icon="mdi:trophy" className="text-sm" />
-            <span className="hidden sm:inline">KẾT QUẢ TRAO THƯỞNG</span>
+            <span>KẾT QUẢ TRAO THƯỞNG</span>
           </button>
         </div>
       </div>
       
       {/* Grid of games */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-3 mb-4">
         {games.map((game) => (
           <div
             key={game.id}

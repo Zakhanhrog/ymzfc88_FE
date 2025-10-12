@@ -296,7 +296,7 @@ const TransactionHistory = () => {
       </div>
 
       {/* Statistics Cards - Responsive */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-4 gap-3 mb-4">
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng nạp</div>
           <div className="text-green-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
@@ -332,7 +332,7 @@ const TransactionHistory = () => {
 
       {/* Filter Section - Responsive */}
       <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div className="grid grid-cols-4 gap-3 mb-3">
           <Select
             value={filters.type}
             onChange={(value) => handleFilterChange('type', value)}

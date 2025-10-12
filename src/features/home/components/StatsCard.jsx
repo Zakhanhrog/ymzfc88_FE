@@ -30,7 +30,7 @@ const StatsCard = ({ stats }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="grid grid-cols-4 gap-4">
       {statsData.map((stat, index) => (
         <Card key={index} className="text-center hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center gap-2">

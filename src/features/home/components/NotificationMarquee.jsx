@@ -8,8 +8,8 @@ const NotificationMarquee = ({ message }) => {
   const displayMessage = message || defaultMessage;
   
   return (
-    <div className="w-full bg-white py-2 mb-3 overflow-hidden shadow-sm border border-red-200" style={{ borderRadius: '50px' }}>
-      <div className="whitespace-nowrap animate-marquee">
+    <div className="w-full bg-white py-0 mb-0 overflow-hidden shadow-lg" style={{ borderRadius: '50px' }}>
+      <div className="whitespace-nowrap animate-marquee-slow">
         <span style={{ 
           fontSize: FONT_SIZE.xs, 
           fontWeight: FONT_WEIGHT.semibold, 

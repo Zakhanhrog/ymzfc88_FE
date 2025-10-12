@@ -2,7 +2,7 @@ import { Card } from '../../../components/ui';
 
 const SideBanners = ({ banners }) => {
   return (
-    <div className="space-y-4 hidden lg:block">
+    <div className="space-y-4">
       {banners.map((banner) => (
         <Card
           key={banner.id}
@@ -10,9 +10,9 @@ const SideBanners = ({ banners }) => {
           bodyClassName="p-0"
           onClick={() => console.log('Side banner clicked:', banner.title)}
         >
-          <div className={`relative h-20 lg:h-24 bg-gradient-to-r ${banner.gradient} flex items-center justify-center overflow-hidden`}>
+          <div className={`relative h-24 bg-gradient-to-r ${banner.gradient} flex items-center justify-center overflow-hidden`}>
             <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-            <h3 className="relative text-white font-bold text-sm lg:text-base text-center px-2 drop-shadow-lg">
+            <h3 className="relative text-white font-bold text-base text-center px-2 drop-shadow-lg">
               {banner.title}
             </h3>
             {/* Decorative elements */}

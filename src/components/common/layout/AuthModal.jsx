@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Modal } from '../../ui';
 import LoginForm from '../../../features/auth/components/LoginForm';
+import MobileLoginForm from '../../../features/auth/components/MobileLoginForm';
 import RegisterForm from '../../../features/auth/components/RegisterForm';
+import MobileRegisterForm from '../../../features/auth/components/MobileRegisterForm';
 
 const AuthModal = ({ 
   isLoginOpen, 
@@ -44,31 +45,52 @@ const AuthModal = ({
     onSwitchToLogin?.();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal
-      open={isOpen}
-      onClose={handleClose}
-      width="max-w-4xl"
-      closable={true}
-      maskClosable={true}
-      className="min-h-[750px]"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="transition-all duration-300 ease-in-out">
         {currentView === 'login' ? (
-          <LoginForm 
-            onClose={handleClose} 
-            onSwitchToRegister={handleSwitchToRegister}
-            redirectAfterLogin={redirectAfterLogin}
-          />
+          <>
+            {/* Desktop Login Form */}
+            <div className="hidden md:block">
+              <LoginForm 
+                onClose={handleClose} 
+                onSwitchToRegister={handleSwitchToRegister}
+                redirectAfterLogin={redirectAfterLogin}
+              />
+            </div>
+            {/* Mobile Login Form */}
+            <div className="md:hidden px-4">
+              <MobileLoginForm 
+                onClose={handleClose} 
+                onSwitchToRegister={handleSwitchToRegister}
+                redirectAfterLogin={redirectAfterLogin}
+              />
+            </div>
+          </>
         ) : (
-          <RegisterForm 
-            onClose={handleClose} 
-            onSwitchToLogin={handleSwitchToLogin}
-            redirectAfterLogin={redirectAfterLogin}
-          />
+          <>
+            {/* Desktop Register Form */}
+            <div className="hidden md:block">
+              <RegisterForm 
+                onClose={handleClose} 
+                onSwitchToLogin={handleSwitchToLogin}
+                redirectAfterLogin={redirectAfterLogin}
+              />
+            </div>
+            {/* Mobile Register Form */}
+            <div className="md:hidden px-4">
+              <MobileRegisterForm 
+                onClose={handleClose} 
+                onSwitchToLogin={handleSwitchToLogin}
+                redirectAfterLogin={redirectAfterLogin}
+              />
+            </div>
+          </>
         )}
       </div>
-    </Modal>
+    </div>
   );
 };
 

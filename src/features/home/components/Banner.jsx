@@ -10,8 +10,8 @@ const Banner = () => {
         className="text-white mb-4 bg-gradient-to-r from-[#D30102] to-[#B00001]"
         bodyClassName="p-8"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-3 gap-6 items-center">
+          <div className="col-span-2">
             <h1 className="text-3xl font-bold mb-2 text-white">
               Chào mừng đến với BettingHub
             </h1>
@@ -45,7 +45,7 @@ const Banner = () => {
       </Card>
 
       {/* Features */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Card className="text-center h-full">
           <Icon icon="mdi:rocket" className="text-4xl mb-3 text-[#D30102] mx-auto" />
           <h3 className="text-lg font-semibold mb-2">Cược nhanh chóng</h3>

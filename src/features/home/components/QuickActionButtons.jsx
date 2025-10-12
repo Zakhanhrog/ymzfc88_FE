@@ -6,7 +6,7 @@ const QuickActionButtons = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="mb-5 px-0.5 md:hidden">
+    <div className="mb-5 px-0.5 hidden">
       <div className="flex gap-0.5 justify-between">
         {/* Nạp Tiền - Large card style */}
         <div className="flex-shrink-0 w-[78px] bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl p-1.5 shadow-sm active:scale-95 transition-transform duration-150">
@@ -17,7 +17,7 @@ const QuickActionButtons = () => {
             <div className="absolute top-1 right-0 text-red-300 text-[9px]">+</div>
             <div className="flex justify-center">
               <div className="relative w-10 h-10 bg-gradient-to-br from-red-400 to-orange-500 rounded-xl shadow-md flex items-center justify-center transform -rotate-6">
-                <img src="/icon-deposit.png" alt="Nạp Tiền" className="w-5 h-5 object-contain" />
+                <img src="/images/icons/icon-deposit.png" alt="Nạp Tiền" className="w-5 h-5 object-contain" />
                 <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white text-[7px] font-bold leading-none">+</span>
                 </div>
@@ -70,7 +70,7 @@ const QuickActionButtons = () => {
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">
-            <img src="/sm-check.png" alt="Điểm danh" className="w-7 h-7 object-contain" />
+            <img src="/images/icons/sm-check.png" alt="Điểm danh" className="w-7 h-7 object-contain" />
           </div>
           <span className="text-gray-600 font-normal text-[9px] leading-tight text-center">Điểm<br/>danh</span>
         </button>
@@ -81,7 +81,7 @@ const QuickActionButtons = () => {
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">
-            <img src="/sm-wheel.png" alt="Vòng quay" className="w-7 h-7 object-contain" />
+            <img src="/images/icons/sm-wheel.png" alt="Vòng quay" className="w-7 h-7 object-contain" />
           </div>
           <span className="text-gray-600 font-normal text-[9px] leading-tight text-center">Vòng<br/>quay</span>
         </button>
@@ -105,7 +105,7 @@ const QuickActionButtons = () => {
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">
-            <img src="/sm-mb.webp" alt="Mỗi Ngày" className="w-7 h-7 object-contain" />
+            <img src="/images/icons/sm-mb.webp" alt="Mỗi Ngày" className="w-7 h-7 object-contain" />
           </div>
           <span className="text-gray-600 font-normal text-[9px] leading-tight text-center">Mỗi<br/>Ngày</span>
         </button>

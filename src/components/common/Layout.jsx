@@ -4,6 +4,8 @@ import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 import AuthModal from './layout/AuthModal';
 import Footer from './layout/Footer';
+import MobileFooter from './layout/MobileFooter';
+import MobileBottomNav from './layout/MobileBottomNav';
 import pointService from '../../services/pointService';
 
 const Layout = ({ children }) => {
@@ -194,35 +196,48 @@ const Layout = ({ children }) => {
         onLogout={handleLogout}
       />
 
-      {/* Sidebar */}
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onCollapse={setSidebarCollapsed}
-        activeGame={activeGame}
-        onGameSelect={handleGameSelect}
-      />
+      {/* Sidebar - Hidden on mobile */}
+      <div className="hidden md:block">
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onCollapse={setSidebarCollapsed}
+          activeGame={activeGame}
+          onGameSelect={handleGameSelect}
+        />
+      </div>
 
       {/* Main Content */}
       <main 
-        className="pt-[80px] flex-1 transition-all duration-300"
+        className="pt-[60px] md:pt-[70px] flex-1 ml-0 w-full md:transition-all md:duration-300 md:ease-in-out"
         style={{ 
-          marginLeft: sidebarWidth,
-          paddingRight: '20px',
+          marginLeft: '0px',
+          width: '100%',
         }}
       >
-        <div className="p-5 min-h-full">
+        {/* Desktop spacing */}
+        <div className="hidden md:block" style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth})` }}>
+          <div className="p-5 min-h-full w-full">
+            {children}
+          </div>
+        </div>
+        
+        {/* Mobile layout */}
+        <div className="md:hidden p-3 pb-20 min-h-full w-full">
           {children}
         </div>
       </main>
 
       {/* Footer */}
-      <div 
-        className="transition-all duration-300"
-        style={{ 
-          marginLeft: sidebarWidth,
-        }}
-      >
-        <Footer />
+      <div className="ml-0 w-full md:transition-all md:duration-300 md:ease-in-out">
+        {/* Desktop spacing */}
+        <div className="hidden md:block" style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth})` }}>
+          <Footer />
+        </div>
+        
+        {/* Mobile layout */}
+        <div className="md:hidden">
+          <MobileFooter />
+        </div>
       </div>
 
       {/* Auth Modals */}
@@ -247,6 +262,9 @@ const Layout = ({ children }) => {
         }}
         redirectAfterLogin={redirectAfterLogin}
       />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

@@ -15,7 +15,7 @@ const CategoryButtons = () => {
   };
 
   return (
-    <div className="mb-1 px-2 md:hidden">
+    <div className="mb-1 px-2 hidden">
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((category) => (
           <button
