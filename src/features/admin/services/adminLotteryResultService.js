@@ -275,6 +275,26 @@ class AdminLotteryResultService {
       "giai-tam": ["00"]
     };
   }
+
+  /**
+   * Trigger auto-import lottery results từ API
+   */
+  async triggerAutoImport() {
+    try {
+      const response = await adminApi.post('/admin/lottery-results/auto-import');
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message || 'Tự động import kết quả thành công'
+      };
+    } catch (error) {
+      console.error('Error triggering auto import:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Có lỗi xảy ra khi tự động import kết quả'
+      };
+    }
+  }
 }
 
 export default new AdminLotteryResultService();

@@ -1251,6 +1251,28 @@ const MienTrungNamGamePage = () => {
     }
   };
 
+  // Cancel bet (hủy cược trước 18:10)
+  const cancelBet = async (betId) => {
+    try {
+      await betService.cancelBet(betId);
+      
+      // Nếu là recent bet thì clear
+      if (recentBet && recentBet.id === betId) {
+        setRecentBet(null);
+      }
+      
+      // Reload lịch sử và user points
+      if (activeTab === 'history') {
+        loadBetHistory();
+      }
+      loadUserPoints();
+      
+      showNotification('Hủy cược thành công! Tiền đã được hoàn lại.', 'success');
+    } catch (error) {
+      showNotification(error.message || 'Có lỗi xảy ra khi hủy cược', 'error');
+    }
+  };
+
   // REFACTORED: Các function format đã chuyển sang betFormatter utils
 
   return (
@@ -2075,16 +2097,27 @@ const MienTrungNamGamePage = () => {
                   <div className="space-y-2 max-h-[300px] md:max-h-[400px] overflow-y-auto">
                     {betHistory.map((bet) => (
                       <div key={bet.id} className="p-2 md:p-3 bg-gray-50 rounded-lg border relative">
-                        {/* Nút X để dismiss bet đã có kết quả */}
-                        {bet.status !== 'PENDING' && (
-                          <button
-                            onClick={() => dismissBetResult(bet.id)}
-                            className="absolute top-1 md:top-2 right-1 md:right-2 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
-                            title="Xóa khỏi lịch sử"
-                          >
-                            <Icon icon="mdi:close" className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-600" />
-                          </button>
-                        )}
+                        {/* Action buttons */}
+                        <div className="absolute top-1 md:top-2 right-1 md:right-2 flex items-center gap-1">
+                          {bet.status === 'PENDING' && (
+                            <button
+                              onClick={() => cancelBet(bet.id)}
+                              className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                              title="Hủy cược (trước 18:10)"
+                            >
+                              Hủy
+                            </button>
+                          )}
+                          {bet.status !== 'PENDING' && (
+                            <button
+                              onClick={() => dismissBetResult(bet.id)}
+                              className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                              title="Xóa khỏi lịch sử"
+                            >
+                              <Icon icon="mdi:close" className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-600" />
+                            </button>
+                          )}
+                        </div>
                         
                         <div className="text-[10px] md:text-xs text-gray-500 mb-1">
                           {new Date(bet.createdAt).toLocaleString('vi-VN')}
@@ -2303,6 +2336,7 @@ const MienTrungNamGamePage = () => {
             loadingPoints={loadingPoints}
             onRefresh={loadBetHistory}
             onDismissBet={dismissBetResult}
+            onCancelBet={cancelBet}
             onLoadMore={() => {
               // Not needed - handled internally by MobileBetHistory
             }}

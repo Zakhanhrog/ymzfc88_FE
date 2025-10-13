@@ -25,6 +25,49 @@ const AdminLotteryResultManagement = () => {
     loadResults();
   }, [currentPage, filterRegion]);
 
+  // Auto-load khi vào trang lần đầu
+  useEffect(() => {
+    const checkAndAutoLoad = async () => {
+      try {
+        // Check xem có đủ kết quả chưa
+        const response = await adminLotteryResultService.getAllLotteryResults(0, 100);
+        if (response.success && response.data) {
+          const results = response.data.content || [];
+          
+          // Đếm số lượng kết quả theo region/province
+          const mienBacCount = results.filter(r => r.region === 'mienBac').length;
+          const provinceCount = results.filter(r => r.region === 'mienTrungNam').length;
+          
+          // Nếu thiếu kết quả, trigger auto-import
+          if (mienBacCount === 0 || provinceCount < 5) {
+            console.log('🔄 Thiếu kết quả, đang tự động import...');
+            console.log(`Miền Bắc: ${mienBacCount}, Tỉnh: ${provinceCount}/5`);
+            
+            const importResponse = await adminLotteryResultService.triggerAutoImport();
+            if (importResponse.success) {
+              console.log('✅ Auto-import thành công:', importResponse.message);
+              // Reload danh sách sau khi import
+              setTimeout(() => {
+                loadResults();
+              }, 2000);
+            } else {
+              console.warn('⚠️ Auto-import thất bại:', importResponse.message);
+            }
+          } else {
+            console.log('✅ Đã có đủ kết quả, không cần import');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Lỗi khi check auto-load:', error);
+      }
+    };
+
+    // Chỉ chạy khi vào trang lần đầu (không có filter)
+    if (!filterRegion) {
+      checkAndAutoLoad();
+    }
+  }, []); // Chỉ chạy 1 lần khi component mount
+
   const loadResults = async () => {
     setLoading(true);
     try {

@@ -5,6 +5,7 @@ import * as AntIcons from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 import { adminMenuItems } from './sidebar/adminMenuData';
 import { LAYOUT } from '../../utils/theme';
+import LogoutConfirmModal from '../common/LogoutConfirmModal';
 
 const { Sider } = Layout;
 const { DashboardOutlined, LogoutOutlined } = AntIcons;

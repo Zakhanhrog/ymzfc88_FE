@@ -12,6 +12,7 @@ const MobileBetHistory = ({
   loadingPoints,
   onRefresh,
   onDismissBet,
+  onCancelBet, // Thêm callback để hủy cược
   onLoadMore,
   hasMore,
   loadingMore,
@@ -107,20 +108,31 @@ const MobileBetHistory = ({
             <div className="space-y-3">
               {displayedBets.map((bet, index) => (
                 <div key={`${bet.id}-${bet.createdAt}-${index}`} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
-                  {/* Header with time and dismiss button */}
+                  {/* Header with time and action buttons */}
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-xs text-gray-500">
                       {new Date(bet.createdAt).toLocaleString('vi-VN')}
                     </div>
-                    {bet.status !== 'PENDING' && (
-                      <button
-                        onClick={() => onDismissBet(bet.id)}
-                        className="p-1 hover:bg-gray-100 rounded-full"
-                        title="Xóa khỏi lịch sử"
-                      >
-                        <Icon icon="mdi:close" className="w-4 h-4 text-gray-400" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {bet.status === 'PENDING' && onCancelBet && (
+                        <button
+                          onClick={() => onCancelBet(bet.id)}
+                          className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                          title="Hủy cược (trước 18:10)"
+                        >
+                          Hủy
+                        </button>
+                      )}
+                      {bet.status !== 'PENDING' && (
+                        <button
+                          onClick={() => onDismissBet(bet.id)}
+                          className="p-1 hover:bg-gray-100 rounded-full"
+                          title="Xóa khỏi lịch sử"
+                        >
+                          <Icon icon="mdi:close" className="w-4 h-4 text-gray-400" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Bet Info - Compact Layout */}
