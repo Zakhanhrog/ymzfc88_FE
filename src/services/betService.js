@@ -96,14 +96,14 @@ class BetService {
   /**
    * Lấy bet gần đây của user
    */
-  async getRecentBets(limit = 10) {
+  async getRecentBets(limit = 10, page = 1) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Vui lòng đăng nhập');
       }
 
-      const response = await fetch(`${API_BASE_URL}/bets/recent?limit=${limit}`, {
+      const response = await fetch(`${API_BASE_URL}/bets/recent?limit=${limit}&page=${page}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

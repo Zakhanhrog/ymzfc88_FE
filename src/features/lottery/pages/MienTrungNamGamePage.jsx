@@ -11,6 +11,7 @@ import { formatBetTypeMienTrungNam, formatSelectedNumbers } from '../utils/betFo
 import CountdownTimer from '../components/CountdownTimer';
 import PreviousSpecialResult from '../components/PreviousSpecialResult';
 import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
+import MobileBetHistory from '../components/MobileBetHistory';
 
 const MienTrungNamGamePage = () => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ const MienTrungNamGamePage = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showGameTypeDrawer, setShowGameTypeDrawer] = useState(false);
   const [showBetConfirmModal, setShowBetConfirmModal] = useState(false);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
 
   // Game types for Miền Trung & Nam - REFACTORED: sử dụng constant từ gameTypeHelpers
   const gameTypes = MIEN_TRUNG_NAM_GAME_TYPES;
@@ -1090,16 +1092,14 @@ const MienTrungNamGamePage = () => {
         // Load lại số dư từ backend (backend đã trừ tiền)
         await loadUserPoints();
         
-        showNotification('Đặt cược thành công! Kết quả sẽ có sau 1 phút', 'success');
+        showNotification('Đặt cược thành công! Đang chờ kết quả...', 'success');
         
         // Reset form
         setSelectedNumbers([]);
         setBetAmount(1);
         
-        // Sau 1 phút kiểm tra kết quả
-        setTimeout(() => {
-          checkBetResult(response.data.id);
-        }, 60000);
+        // Tự động check kết quả sau khi đặt cược
+        startAutoCheckResult(response.data.id);
         
       } else {
         showNotification(response.message || 'Có lỗi xảy ra khi đặt cược', 'error');
@@ -1147,6 +1147,72 @@ const MienTrungNamGamePage = () => {
     } catch (error) {
       showNotification('Có lỗi xảy ra khi kiểm tra kết quả', 'error');
     }
+  };
+
+  // Tự động check kết quả sau khi đặt cược
+  const startAutoCheckResult = (betId) => {
+    let attempts = 0;
+    const maxAttempts = 12; // Check tối đa 12 lần (12 * 10s = 2 phút)
+    let hasShownPendingMessage = false;
+    
+    const intervalId = setInterval(async () => {
+      attempts++;
+      
+      try {
+        const response = await betService.checkSingleBetResult(betId);
+        if (response.success) {
+          const bet = response.data;
+          
+          // Nếu đã có kết quả (WON hoặc LOST) thì dừng polling
+          if (bet.status === 'WON' || bet.status === 'LOST') {
+            clearInterval(intervalId);
+            
+            // Hiển thị kết quả
+            let notificationMessage = bet.status === 'WON' ? '🎉 Chúc mừng! Bạn đã TRÚNG!' : '😢 Rất tiếc! Bạn chưa trúng lần này.';
+            if (bet.status === 'WON' && bet.winningNumbers) {
+              const winningNumbers = Array.isArray(bet.winningNumbers) ? bet.winningNumbers : JSON.parse(bet.winningNumbers || '[]');
+              if (winningNumbers.length > 0) {
+                notificationMessage = `🎉 Chúc mừng! Bạn đã trúng số: ${winningNumbers.join(', ')}!`;
+              }
+            }
+            
+            showNotification(notificationMessage, bet.status === 'WON' ? 'success' : 'info');
+            
+            // Cập nhật số dư
+            if (response.currentPoints !== undefined) {
+              setUserPoints(response.currentPoints);
+            } else {
+              await loadUserPoints();
+            }
+            
+            // Cập nhật recent bet
+            setRecentBet(bet);
+            
+            // Reload lịch sử
+            if (activeTab === 'history') {
+              loadBetHistory();
+            }
+          }
+        }
+      } catch (error) {
+        // Nếu lỗi do chưa có kết quả xổ số
+        if (error.message && error.message.includes('Chưa có kết quả xổ số')) {
+          // Chỉ hiển thị thông báo 1 lần duy nhất
+          if (!hasShownPendingMessage) {
+            showNotification('⏳ Chưa có kết quả ngày hôm nay. Hệ thống sẽ tự động kiểm tra khi admin cập nhật.', 'info');
+            hasShownPendingMessage = true;
+          }
+        }
+      }
+      
+      // Dừng sau maxAttempts
+      if (attempts >= maxAttempts) {
+        clearInterval(intervalId);
+        if (hasShownPendingMessage) {
+          showNotification('⏱️ Hết thời gian chờ. Vui lòng kiểm tra lại sau hoặc liên hệ admin.', 'warning');
+        }
+      }
+    }, 10000); // Check mỗi 10 giây
   };
 
   // Load lịch sử cược
@@ -1613,7 +1679,7 @@ const MienTrungNamGamePage = () => {
                   </div>
                 )}
                 
-                {/* Nút Cài lại và Xác nhận - chỉ mobile */}
+                {/* Nút Cài lại, Lịch sử và Xác nhận - chỉ mobile */}
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => {
@@ -1623,6 +1689,13 @@ const MienTrungNamGamePage = () => {
                     className="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-base"
                   >
                     Cài lại
+                  </button>
+                  <button
+                    onClick={() => setShowMobileHistory(true)}
+                    className="flex-1 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-base flex items-center justify-center gap-1"
+                  >
+                    <Icon icon="mdi:history" className="w-4 h-4" />
+                    Lịch sử
                   </button>
                   <button
                     onClick={() => setShowBetConfirmModal(true)}
@@ -2219,6 +2292,25 @@ const MienTrungNamGamePage = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Mobile Bet History Modal */}
+        {showMobileHistory && (
+          <MobileBetHistory
+            betHistory={betHistory}
+            loadingHistory={loadingHistory}
+            userPoints={userPoints}
+            loadingPoints={loadingPoints}
+            onRefresh={loadBetHistory}
+            onDismissBet={dismissBetResult}
+            onLoadMore={() => {
+              // Implement load more if needed
+            }}
+            hasMore={false}
+            loadingMore={false}
+            onClose={() => setShowMobileHistory(false)}
+            region="mien-trung-nam"
+          />
         )}
       </div>
   );
