@@ -1215,11 +1215,11 @@ const MienTrungNamGamePage = () => {
     }, 10000); // Check mỗi 10 giây
   };
 
-  // Load lịch sử cược
+  // Load lịch sử cược - LẤY TẤT CẢ
   const loadBetHistory = async () => {
     try {
       setLoadingHistory(true);
-      const response = await betService.getRecentBets(20);
+      const response = await betService.getRecentBets(1000); // Lấy tất cả (1000 cái)
       if (response.success) {
         setBetHistory(response.data || []);
       }
@@ -2304,7 +2304,7 @@ const MienTrungNamGamePage = () => {
             onRefresh={loadBetHistory}
             onDismissBet={dismissBetResult}
             onLoadMore={() => {
-              // Implement load more if needed
+              // Not needed - handled internally by MobileBetHistory
             }}
             hasMore={false}
             loadingMore={false}

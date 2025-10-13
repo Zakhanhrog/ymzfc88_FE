@@ -4,6 +4,7 @@ import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 import MobileSidebar from './layout/MobileSidebar';
 import AuthModal from './layout/AuthModal';
+import LogoutConfirmModal from './LogoutConfirmModal';
 import Footer from './layout/Footer';
 import MobileFooter from './layout/MobileFooter';
 import MobileBottomNav from './layout/MobileBottomNav';
@@ -16,6 +17,8 @@ const Layout = ({ children }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   // Load activeGame từ localStorage hoặc route hiện tại
   const [activeGame, setActiveGame] = useState(() => {
@@ -162,15 +165,36 @@ const Layout = ({ children }) => {
   }, []);
 
   const handleLogout = () => {
-    if (window.confirm('Bạn có chắc chắn muốn đăng xuất không?')) {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      // Call logout API if needed
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       setIsLoggedIn(false);
       setUserName('');
       setUserPoints(0);
+      setShowLogoutModal(false);
       navigate('/');
       window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still logout locally even if API fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      setIsLoggedIn(false);
+      setUserName('');
+      setUserPoints(0);
+      setShowLogoutModal(false);
+      navigate('/');
+      window.location.reload();
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -269,6 +293,14 @@ const Layout = ({ children }) => {
           setIsLoginModalOpen(true);
         }}
         redirectAfterLogin={redirectAfterLogin}
+      />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        loading={isLoggingOut}
       />
 
       {/* Mobile Bottom Navigation */}

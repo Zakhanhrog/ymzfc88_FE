@@ -28,10 +28,24 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openKeys, setOpenKeys] = useState([]);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = () => {
-    adminAuthService.logout();
-    navigate('/admin/login');
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      adminAuthService.logout();
+      setShowLogoutModal(false);
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   // Update openKeys when location changes
@@ -212,6 +226,14 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
           ]}
         />
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        loading={isLoggingOut}
+      />
     </Sider>
   );
 };

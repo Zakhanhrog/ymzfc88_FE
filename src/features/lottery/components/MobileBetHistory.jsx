@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { formatBetTypeMienBac, formatBetTypeMienTrungNam, formatSelectedNumbers } from '../utils/betFormatter';
 
@@ -17,6 +18,45 @@ const MobileBetHistory = ({
   onClose,
   region = 'mien-bac' // 'mien-bac' or 'mien-trung-nam'
 }) => {
+  const [displayedBets, setDisplayedBets] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreBets, setHasMoreBets] = useState(true);
+  
+  const ITEMS_PER_PAGE = 10;
+  const INITIAL_ITEMS = 20;
+
+  // Update displayed bets when betHistory changes
+  useEffect(() => {
+    if (betHistory && betHistory.length > 0) {
+      const initialBets = betHistory.slice(0, INITIAL_ITEMS);
+      setDisplayedBets(initialBets);
+      setCurrentPage(1);
+      const hasMore = betHistory.length > INITIAL_ITEMS;
+      setHasMoreBets(hasMore);
+    } else {
+      setDisplayedBets([]);
+      setCurrentPage(1);
+      setHasMoreBets(false);
+    }
+  }, [betHistory]);
+
+  const handleLoadMore = () => {
+    if (!betHistory || loadingMore) return;
+    
+    const nextPage = currentPage + 1;
+    const startIndex = displayedBets.length; // Bắt đầu từ vị trí hiện tại
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const newBets = betHistory.slice(startIndex, endIndex);
+    
+    
+    if (newBets.length > 0) {
+      setDisplayedBets(prev => [...prev, ...newBets]);
+      setCurrentPage(nextPage);
+      setHasMoreBets(endIndex < betHistory.length);
+    } else {
+      setHasMoreBets(false);
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col h-screen">
       {/* Header */}
@@ -58,17 +98,17 @@ const MobileBetHistory = ({
               <Icon icon="mdi:loading" className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-3" />
               <p className="text-sm text-gray-600">Đang tải lịch sử...</p>
             </div>
-          ) : betHistory.length === 0 ? (
+          ) : displayedBets.length === 0 ? (
             <div className="text-center py-12">
               <Icon icon="mdi:history" className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <p className="text-sm text-gray-600">Chưa có lịch sử cược</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {betHistory.map((bet, index) => (
-                <div key={`${bet.id}-${bet.createdAt}-${index}`} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+              {displayedBets.map((bet, index) => (
+                <div key={`${bet.id}-${bet.createdAt}-${index}`} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
                   {/* Header with time and dismiss button */}
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="text-xs text-gray-500">
                       {new Date(bet.createdAt).toLocaleString('vi-VN')}
                     </div>
@@ -83,28 +123,16 @@ const MobileBetHistory = ({
                     )}
                   </div>
 
-                  {/* Bet Info */}
-                  <div className="space-y-2">
-                    <div className="text-sm">
-                      <span className="font-medium text-gray-700">
+                  {/* Bet Info - Compact Layout */}
+                  <div className="space-y-1.5">
+                    {/* First row: Bet type and Status */}
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-gray-700">
                         {region === 'mien-bac' 
                           ? formatBetTypeMienBac(bet.betType)
                           : formatBetTypeMienTrungNam(bet.betType)
                         }
-                      </span>
-                    </div>
-                    
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Số:</span> {formatSelectedNumbers(bet.selectedNumbers)?.join(', ')}
-                    </div>
-                    
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Cược:</span> {bet.totalAmount?.toLocaleString() || 0} điểm
-                    </div>
-                    
-                    {/* Status */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-700">Trạng thái:</span>
+                      </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         bet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                         bet.status === 'WON' ? 'bg-green-100 text-green-800' :
@@ -117,17 +145,29 @@ const MobileBetHistory = ({
                       </span>
                     </div>
                     
-                    {/* Win Amount */}
-                    {bet.status === 'WON' && bet.winAmount && (
-                      <div className="text-sm text-green-600 font-medium">
-                        <span className="font-medium">Thắng:</span> +{bet.winAmount.toLocaleString()} điểm
+                    {/* Second row: Numbers and Bet amount */}
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="text-gray-600">
+                        <span className="font-medium">Số:</span> {formatSelectedNumbers(bet.selectedNumbers)?.join(', ')}
                       </div>
-                    )}
+                      <div className="text-gray-600">
+                        <span className="font-medium">Cược:</span> {bet.totalAmount?.toLocaleString() || 0}đ
+                      </div>
+                    </div>
                     
-                    {/* Winning Numbers */}
-                    {bet.status === 'WON' && bet.winningNumbers && (
-                      <div className="text-sm text-green-600">
-                        <span className="font-medium">Số trúng:</span> {formatSelectedNumbers(bet.winningNumbers)?.join(', ')}
+                    {/* Win Amount and Winning Numbers - Only show if WON */}
+                    {bet.status === 'WON' && (bet.winAmount || bet.winningNumbers) && (
+                      <div className="flex items-center justify-between text-sm">
+                        {bet.winAmount && (
+                          <div className="text-green-600 font-medium">
+                            <span className="font-medium">Thắng:</span> +{bet.winAmount.toLocaleString()}đ
+                          </div>
+                        )}
+                        {bet.winningNumbers && (
+                          <div className="text-green-600">
+                            <span className="font-medium">Số trúng:</span> {formatSelectedNumbers(bet.winningNumbers)?.join(', ')}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -135,10 +175,10 @@ const MobileBetHistory = ({
               ))}
               
               {/* Load More Button */}
-              {hasMore && (
+              {hasMoreBets && (
                 <div className="mt-4 text-center">
                   <button
-                    onClick={onLoadMore}
+                    onClick={handleLoadMore}
                     disabled={loadingMore}
                     className={`px-6 py-3 rounded-lg font-medium text-base transition-colors ${
                       loadingMore
@@ -157,6 +197,7 @@ const MobileBetHistory = ({
                   </button>
                 </div>
               )}
+              
             </div>
           )}
         </div>

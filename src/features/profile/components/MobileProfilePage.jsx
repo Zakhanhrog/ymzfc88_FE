@@ -1,9 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
+import LogoutConfirmModal from '../../../components/common/LogoutConfirmModal';
 
 const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBalance, onLogout }) => {
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await onLogout();
+      setShowLogoutModal(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const quickActions = [
     {
@@ -107,7 +126,7 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
                 </span>
               </div>
               <button
-                onClick={onLogout}
+                onClick={handleLogout}
                 className="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 transition-colors"
               >
                 Đăng xuất
@@ -181,6 +200,14 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        loading={isLoggingOut}
+      />
     </>
   );
 };
