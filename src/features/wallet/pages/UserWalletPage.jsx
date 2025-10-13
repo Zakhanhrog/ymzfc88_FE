@@ -32,7 +32,6 @@ const UserWalletPage = () => {
           idNumber: ''
         });
       } catch (error) {
-        console.error('Error parsing user data:', error);
       }
     }
   }, []);
@@ -56,7 +55,6 @@ const UserWalletPage = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching KYC status:', error);
       }
     };
     

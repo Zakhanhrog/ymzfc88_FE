@@ -163,7 +163,6 @@ const DepositWithdraw = () => {
       }
     } catch (error) {
       message.error('Lỗi: ' + error.message);
-      console.error('Submit error:', error);
     } finally {
       setLoading(false);
     }

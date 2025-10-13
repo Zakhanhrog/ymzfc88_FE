@@ -84,7 +84,6 @@ const WalletBalance = ({ onTabChange }) => {
         });
       }
     } catch (error) {
-      console.error('Error loading user points:', error);
       setPointData({
         totalPoints: 0,
         lifetimeEarned: 0,

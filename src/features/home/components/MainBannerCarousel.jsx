@@ -18,7 +18,6 @@ const MainBannerCarousel = ({ banners }) => {
               style={{ 
                 height: '350px'
               }}
-              onClick={() => console.log('Main banner clicked:', banner.alt)}
             />
           </div>
         ))}

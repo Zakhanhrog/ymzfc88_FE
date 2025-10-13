@@ -66,7 +66,6 @@ const QuickActionButtons = () => {
 
         {/* Điểm danh - Simple style */}
         <button
-          onClick={() => console.log('Điểm danh clicked')}
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">
@@ -77,7 +76,6 @@ const QuickActionButtons = () => {
 
         {/* Vòng quay - Simple style */}
         <button
-          onClick={() => console.log('Vòng quay clicked')}
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">
@@ -88,7 +86,6 @@ const QuickActionButtons = () => {
 
         {/* VIP - Simple style */}
         <button
-          onClick={() => console.log('VIP clicked')}
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">
@@ -101,7 +98,6 @@ const QuickActionButtons = () => {
 
         {/* Mỗi Ngày - Simple style */}
         <button
-          onClick={() => console.log('Mỗi Ngày clicked')}
           className="flex-shrink-0 w-[52px] active:scale-95 transition-transform duration-150 flex flex-col items-center justify-start gap-1.5"
         >
           <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center">

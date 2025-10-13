@@ -29,7 +29,6 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
         setNotifications(notificationList || []);
       }
     } catch (error) {
-      console.error('Error loading notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,6 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
         )
       );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
     }
   };
 

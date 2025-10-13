@@ -95,7 +95,6 @@ const AdminNotificationManagement = () => {
         setUsers(response.data);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
     }
   };
 

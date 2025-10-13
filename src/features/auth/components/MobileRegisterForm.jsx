@@ -90,7 +90,6 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
         }
       }, 1000);
     } catch (error) {
-      console.error('Register error:', error);
       message.error(error.message || 'Đăng ký thất bại!');
     } finally {
       setLoading(false);

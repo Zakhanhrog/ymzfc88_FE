@@ -47,21 +47,17 @@ const AdminPointManagement = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      console.log('Loading users...');
       const response = await adminService.getAllUsers();
-      console.log('Users response:', response);
       
       if (response.success) {
         // The endpoint returns List<UserResponse> directly, not paginated
         const userList = Array.isArray(response.data) ? response.data : [];
-        console.log('User list:', userList);
         setUsers(userList);
         setError(''); // Clear any previous errors
       } else {
         throw new Error(response.message || 'Không thể tải danh sách người dùng');
       }
     } catch (error) {
-      console.error('Error loading users:', error);
       setError('Lỗi khi tải danh sách người dùng: ' + error.message);
       setUsers([]); // Set empty array on error
     } finally {
@@ -129,9 +125,7 @@ const AdminPointManagement = () => {
   const loadAllPointHistory = async (page = 0) => {
     try {
       setLoading(true);
-      console.log('Loading all point history with filters:', filters);
       const response = await pointService.getAllPointHistory(page, 10, filters);
-      console.log('Point history response:', response);
       
       if (response.success) {
         const historyData = response.data?.content || response.data || [];
@@ -143,7 +137,6 @@ const AdminPointManagement = () => {
         throw new Error(response.message || 'Không thể tải lịch sử điểm tổng quan');
       }
     } catch (error) {
-      console.error('Error loading point history:', error);
       setError('Lỗi khi tải lịch sử điểm: ' + error.message);
       setAllPointHistory([]); // Set empty array on error
     } finally {

@@ -23,7 +23,6 @@ const CategoryNavigation = () => {
   const handleCategoryClick = (categoryKey) => {
     setActiveCategory(categoryKey);
     // Handle category navigation logic here
-    console.log('Selected category:', categoryKey);
   };
 
   return (

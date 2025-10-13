@@ -34,7 +34,6 @@ const NotificationDropdown = () => {
         setUnreadCount(response.data);
       }
     } catch (error) {
-      console.error('Error loading unread count:', error);
     }
   };
 
@@ -42,7 +41,6 @@ const NotificationDropdown = () => {
     setLoading(true);
     try {
       const response = await notificationService.getMyNotifications(0, 10);
-      console.log('📬 Notification Response:', response); // DEBUG
       
       if (response && response.success && response.data) {
         // Check if response.data is array or paginated object
@@ -50,11 +48,9 @@ const NotificationDropdown = () => {
           ? response.data 
           : (response.data.content || response.data.notifications || []);
         
-        console.log('📬 Notifications List:', notificationList); // DEBUG
         setNotifications(notificationList || []);
       }
     } catch (error) {
-      console.error('Error loading notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -68,7 +64,6 @@ const NotificationDropdown = () => {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking as read:', error);
     }
   };
 
@@ -78,7 +73,6 @@ const NotificationDropdown = () => {
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error marking all as read:', error);
     }
   };
 

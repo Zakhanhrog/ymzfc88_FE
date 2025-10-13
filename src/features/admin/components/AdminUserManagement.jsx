@@ -116,7 +116,6 @@ const AdminUserManagement = () => {
         setUserStats(response.data);
       }
     } catch (error) {
-      console.error('Error loading user stats:', error);
     }
   };
 

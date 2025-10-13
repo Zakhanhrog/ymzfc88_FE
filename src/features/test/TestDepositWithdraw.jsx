@@ -14,7 +14,6 @@ const TestDepositWithdraw = () => {
     try {
       setLoading(true);
       const response = await walletService.getPaymentMethods();
-      console.log('Payment methods response:', response);
       
       if (response.success) {
         setPaymentMethods(response.data);
@@ -44,10 +43,8 @@ const TestDepositWithdraw = () => {
         billImage: ''
       };
       
-      console.log('Testing deposit with data:', depositData);
       
       const response = await walletService.createDepositOrder(depositData);
-      console.log('Deposit response:', response);
       
       setResult(JSON.stringify(response, null, 2));
       
@@ -57,7 +54,6 @@ const TestDepositWithdraw = () => {
         message.error('Lỗi: ' + (response.message || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Deposit test error:', error);
       setResult(`Error: ${error.message}\nStack: ${error.stack}`);
       message.error('Lỗi: ' + error.message);
     } finally {
@@ -78,10 +74,8 @@ const TestDepositWithdraw = () => {
         description: values.description || ''
       };
       
-      console.log('Testing withdraw with data:', withdrawData);
       
       const response = await walletService.createWithdrawOrder(withdrawData);
-      console.log('Withdraw response:', response);
       
       setResult(JSON.stringify(response, null, 2));
       
@@ -91,7 +85,6 @@ const TestDepositWithdraw = () => {
         message.error('Lỗi: ' + (response.message || 'Unknown error'));
       }
     } catch (error) {
-      console.error('Withdraw test error:', error);
       setResult(`Error: ${error.message}\nStack: ${error.stack}`);
       message.error('Lỗi: ' + error.message);
     } finally {

@@ -15,7 +15,6 @@ const MobileBannerCarousel = ({ banners }) => {
               src={banner.url}
               alt={banner.alt}
               className="w-full h-auto object-cover cursor-pointer"
-              onClick={() => console.log('Mobile banner clicked:', banner.alt)}
             />
           </div>
         ))}

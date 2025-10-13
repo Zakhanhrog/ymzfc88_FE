@@ -82,6 +82,48 @@ class LotteryResultService {
   }
 
   /**
+   * Lấy kết quả xổ số của hôm trước
+   */
+  async getPreviousDayResult(region, province = null) {
+    try {
+      // Lấy ngày hôm qua
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      
+      return await this.getLotteryResult(region, province, yesterdayStr);
+    } catch (error) {
+      console.error('Error getting previous day result:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Có lỗi xảy ra khi lấy kết quả hôm trước'
+      };
+    }
+  }
+
+  /**
+   * Lấy giải đặc biệt từ kết quả xổ số
+   */
+  getSpecialPrize(result) {
+    if (!result || !result.results) {
+      return null;
+    }
+
+    const results = typeof result.results === 'string' 
+      ? JSON.parse(result.results) 
+      : result.results;
+
+    const specialPrize = results["dac-biet"];
+    
+    if (!specialPrize) {
+      return null;
+    }
+
+    // Convert string to array of digits
+    return specialPrize.toString().split('');
+  }
+
+  /**
    * Format kết quả để hiển thị
    */
   formatLotteryResult(result) {
@@ -95,16 +137,24 @@ class LotteryResultService {
 
     const formattedResults = {
       "Giải đặc biệt": results["dac-biet"],
-      "Giải nhất": results["giai-nhat"],
+      "Giải nhất": Array.isArray(results["giai-nhat"]) 
+        ? results["giai-nhat"].join(", ") 
+        : results["giai-nhat"],
       "Giải nhì": Array.isArray(results["giai-nhi"]) 
         ? results["giai-nhi"].join(", ") 
         : results["giai-nhi"],
-      "Giải ba": results["giai-ba"].join(", "),
-      "Giải tư": results["giai-tu"].join(", "),
+      "Giải ba": Array.isArray(results["giai-ba"]) 
+        ? results["giai-ba"].join(", ") 
+        : results["giai-ba"],
+      "Giải tư": Array.isArray(results["giai-tu"]) 
+        ? results["giai-tu"].join(", ") 
+        : results["giai-tu"],
       "Giải năm": Array.isArray(results["giai-nam"]) 
         ? results["giai-nam"].join(", ") 
         : results["giai-nam"],
-      "Giải sáu": results["giai-sau"].join(", "),
+      "Giải sáu": Array.isArray(results["giai-sau"]) 
+        ? results["giai-sau"].join(", ") 
+        : results["giai-sau"],
       "Giải bảy": Array.isArray(results["giai-bay"]) 
         ? results["giai-bay"].join(", ") 
         : results["giai-bay"]

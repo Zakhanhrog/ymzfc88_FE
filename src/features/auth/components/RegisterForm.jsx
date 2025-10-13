@@ -68,7 +68,6 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         onSwitchToLogin && onSwitchToLogin();
       }, 1500);
     } catch (error) {
-      console.error('Register error:', error);
       message.error(error.message || 'Đăng ký thất bại!');
     } finally {
       setLoading(false);

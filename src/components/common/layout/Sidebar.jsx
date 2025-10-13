@@ -45,10 +45,6 @@ const Sidebar = ({
         navigate('/lottery');
         onGameSelect('lottery');
       },
-      'daily': () => console.log('Mỗi Ngày clicked'),
-      'lucky-wheel': () => console.log('Vòng Quay May Mắn clicked'),
-      'reward-results': () => console.log('Kết Quả Trao Thưởng clicked'),
-      'red-envelope': () => console.log('Phong Bì Đỏ clicked'),
     };
 
     if (menuActions[key]) {
@@ -121,7 +117,6 @@ const Sidebar = ({
           src="/images/banners/maduthuong.png" 
           alt="Mã Dự Thưởng" 
           className="w-full cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => console.log('Mã Dự Thưởng clicked')}
         />
       </div>
 
@@ -131,7 +126,6 @@ const Sidebar = ({
           src="/images/banners/banner-yua.webp" 
           alt="VUA MIKAMI Banner" 
           className="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => console.log('Banner clicked')}
         />
       </div>
 

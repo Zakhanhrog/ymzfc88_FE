@@ -227,7 +227,6 @@ const WithdrawForm = () => {
         description: values.description || ''
       };
 
-      console.log('Withdraw data with points:', withdrawData);
 
       const response = await walletService.createWithdrawOrder(withdrawData);
       

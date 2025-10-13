@@ -21,7 +21,6 @@ const AdminLoginForm = ({ onLogin }) => {
         }, 1000);
       }
     } catch (error) {
-      console.error('Admin login error:', error);
       message.error(error.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);

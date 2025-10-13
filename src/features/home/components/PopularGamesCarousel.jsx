@@ -116,7 +116,6 @@ const PopularGamesCarousel = () => {
               <div
                 key={index}
                 className="flex-shrink-0 w-[calc((100%-40px)/6)] h-[calc((100%-40px)/6)] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group"
-                onClick={() => console.log(`Game ${index + 1} clicked`)}
               >
                 <img
                   src={image}

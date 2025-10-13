@@ -46,7 +46,6 @@ const LotteryResultFormTable = ({
           
           setResults(newResults);
         } catch (error) {
-          console.error('Error parsing initial results:', error);
         }
       } else if (typeof initialResults === 'object') {
         const newResults = { ...results };
@@ -147,14 +146,6 @@ const LotteryResultFormTable = ({
 
   return (
     <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-      <div className="bg-blue-50 px-4 py-2 border-b border-gray-300">
-        <h3 className="text-sm font-medium text-gray-700">
-          {isReadOnly ? 'Kết quả xổ số' : (isEditing ? 'Sửa kết quả xổ số' : 'Nhập kết quả xổ số')}
-        </h3>
-        <p className="text-xs text-gray-500 mt-1">
-          {isReadOnly ? 'Kết quả các giải thưởng' : 'Nhập số vào các ô tương ứng với từng giải thưởng'}
-        </p>
-      </div>
       
       <table className="w-full">
         <tbody>

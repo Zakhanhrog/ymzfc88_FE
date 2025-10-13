@@ -103,13 +103,13 @@ const MobilePopularGames = () => {
               src="/images/banners/maduthuong.png" 
               alt="Mã Dự Thưởng" 
               className="h-6 cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => console.log('Mã Dự Thưởng clicked')}
+              onClick={() => {}}
             />
             <img 
               src="/images/banners/ketquatraothuong.png" 
               alt="Kết Quả Trao Thưởng" 
               className="h-6 cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => console.log('Kết Quả Trao Thưởng clicked')}
+              onClick={() => {}}
             />
           </div>
         </div>

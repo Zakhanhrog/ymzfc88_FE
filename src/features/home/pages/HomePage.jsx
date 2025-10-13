@@ -100,7 +100,6 @@ const HomePage = () => {
                       src={banner.url} 
                       alt={banner.alt}
                       className="w-full h-full object-contain cursor-pointer rounded-lg"
-                      onClick={() => console.log(`${banner.alt} clicked`)}
                     />
                   </div>
                 </div>

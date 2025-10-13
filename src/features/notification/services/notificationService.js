@@ -35,7 +35,6 @@ const notificationService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Create notification error:', error);
       throw error;
     }
   },

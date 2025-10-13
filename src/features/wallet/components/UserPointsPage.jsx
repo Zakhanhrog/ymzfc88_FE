@@ -32,7 +32,6 @@ const UserPointsPage = () => {
         message.error('Không thể tải thông tin điểm thưởng');
       }
     } catch (error) {
-      console.error('Error loading user points:', error);
       message.error('Lỗi khi tải thông tin điểm: ' + error.message);
     } finally {
       setLoading(false);
@@ -54,7 +53,6 @@ const UserPointsPage = () => {
         message.error('Không thể tải lịch sử điểm thưởng');
       }
     } catch (error) {
-      console.error('Error loading point history:', error);
       message.error('Lỗi khi tải lịch sử điểm: ' + error.message);
     } finally {
       setHistoryLoading(false);

@@ -51,7 +51,6 @@ const AdminBetManagement = () => {
         }));
       }
     } catch (error) {
-      console.error('Error loading bets:', error);
       showNotification('Không thể tải danh sách bet', 'error');
     } finally {
       setLoading(false);
@@ -202,7 +201,6 @@ const AdminBetManagement = () => {
         loadBets();
       }
     } catch (error) {
-      console.error('Error editing bet:', error);
       showNotification(error.message || 'Không thể chỉnh sửa bet', 'error');
     }
   };
@@ -226,7 +224,6 @@ const AdminBetManagement = () => {
         loadStatistics();
       }
     } catch (error) {
-      console.error('Error deleting bet:', error);
       showNotification(error.message || 'Không thể xóa bet', 'error');
     }
   };
@@ -239,7 +236,6 @@ const AdminBetManagement = () => {
         loadBets(); // Refresh để hiển thị kết quả mới
       }
     } catch (error) {
-      console.error('Error checking bet results:', error);
       showNotification(error.message || 'Không thể kiểm tra kết quả', 'error');
     }
   };

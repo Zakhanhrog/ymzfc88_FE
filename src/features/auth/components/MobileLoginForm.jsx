@@ -61,7 +61,6 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
         }
       }, 1000);
     } catch (error) {
-      console.error('Login error:', error);
       message.error(error.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);

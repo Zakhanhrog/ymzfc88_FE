@@ -27,7 +27,6 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
       }
     } catch (err) {
       setError('Có lỗi xảy ra khi tải kết quả');
-      console.error('Error loading lottery result:', err);
     } finally {
       setLoading(false);
     }
@@ -48,29 +47,19 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-blue-600 text-white p-4 rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">
-              Kết quả {getRegionDisplayName(region)} ngày {resultData?.date || '...'}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors"
-            >
-              <Icon icon="mdi:close" className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[95vh] overflow-y-auto relative">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors z-10"
+        >
+          <Icon icon="mdi:close" className="w-5 h-5" />
+        </button>
 
         {/* Content */}
         <div className="p-6">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Icon icon="mdi:loading" className="w-8 h-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600">Đang tải kết quả...</span>
-            </div>
+            <div></div>
           ) : error ? (
             <div className="text-center py-8">
               <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -106,11 +95,11 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
                   <tbody>
                     {Object.entries(resultData.results).map(([prize, numbers], index) => (
                       <tr key={prize} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="border border-gray-300 px-4 py-3 font-medium">
+                        <td className="border border-gray-300 px-2 py-1 font-medium w-24 text-left">
                           {prize}
                         </td>
-                        <td className="border border-gray-300 px-4 py-3">
-                          <div className="flex flex-wrap gap-2">
+                        <td className="border border-gray-300 px-2 py-1">
+                          <div className="flex flex-wrap gap-1">
                             {prize === 'Giải đặc biệt' ? (
                               <span className="bg-red-500 text-white px-3 py-1 rounded-full font-bold text-lg">
                                 {numbers}
@@ -123,7 +112,7 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
                               numbers.split(', ').map((number, idx) => (
                                 <span
                                   key={idx}
-                                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium"
+                                  className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-sm font-medium"
                                 >
                                   {number.trim()}
                                 </span>
@@ -155,17 +144,6 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
           ) : null}
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 rounded-b-lg">
-          <div className="flex justify-center">
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Đóng
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -44,24 +44,18 @@ const AdminKycVerification = () => {
     try {
       // Debug: Check admin token
       const adminToken = localStorage.getItem('adminToken');
-      console.log('🔐 Admin Token exists:', !!adminToken);
-      console.log('🔄 Fetching KYC requests, activeTab:', activeTab);
       
       const response = activeTab === 'pending' 
         ? await kycService.getPendingKycRequests()
         : await kycService.getAllKycRequests();
       
-      console.log('✅ KYC Response:', response);
       
       if (response.success) {
         setKycRequests(response.data || []);
-        console.log('📊 KYC Requests:', response.data);
       } else {
-        console.error('❌ Response not success:', response);
       }
     } catch (error) {
       message.error(error.message || 'Lỗi khi tải danh sách xác thực');
-      console.error('❌ Error fetching KYC requests:', error);
     } finally {
       setLoading(false);
     }

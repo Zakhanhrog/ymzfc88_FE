@@ -40,20 +40,14 @@ const KycVerification = () => {
     try {
       // Debug: Check user token
       const userToken = localStorage.getItem('token');
-      console.log('🔐 User Token exists:', !!userToken);
-      console.log('🔄 Fetching KYC status...');
       
       const response = await kycService.getKycStatus();
-      console.log('✅ KYC Status Response:', response);
       
       if (response.success && response.data) {
         setKycStatus(response.data);
-        console.log('📊 KYC Status:', response.data);
       } else {
-        console.log('ℹ️ No KYC data or not success');
       }
     } catch (error) {
-      console.error('❌ Error fetching KYC status:', error);
     } finally {
       setFetchingStatus(false);
     }

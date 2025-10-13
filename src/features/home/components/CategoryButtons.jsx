@@ -11,7 +11,6 @@ const CategoryButtons = () => {
   ];
 
   const handleCategoryClick = (categoryId) => {
-    console.log(`${categoryId} clicked`);
   };
 
   return (

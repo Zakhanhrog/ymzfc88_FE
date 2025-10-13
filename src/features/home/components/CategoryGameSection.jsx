@@ -101,7 +101,6 @@ const CategoryGameSection = ({ title, gameImages }) => {
               <div
                 key={index}
                 className="flex-shrink-0 w-[calc((100%-28px)/4)] aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group relative"
-                onClick={() => console.log(`${title} Game ${index + 1} clicked`)}
               >
                 <img
                   src={image}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
+import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
 
 const LotteryPage = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const LotteryPage = () => {
         {
           id: 'mien-bac',
           name: 'Xổ Số Miền Bắc',
-          image: '/images/games/mienbac.png',
+          image: getProvinceImagePathWithMapping('Miền Bắc'),
           description: 'Xổ số miền Bắc hàng ngày'
         }
       ]
@@ -27,13 +28,13 @@ const LotteryPage = () => {
         {
           id: 'gia-lai',
           name: 'Xổ Số Gia Lai', 
-          image: '/images/games/gialai.png',
+          image: getProvinceImagePathWithMapping('Gia Lai'),
           description: 'Xổ số Gia Lai'
         },
         {
           id: 'ninh-thuan',
           name: 'Xổ Số Ninh Thuận',
-          image: '/images/games/ninhthuan.png', 
+          image: getProvinceImagePathWithMapping('Ninh Thuận'), 
           description: 'Xổ số Ninh Thuận'
         }
       ]
@@ -45,19 +46,19 @@ const LotteryPage = () => {
         {
           id: 'binh-duong',
           name: 'Xổ Số Bình Dương',
-          image: '/images/games/binhduong.png',
+          image: getProvinceImagePathWithMapping('Bình Dương'),
           description: 'Xổ số Bình Dương'
         },
         {
           id: 'tra-vinh',
           name: 'Xổ Số Trà Vinh',
-          image: '/images/games/travinh.png',
+          image: getProvinceImagePathWithMapping('Trà Vinh'),
           description: 'Xổ số Trà Vinh'
         },
         {
           id: 'vinh-long',
           name: 'Xổ Số Vĩnh Long',
-          image: '/images/games/vinhlong.png',
+          image: getProvinceImagePathWithMapping('Vĩnh Long'),
           description: 'Xổ số Vĩnh Long'
         }
       ]
@@ -65,7 +66,6 @@ const LotteryPage = () => {
   };
 
   const handleGameSelect = (gameId) => {
-    console.log('Selected game:', gameId);
     if (gameId === 'mien-bac') {
       navigate('/lottery/mien-bac');
     } else if (['binh-duong', 'gia-lai', 'ninh-thuan', 'tra-vinh', 'vinh-long'].includes(gameId)) {

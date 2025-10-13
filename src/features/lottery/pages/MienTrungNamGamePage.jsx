@@ -8,6 +8,9 @@ import { showNotification } from '../../../utils/notification';
 import { MIEN_TRUNG_NAM_GAME_TYPES, BET_MULTIPLIERS, isInputOnlyGameType } from '../utils/gameTypeHelpers';
 import { getNumbersForGameType } from '../utils/numberGenerator';
 import { formatBetTypeMienTrungNam, formatSelectedNumbers } from '../utils/betFormatter';
+import CountdownTimer from '../components/CountdownTimer';
+import PreviousSpecialResult from '../components/PreviousSpecialResult';
+import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
 
 const MienTrungNamGamePage = () => {
   const navigate = useNavigate();
@@ -26,6 +29,8 @@ const MienTrungNamGamePage = () => {
   };
   
   const province = getProvinceFromPort(portId);
+  
+  
   const [selectedNumbers, setSelectedNumbers] = useState([]);
   const [betMultiplier, setBetMultiplier] = useState(1);
   const [betAmount, setBetAmount] = useState(1);
@@ -802,7 +807,6 @@ const MienTrungNamGamePage = () => {
         setUserPoints(0);
       }
     } catch (error) {
-      console.error('Error loading user points:', error);
       setUserPoints(0);
     } finally {
       setLoadingPoints(false);
@@ -827,12 +831,10 @@ const MienTrungNamGamePage = () => {
         });
         setBettingOddsData(oddsMap);
       } else {
-        console.error('Error loading betting odds:', response.message);
         // Use default values if API fails
         setBettingOddsData({});
       }
     } catch (error) {
-      console.error('Error loading betting odds:', error);
       setBettingOddsData({});
     } finally {
       setLoadingOdds(false);
@@ -1103,7 +1105,6 @@ const MienTrungNamGamePage = () => {
         showNotification(response.message || 'Có lỗi xảy ra khi đặt cược', 'error');
       }
     } catch (error) {
-      console.error('Error placing bet:', error);
       showNotification(error.message || 'Có lỗi xảy ra khi đặt cược', 'error');
     } finally {
       setPlacingBet(false);
@@ -1144,7 +1145,6 @@ const MienTrungNamGamePage = () => {
         }
       }
     } catch (error) {
-      console.error('Error checking bet result:', error);
       showNotification('Có lỗi xảy ra khi kiểm tra kết quả', 'error');
     }
   };
@@ -1158,7 +1158,6 @@ const MienTrungNamGamePage = () => {
         setBetHistory(response.data || []);
       }
     } catch (error) {
-      console.error('Error loading bet history:', error);
       showNotification('Có lỗi xảy ra khi tải lịch sử', 'error');
     } finally {
       setLoadingHistory(false);
@@ -1182,7 +1181,6 @@ const MienTrungNamGamePage = () => {
       
       showNotification('Đã đóng thông báo kết quả', 'success');
     } catch (error) {
-      console.error('Error dismissing bet result:', error);
       showNotification('Có lỗi xảy ra khi đóng thông báo', 'error');
     }
   };
@@ -1295,29 +1293,78 @@ const MienTrungNamGamePage = () => {
           {/* Main Content Area */}
           <div className="flex-1 w-full md:max-w-4xl md:mx-auto px-2 py-2 md:p-4 md:overflow-y-auto bg-white md:shadow-lg md:rounded-lg order-1">
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#D30102] to-[#B80102] text-white p-3 md:p-4 rounded-lg mb-4 relative overflow-hidden">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h1 className="text-base md:text-lg font-bold mb-1">{portName}</h1>
-                  <div className="flex items-center gap-2 md:gap-3 text-red-100 text-xs md:text-sm">
-                    <span>Thứ 6</span>
-                    <span>Lượt xổ: 10/10/2025</span>
+            <div className="bg-white border border-gray-200 p-3 md:p-4 rounded-lg mb-4 shadow-sm">
+              {/* Mobile Layout */}
+              <div className="md:hidden">
+                {/* Top row: Image and title */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 flex-shrink-0 relative">
+                    <img 
+                      src={getProvinceImagePathWithMapping(portName)} 
+                      alt={portName} 
+                      className="w-full h-full object-contain absolute inset-0"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <div className="w-full h-full bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center text-white font-bold text-sm hidden">MTN</div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="bg-red-700 px-2 md:px-3 py-1 md:py-1.5 rounded-lg">
-                    <span className="text-sm md:text-base font-mono">17 : 40 : 09</span>
-                  </div>
-                  <div className="text-right hidden sm:block">
-                    <div className="text-xs text-red-100">Kỳ 09/10/2025, giải đặc biệt</div>
-                    <div className="flex gap-1 mt-1">
-                      {['0', '9', '5', '6', '5'].map((num, index) => (
-                        <div key={index} className="w-5 h-5 md:w-6 md:h-6 bg-red-700 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm">
-                          {num}
-                        </div>
-                      ))}
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-base font-bold text-gray-900 mb-1">{portName}</h1>
+                    <div className="flex items-center gap-2 text-gray-600 text-xs">
+                      <span>{new Date().toLocaleDateString('vi-VN', { weekday: 'long' })}</span>
+                      <span>•</span>
+                      <span>{new Date().toLocaleDateString('vi-VN')}</span>
                     </div>
                   </div>
+                </div>
+                
+                {/* Bottom row: Countdown and result */}
+                <div className="flex items-center justify-between">
+                  {/* Countdown Timer */}
+                  <div className="flex-1">
+                    <CountdownTimer />
+                  </div>
+                  
+                  {/* Previous result */}
+                  <div className="ml-3">
+                    <PreviousSpecialResult region="mienTrungNam" province={province} />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Desktop Layout */}
+              <div className="hidden md:flex items-center justify-between gap-3">
+                {/* Left side: Image and title */}
+                <div className="flex items-center gap-3">
+                  <div className="w-20 h-20 flex-shrink-0 relative">
+                    <img 
+                      src={getProvinceImagePathWithMapping(portName)} 
+                      alt={portName} 
+                      className="w-full h-full object-contain absolute inset-0"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <div className="w-full h-full bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center text-white font-bold text-xl hidden">MTN</div>
+                  </div>
+                  <div className="min-w-0">
+                    <h1 className="text-lg font-bold text-gray-900 mb-1">{portName}</h1>
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <span>{new Date().toLocaleDateString('vi-VN', { weekday: 'long' })}</span>
+                      <span>•</span>
+                      <span>{new Date().toLocaleDateString('vi-VN')}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right side: Countdown and result */}
+                <div className="flex items-center gap-3">
+                  {/* Countdown Timer */}
+                  <CountdownTimer />
+                  
+                  {/* Previous result */}
+                  <PreviousSpecialResult region="mienTrungNam" province={province} />
                 </div>
               </div>
             </div>
@@ -1631,9 +1678,20 @@ const MienTrungNamGamePage = () => {
                       <button
                         key={mult.value}
                         onClick={() => handleMultiplierClick(mult.value)}
-                        className="w-9 h-9 md:w-10 md:h-10 rounded-full text-white font-bold transition-all text-sm md:text-base bg-gray-300 hover:bg-gray-400"
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-full transition-all hover:scale-105 active:scale-95"
                       >
-                        {mult.label}
+                        <img 
+                          src={`/images/games/heso/x${mult.value}.png`}
+                          alt={`${mult.label}`}
+                          className="w-full h-full object-contain rounded-full"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-gray-700 font-bold text-xs hidden">
+                          {mult.label}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -2035,9 +2093,20 @@ const MienTrungNamGamePage = () => {
                       <button
                         key={mult.value}
                         onClick={() => handleMultiplierClick(mult.value)}
-                        className="w-12 h-12 rounded-full text-white font-bold transition-all text-base bg-gray-300 hover:bg-gray-400"
+                        className="w-12 h-12 rounded-full transition-all hover:scale-105 active:scale-95"
                       >
-                        {mult.label}
+                        <img 
+                          src={`/images/games/heso/x${mult.value}.png`}
+                          alt={`${mult.label}`}
+                          className="w-full h-full object-contain rounded-full"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-gray-700 font-bold text-sm hidden">
+                          {mult.label}
+                        </div>
                       </button>
                     ))}
                   </div>

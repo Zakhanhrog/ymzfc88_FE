@@ -109,7 +109,6 @@ const Layout = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching user points:', error);
     }
   };
 
@@ -126,7 +125,6 @@ const Layout = ({ children }) => {
           setUserName(userData.username || userData.name || 'User');
           setUserPoints(userData.points || 0);
         } catch (error) {
-          console.error('Error parsing user data:', error);
           setUserName('User');
           setUserPoints(0);
         }
@@ -178,7 +176,6 @@ const Layout = ({ children }) => {
 
   const handleGameSelect = (gameKey) => {
     setActiveGame(gameKey);
-    console.log('Selected game:', gameKey);
   };
 
   const sidebarWidth = sidebarCollapsed ? '80px' : '280px';

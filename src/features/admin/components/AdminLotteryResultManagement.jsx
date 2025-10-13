@@ -53,7 +53,6 @@ const AdminLotteryResultManagement = () => {
         setTotalPages(response.data.totalPages || 0);
       }
     } catch (error) {
-      console.error('Error loading results:', error);
     } finally {
       setLoading(false);
     }

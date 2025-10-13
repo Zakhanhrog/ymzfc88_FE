@@ -8,7 +8,6 @@ const SideBanners = ({ banners }) => {
           key={banner.id}
           className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 overflow-hidden"
           bodyClassName="p-0"
-          onClick={() => console.log('Side banner clicked:', banner.title)}
         >
           <div className={`relative h-24 bg-gradient-to-r ${banner.gradient} flex items-center justify-center overflow-hidden`}>
             <div className="absolute inset-0 bg-black bg-opacity-20"></div>

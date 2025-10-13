@@ -13,22 +13,18 @@ const QuickActionsSection = () => {
 
   const handleCheckIn = () => {
     // Handle check-in functionality
-    console.log('Check-in clicked');
   };
 
   const handleSpin = () => {
     // Handle spin wheel functionality
-    console.log('Spin wheel clicked');
   };
 
   const handleVIP = () => {
     // Handle VIP functionality
-    console.log('VIP clicked');
   };
 
   const handleDaily = () => {
     // Handle daily tasks functionality
-    console.log('Daily tasks clicked');
   };
 
   return (

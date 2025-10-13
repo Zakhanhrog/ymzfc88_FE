@@ -34,7 +34,6 @@ const AdminBettingOddsManagement = () => {
         showNotification('error', response.message);
       }
     } catch (error) {
-      console.error('Error loading betting odds:', error);
       showNotification('error', 'Lỗi khi tải dữ liệu tỷ lệ cược');
     } finally {
       setLoading(false);
@@ -88,7 +87,6 @@ const AdminBettingOddsManagement = () => {
         showNotification('error', response.message);
       }
     } catch (error) {
-      console.error('Error saving changes:', error);
       showNotification('error', 'Lỗi khi lưu thay đổi');
     } finally {
       setSaving(false);

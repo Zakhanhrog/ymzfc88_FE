@@ -42,7 +42,6 @@ const GameGrid = () => {
   ];
 
   const handleGameClick = (gameName) => {
-    console.log(`${gameName} clicked`);
   };
 
   return (
