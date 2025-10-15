@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Cấu hình axios base URL cho backend local
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://api.loto79.online/api';
 
 const authAPI = axios.create({
   baseURL: API_BASE_URL,
@@ -57,18 +57,14 @@ export const authService = {
   // Đăng ký
   register: async (userData) => {
     try {
-      // Tạo username unique từ email và timestamp
-      const emailPrefix = userData.email.split('@')[0];
-      const timestamp = Date.now().toString().slice(-4);
-      const username = `${emailPrefix}${timestamp}`;
-
+      // Sử dụng username do user nhập vào
       const response = await authAPI.post('/auth/register', {
-        username: username,
+        username: userData.username,
         email: userData.email,
         password: userData.password,
         confirmPassword: userData.password,
-        fullName: userData.name,
-        phoneNumber: userData.phone
+        fullName: userData.name || userData.fullName,
+        phoneNumber: userData.phone || userData.phoneNumber
       });
 
       // Chỉ trả về thông báo thành công, không tự động đăng nhập

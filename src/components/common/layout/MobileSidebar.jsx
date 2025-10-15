@@ -80,7 +80,7 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
             </button>
             <Icon icon="mdi:account-circle" className="w-8 h-8 text-gray-400" />
             <div className="flex-1">
-              <div className="text-sm text-gray-600">Xin chào, {isLoggedIn ? userName : 'thienlongsp'}</div>
+              <div className="text-sm text-gray-600">Xin chào, {userName}</div>
             </div>
           </div>
           

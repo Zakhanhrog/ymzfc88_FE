@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
 import MainBannerCarousel from '../components/MainBannerCarousel';
 import MobileBannerCarousel from '../components/MobileBannerCarousel';
@@ -8,13 +9,15 @@ import PopularGamesCarousel from '../components/PopularGamesCarousel';
 import CategoryGamesGrid from '../components/CategoryGamesGrid';
 import AdditionalGamesGrid from '../components/AdditionalGamesGrid';
 import QuickActionsSection from '../components/QuickActionsSection';
-import CategoryNavigation from '../components/CategoryNavigation';
 import MobilePopularGames from '../components/MobilePopularGames';
 import CategoryButtons from '../components/CategoryButtons';
+import { getProvinceImagePathWithMapping } from '../../lottery/utils/imageUtils';
 
 const HomePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [selectedRegion, setSelectedRegion] = useState('bac');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Check if we need to show login modal from ProtectedRoute redirect
   useEffect(() => {
@@ -78,21 +81,89 @@ const HomePage = () => {
     }
   ];
 
+  // Lottery regions data
+  const regions = {
+    bac: {
+      name: 'Miền Bắc',
+      color: 'from-red-500 to-red-600',
+      games: [
+        {
+          id: 'mien-bac',
+          name: 'Xổ Số Miền Bắc',
+          image: getProvinceImagePathWithMapping('Miền Bắc'),
+          description: 'Xổ số miền Bắc hàng ngày'
+        }
+      ]
+    },
+    trung: {
+      name: 'Miền Trung', 
+      color: 'from-blue-500 to-blue-600',
+      games: [
+        {
+          id: 'gia-lai',
+          name: 'Xổ Số Gia Lai', 
+          image: getProvinceImagePathWithMapping('Gia Lai'),
+          description: 'Xổ số Gia Lai'
+        },
+        {
+          id: 'ninh-thuan',
+          name: 'Xổ Số Ninh Thuận',
+          image: getProvinceImagePathWithMapping('Ninh Thuận'), 
+          description: 'Xổ số Ninh Thuận'
+        }
+      ]
+    },
+    nam: {
+      name: 'Miền Nam',
+      color: 'from-green-500 to-green-600', 
+      games: [
+        {
+          id: 'binh-duong',
+          name: 'Xổ Số Bình Dương',
+          image: getProvinceImagePathWithMapping('Bình Dương'),
+          description: 'Xổ số Bình Dương'
+        },
+        {
+          id: 'tra-vinh',
+          name: 'Xổ Số Trà Vinh',
+          image: getProvinceImagePathWithMapping('Trà Vinh'),
+          description: 'Xổ số Trà Vinh'
+        },
+        {
+          id: 'vinh-long',
+          name: 'Xổ Số Vĩnh Long',
+          image: getProvinceImagePathWithMapping('Vĩnh Long'),
+          description: 'Xổ số Vĩnh Long'
+        }
+      ]
+    }
+  };
+
+  const handleGameSelect = (gameId) => {
+    if (gameId === 'mien-bac') {
+      navigate('/lottery/mien-bac');
+    } else if (['binh-duong', 'gia-lai', 'ninh-thuan', 'tra-vinh', 'vinh-long'].includes(gameId)) {
+      // Tất cả các cổng game Miền Trung và Nam đều vào trang chung với tên cổng
+      const gameName = regions.trung.games.concat(regions.nam.games).find(game => game.id === gameId)?.name || '';
+      navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(gameName)}`);
+    }
+  };
+
   return (
     <Layout>
       <div className="w-full">
         {/* Banner Section */}
         
         {/* Desktop Banner Layout */}
-        <div className="hidden md:grid grid-cols-6 gap-4 mb-6">
-          {/* Banner chính - 5 cột */}
-          <div className="col-span-5">
-            <MainBannerCarousel banners={mainBanners} />
+        <div className={`hidden md:grid gap-4 mb-6 ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-6'}`}>
+          <div className={sidebarCollapsed ? 'col-span-10' : 'col-span-5'}>
+            <div className={`${sidebarCollapsed ? 'h-[420px]' : 'h-[350px]'} overflow-hidden rounded-lg`}>
+              <MainBannerCarousel banners={mainBanners} />
+            </div>
           </div>
 
-          {/* Banner phụ - 1 cột */}
-          <div className="col-span-1">
-            <div className="space-y-1 h-[350px] flex flex-col justify-between border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent">
+          <div className={sidebarCollapsed ? 'col-span-2' : 'col-span-1'}>
+            <div className={`space-y-1 ${sidebarCollapsed ? 'h-[420px]' : 'h-[350px]'} flex flex-col justify-between border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent`}>
               {sideBanners.map((banner) => (
                 <div key={banner.id} className="h-[120px] bg-gray-100 rounded-lg p-1.5 shadow-sm">
                   <div className="w-full h-full rounded-lg overflow-hidden">
@@ -119,33 +190,261 @@ const HomePage = () => {
         {/* Quick Actions Section */}
         <QuickActionsSection />
 
-        {/* Category Navigation */}
-        <CategoryNavigation />
+        {/* Lottery Interface */}
+        
+        {/* Desktop Lottery Interface */}
+        <div className="hidden md:block mt-6">
+          <div className="flex gap-4">
+            {/* Lottery Content */}
+            <div className="w-full">
+              <div className="pt-2 pb-14 px-10 bg-white rounded-lg">
+                {/* Grouped by regions */}
+                <div className="flex gap-12 items-stretch">
+                  {/* Miền Bắc - Single frame */}
+                  <div className="w-1/6">
+                    <div className="text-center mb-2">
+                      <span className="inline-block bg-red-100 text-red-700 text-sm font-semibold px-3 py-1 rounded-full">Miền Bắc</span>
+                    </div>
+                    <div className="p-3 rounded-lg h-full" style={{ backgroundColor: '#F5F5F5' }}>
+                      <div 
+                        className="group cursor-pointer transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-1 bg-white rounded-lg h-full flex flex-col min-h-[200px]"
+                        onClick={() => handleGameSelect(regions.bac.games[0].id)}
+                      >
+                        <img
+                          src={regions.bac.games[0].image}
+                          alt={regions.bac.games[0].name}
+                          className="w-full aspect-square object-contain rounded-lg flex-1"
+                        />
+                        <div className="mt-2 text-center">
+                          <button className="text-red-600 px-2 py-1 rounded-full text-xs font-semibold transition-all duration-300 transform hover:scale-105 hover:text-red-700">
+                            Chơi ngay
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Miền Trung - 2 games in one frame */}
+                  <div className="w-2/6">
+                    <div className="text-center mb-2">
+                      <span className="inline-block bg-red-100 text-red-700 text-sm font-semibold px-3 py-1 rounded-full">Miền Trung</span>
+                    </div>
+                    <div className="p-3 rounded-lg h-full" style={{ backgroundColor: '#F5F5F5' }}>
+                      <div className="grid grid-cols-2 gap-2 h-full">
+                        {regions.trung.games.map((game) => (
+                          <div
+                            key={game.id}
+                            className="group cursor-pointer transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-1 bg-white rounded-lg h-full flex flex-col min-h-[200px]"
+                            onClick={() => handleGameSelect(game.id)}
+                          >
+                            <img
+                              src={game.image}
+                              alt={game.name}
+                              className="w-full aspect-square object-contain rounded-lg flex-1"
+                            />
+                            <div className="mt-2 text-center">
+                              <button className="text-red-600 px-2 py-1 rounded-full text-xs font-semibold transition-all duration-300 transform hover:scale-105 hover:text-red-700">
+                                Chơi ngay
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Miền Nam - 3 games in one frame */}
+                  <div className="w-3/6">
+                    <div className="text-center mb-2">
+                      <span className="inline-block bg-red-100 text-red-700 text-sm font-semibold px-3 py-1 rounded-full">Miền Nam</span>
+                    </div>
+                    <div className="p-3 rounded-lg h-full" style={{ backgroundColor: '#F5F5F5' }}>
+                      <div className="grid grid-cols-3 gap-2 h-full">
+                        {regions.nam.games.map((game) => (
+                          <div
+                            key={game.id}
+                            className="group cursor-pointer transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-1 bg-white rounded-lg h-full flex flex-col min-h-[200px]"
+                            onClick={() => handleGameSelect(game.id)}
+                          >
+                            <img
+                              src={game.image}
+                              alt={game.name}
+                              className="w-full aspect-square object-contain rounded-lg flex-1"
+                            />
+                            <div className="mt-2 text-center">
+                              <button className="text-red-600 px-2 py-1 rounded-full text-xs font-semibold transition-all duration-300 transform hover:scale-105 hover:text-red-700">
+                                Chơi ngay
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Lottery Interface */}
+        <div className="md:hidden mt-0">
+          <div className="flex gap-2 h-[calc(100vh-410px)]">
+            {/* Game Categories Sidebar */}
+            <div className="w-1/5">
+              <div className="bg-white rounded-lg p-2 h-full">
+                <div className="overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  {/* HOT GAMES */}
+                  <div className="flex flex-col items-center p-1 bg-gray-100 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:fire" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">HOT</span>
+                  </div>
+                  
+                  {/* THỂ THAO */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:soccer" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Thể Thao</span>
+                  </div>
+                  
+                  {/* SÒNG BÀI */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:cards-playing" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Sòng Bài</span>
+                  </div>
+                  
+                  {/* SLOTS */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:slot-machine" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Slots</span>
+                  </div>
+                  
+                  {/* ĐÁ GÀ */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="game-icons:rooster" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Đá Gà</span>
+                  </div>
+                  
+                  {/* GAME BÀI */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:cards" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Game Bài</span>
+                  </div>
+                  
+                  {/* RACING BALL */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:basketball" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Racing</span>
+                  </div>
+                  
+                  {/* XỔ SỐ */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:dice-multiple" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Xổ Số</span>
+                  </div>
+                  
+                  {/* E-SPORTS */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:controller" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">E-Sports</span>
+                  </div>
+                  
+                  {/* KHUYẾN MÃI */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:gift" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">Khuyến Mãi</span>
+                  </div>
+                  
+                  {/* VIP */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg mb-1 aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:crown" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">VIP</span>
+                  </div>
+                  
+                  {/* APP */}
+                  <div className="flex flex-col items-center p-1 bg-gray-50 rounded-lg aspect-square">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <Icon icon="mdi:cellphone" className="text-gray-600 text-lg" />
+                    </div>
+                    <span className="text-xs text-gray-700 text-center">APP</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Lottery Content */}
+            <div className="w-4/5">
+              <div className="px-4 py-4 bg-white rounded-lg h-full">
+                {/* Grid Layout - 3 games per row */}
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.values(regions).flatMap(region => region.games).map((game) => (
+                    <div
+                      key={game.id}
+                      className="h-28 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
+                      onClick={() => handleGameSelect(game.id)}
+                    >
+                      <img
+                        src={game.image}
+                        alt={game.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Mobile Popular Games */}
-        <MobilePopularGames />
+        <div className="hidden">
+          <MobilePopularGames />
+        </div>
 
         {/* Desktop Components */}
         {/* Popular Games Carousel */}
-        <div className="hidden md:block">
+        <div className="hidden">
           <PopularGamesCarousel />
         </div>
 
         {/* Category Games Grid */}
-        <div className="hidden md:block">
+        <div className="hidden">
           <CategoryGamesGrid />
         </div>
 
         {/* Spacing between major sections */}
-        <div className="hidden md:block h-8"></div>
+        <div className="hidden h-8"></div>
 
         {/* Additional Games Grid */}
-        <div className="hidden md:block">
+        <div className="hidden">
           <AdditionalGamesGrid />
         </div>
 
         {/* Category Buttons */}
-        <CategoryButtons />
+        <div className="hidden">
+          <CategoryButtons />
+        </div>
       </div>
     </Layout>
   );

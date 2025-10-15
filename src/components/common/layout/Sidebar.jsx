@@ -12,28 +12,28 @@ const Sidebar = ({
 
   // Special menu items với icon hình ảnh
   const specialMenuItems = [
-    { key: 'daily', label: 'Mỗi Ngày', image: '/images/icons/sm-check.png' },
-    { key: 'lucky-wheel', label: 'Vòng Quay May Mắn', image: '/images/icons/sm-wheel.png' },
-    { key: 'reward-results', label: 'Kết Quả Trao Thưởng', image: '/images/icons/sm-mb.webp' },
-    { key: 'red-envelope', label: 'Phong Bì Đỏ', image: '/images/icons/sm-red.png' },
+    // { key: 'daily', label: 'Mỗi Ngày', image: '/images/icons/sm-check.png' },
+    // { key: 'lucky-wheel', label: 'Vòng Quay May Mắn', image: '/images/icons/sm-wheel.png' },
+    // { key: 'reward-results', label: 'Kết Quả Trao Thưởng', image: '/images/icons/sm-mb.webp' },
+    // { key: 'red-envelope', label: 'Phong Bì Đỏ', image: '/images/icons/sm-red.png' },
     { key: 'deposit', label: 'Nạp Tiền', image: '/images/icons/icon-deposit.png' }
   ];
 
   // Game categories
   const gameCategories = [
     { key: 'HOT', label: 'HOT GAMES', icon: 'mdi:fire' },
-    { key: 'THETHAO', label: 'THỂ THAO', icon: 'mdi:soccer' },
-    { key: 'SONGBAI', label: 'SÒNG BÀI', icon: 'mdi:cards-playing' },
-    { key: 'SLOTS', label: 'SLOTS', icon: 'mdi:slot-machine' },
-    { key: 'DAGA', label: 'ĐÁ GÀ', icon: 'game-icons:rooster' },
-    { key: 'GAMEBAI', label: 'GAME BÀI', icon: 'mdi:cards' },
-    { key: 'RACING', label: 'RACING BALL', icon: 'mdi:basketball' },
+    // { key: 'THETHAO', label: 'THỂ THAO', icon: 'mdi:soccer' },
+    // { key: 'SONGBAI', label: 'SÒNG BÀI', icon: 'mdi:cards-playing' },
+    // { key: 'SLOTS', label: 'SLOTS', icon: 'mdi:slot-machine' },
+    // { key: 'DAGA', label: 'ĐÁ GÀ', icon: 'game-icons:rooster' },
+    // { key: 'GAMEBAI', label: 'GAME BÀI', icon: 'mdi:cards' },
+    // { key: 'RACING', label: 'RACING BALL', icon: 'mdi:basketball' },
     { key: 'lottery', label: 'XỔ SỐ', icon: 'mdi:dice-multiple' },
-    { key: 'esports', label: 'E-SPORTS', icon: 'mdi:controller' },
+    // { key: 'esports', label: 'E-SPORTS', icon: 'mdi:controller' },
     { key: 'promotions', label: 'KHUYẾN MÃI', icon: 'mdi:gift' },
-    { key: 'vip', label: 'VIP', icon: 'mdi:crown' },
-    { key: 'app', label: 'APP', icon: 'mdi:cellphone' },
-    { key: 'external-agent', label: 'ĐẠI LÝ NGOÀI', icon: 'mdi:swap-horizontal' },
+    // { key: 'vip', label: 'VIP', icon: 'mdi:crown' },
+    // { key: 'app', label: 'APP', icon: 'mdi:cellphone' },
+    // { key: 'external-agent', label: 'ĐẠI LÝ NGOÀI', icon: 'mdi:swap-horizontal' },
     { key: 'about', label: 'Về Chúng Tôi', icon: 'mdi:lightbulb' },
     { key: 'contact', label: 'Liên Hệ', icon: 'mdi:headset' }
   ];
@@ -112,19 +112,19 @@ const Sidebar = ({
     `}>
       
       {/* Mã Dự Thưởng Banner */}
-      <div className="px-2 pt-1 animate-fadeIn">
+      {/* <div className="px-2 pt-1 animate-fadeIn">
         <img 
           src="/images/banners/maduthuong.png" 
           alt="Mã Dự Thưởng" 
           className="w-full cursor-pointer hover:opacity-90 transition-opacity"
         />
-      </div>
+      </div> */}
 
       {/* Banner */}
-      <div className="px-2 pb-4 animate-fadeIn">
-        <img 
-          src="/images/banners/banner-yua.webp" 
-          alt="VUA MIKAMI Banner" 
+       <div className="px-2 pb-4 animate-fadeIn">
+        <img
+          src="/images/banners/banner-yua.webp"
+          alt="VUA MIKAMI Banner"
           className="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
         />
       </div>

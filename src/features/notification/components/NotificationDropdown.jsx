@@ -147,8 +147,9 @@ const NotificationDropdown = () => {
     <Dropdown
       trigger={['click']}
       placement="bottomRight"
-      overlay={notificationContent}
-      onVisibleChange={handleVisibleChange}
+      menu={{ items: [] }}
+      dropdownRender={() => notificationContent}
+      onOpenChange={handleVisibleChange}
     >
       <Badge count={unreadCount}>
         <BellOutlined style={{ fontSize: 18, cursor: 'pointer' }} />

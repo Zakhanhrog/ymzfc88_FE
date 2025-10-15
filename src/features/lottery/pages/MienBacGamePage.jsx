@@ -23,6 +23,7 @@ const MienBacGamePage = () => {
   const [selectionMode, setSelectionMode] = useState('quick'); // 'quick' or 'input'
   const [numberInput, setNumberInput] = useState('');
   const [userPoints, setUserPoints] = useState(0);
+  const [userName, setUserName] = useState('');
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [bettingOddsData, setBettingOddsData] = useState({});
   const [loadingOdds, setLoadingOdds] = useState(true);
@@ -762,6 +763,17 @@ const MienBacGamePage = () => {
 
   // Load user points, betting odds và bet history khi component mount
   useEffect(() => {
+    // Lấy thông tin user từ localStorage
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        setUserName(userData.username || userData.name || '');
+      } catch (error) {
+        setUserName('');
+      }
+    }
+    
     loadUserPoints();
     loadBettingOdds();
     loadBetHistory(); // Luôn load lịch sử khi vào trang
@@ -788,7 +800,7 @@ const MienBacGamePage = () => {
       setLoadingPoints(true);
       
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
+      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -1220,7 +1232,7 @@ const MienBacGamePage = () => {
         </div>
         
         <div className="text-right">
-          <div className="text-xs md:text-sm text-gray-600">hung5285</div>
+          <div className="text-xs md:text-sm text-gray-600">{userName}</div>
           <div className="text-sm md:text-base font-semibold text-[#D30102]">
             {loadingPoints ? 'Đang tải...' : `${userPoints.toLocaleString()} điểm`}
           </div>

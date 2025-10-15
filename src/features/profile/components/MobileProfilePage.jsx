@@ -13,6 +13,8 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
   };
 
   const confirmLogout = async () => {
+    if (isLoggingOut) return; // Prevent double execution
+    
     setIsLoggingOut(true);
     try {
       await onLogout();
@@ -122,7 +124,7 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
                   <Icon icon="mdi:account" className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-medium text-gray-800">
-                  Xin chào, {userName || 'thienlongsp'}
+                  Xin chào, {userName}
                 </span>
               </div>
               <button

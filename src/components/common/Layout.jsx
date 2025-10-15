@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
@@ -70,11 +70,57 @@ const Layout = ({ children }) => {
     }
   }, [location.pathname]);
 
+  // Function để fetch thông tin user từ API
+  const fetchUserInfo = async () => {
+    try {
+      // Gọi API /auth/me để lấy thông tin user mới nhất
+      const response = await fetch('https://api.loto79.online/api/auth/me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData.success && userData.data) {
+          const user = userData.data;
+          
+          // Cập nhật state
+          setUserName(user.username || user.name || '');
+          setUserPoints(user.points || 0);
+          
+          // Lưu vào localStorage
+          localStorage.setItem('user', JSON.stringify(user));
+          return;
+        }
+      }
+      
+      // Fallback: lấy từ localStorage
+      const user = localStorage.getItem('user');
+      if (user) {
+        const userData = JSON.parse(user);
+        setUserName(userData.username || userData.name || '');
+        setUserPoints(userData.points || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      // Fallback: lấy từ localStorage
+      const user = localStorage.getItem('user');
+      if (user) {
+        const userData = JSON.parse(user);
+        setUserName(userData.username || userData.name || '');
+        setUserPoints(userData.points || 0);
+      }
+    }
+  };
+
   // Function để fetch user points từ API
   const fetchUserPoints = async () => {
     try {
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
+      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -121,22 +167,21 @@ const Layout = ({ children }) => {
     if (token) {
       setIsLoggedIn(true);
       
+      // Lấy thông tin user từ localStorage trước (để hiển thị ngay)
       const user = localStorage.getItem('user');
       if (user) {
         try {
           const userData = JSON.parse(user);
-          setUserName(userData.username || userData.name || 'User');
+          setUserName(userData.username || userData.name || '');
           setUserPoints(userData.points || 0);
         } catch (error) {
-          setUserName('User');
+          setUserName('');
           setUserPoints(0);
         }
-      } else {
-        setUserName('User');
-        setUserPoints(0);
       }
-
-      fetchUserPoints();
+      
+      // Sau đó gọi API để cập nhật thông tin mới nhất
+      fetchUserInfo();
 
       const interval = setInterval(() => {
         fetchUserPoints();
@@ -169,6 +214,8 @@ const Layout = ({ children }) => {
   };
 
   const confirmLogout = async () => {
+    if (isLoggingOut) return; // Prevent double execution
+    
     setIsLoggingOut(true);
     try {
       // Call logout API if needed
@@ -179,8 +226,12 @@ const Layout = ({ children }) => {
       setUserName('');
       setUserPoints(0);
       setShowLogoutModal(false);
+      
+      // Navigate and reload after a short delay
       navigate('/');
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
       // Still logout locally even if API fails
@@ -191,8 +242,12 @@ const Layout = ({ children }) => {
       setUserName('');
       setUserPoints(0);
       setShowLogoutModal(false);
+      
+      // Navigate and reload after a short delay
       navigate('/');
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } finally {
       setIsLoggingOut(false);
     }
@@ -215,7 +270,7 @@ const Layout = ({ children }) => {
         onRegisterOpen={() => setIsRegisterModalOpen(true)}
         userName={userName}
         userBalance={userPoints}
-        onRefreshBalance={fetchUserPoints}
+        onRefreshBalance={fetchUserInfo}
         onLogout={handleLogout}
       />
 
@@ -254,7 +309,7 @@ const Layout = ({ children }) => {
         </div>
         
         {/* Mobile layout */}
-        <div className="md:hidden p-3 pb-24 min-h-full w-full">
+        <div className="md:hidden p-3 pb-16 min-h-full w-full">
           {children}
         </div>
       </main>
@@ -266,8 +321,8 @@ const Layout = ({ children }) => {
           <Footer />
         </div>
         
-        {/* Mobile layout */}
-        <div className="md:hidden">
+        {/* Mobile layout - Hidden */}
+        <div className="md:hidden hidden">
           <MobileFooter />
         </div>
       </div>

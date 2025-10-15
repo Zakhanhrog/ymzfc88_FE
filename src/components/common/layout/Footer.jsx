@@ -1,113 +1,90 @@
-import { Icon } from '@iconify/react';
-
 const Footer = () => {
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto relative z-10">
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
-        <div className="grid grid-cols-4 gap-6">
-          {/* Left - Branding */}
-          <div className="space-y-4">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <img src="/images/logos/logo.webp" alt="AE888" className="h-10" />
-            </div>
-            
-            {/* Copyright */}
-            <p className="text-gray-400 text-sm">
-              Copyright © AE888 Reserved
-            </p>
-            
-            {/* Gaming Curacao Badge */}
-            <div className="flex items-center">
-              <img src="/images/footer/GAMINGCURACAO.png" alt="Gaming Curacao" className="h-8" />
-            </div>
-          </div>
-
-          {/* Games Column */}
-          <div>
-            <h3 className="footer-heading font-semibold text-black mb-4 text-md">Trò chơi</h3>
-            <div className="grid grid-cols-2 gap-x-4">
-              <ul className="space-y-2">
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Thể thao</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Slot Quay</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Slot Bài</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Xổ số</a></li>
-              </ul>
-              <ul className="space-y-2">
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Sòng bài</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Đá Gà</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Bắn cá</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">E-Sports</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Help & Support Column */}
-          <div>
-            <h3 className="footer-heading font-semibold text-black mb-4 text-md">Giúp đỡ và hỗ trợ</h3>
-            <div className="grid grid-cols-2 gap-x-4">
-              <ul className="space-y-2">
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Về AE888</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Hướng dẫn rút tiền</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Điều Khoản Và Điều Kiện</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Chính Sách Quyền Riêng Tư Tại AE888</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Câu hỏi thường gặp</a></li>
-              </ul>
-              <ul className="space-y-2">
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Hướng Dẫn Nạp Tiền</a></li>
-                <li><a href="#" className="footer-link text-gray-400 hover:text-gray-600 text-sm">Chơi có trách nhiệm</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Follow US Column */}
-          <div>
-            <h3 className="footer-heading font-semibold text-black mb-4 text-md">Follow US</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 transition-colors">
-                <img src="/images/footer/imgi_332_sns-fb.png" alt="Facebook" className="w-6 h-6" />
-              </a>
-              <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-red-50 transition-colors">
-                <img src="/images/footer/imgi_333_sns-yt.png" alt="YouTube" className="w-6 h-6" />
-              </a>
-              <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-pink-50 transition-colors">
-                <img src="/images/footer/imgi_334_sns-ig.png" alt="Instagram" className="w-6 h-6" />
-              </a>
-              <a href="#" className="flex items-center justify-center w-10 h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <img src="/images/footer/imgi_335_sns-tk.png" alt="TikTok" className="w-6 h-6" />
-              </a>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 py-0">
+        
+        {/* Gaming Provider Logos */}
+        <div className="mb-2 pt-4">
+          <div className="flex justify-center">
+            <img 
+              src="/images/footer/anhtaphopnhieulogo.png" 
+              alt="Gaming Providers" 
+              className="w-full max-w-6xl object-contain"
+            />
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-gray-200 my-4"></div>
+        {/* Legal and Licensing Text */}
+        <div className="text-center mb-2">
+          <p className="text-gray-800 text-sm leading-relaxed max-w-4xl mx-auto">
+            AE888 được cấp 4 giấy phép hợp pháp đạt chuẩn quốc tế được cấp bởi Chính phủ Philippines (PAGCOR), 
+            Chính phủ Malta (MGA), Quần đảo Virgin Vương quốc Anh (BVI) & Hiệp Hội Nhà Cái Anh (GAMBLING COMMISSION), 
+            là một nhà cái cá cược được Hiệp Hội Cá Cược Quốc Tế công nhận. Trước khi đăng ký tham gia đặt cược, 
+            vui lòng đảm bảo bạn đã đủ 18 tuổi.
+          </p>
+        </div>
 
-        {/* Bottom Section */}
-        <div className="grid grid-cols-3 gap-6">
-          {/* Responsible Gaming */}
-          <div>
-            <h3 className="font-bold text-black mb-4">Responsible Gaming</h3>
-            <div className="flex items-center gap-3">
-              <div className="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                18+
-              </div>
-              <img src="/images/footer/ResponsibleGaming.png" alt="Responsible Gaming" className="h-8" />
-            </div>
-          </div>
+        {/* Licensing Logos and Descriptions - Table Layout */}
+        <div className="mb-2">
+          <table className="w-full">
+            <tbody>
+              <tr className="align-top">
+                {/* PAGCOR */}
+                <td className="text-center w-1/4 px-2">
+                  <div className="flex justify-center mb-1 h-16 overflow-hidden">
+                    <img src="/images/footer/imgi_17_certificate1.png.avif" alt="PAGCOR" className="h-full w-auto object-cover" />
+                  </div>
+                  <p className="text-gray-800 text-sm font-medium">Giấy phép game cá cược Philippines (PAGCOR)</p>
+                </td>
 
-          {/* Security */}
-          <div>
-            <h3 className="font-bold text-black mb-4">Security</h3>
-            <img src="/images/footer/Security.png" alt="Security" className="h-8" />
-          </div>
+                {/* MGA */}
+                <td className="text-center w-1/4 px-2">
+                  <div className="flex justify-center mb-1 h-16 overflow-hidden">
+                    <img src="/images/footer/imgi_18_certificate2.png.avif" alt="MGA" className="h-full w-auto object-cover" />
+                  </div>
+                  <p className="text-gray-800 text-sm font-medium">Giấy phép cá cược Malta (MGA)</p>
+                </td>
 
-          {/* Certification */}
-          <div>
-            <h3 className="font-bold text-black mb-4">Certification</h3>
-            <img src="/images/footer/Certification.png" alt="Certification" className="h-8" />
+                {/* BVI */}
+                <td className="text-center w-1/4 px-2">
+                  <div className="flex justify-center mb-1 h-16 overflow-hidden">
+                    <img src="/images/footer/imgi_19_certificate3.png.avif" alt="BVI" className="h-full w-auto object-cover" />
+                  </div>
+                  <p className="text-gray-800 text-sm font-medium">Giấy phép Quần đảo Virgin Anh (BVI)</p>
+                </td>
+
+                {/* GAMBLING COMMISSION */}
+                <td className="text-center w-1/4 px-2">
+                  <div className="flex justify-center mb-1 h-16 overflow-hidden">
+                    <img src="/images/footer/imgi_20_certificate4.png.avif" alt="GAMBLING COMMISSION" className="h-full w-auto object-cover" />
+                  </div>
+                  <p className="text-gray-800 text-sm font-medium">Uỷ ban GC Supervisory của Anh</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer Navigation Links */}
+        <div className="text-center mb-2">
+          <div className="flex flex-wrap justify-center gap-4 text-gray-800 text-sm">
+            <a href="#" className="hover:text-gray-600 transition-colors">GIÚP ĐỠ NGƯỜI MỚI</a>
+            <span className="text-gray-400">/</span>
+            <a href="#" className="hover:text-gray-600 transition-colors">TRÁCH NHIỆM CÁ CƯỢC</a>
+            <span className="text-gray-400">/</span>
+            <a href="#" className="hover:text-gray-600 transition-colors">QUY ĐỊNH ĐIỀU KHOẢN</a>
+            <span className="text-gray-400">/</span>
+            <a href="#" className="hover:text-gray-600 transition-colors">CHÍNH SÁCH RIÊNG TƯ</a>
+            <span className="text-gray-400">/</span>
+            <a href="#" className="hover:text-gray-600 transition-colors">TẢI ỨNG DỤNG</a>
           </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="text-center">
+          <p className="text-gray-600 text-sm">
+            Copyright © 2024 All Rights Reserved
+          </p>
         </div>
       </div>
 

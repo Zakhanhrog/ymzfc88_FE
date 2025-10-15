@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://api.loto79.online/api';
 
 const getAuthHeader = () => {
   // Ưu tiên userToken cho user endpoints, adminToken cho admin endpoints
