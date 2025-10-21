@@ -38,23 +38,32 @@ const AdminLotteryResultManagement = () => {
           const mienBacCount = results.filter(r => r.region === 'mienBac').length;
           const provinceCount = results.filter(r => r.region === 'mienTrungNam').length;
           
-          // Nếu thiếu kết quả, trigger auto-import
-          if (mienBacCount === 0 || provinceCount < 5) {
-            console.log('🔄 Thiếu kết quả, đang tự động import...');
-            console.log(`Miền Bắc: ${mienBacCount}, Tỉnh: ${provinceCount}/5`);
+          // Lấy ngày hôm nay để check kết quả
+          const today = new Date().toISOString().split('T')[0];
+          const todayResults = results.filter(r => r.drawDate === today);
+          const todayMienBacCount = todayResults.filter(r => r.region === 'mienBac').length;
+          const todayProvinceCount = todayResults.filter(r => r.region === 'mienTrungNam').length;
+          
+          console.log(`📊 Kết quả hôm nay (${today}): Miền Bắc: ${todayMienBacCount}, Tỉnh: ${todayProvinceCount}`);
+          
+          // Nếu thiếu kết quả hôm nay, trigger auto-import
+          if (todayMienBacCount === 0 || todayProvinceCount === 0) {
+            console.log('🔄 Thiếu kết quả hôm nay, đang tự động import...');
+            console.log(`Miền Bắc: ${todayMienBacCount}, Tỉnh: ${todayProvinceCount}`);
             
-            const importResponse = await adminLotteryResultService.triggerAutoImport();
+            const importResponse = await adminLotteryResultService.triggerAutoImportToday();
             if (importResponse.success) {
-              console.log('✅ Auto-import thành công:', importResponse.message);
+              console.log('✅ [DEBUG] Auto-import hôm nay thành công:', importResponse.message);
+              console.log('📊 [DEBUG] Imported data:', importResponse.data);
               // Reload danh sách sau khi import
               setTimeout(() => {
                 loadResults();
               }, 2000);
             } else {
-              console.warn('⚠️ Auto-import thất bại:', importResponse.message);
+              console.warn('⚠️ [DEBUG] Auto-import hôm nay thất bại:', importResponse.message);
             }
           } else {
-            console.log('✅ Đã có đủ kết quả, không cần import');
+            console.log('✅ Đã có đủ kết quả hôm nay, không cần import');
           }
         }
       } catch (error) {
@@ -268,11 +277,44 @@ const AdminLotteryResultManagement = () => {
   };
 
   const provinces = [
+    // Miền Trung (14 tỉnh)
+    { value: 'phuyen', label: 'Phú Yên' },
+    { value: 'thuathienhue', label: 'Thừa Thiên Huế' },
+    { value: 'daklak', label: 'Đắk Lắk' },
+    { value: 'quangnam', label: 'Quảng Nam' },
+    { value: 'danang', label: 'Đà Nẵng' },
+    { value: 'khanhhoa', label: 'Khánh Hòa' },
+    { value: 'binhdinh', label: 'Bình Định' },
+    { value: 'quangbinh', label: 'Quảng Bình' },
+    { value: 'quangtri', label: 'Quảng Trị' },
     { value: 'gialai', label: 'Gia Lai' },
-    { value: 'binhduong', label: 'Bình Dương' },
     { value: 'ninhthuan', label: 'Ninh Thuận' },
+    { value: 'daknong', label: 'Đắk Nông' },
+    { value: 'quangngai', label: 'Quảng Ngãi' },
+    { value: 'kontum', label: 'Kon Tum' },
+    
+    // Miền Nam (17 tỉnh)
+    { value: 'camau', label: 'Cà Mau' },
+    { value: 'dongthap', label: 'Đồng Tháp' },
+    { value: 'hcm', label: 'TP HCM' },
+    { value: 'baclieu', label: 'Bạc Liêu' },
+    { value: 'bentre', label: 'Bến Tre' },
+    { value: 'vungtau', label: 'Vũng Tàu' },
+    { value: 'cantho', label: 'Cần Thơ' },
+    { value: 'dongnai', label: 'Đồng Nai' },
+    { value: 'soctrang', label: 'Sóc Trăng' },
+    { value: 'angiang', label: 'An Giang' },
+    { value: 'binhthuan', label: 'Bình Thuận' },
+    { value: 'tayninh', label: 'Tây Ninh' },
+    { value: 'binhduong', label: 'Bình Dương' },
     { value: 'travinh', label: 'Trà Vinh' },
-    { value: 'vinhlong', label: 'Vĩnh Long' }
+    { value: 'vinhlong', label: 'Vĩnh Long' },
+    { value: 'binhphuoc', label: 'Bình Phước' },
+    { value: 'haugiang', label: 'Hậu Giang' },
+    { value: 'longan', label: 'Long An' },
+    { value: 'dalat', label: 'Đà Lạt' },
+    { value: 'kiengiang', label: 'Kiên Giang' },
+    { value: 'tiengiang', label: 'Tiền Giang' }
   ];
 
   const getProvinceName = (provinceCode) => {
@@ -305,11 +347,16 @@ const AdminLotteryResultManagement = () => {
         >
           <option value="">Tất cả vùng miền</option>
           <option value="mienBac">Miền Bắc</option>
-          <option value="gialai">Gia Lai</option>
-          <option value="binhduong">Bình Dương</option>
-          <option value="ninhthuan">Ninh Thuận</option>
-          <option value="travinh">Trà Vinh</option>
-          <option value="vinhlong">Vĩnh Long</option>
+          <optgroup label="Miền Trung">
+            {provinces.filter(p => ['phuyen', 'thuathienhue', 'daklak', 'quangnam', 'danang', 'khanhhoa', 'binhdinh', 'quangbinh', 'quangtri', 'gialai', 'ninhthuan', 'daknong', 'quangngai', 'kontum'].includes(p.value)).map(province => (
+              <option key={province.value} value={province.value}>{province.label}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Miền Nam">
+            {provinces.filter(p => ['camau', 'dongthap', 'hcm', 'baclieu', 'bentre', 'vungtau', 'cantho', 'dongnai', 'soctrang', 'angiang', 'binhthuan', 'tayninh', 'binhduong', 'travinh', 'vinhlong', 'binhphuoc', 'haugiang', 'longan', 'dalat', 'kiengiang', 'tiengiang'].includes(p.value)).map(province => (
+              <option key={province.value} value={province.value}>{province.label}</option>
+            ))}
+          </optgroup>
         </select>
       </div>
 

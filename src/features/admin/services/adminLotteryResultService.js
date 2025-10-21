@@ -295,6 +295,30 @@ class AdminLotteryResultService {
       };
     }
   }
+
+  /**
+   * Trigger auto-import kết quả cho ngày hôm nay (LOGIC MỚI)
+   */
+  async triggerAutoImportToday() {
+    try {
+      console.log('🔄 [DEBUG] Triggering auto import for today...');
+      const response = await adminApi.post('/admin/lottery-results/auto-import-today');
+      
+      console.log('✅ [DEBUG] Auto import today response:', response.data);
+      
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message || 'Tự động import kết quả hôm nay thành công'
+      };
+    } catch (error) {
+      console.error('❌ [DEBUG] Error triggering auto import today:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Có lỗi xảy ra khi import kết quả hôm nay'
+      };
+    }
+  }
 }
 
 export default new AdminLotteryResultService();

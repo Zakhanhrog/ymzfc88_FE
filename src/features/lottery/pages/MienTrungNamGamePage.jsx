@@ -12,6 +12,7 @@ import CountdownTimer from '../components/CountdownTimer';
 import PreviousSpecialResult from '../components/PreviousSpecialResult';
 import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
 import MobileBetHistory from '../components/MobileBetHistory';
+import { normalizeProvinceName, checkBettingTimeLock, isMienTrung } from '../../../utils/provinceMapping';
 
 const MienTrungNamGamePage = () => {
   const navigate = useNavigate();
@@ -19,17 +20,12 @@ const MienTrungNamGamePage = () => {
   const [selectedGameType, setSelectedGameType] = useState('loto-2-so');
   
   // Lấy tên cổng và province từ URL parameters
-  const portName = searchParams.get('name') || 'Miền Trung & Nam';
+  const portName = searchParams.get('name') || 'Miền Trung & Nam'; // "Gia Lai", "Khánh Hòa", ...
   const portId = searchParams.get('port'); // gia-lai, binh-duong, ninh-thuan, tra-vinh, vinh-long
   
-  // Map port ID sang province format cho backend
-  const getProvinceFromPort = (portId) => {
-    if (!portId) return null;
-    // Convert từ format URL (gia-lai) sang format backend (gialai)
-    return portId.replace(/-/g, '');
-  };
-  
-  const province = getProvinceFromPort(portId);
+  // Normalize province name cho backend using utility
+  // portName = "Gia Lai" → province = "gialai"
+  const province = normalizeProvinceName(portName);
   
   
   const [selectedNumbers, setSelectedNumbers] = useState([]);
@@ -859,6 +855,18 @@ const MienTrungNamGamePage = () => {
     if (selectedNumbers.length === 0) {
       showNotification('Vui lòng chọn ít nhất 1 số', 'error');
       return;
+    }
+    
+    // Check betting time lock (chỉ khóa nếu hôm nay là ngày quay của tỉnh)
+    if (province) {
+      const lockInfo = checkBettingTimeLock(province, isMienTrung(province));
+      if (lockInfo.shouldLock) {
+        showNotification(lockInfo.message, 'error');
+        return;
+      }
+      
+      // Log result date info (optional - for debugging)
+      console.log(`Đặt cược ${portName}: ${lockInfo.message}`);
     }
     
     // Đối với loto xiên 2, cần ít nhất 1 cặp hoàn thành
