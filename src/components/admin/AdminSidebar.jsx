@@ -105,7 +105,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     if (tab === 'banners' || tab === 'news' || tab === 'notifications') {
       return ['content-management'];
     }
-    if (tab === 'settings' || tab === 'maintenance' || tab === 'logs') {
+    if (tab === 'settings' || tab === 'contact-links' || tab === 'promotions' || tab === 'maintenance' || tab === 'logs') {
       return ['system-management'];
     }
     if (tab === 'analytics' || !tab) {
@@ -137,6 +137,8 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'news': () => navigate('/admin/dashboard?tab=news'),
       'notifications': () => navigate('/admin/dashboard?tab=notifications'),
       'settings': () => navigate('/admin/dashboard?tab=settings'),
+      'contact-links': () => navigate('/admin/dashboard?tab=contact-links'),
+      'promotions': () => navigate('/admin/dashboard?tab=promotions'),
       'maintenance': () => navigate('/admin/dashboard?tab=maintenance'),
       'logs': () => navigate('/admin/dashboard?tab=logs'),
       'logout': handleLogout

@@ -294,7 +294,7 @@ const AdminKycVerification = () => {
                   <p className="text-sm text-gray-500 mb-2">Mặt trước</p>
                   <div className="border rounded-lg overflow-hidden" style={{ height: '200px', width: '350px' }}>
                     <Image
-                      src={`https://api.loto79.online/api/files/kyc/${selectedKyc.frontImageUrl}`}
+                      src={`http://localhost:8080/api/files/kyc/${selectedKyc.frontImageUrl}`}
                       alt="Mặt trước"
                       width={350}
                       height={200}
@@ -306,7 +306,7 @@ const AdminKycVerification = () => {
                   <p className="text-sm text-gray-500 mb-2">Mặt sau</p>
                   <div className="border rounded-lg overflow-hidden" style={{ height: '200px', width: '350px' }}>
                     <Image
-                      src={`https://api.loto79.online/api/files/kyc/${selectedKyc.backImageUrl}`}
+                      src={`http://localhost:8080/api/files/kyc/${selectedKyc.backImageUrl}`}
                       alt="Mặt sau"
                       width={350}
                       height={200}

@@ -20,7 +20,8 @@ import {
   InputNumber,
   Typography,
   Tooltip,
-  Badge
+  Badge,
+  Alert
 } from 'antd';
 import {
   UserOutlined,
@@ -31,7 +32,6 @@ import {
   SearchOutlined,
   EyeOutlined,
   KeyOutlined,
-  DollarOutlined,
   FilterOutlined,
   UserAddOutlined,
   TeamOutlined,
@@ -68,14 +68,12 @@ const AdminUserManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [lockAction, setLockAction] = useState(null); // 'lock' or 'unlock'
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
-  const [balanceForm] = Form.useForm();
   const [lockForm] = Form.useForm();
 
   // Load data
@@ -222,21 +220,6 @@ const AdminUserManagement = () => {
     }
   };
 
-  // Update balance
-  const handleUpdateBalance = async (values) => {
-    try {
-      const response = await adminService.updateUserBalance(selectedUser.id, values.balance);
-      if (response.success) {
-        message.success('Cập nhật số dư thành công!');
-        setShowBalanceModal(false);
-        balanceForm.resetFields();
-        setSelectedUser(null);
-        loadUsers();
-      }
-    } catch (error) {
-      message.error(error.message);
-    }
-  };
 
   // Show modals
   const showEditUserModal = (user) => {
@@ -255,32 +238,41 @@ const AdminUserManagement = () => {
     setShowPasswordModal(true);
   };
 
-  const showBalanceUpdateModal = (user) => {
-    setSelectedUser(user);
-    balanceForm.setFieldsValue({ balance: user.balance });
-    setShowBalanceModal(true);
-  };
 
   // Show lock/unlock modal
   const showLockWithdrawalModal = (user, action) => {
     setSelectedUser(user);
     setLockAction(action);
-    // Truyền action trực tiếp để tránh race condition
-    handleLockWithdrawal(user, action);
+    
+    if (action === 'unlock') {
+      // Unlock ngay không cần modal
+      handleUnlockWithdrawal(user);
+    } else {
+      // Lock cần modal để nhập lý do
+      setShowLockModal(true);
+    }
   };
 
-  // Handle lock/unlock withdrawal
-  const handleLockWithdrawal = async (user, action) => {
+  // Handle unlock withdrawal
+  const handleUnlockWithdrawal = async (user) => {
     try {
-      if (action === 'lock') {
-        // Lock withdrawal - không cần lý do, sẽ dùng default từ settings
-        await adminService.lockWithdrawal(user?.id, '');
-        message.success('Khóa rút tiền thành công! Đang sử dụng lý do mặc định từ cài đặt hệ thống.');
-      } else {
-        // Unlock withdrawal
-        await adminService.unlockWithdrawal(user?.id);
-        message.success('Mở khóa rút tiền thành công');
-      }
+      await adminService.unlockWithdrawal(user?.id);
+      message.success('Mở khóa rút tiền thành công');
+      loadUsers();
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
+  // Handle lock withdrawal with custom reason
+  const handleLockWithdrawalWithReason = async (values) => {
+    try {
+      const reason = values.reason || '';
+      await adminService.lockWithdrawal(selectedUser?.id, reason);
+      message.success('Khóa rút tiền thành công!');
+      setShowLockModal(false);
+      lockForm.resetFields();
+      setSelectedUser(null);
       loadUsers();
     } catch (error) {
       message.error(error.message);
@@ -312,7 +304,18 @@ const AdminUserManagement = () => {
           <div className="font-medium">
             {record.fullName}
             {record.withdrawalLocked && (
-              <Tooltip title={`Đã khóa rút tiền: ${record.withdrawalLockReason || 'Không có lý do'}`}>
+              <Tooltip 
+                title={
+                  <div>
+                    <div><strong>Trạng thái:</strong> Đã khóa rút tiền</div>
+                    <div><strong>Lý do:</strong> {record.withdrawalLockReason || 'Không có lý do'}</div>
+                    {record.withdrawalLockedAt && (
+                      <div><strong>Thời gian:</strong> {new Date(record.withdrawalLockedAt).toLocaleString('vi-VN')}</div>
+                    )}
+                  </div>
+                }
+                placement="topLeft"
+              >
                 <Tag color="red" style={{ marginLeft: 8 }} icon={<LockOutlined />}>
                   Khóa rút
                 </Tag>
@@ -408,13 +411,6 @@ const AdminUserManagement = () => {
               type="text"
               icon={<KeyOutlined />}
               onClick={() => showPasswordResetModal(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Cập nhật số dư">
-            <Button
-              type="text"
-              icon={<DollarOutlined />}
-              onClick={() => showBalanceUpdateModal(record)}
             />
           </Tooltip>
           {record.withdrawalLocked ? (
@@ -849,6 +845,30 @@ const AdminUserManagement = () => {
                   <div>{new Date(selectedUser.lastLogin).toLocaleString('vi-VN')}</div>
                 </div>
               )}
+              {selectedUser.withdrawalLocked && (
+                <div>
+                  <Text strong>Trạng thái rút tiền:</Text>
+                  <div>
+                    <Tag color="red" icon={<LockOutlined />}>
+                      Đã khóa rút tiền
+                    </Tag>
+                  </div>
+                  {selectedUser.withdrawalLockReason && (
+                    <div className="mt-2">
+                      <Text strong>Lý do khóa:</Text>
+                      <div className="text-red-600 bg-red-50 p-2 rounded mt-1">
+                        {selectedUser.withdrawalLockReason}
+                      </div>
+                    </div>
+                  )}
+                  {selectedUser.withdrawalLockedAt && (
+                    <div className="mt-2">
+                      <Text strong>Thời gian khóa:</Text>
+                      <div>{new Date(selectedUser.withdrawalLockedAt).toLocaleString('vi-VN')}</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <Divider />
@@ -873,16 +893,6 @@ const AdminUserManagement = () => {
                 }}
               >
                 Reset mật khẩu
-              </Button>
-              <Button 
-                block 
-                icon={<DollarOutlined />}
-                onClick={() => {
-                  setShowUserDetail(false);
-                  showBalanceUpdateModal(selectedUser);
-                }}
-              >
-                Cập nhật số dư
               </Button>
               {selectedUser.status === 'ACTIVE' && (
                 <Button 
@@ -953,57 +963,66 @@ const AdminUserManagement = () => {
         </Form>
       </Modal>
 
-      {/* Update Balance Modal */}
+
+      {/* Lock Withdrawal Modal */}
       <Modal
-        title="Cập nhật số dư"
-        open={showBalanceModal}
+        title="Khóa rút tiền"
+        open={showLockModal}
         onCancel={() => {
-          setShowBalanceModal(false);
-          balanceForm.resetFields();
+          setShowLockModal(false);
+          lockForm.resetFields();
           setSelectedUser(null);
         }}
         footer={null}
       >
         <Form
-          form={balanceForm}
+          form={lockForm}
           layout="vertical"
-          onFinish={handleUpdateBalance}
+          onFinish={handleLockWithdrawalWithReason}
         >
           <div className="mb-4">
-            <Text>Cập nhật số dư cho: <Text strong>{selectedUser?.fullName}</Text></Text>
+            <Text>Khóa rút tiền cho người dùng: <Text strong>{selectedUser?.fullName}</Text></Text>
             <div className="text-gray-500">
-              Số dư hiện tại: {new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-              }).format(selectedUser?.balance || 0)}
+              Username: @{selectedUser?.username}
             </div>
           </div>
+          
           <Form.Item
-            name="balance"
-            label="Số dư mới"
+            name="reason"
+            label="Lý do khóa rút tiền"
             rules={[
-              { required: true, message: 'Vui lòng nhập số dư mới' },
-              { type: 'number', min: 0, message: 'Số dư phải lớn hơn hoặc bằng 0' }
+              { required: true, message: 'Vui lòng nhập lý do khóa rút tiền' },
+              { min: 10, message: 'Lý do tối thiểu 10 ký tự' },
+              { max: 500, message: 'Lý do tối đa 500 ký tự' }
             ]}
           >
-            <InputNumber
-              style={{ width: '100%' }}
-              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={value => value.replace(/\$\s?|(,*)/g, '')}
-              placeholder="Nhập số dư"
+            <Input.TextArea 
+              rows={4}
+              placeholder="Nhập lý do khóa rút tiền cho người dùng này..."
+              maxLength={500}
+              showCount
             />
           </Form.Item>
+
+          <Alert
+            message="Lưu ý"
+            description="Lý do này sẽ được hiển thị cho người dùng khi họ cố gắng rút tiền. Hãy nhập lý do rõ ràng và cụ thể."
+            type="info"
+            showIcon
+            className="mb-4"
+          />
+
           <Form.Item className="mb-0">
             <Space className="w-full justify-end">
               <Button onClick={() => {
-                setShowBalanceModal(false);
-                balanceForm.resetFields();
+                setShowLockModal(false);
+                lockForm.resetFields();
                 setSelectedUser(null);
               }}>
                 Hủy
               </Button>
-              <Button type="primary" htmlType="submit">
-                Cập nhật
+              <Button type="primary" htmlType="submit" danger>
+                Khóa rút tiền
               </Button>
             </Space>
           </Form.Item>

@@ -58,7 +58,7 @@ const AdminDepositApproval = () => {
     }
     if (deposit.billImageUrl) {
       const filename = deposit.billImageUrl.split('/').pop();
-      return `https://api.loto79.online/api/files/bills/${filename}`;
+      return `http://localhost:8080/api/files/bills/${filename}`;
     }
     return null;
   };

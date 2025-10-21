@@ -74,7 +74,7 @@ const Layout = ({ children }) => {
   const fetchUserInfo = async () => {
     try {
       // Gọi API /auth/me để lấy thông tin user mới nhất
-      const response = await fetch('https://api.loto79.online/api/auth/me', {
+      const response = await fetch('http://localhost:8080/api/auth/me', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -120,7 +120,7 @@ const Layout = ({ children }) => {
   const fetchUserPoints = async () => {
     try {
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
+      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

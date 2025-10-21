@@ -70,7 +70,7 @@ const AdminPointManagement = () => {
       setLoading(true);
       
       // Thử gọi API trực tiếp để lấy user info (có points)
-      const userResponse = await fetch(`https://api.loto79.online/api/admin/users/${userId}`, {
+      const userResponse = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,

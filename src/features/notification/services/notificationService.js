@@ -1,4 +1,4 @@
-const API_URL = 'https://api.loto79.online/api';
+const API_URL = 'http://localhost:8080/api';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');

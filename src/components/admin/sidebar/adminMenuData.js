@@ -143,6 +143,16 @@ export const adminMenuItems = [
         label: 'Cài đặt hệ thống',
       },
       {
+        key: 'contact-links',
+        icon: 'LinkOutlined',
+        label: 'Links liên hệ',
+      },
+      {
+        key: 'promotions',
+        icon: 'GiftOutlined',
+        label: 'Khuyến mãi',
+      },
+      {
         key: 'maintenance',
         icon: 'ToolOutlined',
         label: 'Bảo trì',

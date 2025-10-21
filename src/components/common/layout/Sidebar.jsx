@@ -45,6 +45,8 @@ const Sidebar = ({
         navigate('/lottery');
         onGameSelect('lottery');
       },
+      'contact': () => navigate('/contact'),
+      'promotions': () => navigate('/promotions'),
     };
 
     if (menuActions[key]) {

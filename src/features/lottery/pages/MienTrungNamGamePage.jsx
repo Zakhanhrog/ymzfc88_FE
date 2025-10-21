@@ -796,7 +796,7 @@ const MienTrungNamGamePage = () => {
       setLoadingPoints(true);
       
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
+      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

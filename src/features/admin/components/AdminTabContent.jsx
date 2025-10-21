@@ -17,6 +17,8 @@ import AdminSystemSettings from './AdminSystemSettings';
 import AdminNotificationManagement from './AdminNotificationManagement';
 import AdminBetManagement from './AdminBetManagement';
 import AdminLotteryResultManagement from './AdminLotteryResultManagement';
+import ContactLinksManagement from './ContactLinksManagement';
+import PromotionManagement from './PromotionManagement';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const renderContent = () => {
@@ -168,6 +170,12 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
 
       case 'settings':
         return <AdminSystemSettings />;
+
+      case 'contact-links':
+        return <ContactLinksManagement />;
+
+      case 'promotions':
+        return <PromotionManagement />;
 
       case 'notifications':
         return <AdminNotificationManagement />;

@@ -9,6 +9,8 @@ import PointsPage from './features/points/pages/PointsPage';
 import ResponsiveLotteryWrapper from './features/lottery/components/ResponsiveLotteryWrapper';
 import MienBacGamePage from './features/lottery/pages/MienBacGamePage';
 import MienTrungNamGamePage from './features/lottery/pages/MienTrungNamGamePage';
+import ContactPage from './features/contact/pages/ContactPage';
+import PromotionPage from './features/promotions/pages/PromotionPage';
 
 // Admin Pages
 import AdminLoginPage from './features/admin/pages/AdminLoginPage';
@@ -74,6 +76,14 @@ function App() {
                     <MienTrungNamGamePage />
                   </ProtectedRoute>
                 } 
+              />
+              <Route 
+                path="/contact" 
+                element={<ContactPage />} 
+              />
+              <Route 
+                path="/promotions" 
+                element={<PromotionPage />} 
               />
           
           {/* Admin Routes */}

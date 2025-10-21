@@ -19,6 +19,7 @@ import {
   SaveOutlined,
   ReloadOutlined,
   LockOutlined,
+  UnlockOutlined,
   DollarOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
@@ -26,7 +27,6 @@ import { adminService } from '../services/adminService';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
-const { TabPane } = Tabs;
 
 const AdminSystemSettings = () => {
   const [loading, setLoading] = useState(false);
@@ -159,169 +159,166 @@ const AdminSystemSettings = () => {
       </div>
 
       <Spin spinning={loading}>
-        <Tabs defaultActiveKey="withdrawal" type="card">
-          {/* Withdrawal Settings */}
-          <TabPane 
-            tab={
-              <span>
-                <LockOutlined />
-                Cài đặt rút tiền
-              </span>
-            } 
-            key="withdrawal"
-          >
-            <Card>
-              <Alert
-                message="Lý do khóa rút tiền mặc định"
-                description="Lý do này sẽ được sử dụng tự động khi admin khóa rút tiền cho người dùng. Admin có thể ghi đè lý do này khi cần."
-                type="info"
-                icon={<InfoCircleOutlined />}
-                showIcon
-                className="mb-6"
-              />
-
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSaveWithdrawalSettings}
-              >
-                <Form.Item
-                  name="default_withdrawal_lock_reason"
-                  label="Lý do khóa rút tiền mặc định"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập lý do' },
-                    { min: 20, message: 'Lý do tối thiểu 20 ký tự' }
-                  ]}
-                >
-                  <TextArea 
-                    rows={6}
-                    placeholder="Nhập lý do mặc định khi khóa rút tiền..."
-                    maxLength={500}
-                    showCount
+        <Tabs 
+          defaultActiveKey="withdrawal" 
+          type="card"
+          items={[
+            {
+              key: 'withdrawal',
+              label: (
+                <span>
+                  <LockOutlined />
+                  Quản lý khóa rút tiền
+                </span>
+              ),
+              children: (
+                <Card>
+                  <Alert
+                    message="Quản lý khóa rút tiền cho từng người dùng"
+                    description="Tính năng này cho phép admin khóa rút tiền cho từng người dùng cụ thể với lý do riêng biệt. Để khóa rút tiền, hãy vào mục 'Quản lý người dùng' và click vào biểu tượng khóa."
+                    type="info"
+                    icon={<InfoCircleOutlined />}
+                    showIcon
+                    className="mb-6"
                   />
-                </Form.Item>
 
-                <Form.Item>
-                  <Button 
-                    type="primary" 
-                    htmlType="submit" 
-                    icon={<SaveOutlined />}
-                    loading={loading}
-                  >
-                    Lưu cài đặt
-                  </Button>
-                </Form.Item>
-              </Form>
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <Title level={4} className="text-blue-800 mb-2">
+                        <LockOutlined className="mr-2" />
+                        Hướng dẫn khóa rút tiền
+                      </Title>
+                      <div className="space-y-2 text-blue-700">
+                        <p>1. Vào mục <strong>"Quản lý người dùng"</strong> trong menu bên trái</p>
+                        <p>2. Tìm người dùng cần khóa rút tiền</p>
+                        <p>3. Click vào biểu tượng <strong>🔒</strong> trong cột "Thao tác"</p>
+                        <p>4. Nhập lý do khóa rút tiền cụ thể cho người dùng đó</p>
+                        <p>5. Click <strong>"Khóa rút tiền"</strong> để xác nhận</p>
+                      </div>
+                    </div>
 
-              <Divider />
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <Title level={4} className="text-green-800 mb-2">
+                        <UnlockOutlined className="mr-2" />
+                        Hướng dẫn mở khóa rút tiền
+                      </Title>
+                      <div className="space-y-2 text-green-700">
+                        <p>1. Vào mục <strong>"Quản lý người dùng"</strong></p>
+                        <p>2. Tìm người dùng đã bị khóa (có tag đỏ "Khóa rút")</p>
+                        <p>3. Click vào biểu tượng <strong>🔓</strong> để mở khóa ngay lập tức</p>
+                        <p>4. Không cần nhập lý do khi mở khóa</p>
+                      </div>
+                    </div>
 
-              <Alert
-                message="Cách sử dụng"
-                description={
-                  <div className="space-y-2">
-                    <p>1. Nhập lý do mặc định vào ô text trên</p>
-                    <p>2. Click "Lưu cài đặt" để áp dụng</p>
-                    <p>3. Từ giờ khi khóa rút tiền, lý do này sẽ tự động được sử dụng</p>
-                    <p>4. Admin vẫn có thể nhập lý do khác nếu muốn (optional)</p>
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <Title level={4} className="text-yellow-800 mb-2">
+                        <InfoCircleOutlined className="mr-2" />
+                        Lưu ý quan trọng
+                      </Title>
+                      <div className="space-y-2 text-yellow-700">
+                        <p>• Lý do khóa rút tiền sẽ được hiển thị cho người dùng khi họ cố gắng rút tiền</p>
+                        <p>• Mỗi người dùng có thể có lý do khóa rút tiền khác nhau</p>
+                        <p>• Admin có thể xem lý do khóa rút tiền trong chi tiết người dùng</p>
+                        <p>• Việc khóa/mở khóa rút tiền sẽ được ghi nhận thời gian</p>
+                      </div>
+                    </div>
                   </div>
-                }
-                type="success"
-              />
-            </Card>
-          </TabPane>
-
-          {/* Amount Limits */}
-          <TabPane 
-            tab={
-              <span>
-                <DollarOutlined />
-                Giới hạn số tiền
-              </span>
-            } 
-            key="amounts"
-          >
-            <Card>
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSaveAmountSettings}
-              >
-                <Title level={4}>Cài đặt rút tiền</Title>
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="min_withdrawal_amount"
-                      label="Số tiền rút tối thiểu (VNĐ)"
-                      rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
-                    >
-                      <Input 
-                        type="number"
-                        placeholder="50000"
-                        addonBefore="₫"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="max_withdrawal_amount"
-                      label="Số tiền rút tối đa (VNĐ)"
-                      rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
-                    >
-                      <Input 
-                        type="number"
-                        placeholder="50000000"
-                        addonBefore="₫"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Divider />
-
-                <Title level={4}>Cài đặt nạp tiền</Title>
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="min_deposit_amount"
-                      label="Số tiền nạp tối thiểu (VNĐ)"
-                      rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
-                    >
-                      <Input 
-                        type="number"
-                        placeholder="50000"
-                        addonBefore="₫"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="max_deposit_amount"
-                      label="Số tiền nạp tối đa (VNĐ)"
-                      rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
-                    >
-                      <Input 
-                        type="number"
-                        placeholder="100000000"
-                        addonBefore="₫"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item>
-                  <Button 
-                    type="primary" 
-                    htmlType="submit" 
-                    icon={<SaveOutlined />}
-                    loading={loading}
+                </Card>
+              )
+            },
+            {
+              key: 'amounts',
+              label: (
+                <span>
+                  <DollarOutlined />
+                  Giới hạn số tiền
+                </span>
+              ),
+              children: (
+                <Card>
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleSaveAmountSettings}
                   >
-                    Lưu tất cả cài đặt
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-          </TabPane>
-        </Tabs>
+                    <Title level={4}>Cài đặt rút tiền</Title>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="min_withdrawal_amount"
+                          label="Số tiền rút tối thiểu (VNĐ)"
+                          rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
+                        >
+                          <Input 
+                            type="number"
+                            placeholder="50000"
+                            addonBefore="₫"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="max_withdrawal_amount"
+                          label="Số tiền rút tối đa (VNĐ)"
+                          rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
+                        >
+                          <Input 
+                            type="number"
+                            placeholder="50000000"
+                            addonBefore="₫"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Divider />
+
+                    <Title level={4}>Cài đặt nạp tiền</Title>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="min_deposit_amount"
+                          label="Số tiền nạp tối thiểu (VNĐ)"
+                          rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
+                        >
+                          <Input 
+                            type="number"
+                            placeholder="50000"
+                            addonBefore="₫"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="max_deposit_amount"
+                          label="Số tiền nạp tối đa (VNĐ)"
+                          rules={[{ required: true, message: 'Vui lòng nhập số tiền' }]}
+                        >
+                          <Input 
+                            type="number"
+                            placeholder="100000000"
+                            addonBefore="₫"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Form.Item>
+                      <Button 
+                        type="primary" 
+                        htmlType="submit" 
+                        icon={<SaveOutlined />}
+                        loading={loading}
+                      >
+                        Lưu tất cả cài đặt
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Card>
+              )
+            }
+          ]}
+        />
       </Spin>
     </div>
   );

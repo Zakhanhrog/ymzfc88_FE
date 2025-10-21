@@ -83,7 +83,7 @@ const WithdrawForm = () => {
       }
 
       // Fetch latest user info từ backend
-      const response = await fetch('https://api.loto79.online/api/auth/me', {
+      const response = await fetch('http://localhost:8080/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
