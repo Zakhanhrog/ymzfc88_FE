@@ -9,7 +9,7 @@ import {
 } from 'antd';
 import {
   GiftOutlined,
-  ArrowLeftOutlined,
+  CloseOutlined,
   LoadingOutlined
 } from '@ant-design/icons';
 import promotionService from '../../../services/promotionService';
@@ -43,28 +43,39 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-white">
+    <div 
+      className="fixed inset-0 z-50 bg-white overflow-y-auto promotion-mobile-container"
+      style={{ 
+        overflowY: 'auto !important',
+        scrollbarWidth: 'auto',
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 p-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
+          <Title level={5} className="mb-0 text-gray-800 text-left">
+            Khuyến mãi
+          </Title>
           <Button 
             onClick={onClose}
             className="flex items-center text-gray-600 hover:text-gray-800"
             type="text"
-            icon={<ArrowLeftOutlined />}
-          >
-            Quay lại
-          </Button>
-          <Title level={4} className="mb-0 text-gray-800">
-            <GiftOutlined className="mr-2 text-red-600" />
-            Khuyến mãi
-          </Title>
-          <div className="w-16"></div> {/* Spacer for centering */}
+            icon={<CloseOutlined />}
+          />
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 pb-20">
+      <div 
+        className="p-4 pb-20 overflow-y-auto promotion-mobile-content"
+        style={{ 
+          overflowY: 'auto !important',
+          scrollbarWidth: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          height: 'calc(100vh - 80px)'
+        }}
+      >
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Spin size="large" />
@@ -134,18 +145,6 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                   </Card>
                 ))}
               </div>
-            )}
-
-            {/* Instructions */}
-            {promotions.length > 0 && (
-              <Card className="shadow-sm mt-6">
-                <Title level={5}>Thông tin khuyến mãi:</Title>
-                <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                  <li>Các khuyến mãi có thể có điều kiện riêng</li>
-                  <li>Thời gian áp dụng có thể giới hạn</li>
-                  <li>Liên hệ hỗ trợ nếu có thắc mắc</li>
-                </ul>
-              </Card>
             )}
           </>
         )}

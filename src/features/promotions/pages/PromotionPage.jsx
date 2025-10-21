@@ -142,18 +142,6 @@ const PromotionPage = () => {
               ))}
             </Row>
           )}
-
-          {/* Instructions */}
-          {promotions.length > 0 && (
-            <Card className="shadow-sm mt-8">
-              <Title level={4}>Thông tin khuyến mãi:</Title>
-              <ul className="list-disc list-inside space-y-2 text-gray-600">
-                <li><strong>Điều kiện áp dụng:</strong> Các khuyến mãi có thể có điều kiện riêng, vui lòng liên hệ hỗ trợ để biết thêm chi tiết</li>
-                <li><strong>Thời gian áp dụng:</strong> Khuyến mãi có thể có thời gian áp dụng giới hạn</li>
-                <li><strong>Liên hệ hỗ trợ:</strong> Nếu có thắc mắc về khuyến mãi, vui lòng liên hệ với đội ngũ hỗ trợ</li>
-              </ul>
-            </Card>
-          )}
         </div>
       </div>
       </Layout>

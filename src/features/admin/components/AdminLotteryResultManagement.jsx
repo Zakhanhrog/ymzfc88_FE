@@ -236,7 +236,27 @@ const AdminLotteryResultManagement = () => {
 
   const formatDate = (date) => {
     if (!date) return '';
-    return new Date(date).toLocaleDateString('vi-VN');
+    
+    // Nếu date đã là string format YYYY-MM-DD thì parse trực tiếp
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      const [year, month, day] = date.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    
+    // Nếu là Date object hoặc ISO string, convert với timezone VN
+    try {
+      const dateObj = new Date(date);
+      // Sử dụng timezone Asia/Ho_Chi_Minh để tránh lỗi conversion
+      return dateObj.toLocaleDateString('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error, date);
+      return date.toString();
+    }
   };
 
   const getStatusBadge = (status) => {
