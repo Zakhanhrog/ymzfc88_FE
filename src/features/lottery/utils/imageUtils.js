@@ -59,3 +59,4 @@ export const getProvinceImagePathWithMapping = (provinceName) => {
   
   return imagePath;
 };
+

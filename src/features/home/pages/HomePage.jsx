@@ -12,12 +12,15 @@ import QuickActionsSection from '../components/QuickActionsSection';
 import MobilePopularGames from '../components/MobilePopularGames';
 import CategoryButtons from '../components/CategoryButtons';
 import { getProvinceImagePathWithMapping } from '../../lottery/utils/imageUtils';
+import { getProvincesByDay, getTodayProvinces } from '../../lottery/data/provincesData';
+import LotteryCarousel from '../../lottery/components/LotteryCarousel';
 
 const HomePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedRegion, setSelectedRegion] = useState('bac');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
   // Check if we need to show login modal from ProtectedRoute redirect
   useEffect(() => {
@@ -81,7 +84,10 @@ const HomePage = () => {
     }
   ];
 
-  // Lottery regions data
+  // Lấy tỉnh theo ngày được chọn
+  const selectedDayProvinces = getProvincesByDay(selectedDay);
+
+  // Lottery regions data - Miền Bắc luôn cố định, Miền Trung và Nam thay đổi theo ngày
   const regions = {
     bac: {
       name: 'Miền Bắc',
@@ -98,54 +104,25 @@ const HomePage = () => {
     trung: {
       name: 'Miền Trung', 
       color: 'from-blue-500 to-blue-600',
-      games: [
-        {
-          id: 'gia-lai',
-          name: 'Xổ Số Gia Lai', 
-          image: getProvinceImagePathWithMapping('Gia Lai'),
-          description: 'Xổ số Gia Lai'
-        },
-        {
-          id: 'ninh-thuan',
-          name: 'Xổ Số Ninh Thuận',
-          image: getProvinceImagePathWithMapping('Ninh Thuận'), 
-          description: 'Xổ số Ninh Thuận'
-        }
-      ]
+      games: selectedDayProvinces.trung
     },
     nam: {
       name: 'Miền Nam',
       color: 'from-green-500 to-green-600', 
-      games: [
-        {
-          id: 'binh-duong',
-          name: 'Xổ Số Bình Dương',
-          image: getProvinceImagePathWithMapping('Bình Dương'),
-          description: 'Xổ số Bình Dương'
-        },
-        {
-          id: 'tra-vinh',
-          name: 'Xổ Số Trà Vinh',
-          image: getProvinceImagePathWithMapping('Trà Vinh'),
-          description: 'Xổ số Trà Vinh'
-        },
-        {
-          id: 'vinh-long',
-          name: 'Xổ Số Vĩnh Long',
-          image: getProvinceImagePathWithMapping('Vĩnh Long'),
-          description: 'Xổ số Vĩnh Long'
-        }
-      ]
+      games: selectedDayProvinces.nam
     }
   };
 
   const handleGameSelect = (gameId) => {
     if (gameId === 'mien-bac') {
       navigate('/lottery/mien-bac');
-    } else if (['binh-duong', 'gia-lai', 'ninh-thuan', 'tra-vinh', 'vinh-long'].includes(gameId)) {
+    } else {
       // Tất cả các cổng game Miền Trung và Nam đều vào trang chung với tên cổng
-      const gameName = regions.trung.games.concat(regions.nam.games).find(game => game.id === gameId)?.name || '';
-      navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(gameName)}`);
+      const allGames = regions.trung.games.concat(regions.nam.games);
+      const game = allGames.find(g => g.id === gameId);
+      if (game) {
+        navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(game.name)}`);
+      }
     }
   };
 
@@ -200,17 +177,18 @@ const HomePage = () => {
               <div className="p-2 bg-white rounded-lg h-full">
                 <div className="h-full flex flex-col gap-2">
                   {[
-                    { day: 'Thứ 2', color: 'bg-gray-100 hover:bg-gray-200' },
-                    { day: 'Thứ 3', color: 'bg-gray-100 hover:bg-gray-200' },
-                    { day: 'Thứ 4', color: 'bg-gray-100 hover:bg-gray-200' },
-                    { day: 'Thứ 5', color: 'bg-gray-100 hover:bg-gray-200' },
-                    { day: 'Thứ 6', color: 'bg-gray-100 hover:bg-gray-200' },
-                    { day: 'Thứ 7', color: 'bg-gray-100 hover:bg-gray-200' },
-                    { day: 'Chủ Nhật', color: 'bg-red-100 hover:bg-red-200 text-red-700' }
+                    { day: 'Thứ 2', dayIndex: 1, color: 'bg-gray-100 hover:bg-gray-200' },
+                    { day: 'Thứ 3', dayIndex: 2, color: 'bg-gray-100 hover:bg-gray-200' },
+                    { day: 'Thứ 4', dayIndex: 3, color: 'bg-gray-100 hover:bg-gray-200' },
+                    { day: 'Thứ 5', dayIndex: 4, color: 'bg-gray-100 hover:bg-gray-200' },
+                    { day: 'Thứ 6', dayIndex: 5, color: 'bg-gray-100 hover:bg-gray-200' },
+                    { day: 'Thứ 7', dayIndex: 6, color: 'bg-gray-100 hover:bg-gray-200' },
+                    { day: 'Chủ Nhật', dayIndex: 0, color: 'bg-gray-100 hover:bg-gray-200' }
                   ].map((item, index) => (
                     <div
                       key={index}
-                      className={`${item.color} rounded-lg p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-md flex-1 flex items-center justify-center`}
+                      onClick={() => setSelectedDay(item.dayIndex)}
+                      className={`${selectedDay === item.dayIndex ? 'bg-red-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-2 cursor-pointer transition-all duration-300 transform flex-1 flex items-center justify-center`}
                     >
                       <div className="text-center">
                         <div className="text-sm font-semibold">{item.day}</div>
@@ -233,7 +211,7 @@ const HomePage = () => {
                     </div>
                     <div className="p-3 rounded-lg h-48" style={{ backgroundColor: '#F5F5F5' }}>
                       <div 
-                        className="group cursor-pointer transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-0 bg-white rounded-lg h-full"
+                        className="group cursor-pointer transition-all duration-300 transform relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-0 bg-white rounded-lg h-full"
                         onClick={() => handleGameSelect(regions.bac.games[0].id)}
                       >
                         <img
@@ -251,21 +229,12 @@ const HomePage = () => {
                       <span className="text-gray-600 text-xs font-semibold">Miền Trung</span>
                     </div>
                     <div className="p-3 rounded-lg h-48" style={{ backgroundColor: '#F5F5F5' }}>
-                      <div className="grid grid-cols-2 gap-1 h-full">
-                        {regions.trung.games.map((game) => (
-                          <div
-                            key={game.id}
-                            className="group cursor-pointer transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-0 bg-white rounded-lg h-full"
-                            onClick={() => handleGameSelect(game.id)}
-                          >
-                            <img
-                              src={game.image}
-                              alt={game.name}
-                              className="w-full h-full object-contain rounded-lg"
-                            />
-                          </div>
-                        ))}
-                      </div>
+                      <LotteryCarousel
+                        games={regions.trung.games}
+                        regionName="Miền Trung"
+                        maxVisible={2}
+                        onGameSelect={handleGameSelect}
+                      />
                     </div>
                   </div>
 
@@ -275,21 +244,12 @@ const HomePage = () => {
                       <span className="text-gray-600 text-xs font-semibold">Miền Nam</span>
                     </div>
                     <div className="p-3 rounded-lg h-48" style={{ backgroundColor: '#F5F5F5' }}>
-                      <div className="grid grid-cols-3 gap-1 h-full">
-                        {regions.nam.games.map((game) => (
-                          <div
-                            key={game.id}
-                            className="group cursor-pointer transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden rounded-lg shadow-none hover:shadow-[0_0_30px_rgba(211,1,2,0.5)] p-0 bg-white rounded-lg h-full"
-                            onClick={() => handleGameSelect(game.id)}
-                          >
-                            <img
-                              src={game.image}
-                              alt={game.name}
-                              className="w-full h-full object-contain rounded-lg"
-                            />
-                          </div>
-                        ))}
-                      </div>
+                      <LotteryCarousel
+                        games={regions.nam.games}
+                        regionName="Miền Nam"
+                        maxVisible={3}
+                        onGameSelect={handleGameSelect}
+                      />
                     </div>
                   </div>
                 </div>
@@ -406,7 +366,7 @@ const HomePage = () => {
             
             {/* Lottery Content */}
             <div className="w-4/5">
-              <div className="px-2 py-2 bg-white rounded-lg h-full">
+              <div className="px-2 py-2 bg-white rounded-lg h-full flex flex-col">
                 {/* Miền Bắc Card - Above Weekday Bar */}
                 <div className="mb-3">
                   <div className="bg-white border border-red-300 rounded-lg p-4">
@@ -451,17 +411,18 @@ const HomePage = () => {
                 <div className="mb-3">
                   <div className="flex gap-1">
                     {[
-                      { day: 'T2', color: 'bg-gray-100 hover:bg-gray-200' },
-                      { day: 'T3', color: 'bg-gray-100 hover:bg-gray-200' },
-                      { day: 'T4', color: 'bg-gray-100 hover:bg-gray-200' },
-                      { day: 'T5', color: 'bg-gray-100 hover:bg-gray-200' },
-                      { day: 'T6', color: 'bg-gray-100 hover:bg-gray-200' },
-                      { day: 'T7', color: 'bg-gray-100 hover:bg-gray-200' },
-                      { day: 'CN', color: 'bg-red-100 hover:bg-red-200 text-red-700' }
+                      { day: 'T2', dayIndex: 1, color: 'bg-gray-100 hover:bg-gray-200' },
+                      { day: 'T3', dayIndex: 2, color: 'bg-gray-100 hover:bg-gray-200' },
+                      { day: 'T4', dayIndex: 3, color: 'bg-gray-100 hover:bg-gray-200' },
+                      { day: 'T5', dayIndex: 4, color: 'bg-gray-100 hover:bg-gray-200' },
+                      { day: 'T6', dayIndex: 5, color: 'bg-gray-100 hover:bg-gray-200' },
+                      { day: 'T7', dayIndex: 6, color: 'bg-gray-100 hover:bg-gray-200' },
+                      { day: 'CN', dayIndex: 0, color: 'bg-gray-100 hover:bg-gray-200' }
                     ].map((item, index) => (
                       <div
                         key={index}
-                        className={`${item.color} rounded-lg p-1 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-md flex-1 text-center`}
+                        onClick={() => setSelectedDay(item.dayIndex)}
+                        className={`${selectedDay === item.dayIndex ? 'bg-red-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-1 cursor-pointer transition-all duration-300 transform flex-1 text-center`}
                       >
                         <div className="text-xs font-semibold">{item.day}</div>
                       </div>
@@ -470,7 +431,8 @@ const HomePage = () => {
                 </div>
                 
                 {/* Mobile Game Layout - Region Headers with Games */}
-                <div className="space-y-3">
+                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  <div className="space-y-3">
 
                   {/* Miền Trung Section */}
                   <div>
@@ -514,6 +476,7 @@ const HomePage = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>
