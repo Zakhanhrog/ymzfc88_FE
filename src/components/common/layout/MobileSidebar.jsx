@@ -153,19 +153,6 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
           </button>
         </div>
 
-        {/* PHIM 18+ */}
-        <div className="px-3 py-1">
-          <button
-            onClick={() => handleNavigate('/adult')}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-xl hover:shadow-md transition-all active:scale-95"
-          >
-            <div className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-[10px]">18</span>
-              <span className="text-white text-[8px]">+</span>
-            </div>
-            <span className="text-[15px] font-medium text-gray-800">PHIM 18+</span>
-          </button>
-        </div>
 
         {/* Tải ứng dụng */}
         <div className="px-3 py-1">
@@ -181,19 +168,6 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
           </button>
         </div>
 
-        {/* Banner Vua Mikami */}
-        <div className="px-3 py-2">
-          <button 
-            onClick={() => handleNavigate('/promotions')}
-            className="w-full"
-          >
-            <img 
-              src="/sidebarmb/banner-yua.webp" 
-              alt="Vua Mikami" 
-              className="w-full h-auto rounded-xl hover:scale-105 transition-transform"
-            />
-          </button>
-        </div>
 
         {/* Rút Tiền / Nạp Tiền */}
         <div className="px-3 py-2 pb-4">

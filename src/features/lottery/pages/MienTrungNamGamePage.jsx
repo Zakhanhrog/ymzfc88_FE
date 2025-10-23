@@ -10,7 +10,7 @@ import { getNumbersForGameType } from '../utils/numberGenerator';
 import { formatBetTypeMienTrungNam, formatSelectedNumbers } from '../utils/betFormatter';
 import CountdownTimer from '../components/CountdownTimer';
 import PreviousSpecialResult from '../components/PreviousSpecialResult';
-import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
+import { getProvinceImageFromData } from '../utils/imageUtils';
 import MobileBetHistory from '../components/MobileBetHistory';
 import { normalizeProvinceName, checkBettingTimeLock, isMienTrung } from '../../../utils/provinceMapping';
 
@@ -1408,7 +1408,7 @@ const MienTrungNamGamePage = () => {
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 flex-shrink-0 relative">
                     <img 
-                      src={getProvinceImagePathWithMapping(portName)} 
+                      src={getProvinceImageFromData(portName)} 
                       alt={portName} 
                       className="w-full h-full object-contain absolute inset-0"
                       onError={(e) => {
@@ -1447,7 +1447,7 @@ const MienTrungNamGamePage = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-20 h-20 flex-shrink-0 relative">
                     <img 
-                      src={getProvinceImagePathWithMapping(portName)} 
+                      src={getProvinceImageFromData(portName)} 
                       alt={portName} 
                       className="w-full h-full object-contain absolute inset-0"
                       onError={(e) => {

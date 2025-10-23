@@ -60,13 +60,6 @@ const GameGrid = () => {
             <Icon icon="mdi:magnify" className="text-sm" />
             <span>MÃ DỰ THƯỞNG</span>
           </button>
-          <button 
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-transform"
-            style={{ ...BUTTON_TEXT_STYLES.small }}
-          >
-            <Icon icon="mdi:trophy" className="text-sm" />
-            <span>KẾT QUẢ TRAO THƯỞNG</span>
-          </button>
         </div>
       </div>
       

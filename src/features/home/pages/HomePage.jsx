@@ -86,6 +86,47 @@ const HomePage = () => {
 
   // Lấy tỉnh theo ngày được chọn
   const selectedDayProvinces = getProvincesByDay(selectedDay);
+  
+  // Debug log
+  console.log('selectedDay:', selectedDay);
+  console.log('selectedDayProvinces:', selectedDayProvinces);
+  
+  // Fallback data nếu không có dữ liệu
+  const fallbackTrung = [
+    {
+      id: 'da-nang-fallback',
+      name: 'Xổ Số Đà Nẵng',
+      province: 'Đà Nẵng',
+      image: '/images/games/mien-trung/thu-4/DA-NANG.jpg'
+    },
+    {
+      id: 'khanh-hoa-fallback',
+      name: 'Xổ Số Khánh Hòa',
+      province: 'Khánh Hòa',
+      image: '/images/games/mien-trung/thu-4/KHANH-HOA.jpg'
+    }
+  ];
+  
+  const fallbackNam = [
+    {
+      id: 'can-tho-fallback',
+      name: 'Xổ Số Cần Thơ',
+      province: 'Cần Thơ',
+      image: '/images/games/mien-nam/T4/CAN-THO.jpg'
+    },
+    {
+      id: 'dong-nai-fallback',
+      name: 'Xổ Số Đồng Nai',
+      province: 'Đồng Nai',
+      image: '/images/games/mien-nam/T4/DONG-NAI.jpg'
+    },
+    {
+      id: 'soc-trang-fallback',
+      name: 'Xổ Số Sóc Trăng',
+      province: 'Sóc Trăng',
+      image: '/images/games/mien-nam/T4/SOC-TRANG.jpg'
+    }
+  ];
 
   // Lottery regions data - Miền Bắc luôn cố định, Miền Trung và Nam thay đổi theo ngày
   const regions = {
@@ -104,12 +145,12 @@ const HomePage = () => {
     trung: {
       name: 'Miền Trung', 
       color: 'from-blue-500 to-blue-600',
-      games: selectedDayProvinces.trung
+      games: selectedDayProvinces?.trung || fallbackTrung
     },
     nam: {
       name: 'Miền Nam',
       color: 'from-green-500 to-green-600', 
-      games: selectedDayProvinces.nam
+      games: selectedDayProvinces?.nam || fallbackNam
     }
   };
 

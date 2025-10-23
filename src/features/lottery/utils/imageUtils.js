@@ -1,6 +1,7 @@
 /**
  * Utility functions for image handling
  */
+import { provincesSchedule } from '../data/provincesData';
 
 /**
  * Chuyển đổi tên tỉnh thành tên file ảnh
@@ -58,5 +59,40 @@ export const getProvinceImagePathWithMapping = (provinceName) => {
   const imagePath = `/images/games/${imageFile}`;
   
   return imagePath;
+};
+
+/**
+ * Lấy đường dẫn ảnh tỉnh từ dữ liệu provincesData
+ * @param {string} provinceName - Tên tỉnh (ví dụ: "Xổ Số Đà Nẵng", "Đà Nẵng")
+ * @returns {string} - Đường dẫn ảnh
+ */
+export const getProvinceImageFromData = (provinceName) => {
+  if (!provinceName) return '';
+  
+  // Tìm trong tất cả các ngày
+  for (const dayKey in provincesSchedule) {
+    const dayData = provincesSchedule[dayKey];
+    
+    // Tìm trong miền trung
+    if (dayData.trung) {
+      for (const province of dayData.trung) {
+        if (province.name === provinceName || province.province === provinceName) {
+          return province.image;
+        }
+      }
+    }
+    
+    // Tìm trong miền nam
+    if (dayData.nam) {
+      for (const province of dayData.nam) {
+        if (province.name === provinceName || province.province === provinceName) {
+          return province.image;
+        }
+      }
+    }
+  }
+  
+  // Nếu không tìm thấy, fallback về hàm cũ
+  return getProvinceImagePathWithMapping(provinceName);
 };
 

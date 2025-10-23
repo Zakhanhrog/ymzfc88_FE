@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 
 const MobileBottomNav = ({ onMenuClick }) => {
   const navigate = useNavigate();
@@ -10,32 +11,36 @@ const MobileBottomNav = ({ onMenuClick }) => {
       id: 'menu',
       label: 'Tùy Chọn',
       icon: '/mbnav/nav-menu.png',
-      isMenu: true
+      isMenu: true,
+      isImage: true
     },
     {
-      id: 'home',
-      label: 'Trang Chủ',
-      icon: '/mbnav/nav-home-on.png',
-      path: '/',
-      isActive: location.pathname === '/'
+      id: 'deposit',
+      label: 'Nạp Tiền',
+      icon: 'mdi:wallet',
+      path: '/wallet?tab=deposit-withdraw'
     },
     {
       id: 'casino',
       label: 'AEcasino',
       icon: '/mbnav/nav-ae888.png',
-      path: '/casino'
+      path: '/',
+      isActive: location.pathname === '/',
+      isImage: true
     },
     {
       id: 'promo',
       label: 'Khuyến Mãi',
       icon: '/mbnav/nav-promo.png',
-      path: '/promotions'
+      path: '/promotions',
+      isImage: true
     },
     {
       id: 'contact',
       label: 'Liên Hệ',
       icon: '/mbnav/nav-cs.png',
-      path: '/contact'
+      path: '/contact',
+      isImage: true
     }
   ];
 
@@ -75,11 +80,20 @@ const MobileBottomNav = ({ onMenuClick }) => {
               >
                 {/* Icon */}
                 <div className={`relative ${item.id === 'casino' ? '-mt-10 mb-1' : 'mb-1'}`}>
-                  <img
-                    src={item.icon}
-                    alt={item.label}
-                    className={item.id === 'casino' ? 'w-14 h-14' : 'w-5 h-5'}
-                  />
+                  {item.isImage ? (
+                    <img
+                      src={item.icon}
+                      alt={item.label}
+                      className={item.id === 'casino' ? 'w-14 h-14' : 'w-5 h-5'}
+                    />
+                  ) : (
+                    <Icon
+                      icon={item.icon}
+                      className={`${item.id === 'casino' ? 'w-14 h-14' : 'w-5 h-5'} ${
+                        item.isActive ? 'text-red-500' : 'text-gray-600'
+                      }`}
+                    />
+                  )}
                 </div>
                 
                 {/* Label */}
