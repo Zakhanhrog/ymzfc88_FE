@@ -102,7 +102,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     if (tab === 'games' || tab === 'bet-management' || tab === 'game-results' || tab === 'game-settings' || tab === 'betting-odds') {
       return ['game-management'];
     }
-    if (tab === 'banners' || tab === 'news' || tab === 'notifications') {
+    if (tab === 'banners' || tab === 'news' || tab === 'notifications' || tab === 'marquee-notifications') {
       return ['content-management'];
     }
     if (tab === 'settings' || tab === 'contact-links' || tab === 'promotions' || tab === 'maintenance' || tab === 'logs') {
@@ -136,6 +136,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'banners': () => navigate('/admin/dashboard?tab=banners'),
       'news': () => navigate('/admin/dashboard?tab=news'),
       'notifications': () => navigate('/admin/dashboard?tab=notifications'),
+      'marquee-notifications': () => navigate('/admin/dashboard?tab=marquee-notifications'),
       'settings': () => navigate('/admin/dashboard?tab=settings'),
       'contact-links': () => navigate('/admin/dashboard?tab=contact-links'),
       'promotions': () => navigate('/admin/dashboard?tab=promotions'),

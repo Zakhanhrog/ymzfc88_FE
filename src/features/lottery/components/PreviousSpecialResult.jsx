@@ -35,7 +35,9 @@ const PreviousSpecialResult = ({ region, province = null }) => {
   if (loading) {
     return (
       <div className="text-right">
-        <div className="text-xs text-gray-500 mb-1">Kỳ hôm trước, giải đặc biệt</div>
+        <div className="text-xs text-gray-500 mb-1">
+          {region === 'mienTrungNam' ? 'Kỳ quay gần nhất, giải đặc biệt' : 'Kỳ hôm trước, giải đặc biệt'}
+        </div>
         <div className="flex gap-1 justify-end">
           {[0, 1, 2, 3, 4].map((index) => (
             <div key={index} className="w-5 h-5 md:w-7 md:h-7 bg-gray-200 border border-gray-300 rounded-full animate-pulse"></div>
@@ -48,7 +50,9 @@ const PreviousSpecialResult = ({ region, province = null }) => {
   if (error || !specialPrize) {
     return (
       <div className="text-right">
-        <div className="text-xs text-gray-500 mb-1">Kỳ hôm trước, giải đặc biệt</div>
+        <div className="text-xs text-gray-500 mb-1">
+          {region === 'mienTrungNam' ? 'Kỳ quay gần nhất, giải đặc biệt' : 'Kỳ hôm trước, giải đặc biệt'}
+        </div>
         <div className="text-xs text-gray-400">Chưa có kết quả</div>
       </div>
     );
@@ -56,7 +60,9 @@ const PreviousSpecialResult = ({ region, province = null }) => {
 
   return (
     <div className="text-right">
-      <div className="text-xs text-gray-500 mb-1">Kỳ hôm trước, giải đặc biệt</div>
+      <div className="text-xs text-gray-500 mb-1">
+        {region === 'mienTrungNam' ? 'Kỳ quay gần nhất, giải đặc biệt' : 'Kỳ hôm trước, giải đặc biệt'}
+      </div>
       <div className="flex gap-1 justify-end mb-1">
         {specialPrize.map((num, index) => (
           <div key={index} className="w-5 h-5 md:w-7 md:h-7 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 font-bold text-xs md:text-sm">

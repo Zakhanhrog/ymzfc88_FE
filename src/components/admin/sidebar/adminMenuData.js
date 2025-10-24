@@ -117,8 +117,8 @@ export const adminMenuItems = [
     children: [
       {
         key: 'banners',
-        icon: 'FileTextOutlined',
-        label: 'Banner',
+        icon: 'PictureOutlined',
+        label: 'Banner quảng cáo',
       },
       {
         key: 'news',
@@ -129,6 +129,11 @@ export const adminMenuItems = [
         key: 'notifications',
         icon: 'BellOutlined',
         label: 'Thông báo',
+      },
+      {
+        key: 'marquee-notifications',
+        icon: 'NotificationOutlined',
+        label: 'Thông báo chạy',
       }
     ]
   },

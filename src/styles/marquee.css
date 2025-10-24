@@ -1,0 +1,58 @@
+/* Marquee Animation Styles */
+@keyframes marquee {
+  0% {
+    transform: translateX(100vw);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Fast marquee for high speeds */
+@keyframes marquee-fast {
+  0% {
+    transform: translateX(100vw);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.marquee-notifications-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.marquee-notifications-container > div {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.marquee-notifications-container .whitespace-nowrap,
+.marquee-content {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marquee-notifications-container .whitespace-nowrap:hover,
+.marquee-content:hover {
+  animation-play-state: paused;
+}
+
+/* Responsive marquee */
+@media (max-width: 768px) {
+  .marquee-notifications-container {
+    font-size: 14px;
+  }
+}
+
+/* Smooth animation */
+.marquee-notifications-container * {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}

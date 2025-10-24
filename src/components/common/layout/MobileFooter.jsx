@@ -4,17 +4,17 @@ const MobileFooter = () => {
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         
-        {/* Về chúng tôi AE888 Section */}
+        {/* Về chúng tôi LOTO79 Section */}
         <div className="text-center mb-6">
-          <h2 className="text-base font-bold text-gray-800 mb-3">Về chúng tôi AE888</h2>
+          <h2 className="text-base font-bold text-gray-800 mb-3">Về chúng tôi LOTO79</h2>
           
           <div className="text-center space-y-2 text-gray-700 text-xs leading-relaxed">
             <p>
-              AE888 là một trong những nhà cái hàng đầu tại Mỹ với sự chuyên nghiệp, 
+              LOTO79 là một trong những nhà cái hàng đầu tại Mỹ với sự chuyên nghiệp, 
               đẳng cấp, chất lượng và uy tín trong lĩnh vực cá cược trực tuyến.
             </p>
             <p>
-              AE888 được cấp phép bởi cơ quan có uy tín tại Mỹ và là một trong số ít 
+              LOTO79 được cấp phép bởi cơ quan có uy tín tại Mỹ và là một trong số ít 
               nhà cái được cấp phép bởi Bộ Nội vụ và Bang liên bang Schleswig-Holstein.
             </p>
           </div>

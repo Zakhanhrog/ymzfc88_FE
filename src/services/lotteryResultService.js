@@ -86,7 +86,12 @@ class LotteryResultService {
    */
   async getPreviousDayResult(region, province = null) {
     try {
-      // Lấy ngày hôm qua
+      // Đối với Miền Trung Nam, lấy kỳ quay gần nhất thay vì chỉ hôm trước
+      if (region === 'mienTrungNam') {
+        return await this.getLatestPublishedResult(region, province);
+      }
+      
+      // Đối với Miền Bắc, lấy kết quả hôm trước
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0]; // Format: YYYY-MM-DD

@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../../ui';
 import NotificationDropdown from '../../../features/notification/components/NotificationDropdown';
 import MobileNotificationModal from '../../../features/notification/components/MobileNotificationModal';
@@ -21,7 +21,20 @@ const Header = ({
   const navigate = useNavigate();
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const { unreadCount } = useNotificationCount();
+  const { unreadCount } = useNotificationCount(isLoggedIn);
+
+  // Listen for custom notification events from QuickActionsSection
+  useEffect(() => {
+    const handleShowNotificationModal = () => {
+      setShowNotificationModal(true);
+    };
+
+    window.addEventListener('showNotificationModal', handleShowNotificationModal);
+    
+    return () => {
+      window.removeEventListener('showNotificationModal', handleShowNotificationModal);
+    };
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 h-[60px] md:h-[70px] bg-white border-b border-gray-200 z-20 px-4 md:px-6">

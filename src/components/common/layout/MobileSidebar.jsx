@@ -26,32 +26,6 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
     }
   }, [isOpen]);
 
-  const menuItems = [
-    {
-      icon: '/sidebarmb/sm-check.png',
-      label: 'Mỗi Ngày',
-      path: '/points',
-      requireAuth: true
-    },
-    {
-      icon: '/sidebarmb/sm-red.png',
-      label: 'Phong bì đỏ',
-      path: '/envelope',
-      requireAuth: true
-    },
-    {
-      icon: '/sidebarmb/sm-wheel.png',
-      label: 'Vòng quay',
-      path: '/wheel',
-      requireAuth: true
-    },
-    {
-      icon: '/sidebarmb/sm-vip.png',
-      label: 'VIP',
-      path: '/vip',
-      requireAuth: true
-    }
-  ];
 
   if (!isOpen && !isClosing) return null;
 
@@ -96,40 +70,7 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
           )}
         </div>
 
-        {/* Menu Items Grid 2x2 */}
-        <div className="px-3 pt-2 pb-1">
-          <div className="grid grid-cols-2 gap-2">
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => handleNavigate(item.path)}
-                disabled={item.requireAuth && !isLoggedIn}
-                className={`flex flex-col items-center justify-center gap-1 py-2 rounded-2xl transition-all ${
-                  item.requireAuth && !isLoggedIn
-                    ? 'bg-gray-200 opacity-50 cursor-not-allowed'
-                    : 'bg-white hover:shadow-lg active:scale-95'
-                }`}
-              >
-                <img src={item.icon} alt={item.label} className="w-9 h-9" />
-                <span className="text-xs font-medium text-gray-800">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Mã dự thưởng Banner */}
-        <div className="px-3 py-2">
-          <button 
-            onClick={() => handleNavigate('/promotions')}
-            className="w-full"
-          >
-            <img 
-              src="/sidebarmb/maduthuong.png" 
-              alt="Mã dự thưởng" 
-              className="w-full h-auto hover:scale-105 transition-transform"
-            />
-          </button>
-        </div>
 
         {/* Khuyến mãi */}
         <div className="px-3 py-1">
@@ -142,31 +83,8 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
           </button>
         </div>
 
-        {/* Về chúng tôi */}
-        <div className="px-3 py-1">
-          <button
-            onClick={() => handleNavigate('/about')}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-xl hover:shadow-md transition-all active:scale-95"
-          >
-            <Icon icon="mdi:lightbulb-outline" className="w-7 h-7 text-gray-600" />
-            <span className="text-[15px] font-medium text-gray-800">Về chúng tôi</span>
-          </button>
-        </div>
 
 
-        {/* Tải ứng dụng */}
-        <div className="px-3 py-1">
-          <button
-            onClick={() => handleNavigate('/download')}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-xl hover:shadow-md transition-all active:scale-95"
-          >
-            <img src="/sidebarmb/icon-deposit.png" alt="AE 888" className="w-7 h-7" />
-            <div className="flex flex-col items-start">
-              <span className="text-[15px] font-medium text-gray-800">Tải ứng dụng</span>
-              <span className="text-[11px] text-gray-500">Unlock💰Fun & Features</span>
-            </div>
-          </button>
-        </div>
 
 
         {/* Rút Tiền / Nạp Tiền */}

@@ -19,6 +19,8 @@ import AdminBetManagement from './AdminBetManagement';
 import AdminLotteryResultManagement from './AdminLotteryResultManagement';
 import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
+import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
+import AdminBannerManagement from './AdminBannerManagement';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const renderContent = () => {
@@ -179,6 +181,28 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
 
       case 'notifications':
         return <AdminNotificationManagement />;
+
+      case 'marquee-notifications':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader 
+              title="Quản lý thông báo chạy" 
+              description="Quản lý các thông báo chạy trên trang chủ" 
+            />
+            <AdminMarqueeNotificationManagement />
+          </div>
+        );
+
+      case 'banners':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader 
+              title="Quản lý Banner" 
+              description="Quản lý các banner quảng cáo trên trang chủ" 
+            />
+            <AdminBannerManagement />
+          </div>
+        );
 
       default:
         return (

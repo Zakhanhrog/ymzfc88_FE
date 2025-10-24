@@ -9,6 +9,7 @@ import PointsPage from './features/points/pages/PointsPage';
 import ResponsiveLotteryWrapper from './features/lottery/components/ResponsiveLotteryWrapper';
 import MienBacGamePage from './features/lottery/pages/MienBacGamePage';
 import MienTrungNamGamePage from './features/lottery/pages/MienTrungNamGamePage';
+import BettingHistoryPage from './features/lottery/pages/BettingHistoryPage';
 import ContactPage from './features/contact/pages/ContactPage';
 import PromotionPage from './features/promotions/pages/PromotionPage';
 
@@ -74,6 +75,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MienTrungNamGamePage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/betting-history" 
+                element={
+                  <ProtectedRoute>
+                    <BettingHistoryPage />
                   </ProtectedRoute>
                 } 
               />

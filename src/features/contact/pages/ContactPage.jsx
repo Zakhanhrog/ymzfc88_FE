@@ -110,17 +110,6 @@ const ContactPage = () => {
 
       {/* Content */}
       <div className="p-4 md:p-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Title level={2} className="text-xl md:text-3xl font-bold text-gray-800 mb-4">
-            <CustomerServiceOutlined className="mr-3 text-blue-600" />
-            Liên hệ hỗ trợ
-          </Title>
-          <Text className="text-lg text-gray-600">
-            Chọn phương thức liên hệ phù hợp với bạn
-          </Text>
-        </div>
-
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Spin size="large" />

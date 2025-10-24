@@ -11,20 +11,22 @@ const QuickActionsSection = () => {
     navigate('/wallet?tab=withdraw');
   };
 
-  const handleCheckIn = () => {
-    // Handle check-in functionality
+  const handlePromotions = () => {
+    navigate('/promotions');
   };
 
-  const handleSpin = () => {
-    // Handle spin wheel functionality
+  const handleLoto79 = () => {
+    navigate('/lottery');
   };
 
-  const handleVIP = () => {
-    // Handle VIP functionality
+  const handleHistory = () => {
+    navigate('/betting-history');
   };
 
-  const handleDaily = () => {
-    // Handle daily tasks functionality
+  const handleNotifications = () => {
+    // Trigger notification modal like in header
+    const event = new CustomEvent('showNotificationModal');
+    window.dispatchEvent(event);
   };
 
   return (
@@ -54,56 +56,56 @@ const QuickActionsSection = () => {
           />
         </button>
 
-        {/* Điểm danh */}
+        {/* Thông báo */}
         <button
-          onClick={handleCheckIn}
+          onClick={handleNotifications}
           className="flex flex-col items-center hover:scale-105 transition-all duration-300"
         >
           <img 
             src="/headmb/sm-check.png" 
-            alt="Check-in" 
+            alt="Notifications" 
             className="w-8 h-8 mb-1"
           />
-          <span className="text-gray-800 font-medium text-xs">Điểm danh</span>
+          <span className="text-gray-800 font-medium text-xs">Thông báo</span>
         </button>
 
-        {/* Vòng quay */}
+        {/* Khuyến mãi */}
         <button
-          onClick={handleSpin}
+          onClick={handlePromotions}
           className="flex flex-col items-center hover:scale-105 transition-all duration-300"
         >
           <img 
             src="/headmb/sm-wheel.png" 
-            alt="Spin" 
+            alt="Promotions"
             className="w-8 h-8 mb-1"
           />
-          <span className="text-gray-800 font-medium text-xs">Vòng quay</span>
+          <span className="text-gray-800 font-medium text-xs">Khuyến mãi</span>
         </button>
 
-        {/* VIP */}
+        {/* Loto79 */}
         <button
-          onClick={handleVIP}
+          onClick={handleLoto79}
           className="flex flex-col items-center hover:scale-105 transition-all duration-300"
         >
           <img 
             src="/headmb/sm-vip.png" 
-            alt="VIP" 
+            alt="Loto79" 
             className="w-8 h-8 mb-1"
           />
-          <span className="text-gray-800 font-medium text-xs">VIP</span>
+          <span className="text-gray-800 font-medium text-xs">Loto79</span>
         </button>
 
-        {/* Mỗi Ngày */}
+        {/* Lịch sử */}
         <button
-          onClick={handleDaily}
+          onClick={handleHistory}
           className="flex flex-col items-center hover:scale-105 transition-all duration-300"
         >
           <img 
             src="/headmb/sm-red.png" 
-            alt="Daily" 
+            alt="History" 
             className="w-8 h-8 mb-1"
           />
-          <span className="text-gray-800 font-medium text-xs">Mỗi Ngày</span>
+          <span className="text-gray-800 font-medium text-xs">Lịch sử</span>
         </button>
       </div>
     </div>

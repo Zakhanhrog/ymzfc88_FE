@@ -3,44 +3,85 @@ import betService from '../../../services/betService';
 
 /**
  * Hook quản lý lịch sử bet
- * Tự động load khi có userId và luôn fetch fresh data khi vào trang
+ * Tự động load khi component mount
  */
-export const useBetHistory = (userId, shouldFetch = true) => {
+export const useBetHistory = (region = 'mien-bac') => {
   const [betHistory, setBetHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const fetchBetHistory = async () => {
-    if (!userId) return;
+  const fetchBetHistory = async (page = 0, isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoadingHistory(true);
+    }
     
-    setLoadingHistory(true);
     try {
-      const response = await betService.getUserBets(userId, { page: 0, size: 10 });
-      setBetHistory(response.content || []);
+      const response = await betService.getMyBets(page, 20);
+      const newBets = response.data || [];
+      
+      if (page === 0) {
+        // First load or refresh
+        setBetHistory(newBets);
+      } else {
+        // Load more
+        setBetHistory(prev => [...prev, ...newBets]);
+      }
+      
+      setCurrentPage(page);
+      setHasMore(newBets.length === 20); // If we get less than 20, no more data
     } catch (error) {
       console.error('Error fetching bet history:', error);
     } finally {
       setLoadingHistory(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    if (userId && shouldFetch) {
-      fetchBetHistory();
-    }
-  }, [userId, shouldFetch]);
+    fetchBetHistory(0);
+  }, []);
 
-  // Auto-refresh khi component mount lại (khi user vào lại trang)
-  useEffect(() => {
-    if (userId) {
-      fetchBetHistory();
+  const onRefresh = async () => {
+    await fetchBetHistory();
+  };
+
+  const onDismissBet = async (betId) => {
+    try {
+      await betService.dismissBetResult(betId);
+      await fetchBetHistory();
+    } catch (error) {
+      console.error('Error dismissing bet:', error);
     }
-  }, [userId]);
+  };
+
+  const onCancelBet = async (betId) => {
+    try {
+      await betService.cancelBet(betId);
+      await fetchBetHistory();
+    } catch (error) {
+      console.error('Error cancelling bet:', error);
+    }
+  };
+
+  const onLoadMore = async () => {
+    if (hasMore && !loadingMore) {
+      await fetchBetHistory(currentPage + 1, true);
+    }
+  };
 
   return {
     betHistory,
     loadingHistory,
-    fetchBetHistory,
-    setBetHistory
+    onRefresh,
+    onDismissBet,
+    onCancelBet,
+    onLoadMore,
+    hasMore,
+    loadingMore
   };
 };
 

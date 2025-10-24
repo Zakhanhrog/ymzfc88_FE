@@ -14,7 +14,7 @@ const MobileBannerCarousel = ({ banners }) => {
             <img 
               src={banner.url}
               alt={banner.alt}
-              className="w-full h-auto object-cover cursor-pointer"
+              className="w-full h-32 object-cover cursor-pointer"
             />
           </div>
         ))}

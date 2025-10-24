@@ -111,7 +111,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
         <div className="flex items-center">
           <img 
             src="/logo.webp" 
-            alt="AE888 Logo" 
+            alt="LOTO79 Logo" 
             className="h-6 w-auto"
           />
         </div>
@@ -295,9 +295,9 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
               Đăng nhập
             </Button>
 
-            {/* AE888 Branding */}
+            {/* LOTO79 Branding */}
             <div className="text-center mt-6">
-              <span className="text-sm text-gray-400">AE888</span>
+              <span className="text-sm text-gray-400">LOTO79</span>
             </div>
           </form>
         </div>

@@ -100,7 +100,7 @@ const CategoryGameSection = ({ title, gameImages }) => {
             {gameImages.map((image, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-[calc((100%-28px)/4)] aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group relative"
+                className="flex-shrink-0 w-[calc((100%-28px)/4)] aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group relative"
               >
                 <img
                   src={image}

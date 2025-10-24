@@ -22,7 +22,7 @@ const MobileBottomNav = ({ onMenuClick }) => {
     },
     {
       id: 'casino',
-      label: 'AEcasino',
+      label: 'LOTO79',
       icon: '/mbnav/nav-ae888.png',
       path: '/',
       isActive: location.pathname === '/',

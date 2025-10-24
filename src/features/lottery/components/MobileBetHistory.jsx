@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { formatBetTypeMienBac, formatBetTypeMienTrungNam, formatSelectedNumbers } from '../utils/betFormatter';
+import CancelBetModal from './CancelBetModal';
 
 /**
  * Component lịch sử cược cho giao diện mobile
@@ -19,43 +20,40 @@ const MobileBetHistory = ({
   onClose,
   region = 'mien-bac' // 'mien-bac' or 'mien-trung-nam'
 }) => {
-  const [displayedBets, setDisplayedBets] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMoreBets, setHasMoreBets] = useState(true);
-  
-  const ITEMS_PER_PAGE = 10;
-  const INITIAL_ITEMS = 20;
-
-  // Update displayed bets when betHistory changes
-  useEffect(() => {
-    if (betHistory && betHistory.length > 0) {
-      const initialBets = betHistory.slice(0, INITIAL_ITEMS);
-      setDisplayedBets(initialBets);
-      setCurrentPage(1);
-      const hasMore = betHistory.length > INITIAL_ITEMS;
-      setHasMoreBets(hasMore);
-    } else {
-      setDisplayedBets([]);
-      setCurrentPage(1);
-      setHasMoreBets(false);
-    }
-  }, [betHistory]);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedBet, setSelectedBet] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const handleLoadMore = () => {
-    if (!betHistory || loadingMore) return;
+    if (onLoadMore) {
+      onLoadMore();
+    }
+  };
+
+  const handleCancelBet = (bet) => {
+    setSelectedBet(bet);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!selectedBet || !onCancelBet) return;
     
-    const nextPage = currentPage + 1;
-    const startIndex = displayedBets.length; // Bắt đầu từ vị trí hiện tại
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const newBets = betHistory.slice(startIndex, endIndex);
-    
-    
-    if (newBets.length > 0) {
-      setDisplayedBets(prev => [...prev, ...newBets]);
-      setCurrentPage(nextPage);
-      setHasMoreBets(endIndex < betHistory.length);
-    } else {
-      setHasMoreBets(false);
+    setCancelling(true);
+    try {
+      await onCancelBet(selectedBet.id);
+      setShowCancelModal(false);
+      setSelectedBet(null);
+    } catch (error) {
+      console.error('Error cancelling bet:', error);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    if (!cancelling) {
+      setShowCancelModal(false);
+      setSelectedBet(null);
     }
   };
   return (
@@ -99,14 +97,14 @@ const MobileBetHistory = ({
               <Icon icon="mdi:loading" className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-3" />
               <p className="text-sm text-gray-600">Đang tải lịch sử...</p>
             </div>
-          ) : displayedBets.length === 0 ? (
+          ) : betHistory.length === 0 ? (
             <div className="text-center py-12">
               <Icon icon="mdi:history" className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <p className="text-sm text-gray-600">Chưa có lịch sử cược</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {displayedBets.map((bet, index) => (
+              {betHistory.map((bet, index) => (
                 <div key={`${bet.id}-${bet.createdAt}-${index}`} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
                   {/* Header with time and action buttons */}
                   <div className="flex items-center justify-between mb-2">
@@ -116,7 +114,7 @@ const MobileBetHistory = ({
                     <div className="flex items-center gap-1">
                       {bet.status === 'PENDING' && onCancelBet && (
                         <button
-                          onClick={() => onCancelBet(bet.id)}
+                          onClick={() => handleCancelBet(bet)}
                           className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
                           title="Hủy cược (trước 18:10)"
                         >
@@ -187,7 +185,7 @@ const MobileBetHistory = ({
               ))}
               
               {/* Load More Button */}
-              {hasMoreBets && (
+              {hasMore && (
                 <div className="mt-4 text-center">
                   <button
                     onClick={handleLoadMore}
@@ -214,6 +212,15 @@ const MobileBetHistory = ({
           )}
         </div>
       </div>
+
+      {/* Cancel Bet Modal */}
+      <CancelBetModal
+        isOpen={showCancelModal}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmCancel}
+        betInfo={selectedBet}
+        loading={cancelling}
+      />
     </div>
   );
 };

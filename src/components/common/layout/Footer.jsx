@@ -17,7 +17,7 @@ const Footer = () => {
         {/* Legal and Licensing Text */}
         <div className="text-center mb-2">
           <p className="text-gray-800 text-sm leading-relaxed max-w-4xl mx-auto">
-            AE888 được cấp 4 giấy phép hợp pháp đạt chuẩn quốc tế được cấp bởi Chính phủ Philippines (PAGCOR), 
+            LOTO79 được cấp 4 giấy phép hợp pháp đạt chuẩn quốc tế được cấp bởi Chính phủ Philippines (PAGCOR), 
             Chính phủ Malta (MGA), Quần đảo Virgin Vương quốc Anh (BVI) & Hiệp Hội Nhà Cái Anh (GAMBLING COMMISSION), 
             là một nhà cái cá cược được Hiệp Hội Cá Cược Quốc Tế công nhận. Trước khi đăng ký tham gia đặt cược, 
             vui lòng đảm bảo bạn đã đủ 18 tuổi.
