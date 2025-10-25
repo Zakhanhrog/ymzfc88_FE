@@ -16,8 +16,15 @@ class LotteryResultService {
    */
   async getLatestPublishedResult(region, province = null) {
     try {
-      const params = province ? `?province=${province}` : '';
-      const response = await publicApi.get(`/public/lottery-results/${region}/latest${params}`);
+      const params = province ? `?province=${encodeURIComponent(province)}` : '';
+      const url = `/public/lottery-results/${region}/latest${params}`;
+      
+      // Debug logging
+      console.log('lotteryResultService.getLatestPublishedResult - region:', region);
+      console.log('lotteryResultService.getLatestPublishedResult - province:', province);
+      console.log('lotteryResultService.getLatestPublishedResult - url:', url);
+      
+      const response = await publicApi.get(url);
       
       if (response.data.success && response.data.data) {
         // Parse results JSON nếu cần
@@ -82,26 +89,18 @@ class LotteryResultService {
   }
 
   /**
-   * Lấy kết quả xổ số của hôm trước
+   * Lấy kết quả xổ số của kỳ quay gần nhất (thay thế cho getPreviousDayResult)
+   * Đối với tất cả region, đều lấy kỳ quay gần nhất đã có kết quả
    */
   async getPreviousDayResult(region, province = null) {
     try {
-      // Đối với Miền Trung Nam, lấy kỳ quay gần nhất thay vì chỉ hôm trước
-      if (region === 'mienTrungNam') {
-        return await this.getLatestPublishedResult(region, province);
-      }
-      
-      // Đối với Miền Bắc, lấy kết quả hôm trước
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      
-      return await this.getLotteryResult(region, province, yesterdayStr);
+      // Luôn lấy kỳ quay gần nhất cho tất cả region
+      return await this.getLatestPublishedResult(region, province);
     } catch (error) {
-      console.error('Error getting previous day result:', error);
+      console.error('Error getting latest result:', error);
       return {
         success: false,
-        message: error.response?.data?.message || 'Có lỗi xảy ra khi lấy kết quả hôm trước'
+        message: error.response?.data?.message || 'Có lỗi xảy ra khi lấy kết quả'
       };
     }
   }

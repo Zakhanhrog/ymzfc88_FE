@@ -13,7 +13,7 @@ const MainBannerCarousel = ({ banners }) => {
           <img 
             src={banner.url}
             alt={banner.alt}
-            className="w-full cursor-pointer rounded-lg"
+            className="w-full h-auto cursor-pointer rounded-lg"
           />
         </div>
       ))}

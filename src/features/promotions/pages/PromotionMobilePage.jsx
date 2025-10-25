@@ -10,8 +10,10 @@ import {
 import {
   GiftOutlined,
   CloseOutlined,
-  LoadingOutlined
+  LoadingOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import promotionService from '../../../services/promotionService';
 
 const { Title, Text } = Typography;
@@ -19,6 +21,7 @@ const { Title, Text } = Typography;
 const PromotionMobilePage = ({ isOpen, onClose }) => {
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Load promotions
   const loadPromotions = async () => {
@@ -101,7 +104,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                         <div className="relative h-48 overflow-hidden">
                           <img
                             alt={promotion.title}
-                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
+                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.loto79.online/api${promotion.imageUrl}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.style.display = 'none';
@@ -130,15 +133,20 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                       }
                       description={
                         <div>
-                          <Text className="text-gray-600 block mb-3">
-                            {promotion.description}
-                          </Text>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <span className="text-sm text-gray-500">Khuyến mãi</span>
                             <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs">
                               Đang diễn ra
                             </span>
                           </div>
+                          <Button 
+                            type="primary" 
+                            icon={<EyeOutlined />}
+                            onClick={() => navigate(`/promotions/${promotion.id}`)}
+                            className="w-full"
+                          >
+                            Xem chi tiết
+                          </Button>
                         </div>
                       }
                     />

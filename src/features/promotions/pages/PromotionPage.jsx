@@ -6,12 +6,15 @@ import {
   Typography, 
   message, 
   Spin,
-  Empty
+  Empty,
+  Button
 } from 'antd';
 import {
   GiftOutlined,
-  LoadingOutlined
+  LoadingOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import promotionService from '../../../services/promotionService';
 import Layout from '../../../components/common/Layout';
 import PromotionMobileWrapper from '../components/PromotionMobileWrapper';
@@ -21,6 +24,7 @@ const { Title, Text } = Typography;
 const PromotionPage = () => {
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Load promotions
   const loadPromotions = async () => {
@@ -56,8 +60,10 @@ const PromotionPage = () => {
 
   return (
     <>
-      {/* Mobile Wrapper */}
-      <PromotionMobileWrapper />
+      {/* Mobile Wrapper - Only render on mobile */}
+      <div className="md:hidden">
+        <PromotionMobileWrapper />
+      </div>
       
       {/* Desktop Layout */}
       <div className="hidden md:block">
@@ -96,7 +102,7 @@ const PromotionPage = () => {
                         <div className="relative h-48 overflow-hidden">
                           <img
                             alt={promotion.title}
-                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
+                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.loto79.online/api${promotion.imageUrl}`}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => {
                               e.target.style.display = 'none';
@@ -125,15 +131,20 @@ const PromotionPage = () => {
                       }
                       description={
                         <div>
-                          <Text className="text-gray-600 block mb-3">
-                            {promotion.description}
-                          </Text>
-                          <div className="flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                             <span>Khuyến mãi</span>
                             <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs">
                               Đang diễn ra
                             </span>
                           </div>
+                          <Button 
+                            type="primary" 
+                            icon={<EyeOutlined />}
+                            onClick={() => navigate(`/promotions/${promotion.id}`)}
+                            className="w-full"
+                          >
+                            Xem chi tiết
+                          </Button>
                         </div>
                       }
                     />

@@ -15,7 +15,7 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
   };
 
   const handleNavigate = (path) => {
-    navigate(path);
+    navigate(path, { replace: false });
     handleClose();
   };
 

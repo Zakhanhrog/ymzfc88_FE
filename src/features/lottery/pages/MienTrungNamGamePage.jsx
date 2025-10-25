@@ -27,6 +27,10 @@ const MienTrungNamGamePage = () => {
   // portName = "Gia Lai" → province = "gialai"
   const province = normalizeProvinceName(portName);
   
+  // Debug logging
+  console.log('MienTrungNamGamePage - portName:', portName);
+  console.log('MienTrungNamGamePage - province:', province);
+  
   
   const [selectedNumbers, setSelectedNumbers] = useState([]);
   const [betMultiplier, setBetMultiplier] = useState(1);
@@ -792,7 +796,7 @@ const MienTrungNamGamePage = () => {
       setLoadingPoints(true);
       
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
+      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -16,6 +16,7 @@ import { getProvincesByDay, getTodayProvinces } from '../../lottery/data/provinc
 import LotteryCarousel from '../../lottery/components/LotteryCarousel';
 import WeekdayNavigation from '../components/WeekdayNavigation';
 import { bannerService } from '../../../services/bannerService';
+import lotteryResultService from '../../../services/lotteryResultService';
 
 const HomePage = () => {
   const location = useLocation();
@@ -25,6 +26,8 @@ const HomePage = () => {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const [mainBanners, setMainBanners] = useState([]);
   const [sideBanners, setSideBanners] = useState([]);
+  const [mienBacResult, setMienBacResult] = useState(null);
+  const [mienBacLoading, setMienBacLoading] = useState(true);
 
   // Check if we need to show login modal from ProtectedRoute redirect
   useEffect(() => {
@@ -40,6 +43,29 @@ const HomePage = () => {
     }
   }, [location.state, navigate, location.pathname]);
 
+  // Load Miền Bắc result
+  useEffect(() => {
+    const loadMienBacResult = async () => {
+      try {
+        setMienBacLoading(true);
+        const response = await lotteryResultService.getLatestPublishedResult('mienBac', null);
+        
+        if (response.success && response.data) {
+          const prize = lotteryResultService.getSpecialPrize(response.data);
+          if (prize && prize.length > 0) {
+            setMienBacResult(prize);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading Miền Bắc result:', error);
+      } finally {
+        setMienBacLoading(false);
+      }
+    };
+
+    loadMienBacResult();
+  }, []);
+
   // Load banners from API
   useEffect(() => {
     const loadBanners = async () => {
@@ -52,7 +78,7 @@ const HomePage = () => {
         if (mainResponse.success) {
           setMainBanners(mainResponse.data.map(banner => ({
             id: banner.id,
-            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
+            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
           })));
         }
@@ -60,7 +86,7 @@ const HomePage = () => {
         if (sideResponse.success) {
           setSideBanners(sideResponse.data.map(banner => ({
             id: banner.id,
-            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
+            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
           })));
         }
@@ -169,23 +195,21 @@ const HomePage = () => {
         
         {/* Desktop Banner Layout */}
         <div className={`hidden md:grid gap-4 mb-6 ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-6'}`}>
-          <div className={sidebarCollapsed ? 'col-span-10' : 'col-span-5'}>
-            <div className={`${sidebarCollapsed ? 'h-[420px]' : 'h-[350px]'} overflow-hidden rounded-lg`}>
+          <div className={sidebarCollapsed ? 'col-span-9' : 'col-span-4'}>
+            <div className="overflow-hidden rounded-lg">
               <MainBannerCarousel banners={mainBanners} />
             </div>
           </div>
 
-          <div className={sidebarCollapsed ? 'col-span-2' : 'col-span-1'}>
-            <div className={`space-y-1 ${sidebarCollapsed ? 'h-[420px]' : 'h-[350px]'} flex flex-col justify-between border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent`}>
+          <div className={sidebarCollapsed ? 'col-span-3' : 'col-span-2'}>
+            <div className="h-full flex flex-col justify-between border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent">
               {sideBanners.map((banner) => (
-                <div key={banner.id} className="h-[120px] bg-gray-100 rounded-lg p-1.5 shadow-sm">
-                  <div className="w-full h-full rounded-lg overflow-hidden">
-                    <img 
-                      src={banner.url} 
-                      alt={banner.alt}
-                      className="w-full h-full object-contain cursor-pointer rounded-lg"
-                    />
-                  </div>
+                <div key={banner.id} className="flex-1 rounded-lg overflow-hidden">
+                  <img 
+                    src={banner.url} 
+                    alt={banner.alt}
+                    className="w-full h-full object-cover cursor-pointer rounded-lg"
+                  />
                 </div>
               ))}
             </div>
@@ -330,11 +354,26 @@ const HomePage = () => {
                       Đặt cược
                     </button>
                     <div className="flex space-x-1">
-                      {['0', '7', '0', '8', '1'].map((number, index) => (
-                        <div key={index} className="w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                          {number}
-                        </div>
-                      ))}
+                      {mienBacLoading ? (
+                        // Loading skeleton
+                        [0, 1, 2, 3, 4].map((index) => (
+                          <div key={index} className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                        ))
+                      ) : mienBacResult ? (
+                        // Real result - Enhanced styling
+                        mienBacResult.map((number, index) => (
+                          <div key={index} className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-red-300">
+                            {number}
+                          </div>
+                        ))
+                      ) : (
+                        // Fallback to hardcoded if no result - Enhanced styling
+                        ['0', '7', '0', '8', '1'].map((number, index) => (
+                          <div key={index} className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-red-300">
+                            {number}
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>

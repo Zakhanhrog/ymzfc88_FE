@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge, Dropdown, List, Empty, Button, Spin, Tag, Typography, Space, Divider } from 'antd';
-import { BellOutlined, CheckOutlined, CheckCircleOutlined, InfoCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { BellOutlined, CheckOutlined, CheckCircleOutlined, InfoCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import notificationService from '../services/notificationService';
 import moment from 'moment';
 import 'moment/locale/vi';
@@ -11,6 +12,7 @@ const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadUnreadCount();
@@ -112,15 +114,14 @@ const NotificationDropdown = () => {
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+              className={`p-4 hover:bg-gray-50 transition-colors ${
                 !notification.isRead ? 'bg-blue-50' : ''
               }`}
-              onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
             >
               <div className="flex items-start gap-3">
                 {getNotificationIcon(notification.type)}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-start justify-between gap-2 mb-3">
                     <p className="font-semibold text-sm text-gray-900 line-clamp-1">
                       {notification.title}
                     </p>
@@ -128,12 +129,24 @@ const NotificationDropdown = () => {
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {moment(notification.createdAt).fromNow()}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-400">
+                      {moment(notification.createdAt).fromNow()}
+                    </p>
+                    <Button 
+                      type="primary" 
+                      size="small"
+                      icon={<EyeOutlined />}
+                      onClick={() => {
+                        if (!notification.isRead) {
+                          handleMarkAsRead(notification.id);
+                        }
+                        navigate(`/notifications/${notification.id}`);
+                      }}
+                    >
+                      Xem chi tiết
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

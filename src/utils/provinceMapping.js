@@ -50,16 +50,19 @@ export const PROVINCE_NAME_MAPPING = {
 
 /**
  * Normalize province name (Frontend → Backend)
- * @param {string} provinceName - Tên tỉnh từ Frontend (VD: "Gia Lai", "Khánh Hòa")
+ * @param {string} provinceName - Tên tỉnh từ Frontend (VD: "Gia Lai", "Khánh Hòa", "Xổ Số Gia Lai")
  * @returns {string} Tên tỉnh chuẩn hóa (VD: "gialai", "khanhhoa")
  */
 export const normalizeProvinceName = (provinceName) => {
   if (!provinceName) return null;
   
-  const normalized = PROVINCE_NAME_MAPPING[provinceName];
+  // Loại bỏ "Xổ Số" prefix nếu có
+  let cleanName = provinceName.replace(/^Xổ\s*Số\s*/i, '').trim();
+  
+  const normalized = PROVINCE_NAME_MAPPING[cleanName];
   if (!normalized) {
-    console.warn(`Province name "${provinceName}" not found in mapping`);
-    return provinceName.toLowerCase().replace(/\s+/g, '');
+    console.warn(`Province name "${provinceName}" (cleaned: "${cleanName}") not found in mapping`);
+    return cleanName.toLowerCase().replace(/\s+/g, '');
   }
   
   return normalized;

@@ -12,6 +12,8 @@ import MienTrungNamGamePage from './features/lottery/pages/MienTrungNamGamePage'
 import BettingHistoryPage from './features/lottery/pages/BettingHistoryPage';
 import ContactPage from './features/contact/pages/ContactPage';
 import PromotionPage from './features/promotions/pages/PromotionPage';
+import PromotionDetailPage from './features/promotions/pages/PromotionDetailPage';
+import NotificationDetailPage from './features/notification/pages/NotificationDetailPage';
 
 // Admin Pages
 import AdminLoginPage from './features/admin/pages/AdminLoginPage';
@@ -93,6 +95,14 @@ function App() {
               <Route 
                 path="/promotions" 
                 element={<PromotionPage />} 
+              />
+              <Route 
+                path="/promotions/:id" 
+                element={<PromotionDetailPage />} 
+              />
+              <Route 
+                path="/notifications/:id" 
+                element={<NotificationDetailPage />} 
               />
           
           {/* Admin Routes */}

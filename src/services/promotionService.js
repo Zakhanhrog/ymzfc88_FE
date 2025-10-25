@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Tạo axios instance
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'https://api.loto79.online/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

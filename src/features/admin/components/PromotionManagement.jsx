@@ -207,7 +207,7 @@ const PromotionManagement = () => {
                   <div className="relative h-48 overflow-hidden">
                     <Image
                       alt={promotion.title}
-                      src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
+                      src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.loto79.online/api${promotion.imageUrl}`}
                       className="w-full h-full object-cover"
                       fallback={
                         <div className="h-48 bg-gray-200 flex items-center justify-center">
@@ -367,7 +367,7 @@ const PromotionManagement = () => {
                   <Image
                     src={(uploadedImageUrl || form.getFieldValue('imageUrl')).startsWith('http') ? 
                       (uploadedImageUrl || form.getFieldValue('imageUrl')) : 
-                      `http://localhost:8080/api${uploadedImageUrl || form.getFieldValue('imageUrl')}`}
+                      `https://api.loto79.online/api${uploadedImageUrl || form.getFieldValue('imageUrl')}`}
                     alt="Preview"
                     style={{ maxWidth: 200, maxHeight: 200 }}
                   />

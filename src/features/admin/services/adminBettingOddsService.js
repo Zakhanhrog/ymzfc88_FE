@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/admin';
+const API_URL = 'https://api.loto79.online/api/admin';
 
 /**
  * Service để call API betting odds cho admin

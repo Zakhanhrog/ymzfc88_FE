@@ -113,7 +113,7 @@ const BannerDisplay = ({ bannerType, className = '', style = {} }) => {
           }}
         >
           <Image
-            src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`}
+            src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`}
             alt={banner.title}
             style={getBannerStyle(bannerType)}
             preview={false}

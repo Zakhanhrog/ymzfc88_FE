@@ -158,7 +158,7 @@ const AdminBannerManagement = () => {
                 hoverable
                 cover={
                   <Image
-                    src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`}
+                    src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`}
                     alt={`Banner ${banner.displayOrder}`}
                     style={{ height: '120px', objectFit: 'cover' }}
                     fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3MoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7uz39gV7TeD4n0HIw8QcACtK4oTx4mZgAAAABJRU5ErkJggg=="
@@ -207,7 +207,7 @@ const AdminBannerManagement = () => {
                 hoverable
                 cover={
                   <Image
-                    src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`}
+                    src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`}
                     alt={`Banner ${banner.displayOrder}`}
                     style={{ height: '200px', objectFit: 'cover' }}
                     fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3MoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7uz39gV7TeD4n0HIw8QcACtK4oTx4mZgAAAABJRU5ErkJggg=="

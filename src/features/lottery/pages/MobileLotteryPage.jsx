@@ -1,13 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
 import { getProvincesByDay } from '../data/provincesData';
 import Layout from '../../../components/common/Layout';
+import lotteryResultService from '../../../services/lotteryResultService';
 
 const MobileLotteryPage = () => {
   const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const [mienBacResult, setMienBacResult] = useState(null);
+  const [mienBacLoading, setMienBacLoading] = useState(true);
+
+  // Load Miền Bắc result
+  useEffect(() => {
+    const loadMienBacResult = async () => {
+      try {
+        setMienBacLoading(true);
+        const response = await lotteryResultService.getLatestPublishedResult('mienBac', null);
+        
+        if (response.success && response.data) {
+          const prize = lotteryResultService.getSpecialPrize(response.data);
+          if (prize && prize.length > 0) {
+            setMienBacResult(prize);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading Miền Bắc result:', error);
+      } finally {
+        setMienBacLoading(false);
+      }
+    };
+
+    loadMienBacResult();
+  }, []);
 
   // Lấy tỉnh theo ngày được chọn
   const selectedDayProvinces = getProvincesByDay(selectedDay);
@@ -141,11 +167,26 @@ const MobileLotteryPage = () => {
                     Đặt cược
                   </button>
                   <div className="flex space-x-1">
-                    {['0', '7', '0', '8', '1'].map((number, index) => (
-                      <div key={index} className="w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                        {number}
-                      </div>
-                    ))}
+                    {mienBacLoading ? (
+                      // Loading skeleton
+                      [0, 1, 2, 3, 4].map((index) => (
+                        <div key={index} className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                      ))
+                    ) : mienBacResult ? (
+                      // Real result - Enhanced styling
+                      mienBacResult.map((number, index) => (
+                        <div key={index} className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-red-300">
+                          {number}
+                        </div>
+                      ))
+                    ) : (
+                      // Fallback to hardcoded if no result - Enhanced styling
+                      ['0', '7', '0', '8', '1'].map((number, index) => (
+                        <div key={index} className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-red-300">
+                          {number}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

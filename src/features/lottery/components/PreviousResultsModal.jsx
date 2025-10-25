@@ -24,7 +24,7 @@ const PreviousResultsModal = ({ isOpen, onClose, region, province = null }) => {
         const formattedData = lotteryResultService.formatLotteryResult(response.data);
         setLotteryData(formattedData);
       } else {
-        setError(response.message || 'Không có kết quả hôm trước');
+        setError(response.message || 'Chưa có kết quả');
       }
     } catch (err) {
       setError('Có lỗi xảy ra khi tải kết quả');

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://api.loto79.online/api';
 
 // Tạo axios instance với cấu hình mặc định
 const apiClient = axios.create({

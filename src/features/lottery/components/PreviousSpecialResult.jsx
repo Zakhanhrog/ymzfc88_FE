@@ -10,17 +10,29 @@ const PreviousSpecialResult = ({ region, province = null }) => {
 
   useEffect(() => {
     const fetchPreviousResult = async () => {
+      // Debug logging
+      console.log('PreviousSpecialResult - region:', region);
+      console.log('PreviousSpecialResult - province:', province);
+      
       try {
         setLoading(true);
         setError(null);
         
-        const response = await lotteryResultService.getPreviousDayResult(region, province);
+        // Đối với Miền Trung Nam, luôn lấy kỳ quay gần nhất
+        // Đối với Miền Bắc, lấy kỳ quay gần nhất thay vì chỉ hôm trước
+        const response = await lotteryResultService.getLatestPublishedResult(region, province);
         
         if (response.success && response.data) {
           const prize = lotteryResultService.getSpecialPrize(response.data);
-          setSpecialPrize(prize);
+          
+          if (prize && prize.length > 0) {
+            setSpecialPrize(prize);
+          } else {
+            setError('Không có giải đặc biệt trong kết quả');
+          }
         } else {
-          setError(response.message || 'Không có kết quả hôm trước');
+          // API trả về error khi không có kết quả
+          setError(response.message || 'Chưa có kết quả');
         }
       } catch (err) {
         setError('Có lỗi xảy ra khi tải kết quả');
@@ -36,7 +48,7 @@ const PreviousSpecialResult = ({ region, province = null }) => {
     return (
       <div className="text-right">
         <div className="text-xs text-gray-500 mb-1">
-          {region === 'mienTrungNam' ? 'Kỳ quay gần nhất, giải đặc biệt' : 'Kỳ hôm trước, giải đặc biệt'}
+          Kỳ quay gần nhất, giải đặc biệt
         </div>
         <div className="flex gap-1 justify-end">
           {[0, 1, 2, 3, 4].map((index) => (
@@ -51,9 +63,11 @@ const PreviousSpecialResult = ({ region, province = null }) => {
     return (
       <div className="text-right">
         <div className="text-xs text-gray-500 mb-1">
-          {region === 'mienTrungNam' ? 'Kỳ quay gần nhất, giải đặc biệt' : 'Kỳ hôm trước, giải đặc biệt'}
+          Kỳ quay gần nhất, giải đặc biệt
         </div>
-        <div className="text-xs text-gray-400">Chưa có kết quả</div>
+        <div className="text-xs text-gray-400">
+          {error || 'Chưa có kết quả'}
+        </div>
       </div>
     );
   }
@@ -61,7 +75,7 @@ const PreviousSpecialResult = ({ region, province = null }) => {
   return (
     <div className="text-right">
       <div className="text-xs text-gray-500 mb-1">
-        {region === 'mienTrungNam' ? 'Kỳ quay gần nhất, giải đặc biệt' : 'Kỳ hôm trước, giải đặc biệt'}
+        Kỳ quay gần nhất, giải đặc biệt
       </div>
       <div className="flex gap-1 justify-end mb-1">
         {specialPrize.map((num, index) => (

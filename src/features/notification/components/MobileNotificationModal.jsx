@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { Button } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import notificationService from '../services/notificationService';
 import moment from 'moment';
 import 'moment/locale/vi';
@@ -9,6 +12,7 @@ moment.locale('vi');
 const MobileNotificationModal = ({ isOpen, onClose }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -102,12 +106,11 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
                 className={`p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow ${
                   !notification.isRead ? 'border-l-4 border-l-blue-500' : ''
                 }`}
-                onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
               >
                 <div className="flex items-start gap-3">
                   {getNotificationIcon(notification.type)}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-start justify-between gap-2 mb-3">
                       <h3 className="font-semibold text-gray-900 text-sm">
                         {notification.title}
                       </h3>
@@ -115,12 +118,25 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
                         <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm mb-2 leading-relaxed">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {moment(notification.createdAt).fromNow()}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">
+                        {moment(notification.createdAt).fromNow()}
+                      </p>
+                      <Button 
+                        type="primary" 
+                        size="small"
+                        icon={<EyeOutlined />}
+                        onClick={() => {
+                          if (!notification.isRead) {
+                            handleMarkAsRead(notification.id);
+                          }
+                          navigate(`/notifications/${notification.id}`);
+                          onClose();
+                        }}
+                      >
+                        Xem chi tiết
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
