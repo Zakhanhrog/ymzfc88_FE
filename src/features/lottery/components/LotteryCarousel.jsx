@@ -121,7 +121,7 @@ const LotteryCarousel = ({ games, regionName, maxVisible, onGameSelect }) => {
               onClick={() => goToSlide(index)}
               className={`w-2 h-2 rounded-full transition-all duration-200 ${
                 index === currentIndex 
-                  ? 'bg-red-500' 
+                  ? 'bg-green-500' 
                   : 'bg-gray-300 hover:bg-gray-400'
               }`}
             />

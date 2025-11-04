@@ -1,29 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  Row,
-  Col,
-  Statistic,
-  Button,
-  Progress,
-  Space,
-  Tooltip,
-  message,
-  Spin
-} from 'antd';
-import {
-  WalletOutlined,
-  EyeOutlined,
-  EyeInvisibleOutlined,
-  GiftOutlined,
-  TrophyOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  ReloadOutlined,
-  StarOutlined
-} from '@ant-design/icons';
-import { THEME_COLORS } from '../../../utils/theme';
-import { FONT_SIZE, FONT_WEIGHT, HEADING_STYLES, BODY_STYLES } from '../../../utils/typography';
+import { Card, CardContent, CardHeader, CardTitle, Button, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, Spinner } from '../../../components/ui';
+import { Icon } from '@iconify/react';
+import { message } from '../../../utils/notification';
 import walletService from '../services/walletService';
 import pointService from '../../../services/pointService';
 
@@ -46,7 +24,7 @@ const WalletBalance = ({ onTabChange }) => {
       if (response.success) {
         setWalletData(response.data);
       } else {
-        // Fallback data nếu không thể tải được
+        // Fallback data nếu không thể tải được - không hiển thị error cho 403
         setWalletData({
           points: 0,
           totalDeposit: 0,
@@ -54,10 +32,13 @@ const WalletBalance = ({ onTabChange }) => {
           totalBonus: 0,
           frozenAmount: 0
         });
-        message.warning('Không thể tải số dữ liệu từ server, hiển thị dữ liệu mặc định');
+        // Chỉ hiển thị warning nếu không phải lỗi 403
+        if (response.status !== 403) {
+          message.warning('Không thể tải số dữ liệu từ server, hiển thị dữ liệu mặc định');
+        }
       }
     } catch (error) {
-      // Fallback data khi có lỗi
+      // Fallback data khi có lỗi - không hiển thị error cho 403
       setWalletData({
         points: 0,
         totalDeposit: 0,
@@ -65,7 +46,10 @@ const WalletBalance = ({ onTabChange }) => {
         totalBonus: 0,
         frozenAmount: 0
       });
-      message.error('Lỗi khi tải thông tin ví: ' + error.message);
+      // Chỉ hiển thị error nếu không phải lỗi permission
+      if (!error.message?.includes('không có quyền') && !error.message?.includes('403')) {
+        message.error('Lỗi khi tải thông tin ví: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -96,11 +80,6 @@ const WalletBalance = ({ onTabChange }) => {
     setBalanceVisible(!balanceVisible);
   };
 
-  const formatAmount = (amount) => {
-    if (!balanceVisible) return '****';
-    return amount ? amount.toLocaleString() + ' VNĐ' : '0 VNĐ';
-  };
-
   const formatPoints = (points) => {
     if (!balanceVisible) return '****';
     return points ? points.toLocaleString() + ' điểm' : '0 điểm';
@@ -108,9 +87,11 @@ const WalletBalance = ({ onTabChange }) => {
 
   if (loading && !walletData) {
     return (
-      <Card style={{ textAlign: 'center', padding: '60px 0' }}>
-        <Spin size="large" />
-        <p style={{ marginTop: 16, color: '#666', ...BODY_STYLES.base }}>Đang tải thông tin ví...</p>
+      <Card className="text-center">
+        <CardContent className="py-16">
+          <Spinner size="lg" />
+          <p className="mt-4 text-sm text-gray-600">Đang tải thông tin ví...</p>
+        </CardContent>
       </Card>
     );
   }
@@ -129,149 +110,161 @@ const WalletBalance = ({ onTabChange }) => {
     lifetimeSpent = 0
   } = pointData || {};
   
-  // Dùng points từ wallet data hoặc point data
   const displayPoints = points || totalPoints;
 
-  const winRate = totalDeposit > 0 ? ((totalDeposit / (totalDeposit + totalWithdraw)) * 100).toFixed(1) : 0;
-
   return (
-    <div className="space-y-4">
-      {/* Điểm  */}
-      <Card
-        className="shadow-sm"
-        style={{
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-          border: 'none'
-        }}
-        styles={{ body: { padding: '28px' } }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-orange-800/80 mb-2" style={{ fontSize: FONT_SIZE.base, fontWeight: FONT_WEIGHT.normal }}>
-              Điểm hiện tại
+    <TooltipProvider>
+      <div className="space-y-4">
+        {/* Main Balance Card - Tinh tế, không gradient */}
+        <Card className="border border-gray-200 shadow-sm bg-white">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                    <Icon icon="mdi:wallet" className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-600 text-xs font-medium">Số dư ví</p>
+                    <p className="text-gray-400 text-xs">Điểm hiện tại</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-baseline gap-2 mb-3">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {balanceVisible ? displayPoints.toLocaleString() : '****'}
+                  </h2>
+                  <span className="text-gray-500 text-sm font-medium">điểm</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={onToggleBalance}
+                        className="w-5 h-5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs flex items-center justify-center transition-all"
+                      >
+                        <Icon icon={balanceVisible ? "mdi:eye" : "mdi:eye-off"} className="w-3.5 h-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">{balanceVisible ? 'Ẩn' : 'Hiện'} số dư</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+
+                <div className="flex items-center gap-4 text-gray-600 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <Icon icon="mdi:arrow-up-circle" className="w-3.5 h-3.5" />
+                    <span>Đã nhận: <strong className="font-semibold">{balanceVisible ? lifetimeEarned.toLocaleString() : '****'}</strong></span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Icon icon="mdi:arrow-down-circle" className="w-3.5 h-3.5" />
+                    <span>Đã dùng: <strong className="font-semibold">{balanceVisible ? lifetimeSpent.toLocaleString() : '****'}</strong></span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-orange-900" style={{ fontSize: FONT_SIZE['2xl'], fontWeight: FONT_WEIGHT.bold }}>
-                {formatPoints(displayPoints)}
-              </span>
-              <Tooltip title="1000 VNĐ = 1 điểm. Dùng điểm để đặt cược và rút tiền">
-                <Button
-                  type="text"
-                  size="small"
-                  className="text-orange-800/60 hover:text-orange-900 hover:bg-orange-900/10"
-                >
-                  ?
-                </Button>
-              </Tooltip>
-            </div>
-            <div className="mt-2 text-orange-800/70" style={{ fontSize: FONT_SIZE.xs }}>
-              Đã nhận: {balanceVisible ? lifetimeEarned.toLocaleString() : '****'} |
-              Đã dùng: {balanceVisible ? lifetimeSpent.toLocaleString() : '****'}
-            </div>
-          </div>
-          <div>
-            <div className="text-orange-900/40 text-5xl">
-              <StarOutlined />
-            </div>
-          </div>
+          </CardContent>
+        </Card>
+
+        {/* Statistics Grid - Compact */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center">
+                  <Icon icon="mdi:arrow-up" className="w-3.5 h-3.5 text-green-600" />
+                </div>
+              </div>
+              <p className="text-gray-500 text-xs font-medium mb-0.5">Tổng nạp</p>
+              <p className="text-base font-bold text-gray-900">
+                {balanceVisible ? totalDeposit.toLocaleString() : '****'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center">
+                  <Icon icon="mdi:arrow-down" className="w-3.5 h-3.5 text-green-600" />
+                </div>
+              </div>
+              <p className="text-gray-500 text-xs font-medium mb-0.5">Tổng rút</p>
+              <p className="text-base font-bold text-gray-900">
+                {balanceVisible ? totalWithdraw.toLocaleString() : '****'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center">
+                  <Icon icon="mdi:gift" className="w-3.5 h-3.5 text-blue-600" />
+                </div>
+              </div>
+              <p className="text-gray-500 text-xs font-medium mb-0.5">Tổng thưởng</p>
+              <p className="text-base font-bold text-gray-900">
+                {balanceVisible ? totalBonus.toLocaleString() : '****'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center">
+                  <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5 text-orange-600" />
+                </div>
+              </div>
+              <p className="text-gray-500 text-xs font-medium mb-0.5">Đang chờ</p>
+              <p className="text-base font-bold text-gray-900">
+                {balanceVisible ? frozenAmount.toLocaleString() : '****'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </Card>
 
-      {/* Statistics - Compact Grid */}
-      <div className="grid grid-cols-5 gap-3">
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-          <div className="text-xl font-bold text-green-600 flex items-center gap-1">
-            <ArrowUpOutlined className="text-sm" />
-            {balanceVisible ? totalDeposit.toLocaleString() : '****'}
-          </div>
-        </Card>
+        {/* Quick Actions - Compact */}
+        <Card className="border border-gray-200 bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold text-gray-900">Thao tác nhanh</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button
+                variant="primary"
+                size="lg"
+                className="h-11 font-semibold text-sm w-full"
+                onClick={() => onTabChange && onTabChange('deposit-withdraw')}
+              >
+                <Icon icon="mdi:arrow-up-circle" className="w-4 h-4" />
+                Nạp tiền
+              </Button>
 
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-          <div className="text-xl font-bold text-red-600 flex items-center gap-1">
-            <ArrowDownOutlined className="text-sm" />
-            {balanceVisible ? totalWithdraw.toLocaleString() : '****'}
-          </div>
-        </Card>
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-11 border-2 border-green-500 text-green-600 hover:bg-green-50 font-semibold text-sm w-full"
+                onClick={() => onTabChange && onTabChange('withdraw')}
+              >
+                <Icon icon="mdi:arrow-down-circle" className="w-4 h-4" />
+                Rút tiền
+              </Button>
 
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Tổng thưởng</div>
-          <div className="text-xl font-bold text-blue-600 flex items-center gap-1">
-            <GiftOutlined className="text-sm" />
-            {balanceVisible ? totalBonus.toLocaleString() : '****'}
-          </div>
-        </Card>
-
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
-          <div className="text-xl font-bold text-orange-500 flex items-center gap-1">
-            <span className="text-sm">⏳</span>
-            {balanceVisible ? frozenAmount.toLocaleString() : '****'}
-          </div>
-        </Card>
-
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div className="text-xs text-gray-500 mb-1">Điểm hiện tại</div>
-          <div className="text-xl font-bold text-yellow-600 flex items-center gap-1">
-            <StarOutlined className="text-sm" />
-            {balanceVisible ? displayPoints.toLocaleString() : '****'}
-          </div>
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-11 border-2 border-amber-500 text-amber-600 hover:bg-amber-50 font-semibold text-sm w-full"
+                onClick={() => onTabChange && onTabChange('points')}
+              >
+                <Icon icon="mdi:star-circle" className="w-4 h-4" />
+                Điểm thưởng
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions - Simple Buttons */}
-      <div className="grid grid-cols-3 gap-3">
-        <Button
-          type="primary"
-          size="large"
-          block
-          icon={<ArrowUpOutlined />}
-          className="h-12 font-semibold"
-          style={{
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            border: 'none'
-          }}
-          onClick={() => onTabChange && onTabChange('deposit-withdraw')}
-        >
-          Nạp tiền
-        </Button>
-
-        <Button
-          size="large"
-          block
-          icon={<ArrowDownOutlined />}
-          className="h-12 font-semibold"
-          style={{
-            borderRadius: '10px',
-            borderColor: '#dc2626',
-            color: '#dc2626',
-            background: 'white'
-          }}
-          onClick={() => onTabChange && onTabChange('withdraw')}
-        >
-          Rút tiền
-        </Button>
-
-        <Button
-          size="large"
-          block
-          icon={<StarOutlined />}
-          className="h-12 font-semibold"
-          style={{
-            borderRadius: '10px',
-            borderColor: '#FFD700',
-            color: '#FF8C00',
-            background: 'white'
-          }}
-          onClick={() => onTabChange && onTabChange('points')}
-        >
-          Điểm
-        </Button>
-      </div>
-    </div>
+    </TooltipProvider>
   );
 };
 

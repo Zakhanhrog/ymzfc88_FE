@@ -228,7 +228,7 @@ const PaymentMethods = () => {
       {/* Title Header */}
       <div className="text-center pb-3">
         <div className="flex items-center justify-center gap-2 mb-1">
-          <BankOutlined className="text-2xl text-red-600" />
+          <BankOutlined className="text-2xl text-green-600" />
           <h3 className="text-xl md:text-2xl font-bold mb-0 text-gray-800">Phương thức nạp tiền</h3>
         </div>
         <p className="text-sm text-gray-500">

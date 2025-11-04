@@ -34,7 +34,7 @@ const Tabs = ({
             className={`
               relative px-6 py-3 font-medium text-sm transition-all duration-200
               ${currentActiveKey === item.key 
-                ? 'text-[#D30102] border-b-2 border-[#D30102]' 
+                ? 'text-[#4CAF50] border-b-2 border-[#4CAF50]' 
                 : 'text-gray-600 hover:text-gray-900'
               }
               ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -49,7 +49,7 @@ const Tabs = ({
       </div>
       
       {/* Tab Content */}
-      <div className={`py-4 ${contentClassName}`}>
+      <div className={`${contentClassName || 'p-4 md:p-6'}`}>
         {activeTab?.children}
       </div>
     </div>

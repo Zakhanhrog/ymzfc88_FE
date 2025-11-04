@@ -10,7 +10,7 @@ const Table = ({
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="w-8 h-8 border-4 border-[#D30102] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#4CAF50] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

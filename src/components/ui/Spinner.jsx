@@ -14,7 +14,7 @@ const Spinner = ({
   };
 
   const colorClasses = {
-    primary: 'border-[#D30102] border-t-transparent',
+    primary: 'border-[#4CAF50] border-t-transparent',
     white: 'border-white border-t-transparent',
     gray: 'border-gray-600 border-t-transparent',
   };

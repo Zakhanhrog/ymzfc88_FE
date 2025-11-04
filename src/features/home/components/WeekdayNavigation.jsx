@@ -28,7 +28,7 @@ const WeekdayNavigation = ({ onDaySelect }) => {
           onClick={() => handleDayClick(day.key)}
           className={`px-1.5 py-1 rounded text-xs font-medium transition-colors ${
             selectedDay === day.key
-              ? 'bg-red-500 text-white'
+              ? 'bg-green-500 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >

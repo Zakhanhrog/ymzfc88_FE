@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
+import MainNavigationBar from '../../home/components/MainNavigationBar';
 import { getProvinceImagePathWithMapping } from '../utils/imageUtils';
 import { getProvincesByDay } from '../data/provincesData';
 
@@ -16,7 +17,7 @@ const LotteryPage = () => {
   const regions = {
     bac: {
       name: 'Miền Bắc',
-      color: 'from-red-500 to-red-600',
+      color: 'from-green-500 to-green-600',
       games: [
         {
           id: 'mien-bac',
@@ -53,6 +54,25 @@ const LotteryPage = () => {
 
   return (
     <Layout>
+      {/* Main Navigation Bar */}
+      <div className="mb-4">
+        <MainNavigationBar />
+      </div>
+
+      {/* Breadcrumb */}
+      <div className="mb-4 px-6 md:px-0">
+        <nav className="flex items-center text-sm text-gray-600">
+          <button 
+            onClick={() => navigate('/')}
+            className="hover:text-green-500 transition-colors"
+          >
+            Trang chủ
+          </button>
+          <span className="mx-2">/</span>
+          <span className="text-green-500 font-medium">Xổ số</span>
+        </nav>
+      </div>
+
       {/* Desktop Layout */}
       <div className="hidden md:block p-6">
         {/* Region Tabs */}
@@ -89,7 +109,7 @@ const LotteryPage = () => {
               <div
                 key={index}
                 onClick={() => setSelectedDay(item.dayIndex)}
-                className={`${selectedDay === item.dayIndex ? 'bg-red-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-2 cursor-pointer transition-all duration-300 transform flex-1 text-center max-w-20`}
+                className={`${selectedDay === item.dayIndex ? 'bg-green-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-2 cursor-pointer transition-all duration-300 transform flex-1 text-center max-w-20`}
               >
                 <div className="text-xs font-semibold">{item.day}</div>
               </div>
@@ -180,11 +200,11 @@ const LotteryPage = () => {
                 </div>
                 
                 {/* XỔ SỐ */}
-                <div className="flex flex-col items-center p-1 bg-red-100 rounded-lg mb-1 aspect-square">
+                <div className="flex flex-col items-center p-1 bg-green-100 rounded-lg mb-1 aspect-square">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <Icon icon="mdi:dice-multiple" className="text-red-600 text-lg" />
+                    <Icon icon="mdi:dice-multiple" className="text-green-600 text-lg" />
                   </div>
-                  <span className="text-xs text-red-700 text-center">Xổ Số</span>
+                  <span className="text-xs text-green-700 text-center">Xổ Số</span>
                 </div>
                 
                 {/* E-SPORTS */}
@@ -240,7 +260,7 @@ const LotteryPage = () => {
                     <div
                       key={index}
                       onClick={() => setSelectedDay(item.dayIndex)}
-                      className={`${selectedDay === item.dayIndex ? 'bg-red-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-1 cursor-pointer transition-all duration-300 transform flex-1 text-center`}
+                      className={`${selectedDay === item.dayIndex ? 'bg-green-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-1 cursor-pointer transition-all duration-300 transform flex-1 text-center`}
                     >
                       <div className="text-xs font-semibold">{item.day}</div>
                     </div>
@@ -269,7 +289,7 @@ const LotteryPage = () => {
 
               {/* Miền Bắc Card - Above Weekday Bar */}
               <div className="mb-3">
-                <div className="bg-white border border-red-300 rounded-lg p-4">
+                <div className="bg-white border border-green-300 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <div className="w-16 h-16 rounded-lg overflow-hidden">
@@ -282,7 +302,7 @@ const LotteryPage = () => {
                       <div>
                         <div className="flex items-center space-x-2">
                           <span className="text-base font-semibold text-gray-800">Miền Bắc</span>
-                          <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">HOT</span>
+                          <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">HOT</span>
                         </div>
                         <div className="text-sm text-gray-600">Ngày: {new Date().toLocaleDateString('vi-VN')}</div>
                       </div>
@@ -291,14 +311,14 @@ const LotteryPage = () => {
                   
                   <div className="flex items-center justify-between">
                     <button 
-                      className="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition-colors"
+                      className="bg-green-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-green-600 transition-colors"
                       onClick={() => handleGameSelect(regions.bac.games[0].id)}
                     >
                       Đặt cược
                     </button>
                     <div className="flex space-x-1">
                       {['0', '7', '0', '8', '1'].map((number, index) => (
-                        <div key={index} className="w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                        <div key={index} className="w-6 h-6 bg-green-500 text-white text-xs rounded-full flex items-center justify-center">
                           {number}
                         </div>
                       ))}

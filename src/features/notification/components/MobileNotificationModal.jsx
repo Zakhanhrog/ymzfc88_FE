@@ -56,7 +56,7 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
       case 'success':
         return <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />;
       case 'error':
-        return <Icon icon="mdi:close-circle" className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />;
+        return <Icon icon="mdi:close-circle" className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />;
       case 'warning':
         return <Icon icon="mdi:alert-circle" className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />;
       case 'info':
@@ -91,7 +91,7 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
       <div className="p-4">
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-12">

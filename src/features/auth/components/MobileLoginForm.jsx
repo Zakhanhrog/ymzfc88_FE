@@ -109,31 +109,31 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
       {/* Login Form */}
       <div className="bg-gray-50 -mt-8 mx-4 rounded-t-2xl relative z-10">
         <div className="p-6 pt-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-6 text-center">Đăng nhập</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 text-center tracking-wide">Đăng nhập</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                * Tên Đăng Nhập
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tên đăng nhập hoặc email
               </label>
               <div className="relative">
                 <Input
                   name="usernameOrEmail"
                   value={formData.usernameOrEmail}
                   onChange={handleChange}
-                  placeholder="Vui lòng nhập tài khoản"
-                  prefix={<Icon icon="mdi:account" className="text-gray-400" />}
+                  placeholder="Nhập tên đăng nhập hoặc email"
+                  prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
                   error={errors.usernameOrEmail}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                * Vui lòng nhập mật khẩu
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mật khẩu
               </label>
               <div className="relative">
                 <Input
@@ -141,19 +141,19 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Vui lòng nhập mật khẩu"
-                  prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
+                  placeholder="Nhập mật khẩu"
+                  prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
                   suffix={
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5" />
+                      <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-4 h-4" />
                     </button>
                   }
                   error={errors.password}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -165,9 +165,9 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
               />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="rememberMe" className="ml-2 text-sm font-normal text-gray-700">
                 Nhớ mật khẩu tài khoản của bạn
               </label>
             </div>
@@ -176,10 +176,10 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
             <Button 
               type="submit"
               variant="primary"
-              size="sm"
+              size="lg"
               block
               loading={loading}
-              className="h-10 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full transition-colors text-xs mt-6"
+              className="h-11 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm mt-5"
             >
               Đăng nhập
             </Button>
@@ -188,21 +188,20 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
             <Button 
               type="button"
               variant="outline"
-              size="sm"
+              size="lg"
               block
               onClick={(e) => {
                 e.stopPropagation();
                 onSwitchToRegister && onSwitchToRegister();
               }}
-              className="h-10 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-colors text-xs"
+              className="h-11 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors text-sm"
             >
               Đăng ký
             </Button>
 
-
             {/* LOTO79 Branding */}
-            <div className="text-center mt-4">
-              <span className="text-sm text-gray-400">LOTO79</span>
+            <div className="text-center mt-6">
+              <span className="text-sm font-medium text-gray-400">LOTO79</span>
             </div>
           </form>
         </div>

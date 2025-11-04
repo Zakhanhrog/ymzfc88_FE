@@ -66,7 +66,7 @@ const PreviousResultsModal = ({ isOpen, onClose, region, province = null }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-red-600 text-white px-3 py-2 flex items-center justify-between">
+        <div className="bg-green-600 text-white px-3 py-2 flex items-center justify-between">
           <h3 className="text-sm font-bold">
             Kết quả {getRegionName(region)} ngày {lotteryData ? formatDate(lotteryData.date) : ''}
           </h3>
@@ -86,8 +86,8 @@ const PreviousResultsModal = ({ isOpen, onClose, region, province = null }) => {
 
           {error && (
             <div className="text-center py-8">
-              <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-500 mx-auto mb-2" />
-              <p className="text-red-600">{error}</p>
+              <Icon icon="mdi:alert-circle" className="w-12 h-12 text-green-500 mx-auto mb-2" />
+              <p className="text-green-600">{error}</p>
             </div>
           )}
 
@@ -99,7 +99,7 @@ const PreviousResultsModal = ({ isOpen, onClose, region, province = null }) => {
                   {/* Special Prize */}
                   <tr className="border-b border-gray-200">
                     <td className="w-20 px-2 py-1 bg-gray-50 border-r border-gray-300 text-left">
-                      <span className="text-sm font-medium text-red-600 font-bold">Đặc biệt</span>
+                      <span className="text-sm font-medium text-green-600 font-bold">Đặc biệt</span>
                     </td>
                     <td className="px-2 py-1">
                       <div className="flex flex-wrap gap-1">

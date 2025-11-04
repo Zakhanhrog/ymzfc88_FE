@@ -54,7 +54,7 @@ const GameGrid = () => {
         {/* Right side - Buttons */}
         <div className="flex gap-2">
           <button 
-            className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-transform"
+            className="bg-gradient-to-r from-green-500 to-orange-500 text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-transform"
             style={{ ...BUTTON_TEXT_STYLES.small }}
           >
             <Icon icon="mdi:magnify" className="text-sm" />

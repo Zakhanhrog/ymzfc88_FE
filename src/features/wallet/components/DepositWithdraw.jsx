@@ -468,7 +468,7 @@ const DepositWithdraw = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="font-semibold">Số tiền:</span>
-              <span className="text-lg font-bold text-red-600">
+              <span className="text-lg font-bold text-green-600">
                 {formatCurrency(amount)}
               </span>
             </div>

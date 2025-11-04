@@ -106,104 +106,127 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
 
         <div className="flex-1 flex flex-col justify-center">
           <div className="text-center mb-6">
-            <h2 className="text-lg font-bold text-gray-800 uppercase" style={{ fontFamily: 'Arial, sans-serif' }}>
-              ĐĂNG KÝ
+            <h2 className="text-lg font-semibold text-gray-900 uppercase tracking-wide">
+              Đăng ký
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
-            <Input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Họ và tên"
-              prefix={<Icon icon="mdi:account" className="text-gray-400" />}
-              error={errors.name}
-              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+          <form onSubmit={handleSubmit} className="space-y-3.5" onClick={(e) => e.stopPropagation()}>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Họ và tên
+              </label>
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Nhập họ và tên"
+                prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
+                error={errors.name}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
 
-            <Input
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Tên đăng nhập"
-              prefix={<Icon icon="mdi:account-circle" className="text-gray-400" />}
-              error={errors.username}
-              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tên đăng nhập
+              </label>
+              <Input
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Nhập tên đăng nhập"
+                prefix={<Icon icon="mdi:account-circle" className="text-gray-400 text-base" />}
+                error={errors.username}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
 
-            <Input
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              prefix={<Icon icon="mdi:email" className="text-gray-400" />}
-              error={errors.email}
-              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email
+              </label>
+              <Input
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Nhập email"
+                prefix={<Icon icon="mdi:email" className="text-gray-400 text-base" />}
+                error={errors.email}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
 
-            <Input
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              placeholder="Số điện thoại"
-              prefix={<Icon icon="mdi:phone" className="text-gray-400" />}
-              error={errors.phoneNumber}
-              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Số điện thoại
+              </label>
+              <Input
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                placeholder="Nhập số điện thoại"
+                prefix={<Icon icon="mdi:phone" className="text-gray-400 text-base" />}
+                error={errors.phoneNumber}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
 
-            <Input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Mật khẩu"
-              prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
-              error={errors.password}
-              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mật khẩu
+              </label>
+              <Input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Nhập mật khẩu"
+                prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
+                error={errors.password}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
 
-            <Input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Xác nhận mật khẩu"
-              prefix={<Icon icon="mdi:lock-check" className="text-gray-400" />}
-              error={errors.confirmPassword}
-              className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Xác nhận mật khẩu
+              </label>
+              <Input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Nhập lại mật khẩu"
+                prefix={<Icon icon="mdi:lock-check" className="text-gray-400 text-base" />}
+                error={errors.confirmPassword}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
 
-            <div className="flex items-start gap-2 py-2">
+            <div className="flex items-start gap-2 py-1.5">
               <input
                 type="checkbox"
                 name="agreedToTerms"
                 checked={formData.agreedToTerms}
                 onChange={handleChange}
-                className="mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                className="mt-0.5 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
               />
-              <label className="text-sm text-gray-600" style={{ fontFamily: 'Arial, sans-serif' }}>
-                Tôi đồng ý với <a href="#" className="text-red-600 hover:underline">Điều khoản sử dụng</a> và <a href="#" className="text-red-600 hover:underline">Chính sách bảo mật</a>
+              <label className="text-sm font-normal text-gray-700 leading-relaxed">
+                Tôi đồng ý với <a href="#" className="text-green-600 hover:underline font-medium">Điều khoản sử dụng</a> và <a href="#" className="text-green-600 hover:underline font-medium">Chính sách bảo mật</a>
               </label>
             </div>
-            {errors.agreedToTerms && <p className="text-sm text-red-600 -mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>{errors.agreedToTerms}</p>}
+            {errors.agreedToTerms && <p className="text-sm text-green-600 -mt-1 font-medium">{errors.agreedToTerms}</p>}
 
-            <div className="flex items-center justify-center py-2">
+            <div className="flex items-center justify-center py-1.5">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSwitchToLogin && onSwitchToLogin();
                 }}
-                className="text-sm text-red-600 hover:underline font-medium"
-                style={{ fontFamily: 'Arial, sans-serif' }}
+                className="text-sm text-green-600 hover:text-green-700 hover:underline font-medium transition-colors"
               >
                 Đã có tài khoản? Đăng nhập ngay
               </button>
@@ -215,10 +238,9 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               size="lg"
               block
               loading={loading}
-              className="h-10 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
-              style={{ fontFamily: 'Arial, sans-serif' }}
+              className="h-11 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm"
             >
-              ĐĂNG KÝ
+              Đăng ký
             </Button>
           </form>
         </div>
@@ -232,19 +254,17 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               onClose && onClose();
               navigate('/');
             }}
-            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
-            style={{ fontFamily: 'Arial, sans-serif' }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors"
           >
-            <Icon icon="mdi:home" className="text-red-600 text-sm" />
+            <Icon icon="mdi:home" className="text-green-600 text-base" />
             TRANG CHỦ
           </button>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
-            style={{ fontFamily: 'Arial, sans-serif' }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors"
           >
-            <Icon icon="mdi:headset" className="text-red-600 text-sm" />
+            <Icon icon="mdi:headset" className="text-green-600 text-base" />
             CSKH
           </button>
         </div>

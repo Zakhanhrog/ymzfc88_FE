@@ -1,27 +1,13 @@
-/* Không cần import web font - sử dụng system font Tahoma */
+/* Import Inter font từ Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Font loading optimization cho Tahoma */
-@font-face {
-  font-family: 'Tahoma-Optimized';
-  src: local('Tahoma'), local('Tahoma Regular');
-  font-display: swap;
-  font-weight: normal;
-}
-
-@font-face {
-  font-family: 'Tahoma-Optimized';
-  src: local('Tahoma Bold'), local('Tahoma-Bold');
-  font-display: swap;
-  font-weight: bold;
-}
-
-/* Global font family với Tahoma chính và letter-spacing tight */
+/* Global font family với Inter - font đẹp và rõ ràng hơn */
 * {
-  font-family: 'Tahoma', 'Arial', 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-weight: 500; /* Trở lại 500 cho toàn bộ */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -114,10 +100,32 @@ strong, b, .font-bold, .ant-typography-title {
 
 /* Global color variables */
 :root {
-  --primary-color: #B2C0D1; /* Trở lại màu cũ */
-  --primary-hover: #9BABC2; /* Trở lại màu cũ */
-  --primary-light: rgba(178, 192, 209, 0.1); /* Trở lại màu cũ */
-  --primary-dark: #8A9BB0; /* Trở lại màu cũ */
+  --primary-color: #34D399; /* Màu xanh lá chính (green-400) */
+  --primary-hover: #059669; /* Màu xanh lá hover (emerald-600) */
+  --primary-light: rgba(52, 211, 153, 0.1); /* Màu xanh lá nhạt */
+  --primary-dark: #047857; /* Màu xanh lá đậm (emerald-700) */
+  
+  /* Shadcn UI CSS Variables */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 160 84.1% 39.4%; /* HSL cho green-400 */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 142 76.2% 36.3%;
+  --radius: 0.5rem;
 }
 
 /* Tắt tất cả animation/transition cho page transitions */
@@ -128,11 +136,11 @@ strong, b, .font-bold, .ant-typography-title {
 }
 
 body {
-  font-family: 'Tahoma', 'Arial', 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-weight: 500; /* Trở lại 500 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #B2C0D1; /* Trở lại màu cũ */
+  color: #34D399; /* Màu xanh lá chính (green-400) */
   /* Force font loading để tránh FOUT + letter spacing tight */
   font-display: swap;
   letter-spacing: -0.025em;
@@ -203,22 +211,22 @@ body {
 
 /* Ensure menu items are visible với font weight nhất quán và letter-spacing */
 .ant-menu-horizontal .ant-menu-item {
-  color: #B2C0D1; /* Trở lại màu cũ */
+  color: #34D399; /* Màu xanh lá chính (green-400) */
   font-weight: 700; /* Trở lại 700 */
   letter-spacing: -0.035em;
 }
 
 .ant-menu-horizontal .ant-menu-item:hover {
-  color: #B2C0D1; /* Trở lại màu cũ */
-  background-color: rgba(178, 192, 209, 0.1);
+  color: #34D399; /* Màu xanh lá chính (green-400) */
+  background-color: rgba(52, 211, 153, 0.1);
   font-weight: 700; /* Trở lại 700 */
   letter-spacing: -0.035em;
 }
 
 .ant-menu-horizontal .ant-menu-item-selected {
-  color: #B2C0D1; /* Trở lại màu cũ */
-  background-color: rgba(178, 192, 209, 0.2);
-  border-bottom: 2px solid #B2C0D1;
+  color: #34D399; /* Màu xanh lá chính (green-400) */
+  background-color: rgba(52, 211, 153, 0.2);
+  border-bottom: 2px solid #34D399;
   font-weight: 800; /* Trở lại 800 */
   letter-spacing: -0.04em;
 }
@@ -518,7 +526,7 @@ body::-webkit-scrollbar {
 /* Tất cả menu items có nền trắng với letter-spacing tight */
 .ant-menu-item {
   background: white;
-  color: #B2C0D1; /* Trở lại màu cũ */
+  color: #34D399; /* Màu xanh lá chính (green-400) */
   margin: 0;
   border-radius: 0;
   font-weight: 500; /* Trở lại 500 */
@@ -529,7 +537,7 @@ body::-webkit-scrollbar {
 /* Menu item hover */
 .ant-menu-item:hover {
   background: #f5f5f5;
-  color: #B2C0D1; /* Trở lại màu cũ */
+  color: #34D399; /* Màu xanh lá chính (green-400) */
   font-weight: 500; /* Trở lại 500 */
   letter-spacing: -0.025em;
   /* Loại bỏ text-shadow để tránh font "jumping" */

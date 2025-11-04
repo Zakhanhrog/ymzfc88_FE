@@ -796,7 +796,7 @@ const MienTrungNamGamePage = () => {
       setLoadingPoints(true);
       
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
+      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -1323,7 +1323,7 @@ const MienTrungNamGamePage = () => {
         
         <div className="text-right">
           <div className="text-xs md:text-sm text-gray-600">{userName}</div>
-          <div className="text-sm md:text-base font-semibold text-[#D30102]">
+          <div className="text-sm md:text-base font-semibold text-[#4CAF50]">
             {loadingPoints ? 'Đang tải...' : `${userPoints.toLocaleString()} điểm`}
           </div>
         </div>
@@ -1573,7 +1573,7 @@ const MienTrungNamGamePage = () => {
                       onClick={() => handleNumberSelect(number)}
                       className={`w-8 h-8 md:w-10 md:h-10 rounded-lg font-medium transition-all text-xs md:text-base ${
                         selectedNumbers.includes(number)
-                          ? 'bg-red-500 text-white'
+                          ? 'bg-green-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -1716,7 +1716,7 @@ const MienTrungNamGamePage = () => {
                     <div className="text-gray-700">
                       <span className="font-medium">Tổng tiền cược:</span> {calculateTotalAmount().toLocaleString()} điểm
                       {(selectedGameType === 'dau-duoi-mien-trung-nam' || selectedGameType === '3s-dau-duoi-mien-trung-nam') && (
-                        <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                        <span className="text-green-500 text-xs ml-1">(đã × 2)</span>
                       )}
                     </div>
                     <div className="text-gray-700">
@@ -1767,7 +1767,7 @@ const MienTrungNamGamePage = () => {
               onClick={() => setActiveTab('selection')}
               className={`flex-1 py-2 md:py-3 px-3 md:px-4 text-center font-medium transition-colors text-sm md:text-base ${
                 activeTab === 'selection'
-                  ? 'bg-[#D30102] text-white'
+                  ? 'bg-[#4CAF50] text-white'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -1777,7 +1777,7 @@ const MienTrungNamGamePage = () => {
               onClick={() => setActiveTab('history')}
               className={`flex-1 py-2 md:py-3 px-3 md:px-4 text-center font-medium transition-colors text-sm md:text-base ${
                 activeTab === 'history'
-                  ? 'bg-[#D30102] text-white'
+                  ? 'bg-[#4CAF50] text-white'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -1919,10 +1919,10 @@ const MienTrungNamGamePage = () => {
                     <div className="text-gray-600">
                       Tổng tiền cược: {calculateTotalAmount().toLocaleString()} điểm
                       {selectedGameType === 'dau-duoi-mien-trung-nam' && (
-                        <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                        <span className="text-green-500 text-xs ml-1">(đã × 2)</span>
                       )}
                       {selectedGameType === '3s-dau-duoi-mien-trung-nam' && (
-                        <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                        <span className="text-green-500 text-xs ml-1">(đã × 2)</span>
                       )}
                     </div>
                     <div className="text-gray-600">
@@ -1958,7 +1958,7 @@ const MienTrungNamGamePage = () => {
                           <span className={`px-2 py-1 rounded text-xs font-medium ${
                             recentBet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                             recentBet.status === 'WON' ? 'bg-green-100 text-green-800' :
-                            recentBet.status === 'LOST' ? 'bg-red-100 text-red-800' :
+                            recentBet.status === 'LOST' ? 'bg-green-100 text-green-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {recentBet.status === 'PENDING' ? 'Chờ kết quả' :
@@ -2072,7 +2072,7 @@ const MienTrungNamGamePage = () => {
                         return parts.length === 10;
                       }).length === 0)
                         ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-[#D30102] hover:bg-[#B80102]'
+                        : 'bg-[#4CAF50] hover:bg-[#388E3C]'
                     }`}
                   >
                     {placingBet ? (
@@ -2126,7 +2126,7 @@ const MienTrungNamGamePage = () => {
                           {bet.status === 'PENDING' && (
                             <button
                               onClick={() => cancelBet(bet.id)}
-                              className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                              className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-colors"
                               title="Hủy cược (trước 18:10)"
                             >
                               Hủy
@@ -2159,7 +2159,7 @@ const MienTrungNamGamePage = () => {
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               bet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                               bet.status === 'WON' ? 'bg-green-100 text-green-800' :
-                              bet.status === 'LOST' ? 'bg-red-100 text-red-800' :
+                              bet.status === 'LOST' ? 'bg-green-100 text-green-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
                               {bet.status === 'PENDING' ? 'Chờ kết quả' :
@@ -2305,9 +2305,9 @@ const MienTrungNamGamePage = () => {
                       </div>
                       <div className="text-sm">
                         <span className="font-medium text-gray-700">Tổng tiền cược:</span>
-                        <span className="ml-2 text-[#D30102] font-bold">{calculateTotalAmount().toLocaleString()} điểm</span>
+                        <span className="ml-2 text-[#4CAF50] font-bold">{calculateTotalAmount().toLocaleString()} điểm</span>
                         {(selectedGameType === 'dau-duoi-mien-trung-nam' || selectedGameType === '3s-dau-duoi-mien-trung-nam') && (
-                          <span className="text-red-500 text-xs ml-1">(đã × 2)</span>
+                          <span className="text-green-500 text-xs ml-1">(đã × 2)</span>
                         )}
                       </div>
                       <div className="text-sm">
@@ -2334,7 +2334,7 @@ const MienTrungNamGamePage = () => {
                   className={`w-full py-3 text-white rounded-lg transition-colors font-medium text-base ${
                     placingBet || selectedNumbers.length === 0
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-[#D30102] hover:bg-[#B80102]'
+                      : 'bg-[#4CAF50] hover:bg-[#388E3C]'
                   }`}
                 >
                   {placingBet ? (

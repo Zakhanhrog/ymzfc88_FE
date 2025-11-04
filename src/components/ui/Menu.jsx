@@ -39,7 +39,7 @@ const Menu = ({
             className={`
               w-full flex items-center justify-between px-4 py-2.5 rounded-lg
               text-left font-medium transition-all duration-200
-              ${selected ? 'bg-[#D30102] bg-opacity-10 text-[#D30102]' : 'text-gray-700 hover:bg-gray-100'}
+              ${selected ? 'bg-green-400 bg-opacity-10 text-green-500' : 'text-gray-700 hover:bg-gray-100'}
               ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
             disabled={item.disabled}
@@ -75,7 +75,7 @@ const Menu = ({
         className={`
           w-full flex items-center gap-3 px-4 py-2.5 rounded-lg mb-1
           text-left font-medium transition-all duration-200
-          ${selected ? 'bg-[#D30102] bg-opacity-10 text-[#D30102] border-l-4 border-[#D30102]' : 'text-gray-700 hover:bg-gray-100'}
+          ${selected ? 'bg-green-400 bg-opacity-10 text-green-500 border-l-4 border-green-500' : 'text-gray-700 hover:bg-gray-100'}
           ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         `}
       >
@@ -108,7 +108,7 @@ export const MenuItem = ({
       className={`
         w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
         text-left font-medium transition-all duration-200
-        ${selected ? 'bg-[#D30102] bg-opacity-10 text-[#D30102] border-l-4 border-[#D30102]' : 'text-gray-700 hover:bg-gray-100'}
+        ${selected ? 'bg-[#4CAF50] bg-opacity-10 text-[#4CAF50] border-l-4 border-[#4CAF50]' : 'text-gray-700 hover:bg-gray-100'}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}
       `}

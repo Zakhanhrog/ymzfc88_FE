@@ -94,7 +94,7 @@ export const DropdownMenu = ({ items, onClick }) => {
               onClick={() => onClick?.(item)}
               disabled={item.disabled}
               className={`w-full text-left px-4 py-2 text-sm transition-colors
-                ${item.danger ? 'text-red-600 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-100'}
+                ${item.danger ? 'text-green-600 hover:bg-green-50' : 'text-gray-700 hover:bg-gray-100'}
                 ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >

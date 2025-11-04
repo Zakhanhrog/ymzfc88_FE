@@ -93,7 +93,7 @@ export const TEXT_COLORS = {
   tertiary: THEME_COLORS.textLight,         // #9ca3af - Text nhạt
   
   // Brand colors
-  brand: THEME_COLORS.primary,              // #D30102 - Màu brand
+  brand: THEME_COLORS.primary,              // #4CAF50 - Màu brand
   brandLight: THEME_COLORS.secondaryLight,  // #B2C0D1 - Màu brand nhạt
   
   // Semantic colors
@@ -272,7 +272,7 @@ export const SIDEBAR_STYLES = {
     fontSize: FONT_SIZE.base2,
     fontWeight: FONT_WEIGHT.bold,     // 700 - đậm hơn khi active
     lineHeight: LINE_HEIGHT.normal,
-    color: TEXT_COLORS.brand,         // #D30102 - đỏ
+    color: TEXT_COLORS.brand,         // #4CAF50 - xanh lá
     fontFamily: FONT_FAMILY.sidebar,  // Tahoma
   },
   gameCategoryActive: {

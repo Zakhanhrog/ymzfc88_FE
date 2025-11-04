@@ -7,7 +7,7 @@ const Banner = () => {
     <div className="mb-6">
       {/* Hero Banner */}
       <Card 
-        className="text-white mb-4 bg-gradient-to-r from-[#D30102] to-[#B00001]"
+        className="text-white mb-4 bg-gradient-to-r from-[#4CAF50] to-[#45A049]"
         bodyClassName="p-8"
       >
         <div className="grid grid-cols-3 gap-6 items-center">
@@ -29,7 +29,7 @@ const Banner = () => {
               <Button 
                 variant="outline"
                 size="lg"
-                className="text-white border-white hover:bg-white hover:text-[#D30102]"
+                className="text-white border-white hover:bg-white hover:text-[#4CAF50]"
               >
                 Tìm hiểu thêm
               </Button>
@@ -47,21 +47,21 @@ const Banner = () => {
       {/* Features */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="text-center h-full">
-          <Icon icon="mdi:rocket" className="text-4xl mb-3 text-[#D30102] mx-auto" />
+          <Icon icon="mdi:rocket" className="text-4xl mb-3 text-[#4CAF50] mx-auto" />
           <h3 className="text-lg font-semibold mb-2">Cược nhanh chóng</h3>
           <p className="text-gray-600">
             Đặt cược chỉ trong vài giây với giao diện thân thiện
           </p>
         </Card>
         <Card className="text-center h-full">
-          <Icon icon="mdi:gift" className="text-4xl mb-3 text-[#B00001] mx-auto" />
+          <Icon icon="mdi:gift" className="text-4xl mb-3 text-[#45A049] mx-auto" />
           <h3 className="text-lg font-semibold mb-2">Khuyến mãi hấp dẫn</h3>
           <p className="text-gray-600">
             Nhận bonus 100% cho lần nạp đầu tiên
           </p>
         </Card>
         <Card className="text-center h-full">
-          <Icon icon="mdi:shield-check" className="text-4xl mb-3 text-[#D30102] mx-auto" />
+          <Icon icon="mdi:shield-check" className="text-4xl mb-3 text-[#4CAF50] mx-auto" />
           <h3 className="text-lg font-semibold mb-2">An toàn bảo mật</h3>
           <p className="text-gray-600">
             Hệ thống bảo mật cao cấp, giao dịch an toàn 100%

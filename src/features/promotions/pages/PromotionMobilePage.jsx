@@ -104,7 +104,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                         <div className="relative h-48 overflow-hidden">
                           <img
                             alt={promotion.title}
-                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.loto79.online/api${promotion.imageUrl}`}
+                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.style.display = 'none';
@@ -119,7 +119,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                           </div>
                         </div>
                       ) : (
-                        <div className="h-48 bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center">
+                        <div className="h-48 bg-gradient-to-br from-green-500 to-pink-500 flex items-center justify-center">
                           <GiftOutlined className="text-white text-6xl" />
                         </div>
                       )
@@ -135,7 +135,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-sm text-gray-500">Khuyến mãi</span>
-                            <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs">
+                            <span className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">
                               Đang diễn ra
                             </span>
                           </div>

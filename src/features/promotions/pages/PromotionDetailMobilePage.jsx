@@ -93,7 +93,7 @@ const PromotionDetailMobilePage = ({ isOpen, onClose }) => {
               <div className="relative h-48 overflow-hidden rounded-lg">
                 <img
                   alt={promotion.title}
-                  src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.loto79.online/api${promotion.imageUrl}`}
+                  src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -115,7 +115,7 @@ const PromotionDetailMobilePage = ({ isOpen, onClose }) => {
                 {promotion.title}
               </Title>
               <div className="flex items-center space-x-3">
-                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm">
+                <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm">
                   Đang diễn ra
                 </span>
                 <span className="flex items-center text-sm text-gray-500">

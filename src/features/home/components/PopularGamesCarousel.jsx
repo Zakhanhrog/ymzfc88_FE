@@ -74,8 +74,9 @@ const PopularGamesCarousel = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Arial, sans-serif' }}>
-              Trò chơi phổ biến
+            <h2 className="text-lg font-black text-gray-800 px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 via-green-200 to-transparent shadow-sm uppercase relative flex items-center" style={{ fontFamily: 'Arial, sans-serif', fontWeight: 900, textShadow: '0 1px 2px rgba(0,0,0,0.3), 0 0 1px rgba(0,0,0,0.5)' }}>
+              <span className="absolute left-0 w-1 h-8 bg-green-300 rounded-r-lg"></span>
+              <span className="relative pl-2">Trò chơi phổ biến</span>
             </h2>
             
             {/* Navigation Controls */}
@@ -99,7 +100,7 @@ const PopularGamesCarousel = () => {
           </div>
 
           {/* View Details Button */}
-          <button className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <button className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors" style={{ fontFamily: 'Arial, sans-serif' }}>
             Xem chi tiết
           </button>
         </div>

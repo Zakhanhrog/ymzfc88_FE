@@ -86,7 +86,7 @@ const PreviousSpecialResult = ({ region, province = null }) => {
       </div>
       <button
         onClick={() => setShowModal(true)}
-        className="text-xs text-red-600 hover:text-red-800 underline font-medium hover:no-underline transition-all duration-200"
+        className="text-xs text-green-600 hover:text-green-800 underline font-medium hover:no-underline transition-all duration-200"
       >
         Xem kết quả
       </button>

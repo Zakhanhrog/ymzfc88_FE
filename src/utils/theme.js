@@ -6,15 +6,15 @@
 // Theme colors configuration
 export const THEME_COLORS = {
   // Main colors
-  primary: '#D30102',
-  primaryHover: '#E90C17',
-  primaryLight: '#FA230D',
-  primaryLighter: '#FEF2F2',
-  primaryDark: '#B20101',
+  primary: '#4CAF50',
+  primaryHover: '#45A049',
+  primaryLight: '#66BB6A',
+  primaryLighter: '#E8F5E9',
+  primaryDark: '#388E3C',
   
   // Gradients
-  primaryGradient: 'linear-gradient(135deg, #D30102 0%, #FA230D 100%)',
-  bannerGradient: 'linear-gradient(135deg, #D30102 0%, #E90C17 50%, #FF1744 100%)',
+  primaryGradient: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)',
+  bannerGradient: 'linear-gradient(135deg, #4CAF50 0%, #45A049 50%, #388E3C 100%)',
   
   // Sidebar icon gradients
   iconGradient1: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

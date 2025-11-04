@@ -1,5 +1,5 @@
 // API services for wallet functionality
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.loto79.online/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 class WalletService {
   // Helper method để lấy headers

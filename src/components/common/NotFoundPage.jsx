@@ -13,7 +13,7 @@ const NotFoundPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
         {/* 404 Illustration */}
         <div className="mb-8">
@@ -26,7 +26,7 @@ const NotFoundPage = () => {
         <div className="space-y-3">
           <button
             onClick={handleGoHome}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
           >
             <Icon icon="mdi:home" className="w-5 h-5" />
             Về trang chủ

@@ -22,7 +22,7 @@ const UserPoints = () => {
       setLoading(true);
       
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('https://api.loto79.online/api/wallet/balance', {
+      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -88,7 +88,7 @@ const UserPoints = () => {
       case 'SPEND':
       case 'ADMIN_SUBTRACT':
       case 'WITHDRAW_DEDUCTION':
-        return 'text-red-600';
+        return 'text-green-600';
       default:
         return 'text-gray-600';
     }
@@ -111,7 +111,7 @@ const UserPoints = () => {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
@@ -152,7 +152,7 @@ const UserPoints = () => {
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-red-100 text-red-600">
+              <div className="p-3 rounded-full bg-green-100 text-green-600">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                 </svg>
@@ -235,7 +235,7 @@ const UserPoints = () => {
                           transaction.type.includes('ADD') || transaction.type.includes('EARN') || transaction.type.includes('BONUS')
                             ? 'bg-green-100 text-green-800'
                             : transaction.type.includes('SUBTRACT') || transaction.type.includes('SPEND') || transaction.type.includes('DEDUCTION')
-                            ? 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
                           {transaction.typeDisplayName}

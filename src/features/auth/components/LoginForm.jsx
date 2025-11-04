@@ -93,58 +93,60 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
         </button>
 
         <div className="flex-1 flex flex-col justify-center">
-          <div className="text-center mb-6">
-            <h2 className="text-lg font-bold text-gray-800 uppercase" style={{ fontFamily: 'Arial, sans-serif' }}>
-              ĐĂNG NHẬP
+          <div className="text-center mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 uppercase tracking-wide">
+              Đăng nhập
             </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tên đăng nhập hoặc email
+              </label>
               <Input
                 name="usernameOrEmail"
                 value={formData.usernameOrEmail}
                 onChange={handleChange}
-                placeholder="Tên đăng nhập hoặc email"
-                prefix={<Icon icon="mdi:account" className="text-gray-400" />}
+                placeholder="Nhập tên đăng nhập hoặc email"
+                prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
                 error={errors.usernameOrEmail}
-                className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-                style={{ fontFamily: 'Arial, sans-serif' }}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
               />
             </div>
 
             <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mật khẩu
+              </label>
               <Input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Mật khẩu"
-                prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
-                suffix={<Icon icon="mdi:eye" className="text-gray-400 cursor-pointer" />}
+                placeholder="Nhập mật khẩu"
+                prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
+                suffix={<Icon icon="mdi:eye" className="text-gray-400 cursor-pointer text-base" />}
                 error={errors.password}
-                className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
-                style={{ fontFamily: 'Arial, sans-serif' }}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
               />
             </div>
 
-            <div className="flex justify-between items-center my-6">
+            <div className="flex justify-between items-center my-3">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSwitchToRegister && onSwitchToRegister();
                 }}
-                className="text-red-600 hover:underline font-medium text-sm"
-                style={{ fontFamily: 'Arial, sans-serif' }}
+                className="text-sm font-medium text-green-600 hover:text-green-700 hover:underline transition-colors"
               >
                 Đăng ký
               </button>
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}
-                className="text-red-600 hover:underline font-medium text-sm"
-                style={{ fontFamily: 'Arial, sans-serif' }}
+                className="text-sm font-medium text-green-600 hover:text-green-700 hover:underline transition-colors"
               >
                 Quên mật khẩu
               </button>
@@ -156,10 +158,9 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
               size="lg"
               block
               loading={loading}
-              className="h-10 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
-              style={{ fontFamily: 'Arial, sans-serif' }}
+              className="h-11 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm"
             >
-              ĐĂNG NHẬP
+              Đăng nhập
             </Button>
           </form>
         </div>
@@ -173,19 +174,17 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
               onClose && onClose();
               navigate('/');
             }}
-            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
-            style={{ fontFamily: 'Arial, sans-serif' }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors"
           >
-            <Icon icon="mdi:home" className="text-red-600 text-sm" />
+            <Icon icon="mdi:home" className="text-green-600 text-base" />
             TRANG CHỦ
           </button>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-red-600 transition-colors"
-            style={{ fontFamily: 'Arial, sans-serif' }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-green-600 transition-colors"
           >
-            <Icon icon="mdi:headset" className="text-red-600 text-sm" />
+            <Icon icon="mdi:headset" className="text-green-600 text-base" />
             CSKH
           </button>
         </div>

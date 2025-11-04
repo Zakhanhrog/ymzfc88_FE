@@ -207,7 +207,7 @@ const MobileTransactionHistory = () => {
         
         <div className="bg-white rounded-xl p-3 shadow-sm text-center">
           <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-          <div className="text-red-600 flex items-center justify-center gap-1">
+          <div className="text-green-600 flex items-center justify-center gap-1">
             <ArrowDownOutlined className="text-xs" />
             <span className="text-sm font-bold">{stats.totalWithdraw.toLocaleString()}</span>
           </div>
@@ -333,7 +333,7 @@ const MobileTransactionHistory = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-500 font-mono">{transaction.transactionCode}</span>
                 <span className={`text-sm font-bold ${
-                  transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? 'text-green-600' : 'text-red-600'
+                  transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? 'text-green-600' : 'text-green-600'
                 }`}>
                   {transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? '+' : '-'}
                   {transaction.amount?.toLocaleString()} VNĐ
@@ -398,7 +398,7 @@ const MobileTransactionHistory = () => {
               <div>
                 <span className="text-gray-500">Số tiền:</span>
                 <div className={`font-bold ${
-                  selectedTransaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
+                  selectedTransaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-green-600'
                 }`}>
                   {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
                   {selectedTransaction.amount?.toLocaleString()} VNĐ

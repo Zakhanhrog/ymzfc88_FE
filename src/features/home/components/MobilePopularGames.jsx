@@ -95,8 +95,13 @@ const MobilePopularGames = () => {
       <div className="px-0 mb-2">
         <div className="flex items-center justify-between px-0">
           <div className="flex items-center">
-            <Icon icon="mdi:dots-vertical" className="w-5 h-5 text-gray-800 mr-2" />
-            <h2 className="text-base font-bold text-gray-800">Phổ biến nhất</h2>
+            <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 via-green-200 to-transparent shadow-sm flex items-center relative">
+              <span className="absolute left-0 w-1 h-8 bg-green-300 rounded-r-lg"></span>
+              <Icon icon="mdi:dots-vertical" className="w-5 h-5 text-gray-800 mr-2 relative z-10" />
+              <h2 className="text-base font-black text-gray-800 uppercase relative z-10" style={{ fontWeight: 900, textShadow: '0 1px 2px rgba(0,0,0,0.3), 0 0 1px rgba(0,0,0,0.5)' }}>
+                Phổ biến nhất
+              </h2>
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <img 

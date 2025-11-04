@@ -307,7 +307,7 @@ const TransactionHistory = () => {
         
         <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
           <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng rút</div>
-          <div className="text-red-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
+          <div className="text-green-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
             <ArrowDownOutlined style={{ fontSize: FONT_SIZE.sm }} />
             {stats.totalWithdraw.toLocaleString()}
           </div>

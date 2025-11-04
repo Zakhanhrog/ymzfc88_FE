@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.loto79.online/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const adminAPI = axios.create({
   baseURL: API_BASE_URL,
@@ -164,7 +164,7 @@ class AdminBetService {
     const classes = {
       PENDING: 'bg-yellow-100 text-yellow-800',
       WON: 'bg-green-100 text-green-800',
-      LOST: 'bg-red-100 text-red-800',
+      LOST: 'bg-green-100 text-green-800',
       CANCELLED: 'bg-gray-100 text-gray-800'
     };
     return classes[status] || 'bg-gray-100 text-gray-800';

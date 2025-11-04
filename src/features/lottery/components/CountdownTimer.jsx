@@ -54,15 +54,15 @@ const CountdownTimer = () => {
       <div className="md:hidden flex items-center gap-2">
         <span className="text-xs text-gray-600">Còn lại</span>
         <div className="flex items-center gap-1">
-          <div className="bg-red-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
+          <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
             {formatTime(timeLeft.hours)}
           </div>
-          <span className="text-red-600 font-bold">:</span>
-          <div className="bg-red-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
+          <span className="text-green-600 font-bold">:</span>
+          <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
             {formatTime(timeLeft.minutes)}
           </div>
-          <span className="text-red-600 font-bold">:</span>
-          <div className="bg-red-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
+          <span className="text-green-600 font-bold">:</span>
+          <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
             {formatTime(timeLeft.seconds)}
           </div>
         </div>
@@ -72,15 +72,15 @@ const CountdownTimer = () => {
       <div className="hidden md:block">
         <div className="text-xs text-gray-600 mb-1 text-center">Còn lại</div>
         <div className="flex items-center justify-center gap-1">
-          <div className="bg-red-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
+          <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
             {formatTime(timeLeft.hours)}
           </div>
-          <span className="text-red-600 font-bold">:</span>
-          <div className="bg-red-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
+          <span className="text-green-600 font-bold">:</span>
+          <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
             {formatTime(timeLeft.minutes)}
           </div>
-          <span className="text-red-600 font-bold">:</span>
-          <div className="bg-red-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
+          <span className="text-green-600 font-bold">:</span>
+          <div className="bg-green-600 text-white px-2 py-1 rounded text-sm font-mono font-bold">
             {formatTime(timeLeft.seconds)}
           </div>
         </div>

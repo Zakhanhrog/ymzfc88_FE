@@ -120,7 +120,7 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
             {/* User Greeting */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-300 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-300 rounded-full flex items-center justify-center">
                   <Icon icon="mdi:account" className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-medium text-gray-800">
@@ -194,7 +194,7 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
                   {item.title}
                 </span>
                 {item.hasNotification && (
-                  <div className="w-2 h-2 bg-red-500 rounded-full" />
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
                 )}
                 <Icon icon="mdi:chevron-right" className="w-5 h-5 text-gray-400" />
               </button>

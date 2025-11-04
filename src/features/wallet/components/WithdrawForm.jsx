@@ -83,7 +83,7 @@ const WithdrawForm = () => {
       }
 
       // Fetch latest user info từ backend
-      const response = await fetch('https://api.loto79.online/api/auth/me', {
+      const response = await fetch('http://localhost:8080/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -423,7 +423,7 @@ const WithdrawForm = () => {
                 )}
 
                 {selectedUserMethod?.id === method.id && (
-                  <div className="flex items-center gap-1 pt-2 border-t border-red-100">
+                  <div className="flex items-center gap-1 pt-2 border-t border-green-100">
                     <CheckCircleOutlined className="text-green-500 text-xs" />
                     <span className="text-xs text-green-600 font-medium">Đã chọn</span>
                   </div>
@@ -602,7 +602,7 @@ const WithdrawForm = () => {
           <div className="space-y-2">
             <p>Mã giao dịch: <strong>{transactionResult?.transactionId}</strong></p>
             <p>Số điểm rút: <strong className="text-orange-600">{points} điểm</strong></p>
-            <p>Số tiền: <strong className="text-red-600">{formatCurrency(transactionResult?.amount)}</strong></p>
+            <p>Số tiền: <strong className="text-green-600">{formatCurrency(transactionResult?.amount)}</strong></p>
             <p>Thời gian xử lý dự kiến: 1-24 giờ làm việc</p>
             <p className="text-sm text-gray-500">
               Đã trừ {points} điểm từ tài khoản của bạn
@@ -674,7 +674,7 @@ const WithdrawForm = () => {
           description={
             <div>
               <p className="mb-2"><strong>Lý do:</strong> {lockReason || 'Không có lý do cụ thể'}</p>
-              <p className="mb-0 text-red-600"><strong>Vui lòng liên hệ với quản trị viên để được hỗ trợ.</strong></p>
+              <p className="mb-0 text-green-600"><strong>Vui lòng liên hệ với quản trị viên để được hỗ trợ.</strong></p>
             </div>
           }
           type="error"

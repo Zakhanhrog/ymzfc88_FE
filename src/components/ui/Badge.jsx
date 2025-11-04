@@ -1,47 +1,34 @@
-const Badge = ({ 
-  children,
-  count,
-  dot = false,
-  color = 'red',
-  showZero = false,
-  offset,
-  className = '',
-}) => {
-  const colorClasses = {
-    red: 'bg-red-500',
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    yellow: 'bg-yellow-500',
-    gray: 'bg-gray-500',
-  };
+import * as React from "react"
+import { cva } from "class-variance-authority";
 
-  const shouldShow = dot || (count !== undefined && (count > 0 || showZero));
-  
-  if (!shouldShow) return children;
+import { cn } from "@/lib/utils"
 
-  const offsetStyle = offset ? {
-    transform: `translate(${offset[0]}px, ${offset[1]}px)`
-  } : {};
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-  return (
-    <div className={`relative inline-flex ${className}`}>
-      {children}
-      {dot ? (
-        <span 
-          className={`absolute top-0 right-0 block h-2 w-2 rounded-full ${colorClasses[color]} ring-2 ring-white`}
-          style={offsetStyle}
-        />
-      ) : (
-        <span 
-          className={`absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white ${colorClasses[color]} rounded-full ring-2 ring-white`}
-          style={offsetStyle}
-        >
-          {count > 99 ? '99+' : count}
-        </span>
-      )}
-    </div>
-  );
-};
+function Badge({
+  className,
+  variant,
+  ...props
+}) {
+  return (<div className={cn(badgeVariants({ variant }), className)} {...props} />);
+}
 
-export default Badge;
-
+export { Badge, badgeVariants }

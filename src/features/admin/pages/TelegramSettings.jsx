@@ -276,7 +276,7 @@ const TelegramSettings = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(config.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-green-600 hover:text-green-900"
                     >
                       Xóa
                     </button>

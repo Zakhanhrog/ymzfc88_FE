@@ -278,7 +278,7 @@ const AdminBetManagement = () => {
             notification.type === 'success'
               ? 'bg-green-100 text-green-800'
               : notification.type === 'error'
-              ? 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-800'
               : 'bg-blue-100 text-blue-800'
           }`}
         >
@@ -439,7 +439,7 @@ const AdminBetManagement = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteBet(bet)}
-                              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center justify-center"
+                              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 flex items-center justify-center"
                               title="Xóa và hoàn tiền"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

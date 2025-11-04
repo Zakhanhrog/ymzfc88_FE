@@ -34,7 +34,7 @@ const MarqueeNotification = () => {
           className="marquee-notification"
           style={{
             backgroundColor: notification.backgroundColor,
-            color: notification.textColor,
+            color: '#34D399',
             fontSize: `${notification.fontSize}px`,
             marginBottom: index < notifications.length - 1 ? '8px' : '0',
             borderRadius: '8px',

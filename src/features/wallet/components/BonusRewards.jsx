@@ -474,7 +474,7 @@ const BonusRewards = ({ formatCurrency }) => {
               {activeBonus.expiry && (
                 <div>
                   <strong>Hết hạn:</strong>
-                  <span className="text-red-600 ml-2">{activeBonus.expiry}</span>
+                  <span className="text-green-600 ml-2">{activeBonus.expiry}</span>
                 </div>
               )}
 

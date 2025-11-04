@@ -340,7 +340,7 @@ const AdminPaymentMethodManagement = () => {
             <Statistic
               title="Tạm khóa"
               value={inactiveCount}
-              prefix={<DollarOutlined className="text-red-600" />}
+              prefix={<DollarOutlined className="text-green-600" />}
               valueStyle={{ color: '#ff4d4f' }}
             />
           </Card>

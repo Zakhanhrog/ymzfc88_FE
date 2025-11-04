@@ -115,7 +115,7 @@ const MobileBetHistory = ({
                       {bet.status === 'PENDING' && onCancelBet && (
                         <button
                           onClick={() => handleCancelBet(bet)}
-                          className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                          className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-colors"
                           title="Hủy cược (trước 18:10)"
                         >
                           Hủy
@@ -146,7 +146,7 @@ const MobileBetHistory = ({
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         bet.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                         bet.status === 'WON' ? 'bg-green-100 text-green-800' :
-                        bet.status === 'LOST' ? 'bg-red-100 text-red-800' :
+                        bet.status === 'LOST' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
                         {bet.status === 'PENDING' ? 'Chờ kết quả' :

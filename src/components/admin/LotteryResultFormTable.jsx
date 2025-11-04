@@ -133,7 +133,7 @@ const LotteryResultFormTable = ({
 
   // Prize configuration
   const prizes = [
-    { key: 'dac-biet', label: 'Đặc biệt', color: 'text-red-600 font-bold', maxLength: 5, isArray: false },
+    { key: 'dac-biet', label: 'Đặc biệt', color: 'text-green-600 font-bold', maxLength: 5, isArray: false },
     { key: 'giai-nhat', label: 'Giải nhất', color: 'text-black font-bold', maxLength: 5, isArray: false },
     { key: 'giai-nhi', label: 'Giải nhì', color: 'text-black font-bold', maxLength: 5, isArray: true, count: 2 },
     { key: 'giai-ba', label: 'Giải ba', color: 'text-black font-bold', maxLength: 5, isArray: true, count: 6 },

@@ -143,7 +143,7 @@ p {
 .text-primary { color: #1f2937 !important; }
 .text-secondary { color: #6B7280 !important; }
 .text-tertiary { color: #9ca3af !important; }
-.text-brand { color: #D30102 !important; }
+.text-brand { color: #4CAF50 !important; }
 .text-white { color: #ffffff !important; }
 
 /* ============================================ */
@@ -344,21 +344,21 @@ p {
 /* GAME CATEGORIES - CHỈ khi selected mới đỏ bold */
 .sidebar-scrollable .ant-menu-item.game-category-item.ant-menu-item-selected span {
   font-weight: var(--weight-bold) !important;
-  color: #D30102 !important;
+  color: #4CAF50 !important;
 }
 
 .sidebar-scrollable .ant-menu-item.game-category-item.ant-menu-item-selected {
-  background: rgba(211, 1, 2, 0.08) !important;
-  border-left: 3px solid #D30102 !important;
+  background: rgba(76, 175, 80, 0.08) !important;
+  border-left: 3px solid #4CAF50 !important;
 }
 
 /* Hover - chỉ khi CHƯA selected */
 .sidebar-scrollable .ant-menu-item.game-category-item:not(.ant-menu-item-selected):hover {
-  background: rgba(211, 1, 2, 0.04) !important;
+  background: rgba(76, 175, 80, 0.04) !important;
 }
 
 .sidebar-scrollable .ant-menu-item.game-category-item:not(.ant-menu-item-selected):hover span {
-  color: #D30102 !important;
+  color: #4CAF50 !important;
 }
 
 /* Admin menu specific */

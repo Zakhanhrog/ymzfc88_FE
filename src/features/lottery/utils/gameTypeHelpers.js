@@ -56,7 +56,7 @@ export const MIEN_TRUNG_NAM_GAME_TYPES = [
  */
 export const BET_MULTIPLIERS = [
   { value: 1, label: '1X', color: 'bg-purple-500' },
-  { value: 3, label: '3X', color: 'bg-red-500' },
+  { value: 3, label: '3X', color: 'bg-green-500' },
   { value: 5, label: '5X', color: 'bg-orange-500' },
   { value: 10, label: '10X', color: 'bg-green-500' }
 ];

@@ -6,11 +6,13 @@ import MainBannerCarousel from '../components/MainBannerCarousel';
 import MobileBannerCarousel from '../components/MobileBannerCarousel';
 import NotificationMarquee from '../components/NotificationMarquee';
 import PopularGamesCarousel from '../components/PopularGamesCarousel';
+import CasinoLiveSection from '../components/CasinoLiveSection';
 import CategoryGamesGrid from '../components/CategoryGamesGrid';
 import AdditionalGamesGrid from '../components/AdditionalGamesGrid';
 import QuickActionsSection from '../components/QuickActionsSection';
 import MobilePopularGames from '../components/MobilePopularGames';
 import CategoryButtons from '../components/CategoryButtons';
+import MainNavigationBar from '../components/MainNavigationBar';
 import { getProvinceImagePathWithMapping } from '../../lottery/utils/imageUtils';
 import { getProvincesByDay, getTodayProvinces } from '../../lottery/data/provincesData';
 import LotteryCarousel from '../../lottery/components/LotteryCarousel';
@@ -22,7 +24,7 @@ const HomePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedRegion, setSelectedRegion] = useState('bac');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const [mainBanners, setMainBanners] = useState([]);
   const [sideBanners, setSideBanners] = useState([]);
@@ -78,7 +80,7 @@ const HomePage = () => {
         if (mainResponse.success) {
           setMainBanners(mainResponse.data.map(banner => ({
             id: banner.id,
-            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`,
+            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
           })));
         }
@@ -86,7 +88,7 @@ const HomePage = () => {
         if (sideResponse.success) {
           setSideBanners(sideResponse.data.map(banner => ({
             id: banner.id,
-            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.loto79.online/api${banner.imageUrl}`,
+            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
           })));
         }
@@ -147,7 +149,7 @@ const HomePage = () => {
   const regions = {
     bac: {
       name: 'Miền Bắc',
-      color: 'from-red-500 to-red-600',
+      color: 'from-green-500 to-green-600',
       games: [
         {
           id: 'mien-bac',
@@ -191,6 +193,9 @@ const HomePage = () => {
   return (
     <Layout>
       <div className="w-full">
+        {/* Main Navigation Bar */}
+        <MainNavigationBar />
+        
         {/* Banner Section */}
         
         {/* Desktop Banner Layout */}
@@ -233,7 +238,7 @@ const HomePage = () => {
         {/* Lottery Interface */}
         
         {/* Desktop Lottery Interface */}
-        <div className="hidden md:block mt-6">
+        <div className="hidden">
           <div className="flex gap-4">
             {/* Weekday Sidebar */}
             <div className="w-1/6">
@@ -251,7 +256,7 @@ const HomePage = () => {
                     <div
                       key={index}
                       onClick={() => setSelectedDay(item.dayIndex)}
-                      className={`${selectedDay === item.dayIndex ? 'bg-red-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-2 cursor-pointer transition-all duration-300 transform flex-1 flex items-center justify-center`}
+                      className={`${selectedDay === item.dayIndex ? 'bg-green-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-2 cursor-pointer transition-all duration-300 transform flex-1 flex items-center justify-center`}
                     >
                       <div className="text-center">
                         <div className="text-sm font-semibold">{item.day}</div>
@@ -270,7 +275,7 @@ const HomePage = () => {
                   {/* Miền Bắc - Single frame */}
                   <div className="w-1/6">
                     <div className="text-left mb-2">
-                      <span className="text-red-700 text-xs font-semibold">Miền Bắc</span>
+                      <span className="text-green-700 text-xs font-semibold">Miền Bắc</span>
                     </div>
                     <div className="p-3 rounded-lg h-48" style={{ backgroundColor: '#F5F5F5' }}>
                       <div 
@@ -323,13 +328,13 @@ const HomePage = () => {
         </div>
 
         {/* Mobile Lottery Interface */}
-        <div className="md:hidden mt-0">
+        <div className="hidden">
           <div className="h-[calc(100vh-400px)] flex flex-col">
             {/* Fixed Header Section - No Scroll */}
             <div className="flex-shrink-0">
               {/* Miền Bắc Card - Above Weekday Bar */}
               <div className="mb-3">
-                <div className="bg-white border border-red-300 rounded-lg p-4">
+                <div className="bg-white border border-green-300 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <div className="w-16 h-16 rounded-lg overflow-hidden">
@@ -342,7 +347,7 @@ const HomePage = () => {
                       <div>
                         <div className="flex items-center space-x-2">
                           <span className="text-base font-semibold text-gray-800">Miền Bắc</span>
-                          <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">HOT</span>
+                          <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">HOT</span>
                         </div>
                         <div className="text-sm text-gray-600">Ngày: {new Date().toLocaleDateString('vi-VN')}</div>
                       </div>
@@ -351,7 +356,7 @@ const HomePage = () => {
                   
                   <div className="flex items-center justify-between">
                     <button 
-                      className="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition-colors"
+                      className="bg-green-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-green-600 transition-colors"
                       onClick={() => handleGameSelect(regions.bac.games[0].id)}
                     >
                       Đặt cược
@@ -365,14 +370,14 @@ const HomePage = () => {
                       ) : mienBacResult ? (
                         // Real result - Enhanced styling
                         mienBacResult.map((number, index) => (
-                          <div key={index} className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-red-300">
+                          <div key={index} className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-green-300">
                             {number}
                           </div>
                         ))
                       ) : (
                         // Fallback to hardcoded if no result - Enhanced styling
                         ['0', '7', '0', '8', '1'].map((number, index) => (
-                          <div key={index} className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-red-300">
+                          <div key={index} className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 text-white text-sm rounded-full flex items-center justify-center font-bold shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border-2 border-green-300">
                             {number}
                           </div>
                         ))
@@ -397,7 +402,7 @@ const HomePage = () => {
                     <div
                       key={index}
                       onClick={() => setSelectedDay(item.dayIndex)}
-                      className={`${selectedDay === item.dayIndex ? 'bg-red-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-1 cursor-pointer transition-all duration-300 transform flex-1 text-center`}
+                      className={`${selectedDay === item.dayIndex ? 'bg-green-500 text-white shadow-lg' : `${item.color} hover:scale-105 hover:shadow-md`} rounded-lg p-1 cursor-pointer transition-all duration-300 transform flex-1 text-center`}
                     >
                       <div className="text-xs font-semibold">{item.day}</div>
                     </div>
@@ -458,31 +463,36 @@ const HomePage = () => {
         </div>
 
         {/* Mobile Popular Games */}
-        <div className="hidden">
+        <div className="md:hidden">
           <MobilePopularGames />
         </div>
 
         {/* Desktop Components */}
         {/* Popular Games Carousel */}
-        <div className="hidden">
+        <div className="hidden md:block">
           <PopularGamesCarousel />
         </div>
 
+        {/* Casino Live Section */}
+        <div className="hidden md:block">
+          <CasinoLiveSection />
+        </div>
+
         {/* Category Games Grid */}
-        <div className="hidden">
+        <div className="hidden md:block">
           <CategoryGamesGrid />
         </div>
 
         {/* Spacing between major sections */}
-        <div className="hidden h-8"></div>
+        <div className="hidden md:block h-8"></div>
 
         {/* Additional Games Grid */}
-        <div className="hidden">
+        <div className="hidden md:block">
           <AdditionalGamesGrid />
         </div>
 
         {/* Category Buttons */}
-        <div className="hidden">
+        <div className="hidden md:block">
           <CategoryButtons />
         </div>
       </div>

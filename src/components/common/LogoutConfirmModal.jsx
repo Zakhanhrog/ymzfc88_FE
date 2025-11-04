@@ -18,8 +18,8 @@ const LogoutConfirmModal = ({ isOpen, onClose, onConfirm, loading = false }) => 
       >
         {/* Header */}
         <div className="flex items-center justify-center p-6 pb-4">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2">
-            <Icon icon="mdi:logout" className="w-8 h-8 text-red-600" />
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-2">
+            <Icon icon="mdi:logout" className="w-8 h-8 text-green-600" />
           </div>
         </div>
 
@@ -70,7 +70,7 @@ const LogoutConfirmModal = ({ isOpen, onClose, onConfirm, loading = false }) => 
                 }
               }}
               disabled={loading}
-              className="flex-1 py-2.5 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation select-none"
+              className="flex-1 py-2.5 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation select-none"
             >
               {loading ? (
                 <>

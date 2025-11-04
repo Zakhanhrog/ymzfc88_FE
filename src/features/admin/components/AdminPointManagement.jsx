@@ -70,7 +70,7 @@ const AdminPointManagement = () => {
       setLoading(true);
       
       // Thử gọi API trực tiếp để lấy user info (có points)
-      const userResponse = await fetch(`https://api.loto79.online/api/admin/users/${userId}`, {
+      const userResponse = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -240,7 +240,7 @@ const AdminPointManagement = () => {
         return 'text-green-600';
       case 'SPEND':
       case 'ADMIN_SUBTRACT':
-        return 'text-red-600';
+        return 'text-green-600';
       case 'REFUND':
         return 'text-blue-600';
       default:
@@ -257,7 +257,7 @@ const AdminPointManagement = () => {
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
@@ -315,7 +315,7 @@ const AdminPointManagement = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Chọn người dùng
                     {loading && <span className="text-blue-500 ml-2">(Đang tải...)</span>}
-                    {users.length === 0 && !loading && <span className="text-red-500 ml-2">(Không có dữ liệu)</span>}
+                    {users.length === 0 && !loading && <span className="text-green-500 ml-2">(Không có dữ liệu)</span>}
                   </label>
                   <select
                     value={adjustForm.userId}
@@ -341,7 +341,7 @@ const AdminPointManagement = () => {
                     ))}
                   </select>
                   {users.length === 0 && !loading && (
-                    <p className="text-sm text-red-600 mt-1">
+                    <p className="text-sm text-green-600 mt-1">
                       Không thể tải danh sách người dùng. Vui lòng kiểm tra kết nối API.
                     </p>
                   )}
@@ -413,7 +413,7 @@ const AdminPointManagement = () => {
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Tổng điểm đã dùng:</span>
-                      <p className="text-lg font-bold text-red-600">
+                      <p className="text-lg font-bold text-green-600">
                         {formatPoints(userPoints.lifetimeSpent)} điểm
                       </p>
                     </div>
@@ -498,7 +498,7 @@ const AdminPointManagement = () => {
                               transaction.type.includes('ADD') || transaction.type.includes('EARN') || transaction.type.includes('BONUS')
                                 ? 'bg-green-100 text-green-800'
                                 : transaction.type.includes('SUBTRACT') || transaction.type.includes('SPEND')
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-green-100 text-green-800'
                                 : 'bg-blue-100 text-blue-800'
                             }`}>
                               {transaction.typeDisplayName}
@@ -632,7 +632,7 @@ const AdminPointManagement = () => {
                             transaction.type.includes('ADD') || transaction.type.includes('EARN') || transaction.type.includes('BONUS')
                               ? 'bg-green-100 text-green-800'
                               : transaction.type.includes('SUBTRACT') || transaction.type.includes('SPEND')
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-green-100 text-green-800'
                               : 'bg-blue-100 text-blue-800'
                           }`}>
                             {transaction.typeDisplayName}

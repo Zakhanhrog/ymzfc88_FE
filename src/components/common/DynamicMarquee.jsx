@@ -16,7 +16,7 @@ const DynamicMarquee = ({ content, speed, textColor, backgroundColor, fontSize }
     <div
       style={{
         backgroundColor,
-        color: textColor,
+        color: '#34D399',
         fontSize: `${Math.max(12, fontSize - 2)}px`,
         borderRadius: '50px',
         padding: '4px 12px',

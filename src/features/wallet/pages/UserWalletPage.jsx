@@ -71,12 +71,14 @@ const UserWalletPage = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 px-6 py-4">
-        {/* Header thông tin người dùng - Responsive */}
-        <UserInfoHeader userInfo={userInfo} kycVerified={kycVerified} />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-4 md:px-6 py-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header thông tin người dùng - Responsive */}
+          <UserInfoHeader userInfo={userInfo} kycVerified={kycVerified} />
 
-        {/* Tabs chính */}
-        <WalletTabsContent activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Tabs chính */}
+          <WalletTabsContent activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
       </div>
 
       {/* Wallet Tabs Styles */}

@@ -472,7 +472,7 @@ const AdminUserManagement = () => {
             <Statistic
               title="Quản trị viên"
               value={userStats.usersByRole?.ADMIN || 0}
-              prefix={<UserSwitchOutlined className="text-red-600" />}
+              prefix={<UserSwitchOutlined className="text-green-600" />}
               valueStyle={{ color: '#ff4d4f' }}
             />
           </Card>
@@ -856,7 +856,7 @@ const AdminUserManagement = () => {
                   {selectedUser.withdrawalLockReason && (
                     <div className="mt-2">
                       <Text strong>Lý do khóa:</Text>
-                      <div className="text-red-600 bg-red-50 p-2 rounded mt-1">
+                      <div className="text-green-600 bg-green-50 p-2 rounded mt-1">
                         {selectedUser.withdrawalLockReason}
                       </div>
                     </div>

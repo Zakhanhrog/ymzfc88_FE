@@ -157,7 +157,7 @@ const AdminBettingOddsManagement = () => {
       {/* Notification */}
       {notification && (
         <div className={`mb-4 p-4 rounded-lg ${
-          notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'
         }`}>
           <div className="flex items-center gap-2">
             <Icon 
@@ -175,7 +175,7 @@ const AdminBettingOddsManagement = () => {
           onClick={() => setActiveTab('MIEN_BAC')}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             activeTab === 'MIEN_BAC'
-              ? 'bg-[#D30102] text-white'
+              ? 'bg-[#4CAF50] text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
@@ -185,7 +185,7 @@ const AdminBettingOddsManagement = () => {
           onClick={() => setActiveTab('MIEN_TRUNG_NAM')}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             activeTab === 'MIEN_TRUNG_NAM'
-              ? 'bg-[#D30102] text-white'
+              ? 'bg-[#4CAF50] text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >

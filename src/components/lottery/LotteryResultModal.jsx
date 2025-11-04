@@ -62,8 +62,8 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
             <div></div>
           ) : error ? (
             <div className="text-center py-8">
-              <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-500 mx-auto mb-4" />
-              <p className="text-red-600">{error}</p>
+              <Icon icon="mdi:alert-circle" className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              <p className="text-green-600">{error}</p>
               <button
                 onClick={loadLotteryResult}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -101,7 +101,7 @@ const LotteryResultModal = ({ isOpen, onClose, region }) => {
                         <td className="border border-gray-300 px-2 py-1">
                           <div className="flex flex-wrap gap-1">
                             {prize === 'Giải đặc biệt' ? (
-                              <span className="bg-red-500 text-white px-3 py-1 rounded-full font-bold text-lg">
+                              <span className="bg-green-500 text-white px-3 py-1 rounded-full font-bold text-lg">
                                 {numbers}
                               </span>
                             ) : prize === 'Giải nhất' ? (

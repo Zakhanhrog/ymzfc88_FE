@@ -138,13 +138,13 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
       {/* Register Form */}
       <div className="bg-gray-50 -mt-8 mx-4 rounded-t-2xl relative z-10">
         <div className="p-4 pt-6 pb-20">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">Đăng ký</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-5 text-center tracking-wide">Đăng ký</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Username Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                * Tên đăng nhập
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tên đăng nhập
               </label>
               <div className="relative">
                 <Input
@@ -152,17 +152,17 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Nhập tên đăng nhập"
-                  prefix={<Icon icon="mdi:account" className="text-gray-400" />}
+                  prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
                   error={errors.username}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                * Email
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email
               </label>
               <div className="relative">
                 <Input
@@ -171,17 +171,17 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Nhập email"
-                  prefix={<Icon icon="mdi:email" className="text-gray-400" />}
+                  prefix={<Icon icon="mdi:email" className="text-gray-400 text-base" />}
                   error={errors.email}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* Phone Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                * Số điện thoại
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Số điện thoại
               </label>
               <div className="relative">
                 <Input
@@ -190,17 +190,17 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="Nhập số điện thoại"
-                  prefix={<Icon icon="mdi:phone" className="text-gray-400" />}
+                  prefix={<Icon icon="mdi:phone" className="text-gray-400 text-base" />}
                   error={errors.phone}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                * Mật khẩu
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mật khẩu
               </label>
               <div className="relative">
                 <Input
@@ -209,26 +209,26 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Nhập mật khẩu"
-                  prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
+                  prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
                   suffix={
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5" />
+                      <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-4 h-4" />
                     </button>
                   }
                   error={errors.password}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                * Xác nhận mật khẩu
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Xác nhận mật khẩu
               </label>
               <div className="relative">
                 <Input
@@ -237,18 +237,18 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Nhập lại mật khẩu"
-                  prefix={<Icon icon="mdi:lock" className="text-gray-400" />}
+                  prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
                   suffix={
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5" />
+                      <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="w-4 h-4" />
                     </button>
                   }
                   error={errors.confirmPassword}
-                  className="h-12 rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500"
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -260,22 +260,22 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                 id="agreeTerms"
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 mt-1"
+                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 mt-0.5"
               />
-              <label htmlFor="agreeTerms" className="ml-2 text-sm text-gray-700">
-                Tôi đồng ý với <span className="text-red-600 hover:underline cursor-pointer">điều khoản và điều kiện</span>
+              <label htmlFor="agreeTerms" className="ml-2 text-sm font-normal text-gray-700 leading-relaxed">
+                Tôi đồng ý với <span className="text-green-600 hover:underline cursor-pointer font-medium">điều khoản và điều kiện</span>
               </label>
             </div>
-            {errors.terms && <p className="text-red-500 text-xs mt-1">{errors.terms}</p>}
+            {errors.terms && <p className="text-green-600 text-sm font-medium mt-1">{errors.terms}</p>}
 
             {/* Register Button */}
             <Button 
               type="submit"
               variant="primary"
-              size="sm"
+              size="lg"
               block
               loading={loading}
-              className="h-10 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full transition-colors text-xs mt-6"
+              className="h-11 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm mt-5"
             >
               Đăng ký
             </Button>
@@ -284,20 +284,20 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
             <Button 
               type="button"
               variant="outline"
-              size="sm"
+              size="lg"
               block
               onClick={(e) => {
                 e.stopPropagation();
                 onSwitchToLogin && onSwitchToLogin();
               }}
-              className="h-10 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full transition-colors text-xs"
+              className="h-11 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors text-sm"
             >
               Đăng nhập
             </Button>
 
             {/* LOTO79 Branding */}
             <div className="text-center mt-6">
-              <span className="text-sm text-gray-400">LOTO79</span>
+              <span className="text-sm font-medium text-gray-400">LOTO79</span>
             </div>
           </form>
         </div>

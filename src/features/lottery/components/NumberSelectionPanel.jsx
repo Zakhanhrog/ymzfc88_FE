@@ -93,7 +93,7 @@ const NumberSelectionPanel = ({
               onClick={() => onNumberSelect(number)}
               className={`w-10 h-10 rounded-lg font-medium transition-all text-base ${
                 selectedNumbers.includes(number)
-                  ? 'bg-red-500 text-white'
+                  ? 'bg-green-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -159,7 +159,7 @@ const NumberSelectionPanel = ({
             </h3>
             <button
               onClick={onClearSelection}
-              className="text-sm text-red-500 hover:text-red-700 flex items-center gap-1"
+              className="text-sm text-green-500 hover:text-green-700 flex items-center gap-1"
             >
               <Icon icon="mdi:delete-outline" className="w-4 h-4" />
               Xóa tất cả
@@ -169,12 +169,12 @@ const NumberSelectionPanel = ({
             {selectedNumbers.map((number, index) => (
               <div
                 key={index}
-                className="bg-red-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-base"
+                className="bg-green-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-base"
               >
                 <span>{number}</span>
                 <button
                   onClick={() => onRemoveNumber(number)}
-                  className="hover:bg-red-600 rounded-full p-0.5"
+                  className="hover:bg-green-600 rounded-full p-0.5"
                 >
                   <Icon icon="mdi:close" className="w-4 h-4" />
                 </button>

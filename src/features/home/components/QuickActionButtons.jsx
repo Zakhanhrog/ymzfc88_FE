@@ -18,7 +18,7 @@ const QuickActionButtons = () => {
             <div className="flex justify-center">
               <div className="relative w-10 h-10 bg-gradient-to-br from-red-400 to-orange-500 rounded-xl shadow-md flex items-center justify-center transform -rotate-6">
                 <img src="/images/icons/icon-deposit.png" alt="Nạp Tiền" className="w-5 h-5 object-contain" />
-                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
+                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white text-[7px] font-bold leading-none">+</span>
                 </div>
               </div>
@@ -27,7 +27,7 @@ const QuickActionButtons = () => {
           {/* Button pill */}
           <button
             onClick={() => navigate('/wallet?tab=deposit-withdraw')}
-            className="w-full bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500 rounded-full py-0.5 px-1.5 flex items-center justify-center gap-0.5 shadow-sm transition-all"
+            className="w-full bg-gradient-to-r from-red-400 to-pink-400 hover:from-green-500 hover:to-pink-500 rounded-full py-0.5 px-1.5 flex items-center justify-center gap-0.5 shadow-sm transition-all"
           >
             <span className="text-white font-semibold text-[9px] whitespace-nowrap">Nạp Tiền</span>
             <div className="w-2.5 h-2.5 bg-white bg-opacity-30 rounded-full flex items-center justify-center">

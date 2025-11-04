@@ -296,7 +296,7 @@ class BetService {
     const statusMap = {
       'PENDING': { text: 'Chờ kết quả', color: 'text-yellow-600', bg: 'bg-yellow-100' },
       'WON': { text: 'Thắng', color: 'text-green-600', bg: 'bg-green-100' },
-      'LOST': { text: 'Thua', color: 'text-red-600', bg: 'bg-red-100' }
+      'LOST': { text: 'Thua', color: 'text-gray-600', bg: 'bg-gray-100' }
       // 'CANCELLED' đã bị loại bỏ - không cho phép hủy cược
     };
 

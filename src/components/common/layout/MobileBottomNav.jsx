@@ -75,7 +75,7 @@ const MobileBottomNav = ({ onMenuClick }) => {
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 flex-1 relative ${
-                  item.isActive ? 'text-red-500' : 'text-gray-600'
+                  item.isActive ? 'text-green-500' : 'text-gray-600'
                 }`}
               >
                 {/* Icon */}
@@ -90,7 +90,7 @@ const MobileBottomNav = ({ onMenuClick }) => {
                     <Icon
                       icon={item.icon}
                       className={`${item.id === 'casino' ? 'w-14 h-14' : 'w-5 h-5'} ${
-                        item.isActive ? 'text-red-500' : 'text-gray-600'
+                        item.isActive ? 'text-green-500' : 'text-gray-600'
                       }`}
                     />
                   )}
@@ -98,7 +98,7 @@ const MobileBottomNav = ({ onMenuClick }) => {
                 
                 {/* Label */}
                 <span className={`text-xs font-medium ${
-                  item.isActive ? 'text-red-500' : 'text-gray-600'
+                  item.isActive ? 'text-green-500' : 'text-gray-600'
                 } ${item.id === 'casino' ? 'mt-1' : ''}`}>
                   {item.label}
                 </span>

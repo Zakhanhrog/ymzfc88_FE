@@ -19,7 +19,7 @@ const StatsCard = ({ stats }) => {
       title: 'Đang live',
       value: stats?.liveMatches || 0,
       icon: 'mdi:eye',
-      color: 'text-red-600'
+      color: 'text-green-600'
     },
     {
       title: 'Tổng cược',

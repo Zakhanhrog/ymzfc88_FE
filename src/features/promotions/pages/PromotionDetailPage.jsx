@@ -105,7 +105,7 @@ const PromotionDetailPage = () => {
               Quay lại
             </Button>
             <Title level={2} className="text-xl md:text-3xl font-bold text-gray-800 mb-4">
-              <GiftOutlined className="mr-3 text-red-600" />
+              <GiftOutlined className="mr-3 text-green-600" />
               Chi tiết khuyến mãi
             </Title>
           </div>
@@ -119,7 +119,7 @@ const PromotionDetailPage = () => {
                   <div className="relative h-64 md:h-96 overflow-hidden rounded-lg">
                     <img
                       alt={promotion.title}
-                      src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.loto79.online/api${promotion.imageUrl}`}
+                      src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -144,7 +144,7 @@ const PromotionDetailPage = () => {
                     {promotion.title}
                   </Title>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full">
+                    <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full">
                       Đang diễn ra
                     </span>
                     <span className="flex items-center">

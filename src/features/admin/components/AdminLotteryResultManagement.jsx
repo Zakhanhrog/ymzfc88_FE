@@ -431,7 +431,7 @@ const AdminLotteryResultManagement = () => {
                           )}
                           <button
                             onClick={() => handleDelete(result.id)}
-                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm"
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm"
                           >
                             Xóa
                           </button>

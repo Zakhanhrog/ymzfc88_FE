@@ -62,7 +62,7 @@ const Select = ({
           w-full flex items-center justify-between gap-2 
           border border-gray-300 rounded-lg 
           bg-white transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-[#D30102] focus:border-[#D30102]
+          focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-[#4CAF50]
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${sizeClasses[size]}
         `}
@@ -104,7 +104,7 @@ const Select = ({
               disabled={option.disabled}
               className={`
                 w-full text-left px-4 py-2 transition-colors
-                ${currentValue === option.value ? 'bg-[#D30102] bg-opacity-10 text-[#D30102] font-medium' : 'text-gray-900 hover:bg-gray-50'}
+                ${currentValue === option.value ? 'bg-[#4CAF50] bg-opacity-10 text-[#4CAF50] font-medium' : 'text-gray-900 hover:bg-gray-50'}
                 ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >

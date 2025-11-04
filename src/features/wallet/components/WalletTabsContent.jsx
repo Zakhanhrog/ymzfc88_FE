@@ -1,4 +1,4 @@
-import { Card, Tabs } from '../../../components/ui';
+import { Card, CardContent, Tabs } from '../../../components/ui';
 import { Icon } from '@iconify/react';
 import WalletBalance from './WalletBalance';
 import TransactionHistory from './TransactionHistory';
@@ -59,16 +59,15 @@ const WalletTabsContent = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <Card 
-      className="shadow-md rounded-2xl"
-      bodyClassName='p-6'
-    >
-      <Tabs
-        activeKey={activeTab}
-        onChange={onTabChange}
-        className="wallet-tabs"
-        items={tabItems}
-      />
+    <Card className="border border-gray-200 shadow-lg">
+      <CardContent className="p-0">
+        <Tabs
+          activeKey={activeTab}
+          onChange={onTabChange}
+          className="wallet-tabs"
+          items={tabItems}
+        />
+      </CardContent>
     </Card>
   );
 };

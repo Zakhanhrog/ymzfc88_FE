@@ -180,7 +180,7 @@ const AdminWithdrawApproval = () => {
       dataIndex: 'amount',
       key: 'amount',
       render: (amount) => (
-        <span className="font-bold text-red-600">
+        <span className="font-bold text-green-600">
           {formatCurrency(amount)}
         </span>
       ),
@@ -410,7 +410,7 @@ const AdminWithdrawApproval = () => {
                 {selectedWithdraw.userEmail}
               </Descriptions.Item>
               <Descriptions.Item label="Số tiền">
-                <span className="font-bold text-red-600">
+                <span className="font-bold text-green-600">
                   {formatCurrency(selectedWithdraw.amount)}
                 </span>
               </Descriptions.Item>
@@ -530,7 +530,7 @@ const AdminWithdrawApproval = () => {
                 <strong>{selectedWithdraw.username}</strong>
               </Descriptions.Item>
               <Descriptions.Item label="Số tiền rút">
-                <span className="font-bold text-red-600 text-lg">
+                <span className="font-bold text-green-600 text-lg">
                   {formatCurrency(selectedWithdraw.amount)}
                 </span>
               </Descriptions.Item>
@@ -549,7 +549,7 @@ const AdminWithdrawApproval = () => {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <CloseOutlined className="text-red-600" />
+            <CloseOutlined className="text-green-600" />
             <span>Từ chối lệnh rút tiền</span>
           </div>
         }
@@ -582,14 +582,14 @@ const AdminWithdrawApproval = () => {
                 <strong>{selectedWithdraw.username}</strong>
               </Descriptions.Item>
               <Descriptions.Item label="Số tiền">
-                <span className="font-bold text-red-600">
+                <span className="font-bold text-green-600">
                   {formatCurrency(selectedWithdraw.amount)}
                 </span>
               </Descriptions.Item>
             </Descriptions>
             <div>
               <label className="block text-sm font-medium mb-2">
-                Lý do từ chối <span className="text-red-500">*</span>
+                Lý do từ chối <span className="text-green-500">*</span>
               </label>
               <TextArea
                 rows={4}

@@ -128,7 +128,7 @@ const UserPointsPage = () => {
       width: 120,
       render: (points) => (
         <span 
-          className={points >= 0 ? 'text-green-600' : 'text-red-600'}
+          className={points >= 0 ? 'text-green-600' : 'text-green-600'}
           style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold }}
         >
           {points >= 0 ? '+' : ''}{formatPoints(points)} điểm
@@ -220,7 +220,7 @@ const UserPointsPage = () => {
               title={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Tổng điểm đã dùng</span>}
               value={lifetimeSpent}
               formatter={(value) => formatPoints(value) + ' điểm'}
-              prefix={<ArrowDownOutlined className="text-red-500" />}
+              prefix={<ArrowDownOutlined className="text-green-500" />}
               valueStyle={{ color: '#f5222d', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}
               loading={loading}
             />

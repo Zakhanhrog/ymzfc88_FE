@@ -58,7 +58,7 @@ const AdminDepositApproval = () => {
     }
     if (deposit.billImageUrl) {
       const filename = deposit.billImageUrl.split('/').pop();
-      return `https://api.loto79.online/api/files/bills/${filename}`;
+      return `http://localhost:8080/api/files/bills/${filename}`;
     }
     return null;
   };
@@ -538,7 +538,7 @@ const AdminDepositApproval = () => {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <CloseOutlined className="text-red-600" />
+            <CloseOutlined className="text-green-600" />
             <span>Từ chối lệnh nạp tiền</span>
           </div>
         }
@@ -578,7 +578,7 @@ const AdminDepositApproval = () => {
             </Descriptions>
             <div>
               <label className="block text-sm font-medium mb-2">
-                Lý do từ chối <span className="text-red-500">*</span>
+                Lý do từ chối <span className="text-green-500">*</span>
               </label>
               <TextArea
                 rows={4}
