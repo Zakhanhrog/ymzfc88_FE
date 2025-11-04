@@ -166,6 +166,11 @@ export const adminMenuItems = [
         key: 'logs',
         icon: 'FileTextOutlined',
         label: 'Nhật ký hệ thống',
+      },
+      {
+        key: 'telegram-settings',
+        icon: 'MessageOutlined',
+        label: 'Cài đặt Telegram',
       }
     ]
   }

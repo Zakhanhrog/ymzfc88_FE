@@ -194,24 +194,27 @@ const HomePage = () => {
         {/* Banner Section */}
         
         {/* Desktop Banner Layout */}
-        <div className={`hidden md:grid gap-4 mb-6 ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-6'}`}>
-          <div className={sidebarCollapsed ? 'col-span-9' : 'col-span-4'}>
-            <div className="overflow-hidden rounded-lg">
+        <div className={`hidden md:grid gap-4 mb-6 ${sidebarCollapsed ? 'grid-cols-12' : 'grid-cols-6'}`} style={{ gridAutoRows: '1fr' }}>
+          <div className={sidebarCollapsed ? 'col-span-10' : 'col-span-5'} style={{ width: '100%', display: 'flex', alignItems: 'stretch' }}>
+            <div className="w-full h-full overflow-hidden rounded-lg">
               <MainBannerCarousel banners={mainBanners} />
             </div>
           </div>
 
-          <div className={sidebarCollapsed ? 'col-span-3' : 'col-span-2'}>
-            <div className="h-full flex flex-col justify-between border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent">
-              {sideBanners.map((banner) => (
-                <div key={banner.id} className="flex-1 rounded-lg overflow-hidden">
-                  <img 
-                    src={banner.url} 
-                    alt={banner.alt}
-                    className="w-full h-full object-cover cursor-pointer rounded-lg"
-                  />
-                </div>
-              ))}
+          <div className={sidebarCollapsed ? 'col-span-2' : 'col-span-1'} style={{ display: 'flex', alignItems: 'stretch' }}>
+            <div className="w-full border border-gray-300 rounded-lg shadow-lg p-2 bg-transparent flex flex-col">
+              <div className="w-full flex flex-col gap-1 flex-1">
+                {sideBanners.map((banner) => (
+                  <div key={banner.id} className="w-full overflow-hidden rounded-lg flex-1" style={{ minHeight: 0 }}>
+                    <img 
+                      src={banner.url} 
+                      alt={banner.alt}
+                      className="w-full h-full object-contain cursor-pointer rounded-lg"
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

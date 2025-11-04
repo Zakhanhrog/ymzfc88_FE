@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import notificationService from '../features/notification/services/notificationService';
 
 export const useNotificationCount = (isLoggedIn = false) => {
@@ -22,24 +22,6 @@ export const useNotificationCount = (isLoggedIn = false) => {
       setUnreadCount(0);
     }
   };
-
-  useEffect(() => {
-    loadUnreadCount();
-    
-    // Only set interval if user is logged in
-    let interval;
-    if (isLoggedIn) {
-      interval = setInterval(() => {
-        loadUnreadCount();
-      }, 30000); // Update every 30 seconds
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [isLoggedIn]);
 
   const refreshUnreadCount = () => {
     loadUnreadCount();

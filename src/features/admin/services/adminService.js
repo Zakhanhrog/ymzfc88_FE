@@ -448,6 +448,58 @@ export const adminService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi khởi tạo cài đặt mặc định');
     }
+  },
+
+  // ============ TELEGRAM CONFIG MANAGEMENT ============
+
+  // Lấy tất cả cấu hình Telegram
+  getAllTelegramConfigs: async () => {
+    try {
+      const response = await adminAPI.get('/admin/telegram/config');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy danh sách cấu hình Telegram');
+    }
+  },
+
+  // Lấy cấu hình Telegram đang hoạt động
+  getActiveTelegramConfig: async () => {
+    try {
+      const response = await adminAPI.get('/admin/telegram/config/active');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy cấu hình Telegram đang hoạt động');
+    }
+  },
+
+  // Tạo cấu hình Telegram mới
+  createTelegramConfig: async (configData) => {
+    try {
+      const response = await adminAPI.post('/admin/telegram/config', configData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tạo cấu hình Telegram');
+    }
+  },
+
+  // Cập nhật cấu hình Telegram
+  updateTelegramConfig: async (id, configData) => {
+    try {
+      const response = await adminAPI.put(`/admin/telegram/config/${id}`, configData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật cấu hình Telegram');
+    }
+  },
+
+  // Xóa cấu hình Telegram
+  deleteTelegramConfig: async (id) => {
+    try {
+      const response = await adminAPI.delete(`/admin/telegram/config/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi xóa cấu hình Telegram');
+    }
   }
 };
 

@@ -205,3 +205,4 @@ const NotificationDetailMobilePage = ({ isOpen, onClose }) => {
 
 export default NotificationDetailMobilePage;
 
+

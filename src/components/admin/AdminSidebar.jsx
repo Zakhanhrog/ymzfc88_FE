@@ -105,7 +105,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     if (tab === 'banners' || tab === 'news' || tab === 'notifications' || tab === 'marquee-notifications') {
       return ['content-management'];
     }
-    if (tab === 'settings' || tab === 'contact-links' || tab === 'promotions' || tab === 'maintenance' || tab === 'logs') {
+    if (tab === 'settings' || tab === 'contact-links' || tab === 'promotions' || tab === 'maintenance' || tab === 'logs' || tab === 'telegram-settings') {
       return ['system-management'];
     }
     if (tab === 'analytics' || !tab) {
@@ -142,6 +142,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'promotions': () => navigate('/admin/dashboard?tab=promotions'),
       'maintenance': () => navigate('/admin/dashboard?tab=maintenance'),
       'logs': () => navigate('/admin/dashboard?tab=logs'),
+      'telegram-settings': () => navigate('/admin/dashboard?tab=telegram-settings'),
       'logout': handleLogout
     };
 

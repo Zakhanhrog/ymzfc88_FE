@@ -21,6 +21,7 @@ import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
 import AdminBannerManagement from './AdminBannerManagement';
+import TelegramSettings from '../pages/TelegramSettings';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const renderContent = () => {
@@ -203,6 +204,9 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
             <AdminBannerManagement />
           </div>
         );
+
+      case 'telegram-settings':
+        return <TelegramSettings />;
 
       default:
         return (

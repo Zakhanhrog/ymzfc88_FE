@@ -2,7 +2,7 @@ const API_BASE_URL = 'https://api.loto79.online/api';
 
 const getAuthHeader = () => {
   // Ưu tiên userToken cho user endpoints, adminToken cho admin endpoints
-  const userToken = localStorage.getItem('token');
+  const userToken = localStorage.getItem('authToken');
   const adminToken = localStorage.getItem('adminToken');
   
   // Ưu tiên user token trước (vì đây là kycService cho user)

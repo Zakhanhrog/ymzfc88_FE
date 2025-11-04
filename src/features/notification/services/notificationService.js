@@ -1,7 +1,7 @@
 const API_URL = 'https://api.loto79.online/api';
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   const adminToken = localStorage.getItem('adminToken');
   
   // Prioritize user token for user-facing services
