@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../../../components/common/Layout';
-import UserInfoHeader from './UserInfoHeader';
-import WalletTabsContent from './WalletTabsContent';
-import WalletTabsStyles from './WalletTabsStyles';
+import WalletSidebar from './WalletSidebar';
+import WalletContent from './WalletContent';
 import MobileWalletPage from '../pages/MobileWalletPage';
 import kycService from '../services/kycService';
+import walletService from '../services/walletService';
 
 const ResponsiveWalletWrapper = () => {
   const [searchParams] = useSearchParams();
@@ -19,6 +19,7 @@ const ResponsiveWalletWrapper = () => {
   });
   const [kycVerified, setKycVerified] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [userBalance, setUserBalance] = useState(0);
 
   // Check if mobile
   useEffect(() => {
@@ -49,6 +50,31 @@ const ResponsiveWalletWrapper = () => {
       }
     }
   }, []);
+
+  // Fetch wallet balance
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      try {
+        const response = await walletService.getWalletBalance();
+        if (response.success && response.data) {
+          setUserBalance(response.data.points || 0);
+        }
+      } catch (error) {
+        // Fallback to localStorage
+        const user = localStorage.getItem('user');
+        if (user) {
+          try {
+            const userData = JSON.parse(user);
+            setUserBalance(userData.points || 0);
+          } catch (e) {
+            setUserBalance(0);
+          }
+        }
+      }
+    };
+    
+    fetchWalletBalance();
+  }, [activeTab]);
 
   // Fetch KYC status
   useEffect(() => {
@@ -90,16 +116,23 @@ const ResponsiveWalletWrapper = () => {
   // Return desktop version
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 px-6 py-4">
-        {/* Header thông tin người dùng - Responsive */}
-        <UserInfoHeader userInfo={userInfo} kycVerified={kycVerified} />
+      <div className="min-h-[calc(100vh-70px)] bg-gray-50 flex">
+        {/* Sidebar */}
+        <WalletSidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          userBalance={userBalance}
+          userInfo={userInfo}
+          kycVerified={kycVerified}
+        />
 
-        {/* Tabs chính */}
-        <WalletTabsContent activeTab={activeTab} onTabChange={setActiveTab} />
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-6 pb-6">
+            <WalletContent activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+        </div>
       </div>
-
-      {/* Wallet Tabs Styles */}
-      <WalletTabsStyles />
     </Layout>
   );
 };

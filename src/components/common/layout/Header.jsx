@@ -2,12 +2,18 @@ import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Button, Input } from '../../ui';
+import { Dropdown, Empty, Spin } from 'antd';
 import NotificationDropdown from '../../../features/notification/components/NotificationDropdown';
 import MobileNotificationModal from '../../../features/notification/components/MobileNotificationModal';
 import MobileProfilePage from '../../../features/profile/components/MobileProfilePage';
 import { useNotificationCount } from '../../../hooks/useNotificationCount';
 import { authService } from '../../../features/auth/services/authService';
 import { message } from '../../../utils/notification';
+import notificationService from '../../../features/notification/services/notificationService';
+import moment from 'moment';
+import 'moment/locale/vi';
+
+moment.locale('vi');
 
 const Header = ({ 
   isLoggedIn, 
@@ -30,6 +36,9 @@ const Header = ({
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
 
   // Listen for custom notification events from QuickActionsSection
   useEffect(() => {
@@ -79,6 +88,94 @@ const Header = ({
     setLoginFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleNotificationDropdownOpen = (open) => {
+    setNotificationDropdownOpen(open);
+    if (open) {
+      loadNotifications();
+    }
+  };
+
+  const loadNotifications = async () => {
+    setNotificationLoading(true);
+    try {
+      const response = await notificationService.getMyNotifications(0, 10);
+      if (response && response.success && response.data) {
+        const notificationList = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data.content || response.data.notifications || []);
+        setNotifications(notificationList || []);
+      }
+    } catch (error) {
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      setNotifications(prev =>
+        prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n))
+      );
+    } catch (error) {
+    }
+  };
+
+  const notificationContent = (
+    <div className="w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-lg">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="font-bold text-lg">Thông báo</h3>
+      </div>
+
+      {notificationLoading ? (
+        <div className="flex justify-center py-8">
+          <Spin />
+        </div>
+      ) : notifications.length === 0 ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Không có thông báo"
+          style={{ padding: 32 }}
+        />
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                !notification.isRead ? 'bg-blue-50' : ''
+              }`}
+              onClick={() => {
+                if (!notification.isRead) {
+                  handleMarkAsRead(notification.id);
+                }
+                navigate(`/notifications/${notification.id}`);
+                setNotificationDropdownOpen(false);
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <Icon icon="mdi:information" className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-semibold text-sm text-gray-900 line-clamp-2">
+                      {notification.title}
+                    </p>
+                    {!notification.isRead && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {moment(notification.createdAt).fromNow()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <header className="fixed top-0 left-0 right-0 h-[60px] md:h-[70px] bg-white border-b border-gray-200 z-20 px-4 md:px-6">
       <div className="w-full h-full flex items-center justify-between">
@@ -100,8 +197,8 @@ const Header = ({
             <img 
               src="/images/logos/logo.webp" 
               alt="Logo" 
-              className="h-7 md:h-9 w-auto object-contain transition-transform duration-300 hover:scale-110"
-              style={{ maxHeight: '28px' }}
+              className="h-9 md:h-11 w-auto object-contain transition-transform duration-300 hover:scale-110"
+              style={{ maxHeight: '36px' }}
             />
           </div>
         </div>
@@ -111,60 +208,60 @@ const Header = ({
           {isLoggedIn ? (
             <>
               {/* Desktop Logged In Layout */}
-              <div className="hidden md:flex items-center gap-3">
-                {/* Username */}
+              <div className="hidden md:flex items-center gap-2.5">
+                {/* Notifications Icon */}
+                <Dropdown
+                  trigger={['click']}
+                  placement="bottomRight"
+                  open={notificationDropdownOpen}
+                  onOpenChange={handleNotificationDropdownOpen}
+                  dropdownRender={() => notificationContent}
+                >
+                  <button className="w-9 h-9 flex items-center justify-center bg-white border border-gray-300 hover:border-gray-400 rounded-lg transition-colors relative">
+                    <Icon icon="mdi:bell" className="w-4 h-4 text-gray-700" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </Dropdown>
+                
+                {/* User Profile and Balance */}
                 <button
                   onClick={() => navigate('/wallet')}
-                  className="text-gray-700 font-medium hover:underline transition-all text-sm"
+                  className="h-9 flex items-center gap-2.5 bg-white border border-gray-300 hover:border-gray-400 rounded-lg pl-1 pr-3 transition-colors"
                   title="Xem thông tin ví cá nhân"
                 >
-                  {userName}
+                  <div className="w-7 h-7 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
+                    <Icon icon="mdi:account" className="w-5 h-5 text-gray-700" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-gray-800 text-xs font-medium truncate max-w-[120px]">
+                      {userName}
+                    </span>
+                    <span className="text-yellow-500 font-semibold text-xs">
+                      {userBalance.toLocaleString()} điểm
+                    </span>
+                  </div>
                 </button>
                 
-                {/* Balance */}
-                <div className="flex items-center gap-2 border border-gray-300 px-3 py-1.5 rounded-full bg-white">
-                  <span className="font-semibold text-[#34D399] text-sm">
-                    {userBalance.toLocaleString()} điểm
-                  </span>
-                  <button
-                    onClick={onRefreshBalance}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-0 w-4 h-4 flex items-center justify-center"
-                  >
-                    <Icon icon="mdi:refresh" className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                {/* Nạp tiền */}
+                {/* Nạp Tiền Button */}
                 <button
                   onClick={() => navigate('/wallet?tab=deposit-withdraw')}
-                  className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors px-2.5 py-1.5"
+                  className="h-9 px-5 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold text-sm rounded-lg transition-all shadow-sm flex items-center"
                 >
-                  <Icon icon="mdi:account" className="w-4 h-4" />
-                  <span className="font-medium text-sm">Nạp tiền</span>
+                  Nạp Tiền
                 </button>
-                
-                {/* Rút tiền */}
-                <button
-                  onClick={() => navigate('/wallet?tab=withdraw')}
-                  className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors px-2.5 py-1.5"
-                >
-                  <Icon icon="mdi:gift" className="w-4 h-4" />
-                  <span className="font-medium text-sm">Rút tiền</span>
-                </button>
-                
-                {/* Notification */}
-                <NotificationDropdown />
                 
                 {/* Logout */}
-                <Button
-                  variant="danger"
-                  size="sm"
+                <button
                   onClick={onLogout}
-                  icon={<Icon icon="mdi:logout" className="w-4 h-4" />}
-                  className="text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 transition-colors p-1.5"
+                  title="Đăng xuất"
                 >
-                  Đăng xuất
-                </Button>
+                  <Icon icon="mdi:logout" className="w-4 h-4" />
+                </button>
               </div>
 
               {/* Mobile Logged In Layout */}

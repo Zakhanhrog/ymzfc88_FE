@@ -285,15 +285,7 @@ const TransactionHistory = () => {
   return (
     <div className="space-y-4">
       {/* Title Header */}
-      <div className="text-center pb-3">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <EyeOutlined className="text-2xl text-blue-600" />
-          <h3 style={{ ...HEADING_STYLES.h3, marginBottom: 0 }}>Lịch sử giao dịch</h3>
-        </div>
-        <p style={{ ...BODY_STYLES.small }}>
-          Xem lại tất cả các giao dịch nạp tiền, rút tiền của bạn
-        </p>
-      </div>
+
 
       {/* Statistics Cards - Responsive */}
       <div className="grid grid-cols-4 gap-3 mb-4">

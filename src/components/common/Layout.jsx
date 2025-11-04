@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 import MobileSidebar from './layout/MobileSidebar';
@@ -360,6 +361,29 @@ const Layout = ({ children }) => {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav onMenuClick={() => setShowMobileSidebar(true)} />
+
+      {/* Contact Button - Fixed position on right edge */}
+      <button
+        onClick={() => navigate('/contact')}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-green-400 hover:bg-green-500 text-black rounded-l-xl px-2.5 py-8 flex flex-col items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
+      >
+        <div className="relative">
+          <Icon icon="mdi:headset" className="w-5 h-5 text-black" />
+          <div className="absolute -top-0.5 -right-0.5 bg-black rounded-full p-0.5 flex items-center justify-center">
+            <div className="flex gap-0.5">
+              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
+              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
+              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        <span 
+          className="text-xs font-bold uppercase tracking-wider"
+          style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+        >
+          LIÊN HỆ
+        </span>
+      </button>
     </div>
   );
 };

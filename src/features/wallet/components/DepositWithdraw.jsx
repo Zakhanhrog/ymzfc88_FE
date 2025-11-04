@@ -627,18 +627,7 @@ const DepositWithdraw = () => {
   return (
     <div className="space-y-4">
       {/* Title Header */}
-      <div className="text-center pb-3">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <ArrowUpOutlined className="text-2xl text-green-600" />
-          <h3 className="text-2xl font-bold mb-0 text-gray-800">Nạp tiền vào ví</h3>
-        </div>
-        <p className="text-sm text-gray-500">
-          Chọn phương thức thanh toán và nhập số tiền để nạp vào ví
-        </p>
-        <div className="mt-2 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 inline-block">
-          Quy đổi: 1,000đ = 1 điểm
-        </div>
-      </div>
+
 
       {/* Content Card */}
       <Card 

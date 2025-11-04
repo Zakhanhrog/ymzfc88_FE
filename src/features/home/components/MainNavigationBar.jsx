@@ -25,7 +25,7 @@ const MainNavigationBar = () => {
       id: 'song-bai', 
       label: 'Sòng Bài', 
       hasBadge: true,
-      badgeText: 'LIVE',
+      badgeText: 'Live',
       hasFireIcon: false
     },
     { 
@@ -128,7 +128,13 @@ const MainNavigationBar = () => {
               `}
             >
               {/* Label */}
-              <span className="text-base font-medium">{item.label}</span>
+              <span className="text-lg font-medium">{item.label}</span>
+              {/* Live Badge for Sòng Bài */}
+              {item.hasBadge && item.badgeText && (
+                <span className="absolute -top-0.5 -right-0.5 text-[8px] text-white font-bold bg-red-600 px-1 py-0.5 rounded leading-none scale-50 origin-top-right">
+                  {item.badgeText}
+                </span>
+              )}
             </button>
           );
         })}
@@ -155,7 +161,13 @@ const MainNavigationBar = () => {
               `}
             >
               {/* Label */}
-              <span className="text-sm font-medium">{item.label}</span>
+              <span className="text-base font-medium">{item.label}</span>
+              {/* Live Badge for Sòng Bài */}
+              {item.hasBadge && item.badgeText && (
+                <span className="absolute -top-0.5 -right-0.5 text-[4px] text-white font-bold bg-red-600 px-0.5 py-0 rounded leading-none">
+                  {item.badgeText}
+                </span>
+              )}
             </button>
           );
         })}

@@ -647,15 +647,7 @@ const WithdrawForm = () => {
   return (
     <div className="space-y-4">
       {/* Title Header */}
-      <div className="text-center pb-3">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <ArrowDownOutlined className="text-2xl text-green-600" />
-          <Title level={3} className="mb-0 text-gray-800">Rút tiền về ví</Title>
-        </div>
-        <Text type="secondary" className="text-sm">
-          Chọn phương thức thanh toán và nhập số tiền để rút về ví của bạn
-        </Text>
-      </div>
+
 
       {/* Loading when checking lock status */}
       {checkingLockStatus && (
