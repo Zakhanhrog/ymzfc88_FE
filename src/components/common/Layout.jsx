@@ -44,6 +44,19 @@ const Layout = ({ children }) => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [userPoints, setUserPoints] = useState(0);
   const [userName, setUserName] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Lưu activeGame vào localStorage mỗi khi thay đổi
   useEffect(() => {
@@ -260,9 +273,14 @@ const Layout = ({ children }) => {
 
   const sidebarWidth = sidebarCollapsed ? '80px' : '280px';
 
+  // Hide header on mobile notification page only
+  const isNotificationPage = location.pathname === '/notifications';
+  const shouldHideHeader = isNotificationPage;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
+      {/* Header - Hidden on mobile notification page only */}
+      {!shouldHideHeader && (
       <Header
         isLoggedIn={isLoggedIn}
         sidebarCollapsed={sidebarCollapsed}
@@ -273,7 +291,9 @@ const Layout = ({ children }) => {
         userBalance={userPoints}
         onRefreshBalance={fetchUserInfo}
         onLogout={handleLogout}
+          onMobileMenuToggle={() => setShowMobileSidebar(true)}
       />
+      )}
 
       {/* Mobile Sidebar */}
       <MobileSidebar
@@ -296,7 +316,9 @@ const Layout = ({ children }) => {
 
       {/* Main Content */}
       <main 
-        className="pt-[60px] md:pt-[70px] flex-1 ml-0 w-full md:transition-all md:duration-300 md:ease-in-out"
+        className={`flex-1 ml-0 w-full md:transition-all md:duration-300 md:ease-in-out ${
+          shouldHideHeader ? 'pt-0' : 'pt-[60px] md:pt-[70px]'
+        }`}
         style={{ 
           marginLeft: '0px',
           width: '100%',
@@ -310,7 +332,7 @@ const Layout = ({ children }) => {
         </div>
         
         {/* Mobile layout */}
-        <div className="md:hidden p-3 pb-16 min-h-full w-full">
+        <div className="md:hidden px-3 pb-16 min-h-full w-full pt-0">
           {children}
         </div>
       </main>
@@ -363,9 +385,27 @@ const Layout = ({ children }) => {
       <MobileBottomNav onMenuClick={() => setShowMobileSidebar(true)} />
 
       {/* Contact Button - Fixed position on right edge */}
+      {/* Mobile: Small icon button at bottom - sát cạnh, bo 2 góc bên trái */}
       <button
         onClick={() => navigate('/contact')}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-green-400 hover:bg-green-500 text-black rounded-l-xl px-2.5 py-8 flex flex-col items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
+        className="md:hidden fixed right-0 bottom-24 z-50 bg-green-400 hover:bg-green-500 text-black rounded-tl-lg rounded-bl-lg p-1.5 w-8 h-8 flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-xl"
+      >
+        <div className="relative">
+          <Icon icon="mdi:headset" className="w-3.5 h-3.5 text-black" />
+          <div className="absolute -top-0.5 -right-0.5 bg-black rounded-full p-0.5 flex items-center justify-center">
+            <div className="flex gap-0.5">
+              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
+              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
+              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </button>
+
+      {/* Desktop: Full button with text */}
+      <button
+        onClick={() => navigate('/contact')}
+        className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-green-400 hover:bg-green-500 text-black rounded-l-xl px-2.5 py-8 flex-col items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
       >
         <div className="relative">
           <Icon icon="mdi:headset" className="w-5 h-5 text-black" />

@@ -1,9 +1,13 @@
-import { Spinner } from '../ui';
+const Loading = ({ size = 'md', className = '' }) => {
+  const sizeClasses = {
+    sm: 'w-5 h-5 border-2',
+    md: 'w-6 h-6 border-2',
+    lg: 'w-8 h-8 border-2',
+  };
 
-const Loading = ({ size = 'lg', tip = 'Đang tải...' }) => {
   return (
-    <div className="flex justify-center items-center min-h-[200px]">
-      <Spinner size={size} tip={tip} />
+    <div className={`flex justify-center items-center py-8 ${className}`}>
+      <div className={`${sizeClasses[size]} border-green-500 border-t-transparent rounded-full animate-spin`} />
     </div>
   );
 };

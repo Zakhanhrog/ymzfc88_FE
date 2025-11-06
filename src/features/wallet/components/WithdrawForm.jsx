@@ -30,10 +30,12 @@ import {
   PlusOutlined,
   CheckCircleOutlined,
   WarningOutlined,
-  SafetyOutlined
+  SafetyOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import { THEME_COLORS } from '../../../utils/theme';
 import { formatCurrency } from '../../../utils/helpers';
+import Loading from '../../../components/common/Loading';
 import walletService from '../services/walletService';
 
 const { Option } = Select;
@@ -69,14 +71,19 @@ const WithdrawForm = () => {
 
   useEffect(() => {
     // Mỗi lần component mount hoặc user quay lại trang này
-    checkWithdrawalLockStatus();
-    loadUserPaymentMethods();
+    const loadData = async () => {
+      setCheckingLockStatus(true);
+      await Promise.all([
+        checkWithdrawalLockStatus(),
+        loadUserPaymentMethods()
+      ]);
+      setCheckingLockStatus(false);
+    };
+    loadData();
   }, []); // Empty dependency để chỉ chạy lần đầu
 
   const checkWithdrawalLockStatus = async () => {
     try {
-      setCheckingLockStatus(true);
-      
       const token = localStorage.getItem('token');
       if (!token) {
         return;
@@ -107,22 +114,18 @@ const WithdrawForm = () => {
       }
     } catch (error) {
       // Silent error
-    } finally {
-      setCheckingLockStatus(false);
     }
   };
 
   const loadUserPaymentMethods = async () => {
     try {
-      setLoading(true);
+      // Không set loading riêng, để checkingLockStatus xử lý
       const response = await walletService.getUserPaymentMethods();
       if (response.success) {
         setUserPaymentMethods(response.data);
       }
     } catch (error) {
       message.error('Lỗi khi tải phương thức rút tiền: ' + error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -161,15 +164,15 @@ const WithdrawForm = () => {
   const getMethodIcon = (type) => {
     switch (type) {
       case 'MOMO':
-        return <MobileOutlined style={{ color: '#d82d8b' }} />;
+        return <img src="/iconacc/imgi_26_withdraw.avif" alt="MoMo" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'BANK':
-        return <BankOutlined style={{ color: '#1890ff' }} />;
+        return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'ZALO_PAY':
-        return <MobileOutlined style={{ color: '#0068ff' }} />;
+        return <img src="/iconacc/imgi_26_withdraw.avif" alt="ZaloPay" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'VIET_QR':
-        return <QrcodeOutlined style={{ color: '#00a84f' }} />;
+        return <img src="/iconacc/imgi_27_bank.avif" alt="VietQR" className="w-8 h-8 md:w-10 md:h-10" />;
       default:
-        return <CreditCardOutlined />;
+        return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
     }
   };
 
@@ -301,12 +304,44 @@ const WithdrawForm = () => {
     form.resetFields();
   };
 
+  const renderMobileSteps = () => {
+    const steps = [
+      { key: 0, label: 'Chọn phương thức', icon: <BankOutlined /> },
+      { key: 1, label: 'Nhập số tiền', icon: <DollarOutlined /> },
+      { key: 2, label: 'Hoàn thành', icon: <CheckCircleOutlined /> }
+    ];
+
+    return (
+      <div className="md:hidden mb-6">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => (
+            <div key={step.key} className="flex-1 flex flex-col items-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 ${
+                currentStep === step.key 
+                  ? 'bg-gradient-to-r from-green-400 to-emerald-600 text-white' 
+                  : currentStep > step.key
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-500'
+              }`}>
+                {currentStep > step.key ? <CheckCircleOutlined /> : step.key + 1}
+              </div>
+              <span className={`text-xs text-center ${
+                currentStep === step.key ? 'font-semibold text-green-600' : 'text-gray-500'
+              }`}>
+                {step.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderMethodSelection = () => (
     <div className="space-y-4">
-
       {/* Add method button */}
       <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-gray-600">
+        <div className="text-xs md:text-sm text-gray-600">
           {userPaymentMethods.length > 0 && `${userPaymentMethods.length} phương thức`}
         </div>
         <Button
@@ -314,10 +349,11 @@ const WithdrawForm = () => {
           icon={<PlusOutlined />}
           onClick={() => setShowAddMethodModal(true)}
           size="small"
+          className="bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white border-none text-xs"
           style={{
-            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            border: 'none',
-            borderRadius: '6px'
+            borderRadius: '6px',
+            height: '28px',
+            padding: '0 12px'
           }}
         >
           Thêm phương thức
@@ -334,9 +370,8 @@ const WithdrawForm = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setShowAddMethodModal(true)}
+              className="bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white border-none"
               style={{
-                background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-                border: 'none',
                 borderRadius: '8px'
               }}
             >
@@ -355,42 +390,42 @@ const WithdrawForm = () => {
               style={{
                 borderRadius: '12px',
                 border: selectedUserMethod?.id === method.id 
-                  ? '2px solid #dc2626' 
+                  ? '2px solid #10b981' 
                   : '1px solid #e5e7eb',
                 background: selectedUserMethod?.id === method.id 
-                  ? '#fef2f2' 
+                  ? '#f0fdf4' 
                   : 'white'
               }}
-              styles={{ body: { padding: '16px' } }}
+              styles={{ body: { padding: '14px' } }}
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="text-xl">{getMethodIcon(method.type)}</div>
+                    <div className="flex items-center justify-center">{getMethodIcon(method.type)}</div>
                     <div>
-                      <div className="font-semibold text-sm">{method.name}</div>
-                      <Tag size="small" color="blue" className="text-xs mt-0.5">{getMethodTypeText(method.type)}</Tag>
+                      <div className="font-semibold text-xs md:text-sm">{method.name}</div>
+                      <Tag size="small" color="blue" className="text-[10px] md:text-xs mt-0.5">{getMethodTypeText(method.type)}</Tag>
                     </div>
                   </div>
                   {method.isDefault && (
-                    <Tag color="gold" icon={<StarFilled />} className="text-xs">
+                    <Tag color="gold" icon={<StarFilled />} className="text-[10px] md:text-xs">
                       Mặc định
                     </Tag>
                   )}
                 </div>
 
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-xs md:text-sm">
                   <div>
-                    <span className="text-gray-500 text-xs">Chủ tài khoản: </span>
+                    <span className="text-gray-500">Chủ tài khoản: </span>
                     <span className="font-medium">{method.accountName}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500 text-xs">Số tài khoản: </span>
+                    <span className="text-gray-500">Số tài khoản: </span>
                     <span className="font-mono text-blue-600 font-medium">{method.accountNumber}</span>
                   </div>
                   {method.bankCode && (
                     <div>
-                      <span className="text-gray-500 text-xs">Ngân hàng: </span>
+                      <span className="text-gray-500">Ngân hàng: </span>
                       <span className="font-medium">{method.bankCode}</span>
                     </div>
                   )}
@@ -413,7 +448,7 @@ const WithdrawForm = () => {
                         borderRadius: '6px',
                         fontWeight: '500',
                         fontSize: '10px',
-                        height: '24px',
+                        height: '22px',
                         padding: '0 8px'
                       }}
                     >
@@ -437,16 +472,16 @@ const WithdrawForm = () => {
   );
 
   const renderAmountInput = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <Title level={4}>Nhập số tiền rút</Title>
-        <Text type="secondary">
+    <div className="space-y-2 md:space-y-3">
+      <div className="text-center mb-2">
+        <Title level={4} className="!text-base md:!text-lg !mb-1">Nhập số tiền rút</Title>
+        <Text type="secondary" className="text-xs md:text-sm">
           Nhập số tiền bạn muốn rút về tài khoản đã chọn
         </Text>
       </div>
 
       {selectedUserMethod && (
-        <Card className="selected-method-info">
+        <Card className="selected-method-info mb-2">
           <div className="flex items-center gap-3">
             {getMethodIcon(selectedUserMethod.type)}
             <div>
@@ -463,6 +498,7 @@ const WithdrawForm = () => {
         form={form}
         layout="vertical"
         onFinish={handleSubmitWithdraw}
+        className="withdraw-form-compact"
       >
         <Form.Item
           name="userPaymentMethodId"
@@ -479,6 +515,7 @@ const WithdrawForm = () => {
             { required: true, message: 'Vui lòng nhập số điểm' },
             { type: 'number', min: 1, message: 'Số điểm tối thiểu là 1 điểm' }
           ]}
+          className="mb-2"
         >
           <InputNumber
             size="large"
@@ -492,7 +529,7 @@ const WithdrawForm = () => {
           />
         </Form.Item>
 
-        <div className="text-center text-sm text-gray-500 mb-4">
+        <div className="text-center text-sm text-gray-500 mb-2">
           <span>Quy đổi: 1,000đ = 1 điểm</span>
         </div>
 
@@ -503,6 +540,7 @@ const WithdrawForm = () => {
             { required: true, message: 'Vui lòng nhập số tiền' },
             { type: 'number', min: 10000, message: 'Số tiền tối thiểu là 10,000 VNĐ' }
           ]}
+          className="mb-2"
         >
           <InputNumber
             size="large"
@@ -517,7 +555,7 @@ const WithdrawForm = () => {
         </Form.Item>
 
         {/* Quick amount buttons */}
-        <div className="space-y-2">
+        <div className="space-y-1 mb-2">
           <Text className="text-sm text-gray-600">Chọn nhanh:</Text>
           <div className="grid grid-cols-3 gap-2">
             {quickAmounts.map(quick => (
@@ -541,6 +579,7 @@ const WithdrawForm = () => {
         <Form.Item
           name="description"
           label="Ghi chú (không bắt buộc)"
+          className="mb-2"
         >
           <Input.TextArea
             rows={3}
@@ -552,7 +591,7 @@ const WithdrawForm = () => {
         <Alert
           message="Lưu ý quan trọng"
           description={
-            <ul className="space-y-1 mt-2">
+            <ul className="space-y-0.5 mt-1">
               <li>• Thời gian xử lý: 1-24 giờ làm việc</li>
               <li>• Số điểm tối thiểu: 1 điểm (10,000 VNĐ)</li>
               <li>• Khi rút tiền sẽ trừ cả số điểm tương ứng</li>
@@ -562,14 +601,15 @@ const WithdrawForm = () => {
           }
           type="warning"
           showIcon
-          className="mb-4"
+          className="mb-2"
         />
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 md:gap-3">
           <Button
             size="large"
             onClick={() => setCurrentStep(0)}
-            style={{ flex: 1, borderRadius: '8px' }}
+            className="flex-1 md:flex-initial h-11 md:h-12 text-sm"
+            style={{ borderRadius: '8px' }}
           >
             Quay lại
           </Button>
@@ -579,11 +619,12 @@ const WithdrawForm = () => {
             htmlType="submit"
             loading={loading}
             disabled={!amount || !points || amount < 10000 || loading}
+            className="flex-1 md:flex-[2] h-11 md:h-12 text-sm text-white font-semibold hover:opacity-90"
             style={{
-              flex: 2,
               background: THEME_COLORS.primaryGradient,
               border: 'none',
-              borderRadius: '8px'
+              borderRadius: '8px',
+              color: '#ffffff'
             }}
           >
             {loading ? 'Đang xử lý...' : `Rút ${points || 0} điểm`}
@@ -645,20 +686,7 @@ const WithdrawForm = () => {
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Title Header */}
-
-
-      {/* Loading when checking lock status */}
-      {checkingLockStatus && (
-        <Alert
-          message="Đang kiểm tra trạng thái tài khoản..."
-          type="info"
-          showIcon
-          style={{ marginBottom: '16px' }}
-        />
-      )}
-
+    <div className="space-y-4 px-0 md:px-4">
       {/* Withdrawal Locked Alert */}
       {!checkingLockStatus && withdrawalLocked && (
         <Alert
@@ -678,36 +706,50 @@ const WithdrawForm = () => {
       )}
 
       {/* Steps */}
-      <Card style={{ borderRadius: '12px' }}>
-        <Steps current={currentStep} className="mb-8">
-          {steps.map(item => (
-            <Step key={item.title} title={item.title} />
-          ))}
-        </Steps>
+      <Card style={{ borderRadius: '12px' }} styles={{ body: { padding: '16px' } }}>
+        {checkingLockStatus ? (
+          <Loading />
+        ) : (
+          <>
+            {/* Mobile Steps */}
+            {renderMobileSteps()}
+            
+            {/* Desktop Steps */}
+            <div className="hidden md:block">
+              <Steps current={currentStep} className="mb-8">
+                {steps.map(item => (
+                  <Step key={item.title} title={item.title} />
+                ))}
+              </Steps>
+            </div>
 
-        <div className="min-h-96">
-          {steps[currentStep].content}
-        </div>
+            <div className="min-h-64 md:min-h-96">
+              {steps[currentStep].content}
+            </div>
 
-        {currentStep === 0 && selectedUserMethod && userPaymentMethods.length > 0 && (
-          <div className="flex justify-end mt-6">
-            <Button
-              type="primary"
-              size="large"
-              disabled={withdrawalLocked}
-              onClick={() => {
-                form.setFieldsValue({ userPaymentMethodId: selectedUserMethod.id });
-                setCurrentStep(1);
-              }}
-              style={{
-                background: withdrawalLocked ? '#d9d9d9' : THEME_COLORS.primaryGradient,
-                border: 'none',
-                borderRadius: '8px'
-              }}
-            >
-              Tiếp tục
-            </Button>
-          </div>
+            {currentStep === 0 && selectedUserMethod && userPaymentMethods.length > 0 && (
+              <div className="flex justify-end mt-4 md:mt-6">
+                <Button
+                  type="primary"
+                  size="large"
+                  disabled={withdrawalLocked}
+                  onClick={() => {
+                    form.setFieldsValue({ userPaymentMethodId: selectedUserMethod.id });
+                    setCurrentStep(1);
+                  }}
+                  className="w-full md:w-auto h-11 md:h-12 text-sm text-white font-semibold hover:opacity-90"
+                  style={{
+                    background: withdrawalLocked ? '#d9d9d9' : THEME_COLORS.primaryGradient,
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#ffffff'
+                  }}
+                >
+                  Tiếp tục
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </Card>
 

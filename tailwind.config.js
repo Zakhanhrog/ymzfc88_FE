@@ -68,6 +68,8 @@ export default {
         'spin-slow': 'spin 3s linear infinite',
         'fadeIn': 'fadeIn 0.3s ease-in-out',
         'slideInLeft': 'slideInLeft 0.3s ease-in-out',
+        'shimmer': 'shimmer 2s ease-in-out infinite',
+        'shimmer-once': 'shimmer 0.8s ease-in-out',
       },
       keyframes: {
         fadeIn: {
@@ -83,6 +85,10 @@ export default {
             opacity: '1',
             transform: 'translateX(0)'
           },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
         },
       }
     },

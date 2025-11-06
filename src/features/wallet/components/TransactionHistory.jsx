@@ -13,9 +13,9 @@ import {
   Row,
   Col,
   Statistic,
-  message,
-  Spin
+  message
 } from 'antd';
+import Loading from '../../../components/common/Loading';
 import {
   ArrowUpOutlined,
   ArrowDownOutlined,
@@ -115,9 +115,9 @@ const TransactionHistory = () => {
   const getTypeIcon = (type) => {
     switch (type) {
       case 'DEPOSIT':
-        return <ArrowUpOutlined style={{ color: '#52c41a' }} />;
+        return <img src="/iconacc/imgi_25_deposit.avif" alt="Nạp tiền" className="w-5 h-5" />;
       case 'WITHDRAW':
-        return <ArrowDownOutlined style={{ color: '#ff4d4f' }} />;
+        return <img src="/iconacc/imgi_26_withdraw.avif" alt="Rút tiền" className="w-5 h-5" />;
       case 'BONUS':
         return <ArrowUpOutlined style={{ color: '#1890ff' }} />;
       default:
@@ -322,81 +322,10 @@ const TransactionHistory = () => {
         </Card>
       </div>
 
-      {/* Filter Section - Responsive */}
-      <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-        <div className="grid grid-cols-4 gap-3 mb-3">
-          <Select
-            value={filters.type}
-            onChange={(value) => handleFilterChange('type', value)}
-            placeholder="Tất cả"
-            size="middle"
-            style={{ fontSize: FONT_SIZE.base }}
-          >
-            <Option value="all">Tất cả</Option>
-            <Option value="deposit">Nạp tiền</Option>
-            <Option value="withdraw">Rút tiền</Option>
-            <Option value="bonus">Thưởng</Option>
-          </Select>
-          
-          <Select
-            value={filters.status}
-            onChange={(value) => handleFilterChange('status', value)}
-            placeholder="Tất cả"
-            size="middle"
-            style={{ fontSize: FONT_SIZE.base }}
-          >
-            <Option value="all">Tất cả</Option>
-            <Option value="pending">Đang chờ</Option>
-            <Option value="completed">Hoàn thành</Option>
-            <Option value="failed">Thất bại</Option>
-            <Option value="cancelled">Đã hủy</Option>
-          </Select>
-          
-          <RangePicker
-            value={filters.dateRange}
-            onChange={(dates) => handleFilterChange('dateRange', dates)}
-            placeholder={['Từ ngày', 'Đến ngày']}
-            size="middle"
-            format="DD/MM/YYYY"
-            style={{ fontSize: FONT_SIZE.base }}
-          />
-          
-          <Input
-            prefix={<SearchOutlined />}
-            placeholder="Tìm kiếm mã giao dịch..."
-            value={filters.searchText}
-            onChange={(e) => handleFilterChange('searchText', e.target.value)}
-            size="middle"
-            style={{ fontSize: FONT_SIZE.base }}
-          />
-        </div>
-        
-        <div className="flex justify-end gap-2">
-          <Button 
-            icon={<FilterOutlined />} 
-            onClick={resetFilters}
-            style={{ fontSize: FONT_SIZE.base }}
-          >
-            Đặt lại
-          </Button>
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={loadTransactionHistory}
-            type="primary"
-            style={{ fontSize: FONT_SIZE.base }}
-          >
-            Tải lại
-          </Button>
-        </div>
-      </Card>
-
       {/* Table */}
       <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
         {loading ? (
-          <div className="text-center py-8">
-            <Spin size="large" />
-            <p className="mt-4" style={{ ...BODY_STYLES.base, color: TEXT_COLORS.secondary }}>Đang tải dữ liệu...</p>
-          </div>
+          <Loading />
         ) : (
           <Table
             columns={columns}

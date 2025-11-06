@@ -6,12 +6,12 @@ import {
   Form, 
   Input, 
   message, 
-  Spin,
   Result,
   Tag,
   Space,
   Image
 } from 'antd';
+import Loading from '../../../components/common/Loading';
 import {
   UploadOutlined,
   IdcardOutlined,
@@ -21,6 +21,7 @@ import {
   CloseCircleOutlined
 } from '@ant-design/icons';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
+import { THEME_COLORS } from '../../../utils/theme';
 import kycService from '../services/kycService';
 
 const KycVerification = () => {
@@ -107,11 +108,7 @@ const KycVerification = () => {
 
 
   if (fetchingStatus) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <Spin size="large" />
-      </div>
-    );
+    return <Loading />;
   }
 
   // Nếu đã có yêu cầu KYC
@@ -235,7 +232,7 @@ const KycVerification = () => {
   // Form gửi yêu cầu xác thực
   return (
     <Card 
-      className="shadow-md"
+      className="shadow-md kyc-card-compact"
       style={{ borderRadius: '16px' }}
       title={
         <div className="flex items-center gap-2">
@@ -244,8 +241,8 @@ const KycVerification = () => {
         </div>
       }
     >
-      <div className="mb-4">
-        <p className="text-gray-600 mb-2">
+      <div className="mb-2">
+        <p className="text-gray-600 mb-1">
           Xác thực tài khoản giúp bảo vệ tài khoản của bạn và tăng mức độ tin cậy.
         </p>
         <p className="text-sm text-gray-500">
@@ -258,6 +255,7 @@ const KycVerification = () => {
         layout="vertical"
         onFinish={handleSubmit}
         autoComplete="off"
+        className="kyc-form-compact"
       >
         <Form.Item
           label="Họ và tên (theo CCCD)"
@@ -266,6 +264,7 @@ const KycVerification = () => {
             { required: true, message: 'Vui lòng nhập họ tên!' },
             { min: 3, message: 'Họ tên phải có ít nhất 3 ký tự!' }
           ]}
+          className="mb-2"
         >
           <Input
             prefix={<UserOutlined />}
@@ -282,6 +281,7 @@ const KycVerification = () => {
             { required: true, message: 'Vui lòng nhập số CCCD!' },
             { pattern: /^[0-9]{9,12}$/, message: 'Số CCCD phải từ 9-12 chữ số!' }
           ]}
+          className="mb-2"
         >
           <Input
             prefix={<IdcardOutlined />}
@@ -291,11 +291,13 @@ const KycVerification = () => {
           />
         </Form.Item>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="space-y-2 mb-2">
           <Form.Item
             label="Ảnh mặt trước CCCD"
             required
+            className="mb-2"
           >
+            <div className="kyc-upload-wrapper">
             <Upload
               listType="picture-card"
               fileList={frontFileList}
@@ -310,7 +312,8 @@ const KycVerification = () => {
                 </div>
               )}
             </Upload>
-            <p className="text-xs text-gray-500 mt-2">
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
               Ảnh rõ nét, không bị mờ hoặc che
             </p>
           </Form.Item>
@@ -318,7 +321,9 @@ const KycVerification = () => {
           <Form.Item
             label="Ảnh mặt sau CCCD"
             required
+            className="mb-2"
           >
+            <div className="kyc-upload-wrapper">
             <Upload
               listType="picture-card"
               fileList={backFileList}
@@ -333,7 +338,8 @@ const KycVerification = () => {
                 </div>
               )}
             </Upload>
-            <p className="text-xs text-gray-500 mt-2">
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
               Ảnh rõ nét, không bị mờ hoặc che
             </p>
           </Form.Item>
@@ -346,10 +352,9 @@ const KycVerification = () => {
             size='large'
             loading={loading}
             block
+            className="bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold border-none"
             style={{
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-              border: 'none',
               height: '48px',
               fontSize: '16px',
               fontWeight: '600'

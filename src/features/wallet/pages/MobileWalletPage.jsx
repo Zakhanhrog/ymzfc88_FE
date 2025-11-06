@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
+import Layout from '../../../components/common/Layout';
 import MobileWalletBalance from '../components/MobileWalletBalance';
 import MobileTransactionHistory from '../components/MobileTransactionHistory';
 import DepositWithdraw from '../components/DepositWithdraw';
@@ -77,7 +78,8 @@ const MobileWalletPage = () => {
       case 'deposit-withdraw': return 'Nạp tiền';
       case 'withdraw': return 'Rút tiền';
       case 'transaction-history': return 'Lịch sử giao dịch';
-      case 'kyc-verification': return 'Xác thực tài khoản';
+      case 'kyc-verification':
+      case 'account': return 'Xác thực tài khoản';
       default: return 'Ví tiền';
     }
   };
@@ -93,6 +95,7 @@ const MobileWalletPage = () => {
       case 'transaction-history':
         return <MobileTransactionHistory />;
       case 'kyc-verification':
+      case 'account':
         return <KycVerification />;
       default:
         return <MobileWalletBalance onTabChange={setActiveTab} />;
@@ -100,25 +103,14 @@ const MobileWalletPage = () => {
   };
 
   return (
-    <div className="md:hidden fixed inset-0 z-50 bg-white overflow-y-auto">
-      {/* Mobile Header */}
-      <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200 sticky top-0">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => window.history.back()}
-            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
-          >
-            <Icon icon="mdi:arrow-left" className="text-gray-600 text-lg" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-800">{getTabTitle()}</h1>
+    <Layout>
+      <div className="md:hidden w-full bg-gray-50 pb-20 pt-3">
+        {/* Mobile Content */}
+        <div>
+          {renderTabContent()}
         </div>
       </div>
-
-      {/* Mobile Content */}
-      <div className="p-4">
-        {renderTabContent()}
-      </div>
-    </div>
+    </Layout>
   );
 };
 

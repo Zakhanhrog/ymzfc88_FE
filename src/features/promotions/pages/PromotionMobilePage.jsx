@@ -3,24 +3,23 @@ import {
   Card, 
   Typography, 
   message, 
-  Spin,
   Empty,
   Button
 } from 'antd';
 import {
   GiftOutlined,
-  CloseOutlined,
-  LoadingOutlined,
   EyeOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../../../components/common/Layout';
+import Loading from '../../../components/common/Loading';
 import promotionService from '../../../services/promotionService';
 
 const { Title, Text } = Typography;
 
 const PromotionMobilePage = ({ isOpen, onClose }) => {
   const [promotions, setPromotions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Load promotions
@@ -38,51 +37,18 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
 
   // Load data when component mounts
   useEffect(() => {
-    if (isOpen) {
-      loadPromotions();
-    }
-  }, [isOpen]);
+    loadPromotions();
+  }, []); // Chỉ chạy một lần khi mount
 
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-white overflow-y-auto promotion-mobile-container"
-      style={{ 
-        overflowY: 'auto !important',
-        scrollbarWidth: 'auto',
-        WebkitOverflowScrolling: 'touch'
-      }}
-    >
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 p-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <Title level={5} className="mb-0 text-gray-800 text-left">
-            Khuyến mãi
-          </Title>
-          <Button 
-            onClick={onClose}
-            className="flex items-center text-gray-600 hover:text-gray-800"
-            type="text"
-            icon={<CloseOutlined />}
-          />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div 
-        className="p-4 pb-20 overflow-y-auto promotion-mobile-content"
-        style={{ 
-          overflowY: 'auto !important',
-          scrollbarWidth: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          height: 'calc(100vh - 80px)'
-        }}
-      >
+    <Layout>
+      <div className="md:hidden w-full bg-gray-50 pb-20 pt-3">
+        {/* Content */}
+        <div className="px-0 pt-3">
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
-          </div>
+          <Loading />
         ) : (
           <>
             {/* Promotions List */}
@@ -98,66 +64,60 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                 {promotions.map((promotion) => (
                   <Card
                     key={promotion.id}
-                    className="shadow-md hover:shadow-lg transition-all duration-300"
-                    cover={
-                      promotion.imageUrl ? (
-                        <div className="relative h-48 overflow-hidden">
-                          <img
-                            alt={promotion.title}
-                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                          <div 
-                            className="absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-400"
-                            style={{ display: 'none' }}
-                          >
-                            <GiftOutlined className="text-4xl" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="h-48 bg-gradient-to-br from-green-500 to-pink-500 flex items-center justify-center">
-                          <GiftOutlined className="text-white text-6xl" />
-                        </div>
-                      )
-                    }
+                    className="shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden p-0"
+                    bodyStyle={{ padding: 0 }}
                   >
-                    <Card.Meta
-                      title={
-                        <Title level={4} className="text-gray-800 mb-2">
+                    <div 
+                      className="relative h-36 p-5 flex flex-col justify-between"
+                      style={{
+                        backgroundImage: promotion.imageUrl 
+                          ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`})`
+                          : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                      }}
+                    >
+                      {/* Content overlay */}
+                      <div className="relative z-10">
+                        {/* Title - Oswald font, smaller */}
+                        <Title 
+                          level={4} 
+                          className="text-white mb-1 !text-white drop-shadow-lg font-oswald !text-base !font-bold uppercase"
+                          style={{ fontFamily: "'Oswald', sans-serif" }}
+                        >
                           {promotion.title}
                         </Title>
-                      }
-                      description={
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm text-gray-500">Khuyến mãi</span>
-                            <span className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">
-                              Đang diễn ra
-                            </span>
-                          </div>
-                          <Button 
-                            type="primary" 
-                            icon={<EyeOutlined />}
-                            onClick={() => navigate(`/promotions/${promotion.id}`)}
-                            className="w-full"
-                          >
-                            Xem chi tiết
-                          </Button>
-                        </div>
-                      }
-                    />
+
+                        {/* Description - Larger than title, keep current font */}
+                        <Text className="block text-lg md:text-xl font-bold mb-4 text-white drop-shadow-md uppercase">
+                          {promotion.description || promotion.shortDescription || 'Ưu đãi hấp dẫn đang diễn ra, tham gia ngay!'}
+                        </Text>
+
+                        {/* CTA Button */}
+                        <Button 
+                          onClick={() => navigate(`/promotions/${promotion.id}`)}
+                          className="!bg-gradient-to-r !from-yellow-400 !to-amber-500 !border-none hover:!from-yellow-500 hover:!to-amber-600 !text-gray-900 !font-semibold"
+                          style={{ 
+                            borderRadius: '8px',
+                            background: 'linear-gradient(to right, #facc15, #f59e0b)',
+                            border: 'none',
+                            color: '#111827'
+                          }}
+                        >
+                          Xem khuyến mãi
+                        </Button>
+                      </div>
+                    </div>
                   </Card>
                 ))}
               </div>
             )}
           </>
         )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

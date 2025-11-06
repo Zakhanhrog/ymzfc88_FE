@@ -9,8 +9,9 @@ import PopularGamesCarousel from '../components/PopularGamesCarousel';
 import CasinoLiveSection from '../components/CasinoLiveSection';
 import CategoryGamesGrid from '../components/CategoryGamesGrid';
 import AdditionalGamesGrid from '../components/AdditionalGamesGrid';
-import QuickActionsSection from '../components/QuickActionsSection';
 import MobilePopularGames from '../components/MobilePopularGames';
+import MobileCasinoLiveSection from '../components/MobileCasinoLiveSection';
+import MobileCategoryGamesSection from '../components/MobileCategoryGamesSection';
 import CategoryButtons from '../components/CategoryButtons';
 import MainNavigationBar from '../components/MainNavigationBar';
 import { getProvinceImagePathWithMapping } from '../../lottery/utils/imageUtils';
@@ -193,8 +194,14 @@ const HomePage = () => {
   return (
     <Layout>
       <div className="w-full">
-        {/* Main Navigation Bar */}
-        <MainNavigationBar />
+        {/* Main Navigation Bar - Only show on homepage */}
+        {location.pathname === '/' && (
+          <>
+            <MainNavigationBar />
+            {/* Spacer for fixed mobile navigation */}
+            <div className="md:hidden h-[75px]"></div>
+          </>
+        )}
         
         {/* Banner Section */}
         
@@ -232,8 +239,6 @@ const HomePage = () => {
         {/* Notification Marquee */}
         <NotificationMarquee />
 
-        {/* Quick Actions Section */}
-        <QuickActionsSection />
 
         {/* Lottery Interface */}
         
@@ -462,9 +467,19 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* Mobile Casino Live Section */}
+        <div className="md:hidden">
+          <MobileCasinoLiveSection />
+        </div>
+
         {/* Mobile Popular Games */}
         <div className="md:hidden">
           <MobilePopularGames />
+        </div>
+
+        {/* Mobile Category Games (Thể thao & Sòng bài) */}
+        <div className="md:hidden">
+          <MobileCategoryGamesSection />
         </div>
 
         {/* Desktop Components */}

@@ -14,6 +14,11 @@ import ContactPage from './features/contact/pages/ContactPage';
 import PromotionPage from './features/promotions/pages/PromotionPage';
 import PromotionDetailPage from './features/promotions/pages/PromotionDetailPage';
 import NotificationDetailPage from './features/notification/pages/NotificationDetailPage';
+import MobileNotificationPage from './features/notification/pages/MobileNotificationPage';
+import MobileLoginPage from './features/auth/pages/MobileLoginPage';
+import MobileRegisterPage from './features/auth/pages/MobileRegisterPage';
+import MobileAccountPage from './features/wallet/pages/MobileAccountPage';
+import ResponsiveAccountWrapper from './features/wallet/components/ResponsiveAccountWrapper';
 
 // Admin Pages
 import AdminLoginPage from './features/admin/pages/AdminLoginPage';
@@ -93,16 +98,40 @@ function App() {
                 element={<ContactPage />} 
               />
               <Route 
+                path="/login" 
+                element={<MobileLoginPage />} 
+              />
+              <Route 
+                path="/register" 
+                element={<MobileRegisterPage />} 
+              />
+              <Route 
                 path="/promotions" 
-                element={<PromotionPage />} 
+                element={
+                  <ProtectedRoute>
+                    <ResponsiveWalletWrapper initialTab="promotions" />
+                  </ProtectedRoute>
+                } 
               />
               <Route 
                 path="/promotions/:id" 
                 element={<PromotionDetailPage />} 
               />
               <Route 
+                path="/notifications" 
+                element={<MobileNotificationPage />} 
+              />
+              <Route 
                 path="/notifications/:id" 
                 element={<NotificationDetailPage />} 
+              />
+              <Route 
+                path="/account" 
+                element={
+                  <ProtectedRoute>
+                    <ResponsiveAccountWrapper />
+                  </ProtectedRoute>
+                } 
               />
           
           {/* Admin Routes */}

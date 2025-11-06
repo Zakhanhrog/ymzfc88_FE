@@ -3,12 +3,31 @@ import { useNavigate } from 'react-router-dom';
 const QuickActionsSection = () => {
   const navigate = useNavigate();
 
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token');
+    return !!token;
+  };
+
+  const handleNavigate = (path) => {
+    if (!isAuthenticated()) {
+      navigate('/login', { 
+        state: { 
+          redirectAfterLogin: path
+        },
+        replace: false
+      });
+      return;
+    }
+    navigate(path);
+  };
+
   const handleDeposit = () => {
-    navigate('/wallet?tab=deposit-withdraw');
+    handleNavigate('/wallet?tab=deposit-withdraw');
   };
 
   const handleWithdraw = () => {
-    navigate('/wallet?tab=withdraw');
+    handleNavigate('/wallet?tab=withdraw');
   };
 
   const handlePromotions = () => {

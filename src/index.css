@@ -1,9 +1,75 @@
 /* Import Inter font từ Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* KYC Upload wrapper - Full width upload cards */
+.kyc-upload-wrapper .ant-upload-select {
+  width: 100% !important;
+  height: 120px !important;
+  aspect-ratio: auto !important;
+}
+
+.kyc-upload-wrapper .ant-upload-list-picture-card .ant-upload-list-item {
+  width: 100% !important;
+  height: 120px !important;
+  aspect-ratio: auto !important;
+}
+
+.kyc-upload-wrapper .ant-upload-list-picture-card-container {
+  width: 100% !important;
+}
+
+.kyc-upload-wrapper .ant-upload-list-picture-card .ant-upload-list-item-thumbnail img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+/* KYC Form compact spacing */
+.kyc-form-compact .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.kyc-form-compact .ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+/* Withdraw Form compact spacing */
+.withdraw-form-compact .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.withdraw-form-compact .ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+/* Promotion button - prevent color change on hover */
+.promotion-apply-button.ant-btn-primary:hover,
+.promotion-apply-button.ant-btn-primary:focus {
+  background: linear-gradient(to right, #facc15, #f59e0b) !important;
+  border-color: transparent !important;
+  color: #111827 !important;
+}
+
+.promotion-apply-button.ant-btn-primary:active {
+  background: linear-gradient(to right, #facc15, #f59e0b) !important;
+  border-color: transparent !important;
+  color: #111827 !important;
+}
+
+/* KYC Card compact spacing */
+.kyc-card-compact .ant-card-head {
+  padding: 12px 16px;
+  min-height: auto;
+}
+
+.kyc-card-compact .ant-card-body {
+  padding: 16px;
+}
 
 /* Global font family với Inter - font đẹp và rõ ràng hơn */
 * {
@@ -832,4 +898,9 @@ body::-webkit-scrollbar {
   animation: fadeOut 0.2s ease-out;
 }
 /* ========== END LOTTERY MOBILE ANIMATIONS ========== */
+
+/* Oswald font for section titles */
+.font-oswald {
+  font-family: 'Oswald', sans-serif !important;
+}
 

@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import Layout from '../../../components/common/Layout';
 import WalletSidebar from './WalletSidebar';
 import WalletContent from './WalletContent';
 import MobileWalletPage from '../pages/MobileWalletPage';
+import PromotionMobileWrapper from '../../promotions/components/PromotionMobileWrapper';
 import kycService from '../services/kycService';
 import walletService from '../services/walletService';
 
-const ResponsiveWalletWrapper = () => {
+const ResponsiveWalletWrapper = ({ initialTab }) => {
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('balance');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(initialTab || 'balance');
   const [userInfo, setUserInfo] = useState({
     username: '',
     email: '',
@@ -18,7 +21,13 @@ const ResponsiveWalletWrapper = () => {
     idNumber: ''
   });
   const [kycVerified, setKycVerified] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    // Check mobile synchronously on initialization to prevent flash
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
   const [userBalance, setUserBalance] = useState(0);
 
   // Check if mobile
@@ -100,16 +109,43 @@ const ResponsiveWalletWrapper = () => {
     fetchKycStatus();
   }, [activeTab]);
 
-  // Effect để set active tab từ URL params
+  // Effect để set active tab từ URL params hoặc initialTab hoặc pathname
   useEffect(() => {
+    // Check if we're on /promotions route
+    if (location.pathname === '/promotions') {
+      setActiveTab('promotions');
+      return;
+    }
+    
     const tab = searchParams.get('tab');
     if (tab) {
       setActiveTab(tab);
+    } else if (initialTab) {
+      setActiveTab(initialTab);
     }
-  }, [searchParams]);
+  }, [searchParams, initialTab, location.pathname]);
+
+  // Handler để cập nhật tab và URL
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    // Nếu đang ở /account, giữ nguyên URL, chỉ cập nhật tab
+    if (location.pathname === '/account') {
+      // Không cần cập nhật URL vì đã ở /account
+    } else if (tab === 'promotions') {
+      // Navigate to /promotions route
+      navigate('/promotions', { replace: true });
+    } else {
+      // Nếu đang ở /wallet, cập nhật URL với query param
+      navigate(`/wallet?tab=${tab}`, { replace: true });
+    }
+  };
 
   // Return mobile version
   if (isMobile) {
+    // If on promotions route, show PromotionMobileWrapper
+    if (location.pathname === '/promotions' || location.pathname.startsWith('/promotions/')) {
+      return <PromotionMobileWrapper />;
+    }
     return <MobileWalletPage />;
   }
 
@@ -120,7 +156,7 @@ const ResponsiveWalletWrapper = () => {
         {/* Sidebar */}
         <WalletSidebar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           userBalance={userBalance}
           userInfo={userInfo}
           kycVerified={kycVerified}
@@ -129,7 +165,7 @@ const ResponsiveWalletWrapper = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-6 pb-6">
-            <WalletContent activeTab={activeTab} onTabChange={setActiveTab} />
+            <WalletContent activeTab={activeTab} onTabChange={handleTabChange} />
           </div>
         </div>
       </div>

@@ -108,9 +108,9 @@ const MobileTransactionHistory = () => {
   const getTypeIcon = (type) => {
     switch (type) {
       case 'DEPOSIT':
-        return <ArrowUpOutlined style={{ color: '#52c41a' }} />;
+        return <img src="/iconacc/imgi_25_deposit.avif" alt="Nạp tiền" className="w-5 h-5" />;
       case 'WITHDRAW':
-        return <ArrowDownOutlined style={{ color: '#ff4d4f' }} />;
+        return <img src="/iconacc/imgi_26_withdraw.avif" alt="Rút tiền" className="w-5 h-5" />;
       case 'BONUS':
         return <ArrowUpOutlined style={{ color: '#1890ff' }} />;
       default:
@@ -227,84 +227,6 @@ const MobileTransactionHistory = () => {
             <span className="text-sm font-bold">{stats.pendingCount}</span>
             <span className="text-xs">giao dịch</span>
           </div>
-        </div>
-      </div>
-
-      {/* Filter Section - Mobile Optimized */}
-      <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-        {/* Filter Row 1 */}
-        <div className="grid grid-cols-2 gap-2">
-          <Select
-            value={filters.type}
-            onChange={(value) => handleFilterChange('type', value)}
-            placeholder="Tất cả"
-            size="small"
-            className="text-xs"
-          >
-            <Option value="all">Tất cả</Option>
-            <Option value="deposit">Nạp tiền</Option>
-            <Option value="withdraw">Rút tiền</Option>
-            <Option value="bonus">Thưởng</Option>
-          </Select>
-          
-          <Select
-            value={filters.status}
-            onChange={(value) => handleFilterChange('status', value)}
-            placeholder="Tất cả"
-            size="small"
-            className="text-xs"
-          >
-            <Option value="all">Tất cả</Option>
-            <Option value="pending">Đang chờ</Option>
-            <Option value="completed">Hoàn thành</Option>
-            <Option value="failed">Thất bại</Option>
-            <Option value="cancelled">Đã hủy</Option>
-          </Select>
-        </div>
-
-        {/* Filter Row 2 */}
-        <div className="grid grid-cols-1 gap-2">
-          <RangePicker
-            value={filters.dateRange}
-            onChange={(dates) => handleFilterChange('dateRange', dates)}
-            placeholder={['Từ ngày', 'Đến ngày']}
-            size="small"
-            format="DD/MM/YYYY"
-            className="text-xs"
-          />
-        </div>
-
-        {/* Filter Row 3 */}
-        <div className="grid grid-cols-1 gap-2">
-          <Input
-            prefix={<SearchOutlined className="text-xs" />}
-            placeholder="Tìm kiếm mã giao dịch..."
-            value={filters.searchText}
-            onChange={(e) => handleFilterChange('searchText', e.target.value)}
-            size="small"
-            className="text-xs"
-          />
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Button 
-            icon={<FilterOutlined className="text-xs" />} 
-            onClick={resetFilters}
-            size="small"
-            className="flex-1 text-xs"
-          >
-            Đặt lại
-          </Button>
-          <Button 
-            icon={<ReloadOutlined className="text-xs" />} 
-            onClick={loadTransactionHistory}
-            type="primary"
-            size="small"
-            className="flex-1 text-xs"
-          >
-            Tải lại
-          </Button>
         </div>
       </div>
 

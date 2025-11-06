@@ -152,16 +152,17 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
               </button>
             </div>
 
-            <Button 
-              type="submit"
-              variant="primary"
-              size="lg"
-              block
-              loading={loading}
-              className="h-11 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm"
-            >
-              Đăng nhập
-            </Button>
+            <div className="flex justify-center">
+              <Button 
+                type="submit"
+                variant="primary"
+                size="lg"
+                loading={loading}
+                className="h-11 w-full max-w-[280px] bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm"
+              >
+                Đăng nhập
+              </Button>
+            </div>
           </form>
         </div>
 

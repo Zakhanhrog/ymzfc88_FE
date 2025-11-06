@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, Spinner } from '../../../components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../../components/ui';
 import { Icon } from '@iconify/react';
 import { message } from '../../../utils/notification';
+import Loading from '../../../components/common/Loading';
 import walletService from '../services/walletService';
 import pointService from '../../../services/pointService';
 
@@ -10,10 +11,21 @@ const WalletBalance = ({ onTabChange }) => {
   const [pointData, setPointData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     loadWalletBalance();
     loadUserPoints();
+    // Get username from localStorage
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        setUserName(userData.username || userData.name || '');
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
   }, []);
 
   const loadWalletBalance = async () => {
@@ -89,8 +101,7 @@ const WalletBalance = ({ onTabChange }) => {
     return (
       <Card className="text-center">
         <CardContent className="py-16">
-          <Spinner size="lg" />
-          <p className="mt-4 text-sm text-gray-600">Đang tải thông tin ví...</p>
+          <Loading />
         </CardContent>
       </Card>
     );
@@ -115,8 +126,55 @@ const WalletBalance = ({ onTabChange }) => {
   return (
     <TooltipProvider>
       <div className="space-y-4">
+        {/* Welcome/Info Card - Top of page */}
+        <Card className="border border-gray-200 shadow-sm bg-white rounded-2xl">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-4">
+              {/* Left Section - User Profile */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <img 
+                    src="/iconacc/imgi_29_account.avif" 
+                    alt="Account"
+                    className="w-10 h-10"
+                  />
+                </div>
+                <div className="flex flex-col justify-center pt-0.5">
+                  <p className="text-gray-600 text-sm leading-tight mb-0.5 whitespace-nowrap">Xin chào,</p>
+                  <p className="text-gray-900 text-lg font-semibold leading-tight whitespace-nowrap">{userName || 'Người dùng'}</p>
+                </div>
+              </div>
+
+              {/* Right Section - Promotion Banner */}
+              <div className="flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 w-1/2 ml-auto">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-center justify-center flex-shrink-0">
+                    <img 
+                      src="/iconacc/imgi_34_wallet.svg" 
+                      alt="Wallet"
+                      className="w-14 h-14"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-900 text-base font-bold mb-0.5">Tăng Số Dư, Nâng Cơ Hội!</p>
+                    <p className="text-gray-600 text-sm">Nạp ngay để nhận thưởng !</p>
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="h-11 px-6 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white font-semibold border-none flex-shrink-0"
+                  onClick={() => onTabChange && onTabChange('deposit-withdraw')}
+                >
+                  Nạp Ngay
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Main Balance Card - Tinh tế, không gradient */}
-        <Card className="border border-gray-200 shadow-sm bg-white">
+        <Card className="border border-gray-200 shadow-sm bg-white rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -125,16 +183,16 @@ const WalletBalance = ({ onTabChange }) => {
                     <Icon icon="mdi:wallet" className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>
-                    <p className="text-gray-600 text-xs font-medium">Số dư ví</p>
-                    <p className="text-gray-400 text-xs">Điểm hiện tại</p>
+                    <p className="text-gray-600 text-sm font-medium">Số dư ví</p>
+                    <p className="text-gray-400 text-sm">Điểm hiện tại</p>
                   </div>
                 </div>
                 
                 <div className="flex items-baseline gap-2 mb-3">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-3xl font-bold text-gray-900">
                     {balanceVisible ? displayPoints.toLocaleString() : '****'}
                   </h2>
-                  <span className="text-gray-500 text-sm font-medium">điểm</span>
+                  <span className="text-gray-500 text-base font-medium">điểm</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button 
@@ -150,116 +208,17 @@ const WalletBalance = ({ onTabChange }) => {
                   </Tooltip>
                 </div>
 
-                <div className="flex items-center gap-4 text-gray-600 text-xs">
+                <div className="flex items-center gap-4 text-gray-600 text-sm">
                   <div className="flex items-center gap-1.5">
-                    <Icon icon="mdi:arrow-up-circle" className="w-3.5 h-3.5" />
+                    <Icon icon="mdi:arrow-up-circle" className="w-4 h-4" />
                     <span>Đã nhận: <strong className="font-semibold">{balanceVisible ? lifetimeEarned.toLocaleString() : '****'}</strong></span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Icon icon="mdi:arrow-down-circle" className="w-3.5 h-3.5" />
+                    <Icon icon="mdi:arrow-down-circle" className="w-4 h-4" />
                     <span>Đã dùng: <strong className="font-semibold">{balanceVisible ? lifetimeSpent.toLocaleString() : '****'}</strong></span>
                   </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Statistics Grid - Compact */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center">
-                  <Icon icon="mdi:arrow-up" className="w-3.5 h-3.5 text-green-600" />
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs font-medium mb-0.5">Tổng nạp</p>
-              <p className="text-base font-bold text-gray-900">
-                {balanceVisible ? totalDeposit.toLocaleString() : '****'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="w-6 h-6 rounded-md bg-green-50 flex items-center justify-center">
-                  <Icon icon="mdi:arrow-down" className="w-3.5 h-3.5 text-green-600" />
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs font-medium mb-0.5">Tổng rút</p>
-              <p className="text-base font-bold text-gray-900">
-                {balanceVisible ? totalWithdraw.toLocaleString() : '****'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center">
-                  <Icon icon="mdi:gift" className="w-3.5 h-3.5 text-blue-600" />
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs font-medium mb-0.5">Tổng thưởng</p>
-              <p className="text-base font-bold text-gray-900">
-                {balanceVisible ? totalBonus.toLocaleString() : '****'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-gray-200 hover:shadow-sm transition-shadow bg-white">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center">
-                  <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5 text-orange-600" />
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs font-medium mb-0.5">Đang chờ</p>
-              <p className="text-base font-bold text-gray-900">
-                {balanceVisible ? frozenAmount.toLocaleString() : '****'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions - Compact */}
-        <Card className="border border-gray-200 bg-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-gray-900">Thao tác nhanh</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Button
-                variant="primary"
-                size="lg"
-                className="h-11 font-semibold text-sm w-full"
-                onClick={() => onTabChange && onTabChange('deposit-withdraw')}
-              >
-                <Icon icon="mdi:arrow-up-circle" className="w-4 h-4" />
-                Nạp tiền
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-11 border-2 border-green-500 text-green-600 hover:bg-green-50 font-semibold text-sm w-full"
-                onClick={() => onTabChange && onTabChange('withdraw')}
-              >
-                <Icon icon="mdi:arrow-down-circle" className="w-4 h-4" />
-                Rút tiền
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-11 border-2 border-amber-500 text-amber-600 hover:bg-amber-50 font-semibold text-sm w-full"
-                onClick={() => onTabChange && onTabChange('points')}
-              >
-                <Icon icon="mdi:star-circle" className="w-4 h-4" />
-                Điểm thưởng
-              </Button>
             </div>
           </CardContent>
         </Card>

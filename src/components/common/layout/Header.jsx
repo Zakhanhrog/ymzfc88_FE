@@ -24,7 +24,8 @@ const Header = ({
   userName,
   userBalance,
   onRefreshBalance,
-  onLogout
+  onLogout,
+  onMobileMenuToggle
 }) => {
   const navigate = useNavigate();
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -52,6 +53,15 @@ const Header = ({
       window.removeEventListener('showNotificationModal', handleShowNotificationModal);
     };
   }, []);
+
+  // Hide MainNavigationBar when notification modal is open
+  useEffect(() => {
+    if (showNotificationModal) {
+      document.body.setAttribute('data-notification-modal-open', 'true');
+    } else {
+      document.body.removeAttribute('data-notification-modal-open');
+    }
+  }, [showNotificationModal]);
 
   const handleHeaderLogin = async (e) => {
     e.preventDefault();
@@ -177,10 +187,20 @@ const Header = ({
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-[60px] md:h-[70px] bg-white border-b border-gray-200 z-20 px-4 md:px-6">
+    <header className="fixed top-0 left-0 right-0 h-[60px] md:h-[70px] bg-gray-50 border-b border-gray-200 z-20 pl-2 pr-4 md:px-6">
       <div className="w-full h-full flex items-center justify-between">
         {/* Left: Logo & Menu Toggle */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Mobile Menu Toggle */}
+          {onMobileMenuToggle && (
+            <button
+              onClick={onMobileMenuToggle}
+              className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+            >
+              <Icon icon="mdi:menu" className="w-6 h-6 text-gray-700" />
+            </button>
+          )}
+          
           {/* Desktop Menu Toggle */}
           <button
             onClick={onSidebarToggle}
@@ -197,8 +217,8 @@ const Header = ({
             <img 
               src="/images/logos/logo.webp" 
               alt="Logo" 
-              className="h-9 md:h-11 w-auto object-contain transition-transform duration-300 hover:scale-110"
-              style={{ maxHeight: '36px' }}
+              className="h-7 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-110"
+              style={{ maxHeight: '32px' }}
             />
           </div>
         </div>
@@ -217,8 +237,8 @@ const Header = ({
                   onOpenChange={handleNotificationDropdownOpen}
                   dropdownRender={() => notificationContent}
                 >
-                  <button className="w-9 h-9 flex items-center justify-center bg-white border border-gray-300 hover:border-gray-400 rounded-lg transition-colors relative">
-                    <Icon icon="mdi:bell" className="w-4 h-4 text-gray-700" />
+                  <button className="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 hover:border-gray-400 rounded-lg transition-colors relative">
+                    <Icon icon="mdi:bell" className="w-5 h-5 text-gray-700" />
                     {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {unreadCount > 99 ? '99+' : unreadCount}
@@ -229,11 +249,11 @@ const Header = ({
                 
                 {/* User Profile and Balance */}
                 <button
-                  onClick={() => navigate('/wallet')}
-                  className="h-9 flex items-center gap-2.5 bg-white border border-gray-300 hover:border-gray-400 rounded-lg pl-1 pr-3 transition-colors"
+                  onClick={() => navigate('/account')}
+                  className="h-10 flex items-center gap-2.5 bg-white border border-gray-300 hover:border-gray-400 rounded-lg pl-1.5 pr-3.5 transition-colors"
                   title="Xem thông tin ví cá nhân"
                 >
-                  <div className="w-7 h-7 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
                     <Icon icon="mdi:account" className="w-5 h-5 text-gray-700" />
                   </div>
                   <div className="flex flex-col items-start">
@@ -249,7 +269,7 @@ const Header = ({
                 {/* Nạp Tiền Button */}
                 <button
                   onClick={() => navigate('/wallet?tab=deposit-withdraw')}
-                  className="h-9 px-5 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold text-sm rounded-lg transition-all shadow-sm flex items-center"
+                  className="h-10 px-6 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold text-sm rounded-lg transition-all shadow-sm flex items-center"
                 >
                   Nạp Tiền
                 </button>
@@ -257,53 +277,45 @@ const Header = ({
                 {/* Logout */}
                 <button
                   onClick={onLogout}
-                  className="text-gray-600 hover:text-gray-900 transition-colors p-1.5"
+                  className="text-gray-600 hover:text-gray-900 transition-colors p-2"
                   title="Đăng xuất"
                 >
-                  <Icon icon="mdi:logout" className="w-4 h-4" />
+                  <Icon icon="mdi:logout" className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Mobile Logged In Layout */}
               <div className="md:hidden flex items-center gap-1.5">
-                {/* Balance with integrated deposit button */}
-                <div className="flex items-center gap-1 border border-gray-300 pl-2.5 pr-1 py-1 rounded-full bg-white">
-                  <img src="/images/icons/imgi_35_icon-bank.png" alt="Bank" className="w-3.5 h-3.5" />
-                  <span className="font-semibold text-[#34D399] text-xs">
-                    {userBalance.toLocaleString()}
-                  </span>
-                  {/* Integrated deposit button */}
-                  <button
-                    onClick={() => navigate('/wallet?tab=deposit-withdraw')}
-                    className="bg-green-600 text-white px-1.5 py-0.5 rounded-full text-[10px] font-medium hover:bg-green-700 transition-colors ml-0.5"
-                  >
-                    Nạp
-                  </button>
-                </div>
-                
-                {/* User icon */}
-                <button 
-                  onClick={() => setShowProfileModal(true)}
-                  className="w-7 h-7 flex items-center justify-center"
-                >
-                  <Icon icon="mdi:account-circle" className="w-5 h-5 text-gray-600" />
-                </button>
-                
                 {/* Notification icon */}
                 <div className="relative">
                   <button 
-                    onClick={() => setShowNotificationModal(true)}
+                    onClick={() => navigate('/notifications', { replace: false })}
                     data-notification-button
-                    className="w-7 h-7 flex items-center justify-center"
+                    className="w-[28px] h-[28px] flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                   >
-                    <Icon icon="mdi:forum" className="w-5 h-5 text-gray-600" />
+                    <Icon icon="mdi:bell" className="w-5 h-5 text-gray-700" />
                   </button>
                   {/* Notification badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-green-500 text-white text-[10px] font-medium rounded-full w-4 h-4 flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
+                </div>
+                
+                {/* Balance Display with integrated Add button */}
+                <div className="flex items-center gap-1.5 pl-2.5 pr-1 h-[28px] bg-gray-200 rounded-lg">
+                  <span className="font-semibold text-yellow-500 text-xs">
+                    {userBalance.toLocaleString()} điểm
+                  </span>
+                  {/* Add/Deposit button inside */}
+                  <button
+                    onClick={() => navigate('/wallet?tab=deposit-withdraw')}
+                    className="flex items-center justify-center bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 rounded-md transition-colors flex-shrink-0 my-0.5"
+                    style={{ width: '22px', height: '22px' }}
+                  >
+                    <Icon icon="mdi:plus" className="w-4 h-4 text-gray-900" />
+                  </button>
                 </div>
               </div>
             </>
@@ -341,7 +353,7 @@ const Header = ({
                   variant="outline"
                   size="sm"
                   loading={loginLoading}
-                  className="text-sm font-medium px-3 md:px-4 h-9 md:h-10 bg-gradient-to-r from-green-400 to-emerald-600 text-white border-0 hover:from-green-500 hover:to-emerald-700 rounded-xl"
+                  className="text-sm font-medium px-3 md:px-4 h-8 md:h-9 bg-gradient-to-r from-green-400 to-emerald-600 text-white border-0 hover:from-green-500 hover:to-emerald-700 rounded-lg"
                 >
                   Đăng nhập
                 </Button>
@@ -350,7 +362,7 @@ const Header = ({
                 variant="primary"
                 size="sm"
                 onClick={onRegisterOpen}
-                className="text-sm font-semibold px-3 md:px-4 h-9 md:h-10 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 border-0 hover:from-yellow-500 hover:to-orange-600 rounded-xl"
+                className="text-sm font-semibold px-3 md:px-4 h-8 md:h-9 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 border-0 hover:from-yellow-500 hover:to-orange-600 rounded-lg"
               >
                 Đăng ký
               </Button>
@@ -362,16 +374,16 @@ const Header = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onLoginOpen}
-                className="text-sm font-medium px-3 h-9 bg-gradient-to-r from-green-400 to-emerald-600 text-white border-0 hover:from-green-500 hover:to-emerald-700 rounded-xl"
+                          onClick={() => navigate('/login', { replace: true })}
+                          className="text-sm font-medium px-3 h-8 bg-gradient-to-r from-green-400 to-emerald-600 text-white border-0 hover:from-green-500 hover:to-emerald-700 rounded-lg"
               >
                 Đăng nhập
               </Button>
               <Button
                 variant="primary"
                 size="sm"
-                onClick={onRegisterOpen}
-                className="text-sm font-semibold px-3 h-9 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 border-0 hover:from-yellow-500 hover:to-orange-600 rounded-xl"
+                          onClick={() => navigate('/register', { replace: true })}
+                          className="text-sm font-semibold px-3 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 border-0 hover:from-yellow-500 hover:to-orange-600 rounded-lg"
               >
                 Đăng ký
               </Button>

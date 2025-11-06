@@ -5,6 +5,26 @@ const MainNavigationBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeItem, setActiveItem] = useState('trang-chu');
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+
+  // Check if notification modal is open
+  useEffect(() => {
+    const checkModalState = () => {
+      setIsNotificationModalOpen(document.body.hasAttribute('data-notification-modal-open'));
+    };
+    
+    // Check initially
+    checkModalState();
+    
+    // Watch for changes
+    const observer = new MutationObserver(checkModalState);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-notification-modal-open']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   // Menu items theo hình ảnh
   const menuItems = [
@@ -13,69 +33,79 @@ const MainNavigationBar = () => {
       label: 'Trang Chủ', 
       path: '/',
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: null // Trang chủ không có trong danh sách icon
     },
     { 
       id: 'the-thao', 
       label: 'Thể Thao', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_21_sport.avif'
     },
     { 
       id: 'song-bai', 
       label: 'Sòng Bài', 
       hasBadge: true,
       badgeText: 'Live',
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_22_casino.avif'
     },
     { 
       id: 'no-hu', 
       label: 'Nổ Hũ', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_24_slots.avif'
     },
     { 
       id: 'quay-so', 
       label: 'Quay Số', 
       hasBadge: false,
-      hasFireIcon: true
+      hasFireIcon: true,
+      mobileIcon: '/icondieuhuongmb/imgi_25_lottery.avif'
     },
     { 
       id: 'game-bai', 
       label: 'Game Bài', 
       hasBadge: false,
-      hasFireIcon: true
+      hasFireIcon: true,
+      mobileIcon: '/icondieuhuongmb/imgi_27_game-cards.avif'
     },
     { 
       id: 'keno', 
       label: 'Keno', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_28_keno.avif'
     },
     { 
-      id: 'xo-so', 
-      label: 'Xổ Số', 
-      path: '/lottery',
+      id: 'lo-de', 
+      label: 'Lô Đề', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_29_lode.avif'
     },
     { 
       id: 'da-ga', 
       label: 'Đá Gà', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_30_cockfight.avif'
     },
     { 
       id: 'ban-ca', 
       label: 'Bắn Cá', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_31_fishing.avif'
     },
     { 
       id: 'cong-game', 
       label: 'Cổng Game', 
       hasBadge: false,
-      hasFireIcon: false
+      hasFireIcon: false,
+      mobileIcon: '/icondieuhuongmb/imgi_32_lobby-game.avif'
     }
   ];
 
@@ -105,10 +135,10 @@ const MainNavigationBar = () => {
   };
 
   return (
-    <div className="w-full rounded-lg mb-4 overflow-hidden bg-gray-100 relative">
-      
+    <>
       {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center justify-between px-6 py-3 relative z-10">
+      <div className="hidden md:block w-full rounded-lg mb-4 overflow-hidden bg-gray-100 relative">
+        <div className="flex items-center justify-between px-6 py-3 relative z-10">
         {menuItems.map((item) => {
           const isActive = activeItem === item.id 
             || (item.id === 'xo-so' && (location.pathname === '/lottery' || location.pathname.startsWith('/lottery')))
@@ -128,7 +158,7 @@ const MainNavigationBar = () => {
               `}
             >
               {/* Label */}
-              <span className="text-lg font-medium">{item.label}</span>
+                <span className="text-base font-medium">{item.label}</span>
               {/* Live Badge for Sòng Bài */}
               {item.hasBadge && item.badgeText && (
                 <span className="absolute -top-0.5 -right-0.5 text-[8px] text-white font-bold bg-red-600 px-1 py-0.5 rounded leading-none scale-50 origin-top-right">
@@ -138,11 +168,14 @@ const MainNavigationBar = () => {
             </button>
           );
         })}
+        </div>
       </div>
 
-      {/* Mobile Navigation - Horizontal Scroll */}
-      <div className="md:hidden flex items-center justify-between px-3 py-2.5 overflow-x-auto scrollbar-hide relative z-10">
-        {menuItems.map((item) => {
+      {/* Mobile Navigation - Card Grid Layout */}
+      {!isNotificationModalOpen && (
+        <div className="md:hidden fixed top-[60px] left-0 right-0 z-30 bg-gray-100 rounded-lg px-3 py-1 pt-2">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          {menuItems.filter(item => item.mobileIcon).map((item) => {
           const isActive = activeItem === item.id 
             || (item.id === 'xo-so' && (location.pathname === '/lottery' || location.pathname.startsWith('/lottery')))
             || (item.id === 'trang-chu' && location.pathname === '/');
@@ -152,27 +185,33 @@ const MainNavigationBar = () => {
               key={item.id}
               onClick={() => handleItemClick(item)}
               className={`
-                relative flex items-center justify-center px-2 py-2 rounded-lg
-                whitespace-nowrap transition-all duration-300 flex-shrink-0
-                ${isActive 
-                  ? 'bg-gradient-to-r from-green-400 to-emerald-600 text-white font-semibold shadow-md' 
-                  : 'text-gray-700 hover:text-green-500 hover:bg-green-50'
-                }
-              `}
-            >
+                  relative flex flex-col items-center justify-center px-2 py-1.5 rounded-lg
+                  transition-all duration-300 flex-shrink-0 min-w-[60px]
+                  ${isActive ? 'bg-gray-300' : 'bg-gray-200 hover:bg-gray-300'}
+                `}
+              >
+                {/* Icon */}
+                <div className="mb-0.5">
+                  <img
+                    src={item.mobileIcon}
+                    alt={item.label}
+                    className={`w-7 h-7 transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}
+                  />
+                </div>
+                
               {/* Label */}
-              <span className="text-base font-medium">{item.label}</span>
-              {/* Live Badge for Sòng Bài */}
-              {item.hasBadge && item.badgeText && (
-                <span className="absolute -top-0.5 -right-0.5 text-[4px] text-white font-bold bg-red-600 px-0.5 py-0 rounded leading-none">
-                  {item.badgeText}
+                <span className={`text-[10px] font-medium text-center whitespace-nowrap ${
+                  isActive ? 'text-green-600' : 'text-gray-700'
+                }`}>
+                  {item.label}
                 </span>
-              )}
             </button>
           );
         })}
       </div>
     </div>
+      )}
+    </>
   );
 };
 

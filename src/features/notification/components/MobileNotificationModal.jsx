@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { Button } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../../../components/common/Loading';
 import notificationService from '../services/notificationService';
 import moment from 'moment';
 import 'moment/locale/vi';
@@ -68,12 +69,12 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Overlay */}
-      <div className={`md:hidden fixed inset-0 z-40 bg-black transition-opacity duration-300 ${
+      <div className={`md:hidden fixed inset-0 z-[60] bg-black transition-opacity duration-300 ${
         isOpen ? 'opacity-30' : 'opacity-0 pointer-events-none'
       }`} onClick={onClose} />
       
       {/* Modal */}
-      <div className={`md:hidden fixed inset-0 z-50 bg-white overflow-y-auto transition-transform duration-300 ease-in-out ${
+      <div className={`md:hidden fixed inset-0 z-[70] bg-white overflow-y-auto transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -90,9 +91,7 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
       {/* Content */}
       <div className="p-4">
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          </div>
+          <Loading />
         ) : notifications.length === 0 ? (
           <div className="text-center py-12">
             <Icon icon="mdi:bell-off" className="w-16 h-16 text-gray-300 mx-auto mb-4" />

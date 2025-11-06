@@ -1,10 +1,7 @@
-import React, { useMemo, Suspense } from 'react';
+import React, { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { Spin } from 'antd';
-
-// Lazy load mobile components for better performance
-const PromotionMobilePage = React.lazy(() => import('../pages/PromotionMobilePage'));
-const PromotionDetailMobilePage = React.lazy(() => import('../pages/PromotionDetailMobilePage'));
+import PromotionMobilePage from '../pages/PromotionMobilePage';
+import PromotionDetailMobilePage from '../pages/PromotionDetailMobilePage';
 
 const PromotionMobileWrapper = () => {
   const location = useLocation();
@@ -18,21 +15,13 @@ const PromotionMobileWrapper = () => {
     return { isPromotionsPage, isPromotionDetailPage };
   }, [location.pathname, id]);
 
-  // For mobile, show slide-in page with Suspense for lazy loading
+  // For mobile, show slide-in page
   if (routeInfo.isPromotionsPage) {
-    return (
-      <Suspense fallback={<div className="flex justify-center items-center h-64"><Spin size="large" /></div>}>
-        <PromotionMobilePage isOpen={true} onClose={() => window.history.back()} />
-      </Suspense>
-    );
+    return <PromotionMobilePage isOpen={true} onClose={() => window.history.back()} />;
   }
 
   if (routeInfo.isPromotionDetailPage) {
-    return (
-      <Suspense fallback={<div className="flex justify-center items-center h-64"><Spin size="large" /></div>}>
-        <PromotionDetailMobilePage isOpen={true} onClose={() => window.history.back()} />
-      </Suspense>
-    );
+    return <PromotionDetailMobilePage isOpen={true} onClose={() => window.history.back()} />;
   }
 
   return null;

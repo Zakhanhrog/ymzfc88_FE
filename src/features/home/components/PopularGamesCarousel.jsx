@@ -74,9 +74,9 @@ const PopularGamesCarousel = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-black text-gray-800 px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 via-green-200 to-transparent shadow-sm uppercase relative flex items-center" style={{ fontFamily: 'Arial, sans-serif', fontWeight: 900, textShadow: '0 1px 2px rgba(0,0,0,0.3), 0 0 1px rgba(0,0,0,0.5)' }}>
-              <span className="absolute left-0 w-1 h-8 bg-green-300 rounded-r-lg"></span>
-              <span className="relative pl-2">Trò chơi phổ biến</span>
+            <h2 className="text-lg font-black text-gray-800 pl-2 pr-8 py-2 rounded-md bg-gradient-to-r from-green-400 via-green-200 to-transparent uppercase relative flex items-center tracking-wide font-oswald" style={{ fontWeight: 900, fontFamily: "'Oswald', sans-serif" }}>
+              <span className="absolute left-0 w-1 h-8 bg-green-300 rounded-r-md"></span>
+              <span className="relative pl-1" style={{ fontFamily: "'Oswald', sans-serif" }}>Trò chơi phổ biến</span>
             </h2>
             
             {/* Navigation Controls */}

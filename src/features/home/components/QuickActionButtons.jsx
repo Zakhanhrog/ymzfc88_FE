@@ -5,6 +5,25 @@ import { FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 const QuickActionButtons = () => {
   const navigate = useNavigate();
 
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token');
+    return !!token;
+  };
+
+  const handleNavigate = (path) => {
+    if (!isAuthenticated()) {
+      navigate('/login', { 
+        state: { 
+          redirectAfterLogin: path
+        },
+        replace: false
+      });
+      return;
+    }
+    navigate(path);
+  };
+
   return (
     <div className="mb-5 px-0.5 hidden">
       <div className="flex gap-0.5 justify-between">
@@ -26,7 +45,7 @@ const QuickActionButtons = () => {
           </div>
           {/* Button pill */}
           <button
-            onClick={() => navigate('/wallet?tab=deposit-withdraw')}
+            onClick={() => handleNavigate('/wallet?tab=deposit-withdraw')}
             className="w-full bg-gradient-to-r from-red-400 to-pink-400 hover:from-green-500 hover:to-pink-500 rounded-full py-0.5 px-1.5 flex items-center justify-center gap-0.5 shadow-sm transition-all"
           >
             <span className="text-white font-semibold text-[9px] whitespace-nowrap">Nạp Tiền</span>
@@ -54,7 +73,7 @@ const QuickActionButtons = () => {
           </div>
           {/* Button pill */}
           <button
-            onClick={() => navigate('/wallet?tab=withdraw')}
+            onClick={() => handleNavigate('/wallet?tab=withdraw')}
             className="w-full bg-gradient-to-r from-green-400 to-emerald-400 hover:from-green-500 hover:to-emerald-500 rounded-full py-0.5 px-1.5 flex items-center justify-center gap-0.5 shadow-sm transition-all"
           >
             <span className="text-white font-semibold text-[9px] whitespace-nowrap">Rút Tiền</span>

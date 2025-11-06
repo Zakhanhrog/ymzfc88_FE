@@ -4,6 +4,7 @@ import DepositWithdraw from './DepositWithdraw';
 import WithdrawForm from './WithdrawForm';
 import KycVerification from './KycVerification';
 import UserPointsPage from './UserPointsPage';
+import PromotionContent from './PromotionContent';
 
 const WalletContent = ({ activeTab, onTabChange }) => {
   // Bank Account component - placeholder
@@ -29,6 +30,8 @@ const WalletContent = ({ activeTab, onTabChange }) => {
     case 'kyc-verification':
     case 'account':
       return <KycVerification />;
+    case 'promotions':
+      return <PromotionContent />;
     case 'bank-account':
       return <BankAccount />;
     case 'settings':

@@ -86,7 +86,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   };
 
   return (
-    <div className="flex h-[700px] w-[900px] bg-white rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="flex h-[580px] w-[900px] bg-white rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
       {/* Left Side - Promotional Banner */}
       <div 
         className="w-1/2 relative overflow-hidden bg-cover bg-center"
@@ -95,7 +95,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
       </div>
 
       {/* Right Side - Register Form */}
-      <div className="w-1/2 p-8 bg-gray-50 flex flex-col relative overflow-y-auto">
+      <div className="w-1/2 p-6 bg-gray-50 flex flex-col relative overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -105,107 +105,116 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
         </button>
 
         <div className="flex-1 flex flex-col justify-center">
-          <div className="text-center mb-6">
+          <div className="text-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900 uppercase tracking-wide">
               Đăng ký
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3.5" onClick={(e) => e.stopPropagation()}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Họ và tên
-              </label>
-              <Input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Nhập họ và tên"
-                prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
-                error={errors.name}
-                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
+          <form onSubmit={handleSubmit} className="space-y-2.5" onClick={(e) => e.stopPropagation()}>
+            {/* Row 1: Họ và tên + Tên đăng nhập */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Họ và tên
+                </label>
+                <Input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Nhập họ và tên"
+                  prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
+                  error={errors.name}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tên đăng nhập
+                </label>
+                <Input
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Nhập tên đăng nhập"
+                  prefix={<Icon icon="mdi:account-circle" className="text-gray-400 text-base" />}
+                  error={errors.username}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Tên đăng nhập
-              </label>
-              <Input
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Nhập tên đăng nhập"
-                prefix={<Icon icon="mdi:account-circle" className="text-gray-400 text-base" />}
-                error={errors.username}
-                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
+            {/* Row 2: Email + Số điện thoại */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <Input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Nhập email"
+                  prefix={<Icon icon="mdi:email" className="text-gray-400 text-base" />}
+                  error={errors.email}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Số điện thoại
+                </label>
+                <Input
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="Nhập số điện thoại"
+                  prefix={<Icon icon="mdi:phone" className="text-gray-400 text-base" />}
+                  error={errors.phoneNumber}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email
-              </label>
-              <Input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Nhập email"
-                prefix={<Icon icon="mdi:email" className="text-gray-400 text-base" />}
-                error={errors.email}
-                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
+            {/* Row 3: Mật khẩu + Xác nhận mật khẩu */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mật khẩu
+                </label>
+                <Input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Nhập mật khẩu"
+                  prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
+                  error={errors.password}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Xác nhận mật khẩu
+                </label>
+                <Input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Nhập lại mật khẩu"
+                  prefix={<Icon icon="mdi:lock-check" className="text-gray-400 text-base" />}
+                  error={errors.confirmPassword}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Số điện thoại
-              </label>
-              <Input
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                placeholder="Nhập số điện thoại"
-                prefix={<Icon icon="mdi:phone" className="text-gray-400 text-base" />}
-                error={errors.phoneNumber}
-                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Mật khẩu
-              </label>
-              <Input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Nhập mật khẩu"
-                prefix={<Icon icon="mdi:lock" className="text-gray-400 text-base" />}
-                error={errors.password}
-                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Xác nhận mật khẩu
-              </label>
-              <Input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Nhập lại mật khẩu"
-                prefix={<Icon icon="mdi:lock-check" className="text-gray-400 text-base" />}
-                error={errors.confirmPassword}
-                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-              />
-            </div>
-
-            <div className="flex items-start gap-2 py-1.5">
+            <div className="flex items-start gap-2 py-1">
               <input
                 type="checkbox"
                 name="agreedToTerms"
@@ -219,7 +228,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
             </div>
             {errors.agreedToTerms && <p className="text-sm text-green-600 -mt-1 font-medium">{errors.agreedToTerms}</p>}
 
-            <div className="flex items-center justify-center py-1.5">
+            <div className="flex items-center justify-center py-1">
               <button
                 type="button"
                 onClick={(e) => {
@@ -232,21 +241,22 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               </button>
             </div>
 
-            <Button 
-              type="submit"
-              variant="primary"
-              size="lg"
-              block
-              loading={loading}
-              className="h-11 bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm"
-            >
-              Đăng ký
-            </Button>
+            <div className="flex justify-center">
+              <Button 
+                type="submit"
+                variant="primary"
+                size="lg"
+                loading={loading}
+                className="h-11 w-full max-w-[280px] bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white font-semibold rounded-lg transition-colors text-sm"
+              >
+                Đăng ký
+              </Button>
+            </div>
           </form>
         </div>
 
         {/* Bottom Navigation */}
-        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-3 border-t border-gray-200">
           <button
             type="button"
             onClick={(e) => {

@@ -13,9 +13,9 @@ import {
   Alert,
   message,
   QRCode,
-  Spin,
   Upload
 } from 'antd';
+import Loading from '../../../components/common/Loading';
 import {
   ArrowUpOutlined,
   BankOutlined,
@@ -65,13 +65,13 @@ const DepositWithdraw = () => {
   const getMethodIcon = (type) => {
     switch (type) {
       case 'MOMO':
-        return <MobileOutlined style={{ color: '#d82d8b' }} />;
+        return <img src="/iconacc/imgi_25_deposit.avif" alt="MoMo" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'BANK':
-        return <BankOutlined style={{ color: '#007ACC' }} />;
+        return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'USDT':
-        return <DollarOutlined style={{ color: '#26a17b' }} />;
+        return <img src="/iconacc/imgi_25_deposit.avif" alt="USDT" className="w-8 h-8 md:w-10 md:h-10" />;
       default:
-        return <BankOutlined />;
+        return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
     }
   };
 
@@ -156,7 +156,7 @@ const DepositWithdraw = () => {
       const response = await walletService.createDepositOrder(depositData);
       if (response.success) {
         setTransactionResult(response.data);
-        setCurrentStep(2);
+        setCurrentStep(3);
         message.success('Đã tạo lệnh nạp tiền thành công!');
       } else {
         message.error('Lỗi: ' + (response.message || 'Không xác định'));
@@ -184,46 +184,43 @@ const DepositWithdraw = () => {
 
   const renderMethodSelection = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold mb-4">
+      <h3 className="text-base md:text-lg font-semibold mb-4">
         Chọn phương thức nạp tiền
       </h3>
       
       {loading ? (
-        <div className="text-center py-8">
-          <Spin size="large" />
-          <p className="mt-4 text-gray-500">Đang tải phương thức thanh toán...</p>
-        </div>
+        <Loading />
       ) : (
-        <Row gutter={[16, 16]}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {paymentMethods.map((method) => (
-            <Col xs={24} md={12} key={method.id}>
               <Card
+              key={method.id}
                 className={`cursor-pointer transition-all duration-300 ${
                   selectedMethod?.id === method.id 
-                    ? 'border-2 shadow-lg' 
-                    : 'border hover:shadow-md'
+                  ? 'border-2 shadow-md' 
+                  : 'border hover:shadow-sm'
                 }`}
                 style={{ 
                   borderRadius: '12px',
-                  borderColor: selectedMethod?.id === method.id ? THEME_COLORS.primary : '#d9d9d9'
+                borderColor: selectedMethod?.id === method.id ? THEME_COLORS.primary : '#e5e7eb'
                 }}
-                styles={{ body: { padding: '20px' } }}
+              styles={{ body: { padding: '16px' } }}
                 onClick={() => handleMethodSelect(method)}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="text-2xl">{getMethodIcon(method.type)}</div>
-                  <div>
-                    <h4 className="font-semibold text-lg">{method.name}</h4>
-                    <p className="text-gray-500 text-sm">{method.accountNumber}</p>
+                <div className="flex items-center justify-center">{getMethodIcon(method.type)}</div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm md:text-lg">{method.name}</h4>
+                  <p className="text-gray-500 text-xs md:text-sm">{method.accountNumber}</p>
                   </div>
                   {selectedMethod?.id === method.id && (
                     <CheckCircleOutlined 
-                      className="text-green-500 text-xl ml-auto" 
+                    className="text-green-500 text-lg md:text-xl" 
                     />
                   )}
                 </div>
                 
-                <div className="space-y-2 text-sm">
+              <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Hạn mức:</span>
                     <span className="font-medium">
@@ -231,7 +228,7 @@ const DepositWithdraw = () => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Phí giao dịch:</span>
+                  <span className="text-gray-600">Phí:</span>
                     <span className="font-medium text-green-600">
                       {(method.feePercent || 0) === 0 && (method.feeFixed || 0) === 0 
                         ? 'Miễn phí' 
@@ -240,33 +237,32 @@ const DepositWithdraw = () => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Thời gian xử lý:</span>
+                  <span className="text-gray-600">Thời gian:</span>
                     <span className="font-medium">{method.processingTime}</span>
                   </div>
                 </div>
               </Card>
-            </Col>
           ))}
-        </Row>
+        </div>
       )}
     </div>
   );
 
   const renderAmountInput = () => (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold">
+    <div className="space-y-4 md:space-y-6">
+      <h3 className="text-base md:text-lg font-semibold">
         Nhập số tiền nạp
       </h3>
       
       {/* Quick Amount Buttons */}
       <div>
-        <p className="text-gray-600 mb-3">Chọn nhanh:</p>
-        <div className="grid grid-cols-4 gap-3">
+        <p className="text-gray-600 mb-2 md:mb-3 text-sm">Chọn nhanh:</p>
+        <div className="grid grid-cols-4 gap-2 md:gap-3">
           {quickAmounts.map((item) => (
             <Button
               key={item.value}
               size="large"
-              className={`h-12 font-semibold ${
+              className={`h-10 md:h-12 font-semibold text-xs md:text-sm ${
                 amount === item.value 
                   ? 'border-2 text-white' 
                   : 'border hover:border-blue-400'
@@ -337,11 +333,11 @@ const DepositWithdraw = () => {
         <Alert
           message={
             <div className="space-y-1">
-              <div className="flex justify-between">
+              <div className="flex justify-between text-xs md:text-sm">
                 <span>Số tiền nạp:</span>
                 <span className="font-semibold">{formatCurrency(amount)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-xs md:text-sm">
                 <span>Phí giao dịch:</span>
                 <span className="font-semibold text-green-600">
                   {(selectedMethod.feePercent || 0) === 0 && (selectedMethod.feeFixed || 0) === 0 
@@ -351,16 +347,16 @@ const DepositWithdraw = () => {
                 </span>
               </div>
               <Divider className="my-2" />
-              <div className="flex justify-between text-lg">
+              <div className="flex justify-between text-sm md:text-base">
                 <span className="font-semibold">Số tiền nhận được:</span>
-                <span className="font-bold text-green-600">
+                <span className="font-semibold text-green-600">
                   {formatCurrency(amount)}
                 </span>
               </div>
             </div>
           }
           type="info"
-          showIcon
+          showIcon={false}
         />
       )}
 
@@ -515,36 +511,84 @@ const DepositWithdraw = () => {
     </div>
   );
 
-  const renderSteps = () => {
-    if (currentStep === 2) {
+  const renderMobileSteps = () => {
+    const steps = [
+      { key: 0, label: 'Chọn phương thức', icon: <BankOutlined /> },
+      { key: 1, label: 'Nhập số tiền', icon: <DollarOutlined /> },
+      { key: 2, label: 'Xác nhận', icon: <CheckCircleOutlined /> }
+    ];
+
       return (
+      <div className="md:hidden mb-6">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => (
+            <div key={step.key} className="flex-1 flex flex-col items-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 ${
+                currentStep === step.key || (currentStep === 3 && step.key === 2)
+                  ? 'bg-gradient-to-r from-green-400 to-emerald-600 text-white' 
+                  : currentStep > step.key || (currentStep === 3 && step.key < 2)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-500'
+              }`}>
+                {(currentStep > step.key || (currentStep === 3 && step.key < 2)) ? <CheckCircleOutlined /> : step.key + 1}
+              </div>
+              <span className={`text-xs text-center ${
+                currentStep === step.key || (currentStep === 3 && step.key === 2) ? 'font-semibold text-green-600' : 'text-gray-500'
+              }`}>
+                {step.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderSuccessResult = () => (
+    <div className="text-center">
         <Result
           status="success"
-          title="Nạp tiền thành công!"
-          subTitle={`Đã tạo lệnh nạp ${formatCurrency(amount)}. Vui lòng chuyển khoản để hoàn tất giao dịch.`}
+        title={<span style={{ fontSize: '18px' }}>Nạp tiền thành công!</span>}
+        subTitle={
+          <div className="space-y-1.5" style={{ fontSize: '14px' }}>
+            <p>Mã giao dịch: <strong>{transactionResult?.transactionId || transactionResult?.id}</strong></p>
+            <p>Số tiền nạp: <strong className="text-orange-600">{formatCurrency(amount)}</strong></p>
+            <p>Thời gian xử lý dự kiến: {selectedMethod?.processingTime || '5-15 phút'}</p>
+            <p className="text-sm text-gray-500">
+              Vui lòng chuyển khoản theo thông tin đã cung cấp để hoàn tất giao dịch
+            </p>
+          </div>
+        }
           extra={[
-            <Button key="console" onClick={handleReset}>
-              Tạo lệnh mới
+          <Button key="history" onClick={() => window.location.href = '/wallet?tab=transaction-history'} style={{ fontSize: '14px' }}>
+            Xem lịch sử
             </Button>,
             <Button 
-              key="buy" 
+            key="new"
               type="primary"
+            onClick={handleReset}
               style={{ 
                 background: THEME_COLORS.primaryGradient,
-                border: 'none'
+              border: 'none',
+              fontSize: '14px'
               }}
             >
-              Xem lịch sử giao dịch
-            </Button>
+            Tạo lệnh mới
+          </Button>,
           ]}
         />
+    </div>
       );
-    }
 
-    return (
+  const renderProgressBar = () => (
       <div>
+      {/* Mobile Steps */}
+      {renderMobileSteps()}
+      
+      {/* Desktop Steps */}
+      <div className="hidden md:block">
         <Steps 
-          current={currentStep} 
+          current={currentStep > 2 ? 2 : currentStep} 
           className="mb-8"
           items={[
             {
@@ -564,6 +608,14 @@ const DepositWithdraw = () => {
             }
           ]}
         />
+      </div>
+    </div>
+  );
+
+  const renderSteps = () => {
+    return (
+      <div>
+        {renderProgressBar()}
 
         <Form
           form={form}
@@ -571,18 +623,21 @@ const DepositWithdraw = () => {
           onFinish={handleSubmit}
         >
           {currentStep === 0 && (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {renderMethodSelection()}
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-2">
                 <Button 
                   type="primary"
                   size="large"
                   disabled={!selectedMethod}
                   onClick={() => setCurrentStep(1)}
+                  className="w-full md:w-auto h-11 md:h-12 text-white font-semibold hover:opacity-90"
                   style={{ 
                     background: THEME_COLORS.primaryGradient,
                     border: 'none',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: '#ffffff'
                   }}
                 >
                   Tiếp tục
@@ -592,12 +647,13 @@ const DepositWithdraw = () => {
           )}
 
           {currentStep === 1 && (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {renderAmountInput()}
-              <div className="flex justify-between">
+              <div className="flex gap-2 md:gap-3 pt-2">
                 <Button 
                   size="large"
                   onClick={() => setCurrentStep(0)}
+                  className="flex-1 md:flex-initial h-11 md:h-12 text-xs md:text-sm"
                   style={{ borderRadius: '8px' }}
                 >
                   Quay lại
@@ -608,10 +664,12 @@ const DepositWithdraw = () => {
                   htmlType="submit"
                   loading={loading}
                   disabled={!amount || !selectedMethod || loading}
+                  className="flex-1 md:flex-initial h-11 md:h-12 text-xs md:text-sm text-white font-semibold hover:opacity-90"
                   style={{ 
                     background: THEME_COLORS.primaryGradient,
                     border: 'none',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    color: '#ffffff'
                   }}
                 >
                   {loading ? 'Đang tạo lệnh...' : 'Tạo lệnh nạp'}
@@ -625,17 +683,19 @@ const DepositWithdraw = () => {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Title Header */}
-
-
+    <div className="space-y-4 px-0 md:px-4">
       {/* Content Card */}
       <Card 
-        className="shadow-sm"
+        className="shadow-sm md:shadow-md"
         style={{ borderRadius: '12px' }}
-        styles={{ body: { padding: '24px' } }}
+        styles={{ body: { padding: '16px', paddingTop: '16px' } }}
       >
-        {currentStep < 2 ? renderSteps() : renderTransactionInfo()}
+        {currentStep === 3 ? (
+          <>
+            {renderProgressBar()}
+            {renderSuccessResult()}
+          </>
+        ) : currentStep < 2 ? renderSteps() : renderTransactionInfo()}
       </Card>
     </div>
   );

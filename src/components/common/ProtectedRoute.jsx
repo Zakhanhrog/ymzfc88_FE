@@ -9,21 +9,35 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      // Redirect về trang chủ và trigger modal đăng nhập
-      navigate('/', { 
-        state: { 
-          showLoginModal: true,
-          redirectAfterLogin: location.pathname 
-        } 
-      });
+      // Check if mobile
+      const isMobile = window.innerWidth < 768;
+      
+      if (isMobile) {
+        // On mobile, redirect to login page
+        navigate('/login', { 
+          state: { 
+            redirectAfterLogin: location.pathname + location.search
+          },
+          replace: true
+        });
+      } else {
+        // On desktop, redirect về trang chủ và trigger modal đăng nhập
+        navigate('/', { 
+          state: { 
+            showLoginModal: true,
+            redirectAfterLogin: location.pathname + location.search
+          },
+          replace: true
+        });
+      }
     }
-  }, [isAuthenticated, loading, navigate, location.pathname]);
+  }, [isAuthenticated, loading, navigate, location.pathname, location.search]);
 
-  // Show loading while checking authentication
+  // Show loading while checking authentication - small green spinner
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }

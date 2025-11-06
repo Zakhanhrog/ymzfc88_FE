@@ -3,24 +3,24 @@ import {
   Card, 
   Typography, 
   message, 
-  Spin,
   Button,
   Divider
 } from 'antd';
 import {
   GiftOutlined,
-  LoadingOutlined,
   ArrowLeftOutlined,
   CalendarOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import Layout from '../../../components/common/Layout';
+import Loading from '../../../components/common/Loading';
 import promotionService from '../../../services/promotionService';
 
 const { Title, Text, Paragraph } = Typography;
 
 const PromotionDetailMobilePage = ({ isOpen, onClose }) => {
   const [promotion, setPromotion] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -40,24 +40,18 @@ const PromotionDetailMobilePage = ({ isOpen, onClose }) => {
 
   // Load data when component mounts
   useEffect(() => {
-    if (isOpen && id) {
+    if (id) {
       loadPromotionDetail();
     }
-  }, [isOpen, id]);
+  }, [id]); // Chỉ phụ thuộc vào id, không phụ thuộc vào isOpen
 
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-white overflow-y-auto promotion-detail-mobile-container"
-      style={{ 
-        overflowY: 'auto !important',
-        scrollbarWidth: 'auto',
-        WebkitOverflowScrolling: 'touch'
-      }}
-    >
+    <Layout>
+      <div className="md:hidden w-full bg-white pb-20 pt-3">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 p-4 sticky top-0 z-10">
+        <div className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <Button 
             icon={<ArrowLeftOutlined />}
@@ -73,19 +67,9 @@ const PromotionDetailMobilePage = ({ isOpen, onClose }) => {
       </div>
 
       {/* Content */}
-      <div 
-        className="p-4 pb-20 overflow-y-auto promotion-detail-mobile-content"
-        style={{ 
-          overflowY: 'auto !important',
-          scrollbarWidth: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          height: 'calc(100vh - 80px)'
-        }}
-      >
+        <div className="p-4">
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
-          </div>
+          <Loading />
         ) : promotion ? (
           <div className="space-y-4">
             {/* Image */}
@@ -165,6 +149,7 @@ const PromotionDetailMobilePage = ({ isOpen, onClose }) => {
         )}
       </div>
     </div>
+    </Layout>
   );
 };
 

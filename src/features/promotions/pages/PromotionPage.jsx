@@ -5,25 +5,24 @@ import {
   Col, 
   Typography, 
   message, 
-  Spin,
   Empty,
   Button
 } from 'antd';
 import {
   GiftOutlined,
-  LoadingOutlined,
   EyeOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import promotionService from '../../../services/promotionService';
 import Layout from '../../../components/common/Layout';
+import Loading from '../../../components/common/Loading';
 import PromotionMobileWrapper from '../components/PromotionMobileWrapper';
 
 const { Title, Text } = Typography;
 
 const PromotionPage = () => {
   const [promotions, setPromotions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Load promotions
@@ -44,20 +43,6 @@ const PromotionPage = () => {
     loadPromotions();
   }, []);
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen bg-gray-50">
-          <div className="p-4 md:p-8">
-            <div className="flex justify-center items-center h-64">
-              <Spin size="large" />
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <>
       {/* Mobile Wrapper - Only render on mobile */}
@@ -71,6 +56,10 @@ const PromotionPage = () => {
           <div className="min-h-screen bg-gray-50">
         {/* Content */}
         <div className="p-4 md:p-8">
+          {loading ? (
+            <Loading />
+          ) : (
+            <>
           {/* Header */}
           <div className="text-center mb-8">
             <Title level={2} className="text-xl md:text-3xl font-bold text-gray-800 mb-4">
@@ -152,6 +141,8 @@ const PromotionPage = () => {
                 </Col>
               ))}
             </Row>
+          )}
+            </>
           )}
         </div>
       </div>

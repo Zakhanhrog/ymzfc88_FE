@@ -1,114 +1,120 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Icon } from '@iconify/react';
 
 const MobileBottomNav = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token');
+    return !!token;
+  };
 
   const navItems = [
     {
-      id: 'menu',
-      label: 'Tùy Chọn',
-      icon: '/mbnav/nav-menu.png',
-      isMenu: true,
-      isImage: true
+      id: 'home',
+      label: 'Trang chủ',
+      icon: '/iconacc/imgi_75_icon-home.avif',
+      path: '/',
+      isActive: location.pathname === '/',
+      requiresAuth: false
+    },
+    {
+      id: 'support',
+      label: 'Hỗ trợ',
+      icon: '/iconacc/imgi_76_icon-help.avif',
+      path: '/contact',
+      isActive: location.pathname === '/contact' || location.pathname.startsWith('/contact'),
+      requiresAuth: false
     },
     {
       id: 'deposit',
-      label: 'Nạp Tiền',
-      icon: 'mdi:wallet',
-      path: '/wallet?tab=deposit-withdraw'
+      label: 'Nạp tiền',
+      icon: '/iconacc/imgi_25_deposit.avif',
+      path: '/wallet?tab=deposit-withdraw',
+      isActive: location.pathname === '/wallet' && new URLSearchParams(location.search).get('tab') === 'deposit-withdraw',
+      requiresAuth: true
     },
     {
-      id: 'casino',
-      label: 'LOTO79',
-      icon: '/mbnav/nav-ae888.png',
-      path: '/',
-      isActive: location.pathname === '/',
-      isImage: true
+      id: 'withdraw',
+      label: 'Rút tiền',
+      icon: '/iconacc/imgi_26_withdraw.avif',
+      path: '/wallet?tab=withdraw',
+      isActive: location.pathname === '/wallet' && new URLSearchParams(location.search).get('tab') === 'withdraw',
+      requiresAuth: true
     },
     {
-      id: 'promo',
-      label: 'Khuyến Mãi',
-      icon: '/mbnav/nav-promo.png',
-      path: '/promotions',
-      isImage: true
-    },
-    {
-      id: 'contact',
-      label: 'Liên Hệ',
-      icon: '/mbnav/nav-cs.png',
-      path: '/contact',
-      isImage: true
+      id: 'account',
+      label: 'Tài khoản',
+      icon: '/iconacc/imgi_29_account.avif',
+      path: '/account',
+      isActive: location.pathname === '/account',
+      requiresAuth: true
     }
   ];
 
   const handleNavClick = (item) => {
-    if (item.isMenu) {
-      onMenuClick?.();
-    } else {
+    if (item.path) {
+      // Check if route requires authentication
+      if (item.requiresAuth && !isAuthenticated()) {
+        // Redirect to login page with return path
+        navigate('/login', { 
+          state: { 
+            redirectAfterLogin: item.path
+          },
+          replace: false
+        });
+        return;
+      }
       navigate(item.path);
     }
   };
 
-
   return (
-    <>
-      {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-1 px-3">
-        {/* Main Navigation with curved background */}
-        <div className="relative w-full">
-          {/* Curved background image */}
-          <div className="absolute inset-0">
-            <img 
-              src="/mbnav/nav-bg.png" 
-              alt="Navigation background" 
-              className="w-full h-full object-contain"
-            />
-          </div>
+    <div className="fixed bottom-0 left-0 right-0 z-[9999] md:hidden bg-white border-t border-gray-200 shadow-lg">
+      <div className="flex items-center justify-around px-2 py-1">
+        {navItems.map((item) => {
+          const isActive = item.isActive;
           
-          {/* Navigation items overlay */}
-          <div className="relative z-10 flex items-center justify-between px-2 py-3">
-            {navItems.map((item) => (
+          return (
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item)}
-                className={`flex flex-col items-center justify-center py-1 px-1 min-w-0 flex-1 relative ${
-                  item.isActive ? 'text-green-500' : 'text-gray-600'
-                }`}
-              >
+              className="flex flex-col items-center justify-center flex-1 relative min-w-0 py-1 px-2 rounded-lg transition-colors"
+            >
+              {/* Active indicator: top border and gradient background */}
+              {isActive && (
+                <>
+                  {/* Top border line - sát mép trên navbar */}
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
+                  {/* Gradient background fading down */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-green-100/80 via-green-50/40 to-transparent rounded-lg"></div>
+                </>
+              )}
+              
+              {/* Content */}
+              <div className="relative z-10 flex flex-col items-center justify-center">
                 {/* Icon */}
-                <div className={`relative ${item.id === 'casino' ? '-mt-10 mb-1' : 'mb-1'}`}>
-                  {item.isImage ? (
+                <div className="mb-0.5">
                     <img
                       src={item.icon}
                       alt={item.label}
-                      className={item.id === 'casino' ? 'w-14 h-14' : 'w-5 h-5'}
+                    className={`w-6 h-6 transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}
                     />
-                  ) : (
-                    <Icon
-                      icon={item.icon}
-                      className={`${item.id === 'casino' ? 'w-14 h-14' : 'w-5 h-5'} ${
-                        item.isActive ? 'text-green-500' : 'text-gray-600'
-                      }`}
-                    />
-                  )}
                 </div>
                 
                 {/* Label */}
-                <span className={`text-xs font-medium ${
-                  item.isActive ? 'text-green-500' : 'text-gray-600'
-                } ${item.id === 'casino' ? 'mt-1' : ''}`}>
+                <span className={`text-[10px] font-medium transition-colors whitespace-nowrap ${
+                  isActive ? 'text-green-600' : 'text-gray-500'
+                }`}>
                   {item.label}
                 </span>
+              </div>
               </button>
-            ))}
-          </div>
-        </div>
+          );
+        })}
       </div>
-
-    </>
+    </div>
   );
 };
 
