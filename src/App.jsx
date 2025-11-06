@@ -12,7 +12,6 @@ import MienTrungNamGamePage from './features/lottery/pages/MienTrungNamGamePage'
 import BettingHistoryPage from './features/lottery/pages/BettingHistoryPage';
 import ContactPage from './features/contact/pages/ContactPage';
 import PromotionPage from './features/promotions/pages/PromotionPage';
-import PromotionDetailPage from './features/promotions/pages/PromotionDetailPage';
 import NotificationDetailPage from './features/notification/pages/NotificationDetailPage';
 import MobileNotificationPage from './features/notification/pages/MobileNotificationPage';
 import MobileLoginPage from './features/auth/pages/MobileLoginPage';
@@ -112,10 +111,6 @@ function App() {
                     <ResponsiveWalletWrapper initialTab="promotions" />
                   </ProtectedRoute>
                 } 
-              />
-              <Route 
-                path="/promotions/:id" 
-                element={<PromotionDetailPage />} 
               />
               <Route 
                 path="/notifications" 

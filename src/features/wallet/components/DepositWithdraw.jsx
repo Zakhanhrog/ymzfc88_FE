@@ -257,12 +257,12 @@ const DepositWithdraw = () => {
       {/* Quick Amount Buttons */}
       <div>
         <p className="text-gray-600 mb-2 md:mb-3 text-sm">Chọn nhanh:</p>
-        <div className="grid grid-cols-4 gap-2 md:gap-3">
+        <div className="flex flex-wrap gap-2 md:gap-3">
           {quickAmounts.map((item) => (
             <Button
               key={item.value}
               size="large"
-              className={`h-10 md:h-12 font-semibold text-xs md:text-sm ${
+              className={`h-10 md:h-12 font-semibold text-xs md:text-sm flex-1 min-w-[80px] ${
                 amount === item.value 
                   ? 'border-2 text-white' 
                   : 'border hover:border-blue-400'
@@ -511,34 +511,69 @@ const DepositWithdraw = () => {
     </div>
   );
 
-  const renderMobileSteps = () => {
+  const renderProgressBar = () => {
     const steps = [
-      { key: 0, label: 'Chọn phương thức', icon: <BankOutlined /> },
-      { key: 1, label: 'Nhập số tiền', icon: <DollarOutlined /> },
-      { key: 2, label: 'Xác nhận', icon: <CheckCircleOutlined /> }
+      { key: 0, label: 'Nạp tiền' },
+      { key: 1, label: 'Thanh toán' },
+      { key: 2, label: 'Hoàn thành' }
     ];
 
+    // Determine active step: 0 = Nạp tiền, 1 = Thanh toán, 2 = Hoàn thành
+    let activeStep = currentStep;
+    if (currentStep === 0) activeStep = 0; // Chọn phương thức = Nạp tiền
+    else if (currentStep === 1) activeStep = 1; // Nhập số tiền = Thanh toán
+    else if (currentStep === 2 || currentStep === 3) activeStep = 2; // Xác nhận/Hoàn thành = Hoàn thành
+
+    return (
+      <div className="mb-6 py-2">
+        <div className="flex items-center justify-between relative">
+          {/* Connecting line - luôn cố định giữa các circle (center của circle = 12px từ top) */}
+          <div 
+            className="absolute h-[1px] z-0"
+            style={{ 
+              background: '#d1d5db',
+              top: '12px',
+              left: 'calc(16.67% + 12px)',
+              width: 'calc(66.66% - 24px)'
+            }}
+          ></div>
+          
+          {steps.map((step, index) => {
+            const isActive = activeStep === step.key;
+            const isCompleted = activeStep > step.key;
+
       return (
-      <div className="md:hidden mb-6">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.key} className="flex-1 flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 ${
-                currentStep === step.key || (currentStep === 3 && step.key === 2)
-                  ? 'bg-gradient-to-r from-green-400 to-emerald-600 text-white' 
-                  : currentStep > step.key || (currentStep === 3 && step.key < 2)
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-200 text-gray-500'
-              }`}>
-                {(currentStep > step.key || (currentStep === 3 && step.key < 2)) ? <CheckCircleOutlined /> : step.key + 1}
+              <div key={step.key} className="flex-1 flex flex-col items-center relative z-10">
+                <div 
+                  className={`w-6 h-6 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-300 ${
+                    isActive 
+                      ? 'bg-green-500 border-2 border-green-500' 
+                      : isCompleted
+                      ? 'bg-green-500 border-2 border-green-500'
+                      : 'bg-white border-2 border-gray-300'
+                  }`}
+                >
+                  {isActive && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                  )}
+                  {isCompleted && (
+                    <CheckCircleOutlined className="text-white" style={{ fontSize: '14px' }} />
+                  )}
+                  {!isActive && !isCompleted && (
+                    <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                  )}
               </div>
-              <span className={`text-xs text-center ${
-                currentStep === step.key || (currentStep === 3 && step.key === 2) ? 'font-semibold text-green-600' : 'text-gray-500'
-              }`}>
+                <span 
+                  className="text-xs text-center italic font-normal transition-colors duration-300"
+                  style={{
+                    color: isActive || isCompleted ? '#16a34a' : '#9ca3af'
+                  }}
+                >
                 {step.label}
               </span>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -580,37 +615,6 @@ const DepositWithdraw = () => {
     </div>
       );
 
-  const renderProgressBar = () => (
-      <div>
-      {/* Mobile Steps */}
-      {renderMobileSteps()}
-      
-      {/* Desktop Steps */}
-      <div className="hidden md:block">
-        <Steps 
-          current={currentStep > 2 ? 2 : currentStep} 
-          className="mb-8"
-          items={[
-            {
-              title: 'Chọn phương thức',
-              description: 'Chọn phương thức thanh toán',
-              icon: <BankOutlined />
-            },
-            {
-              title: 'Nhập số tiền',
-              description: 'Nhập số tiền giao dịch',
-              icon: <DollarOutlined />
-            },
-            {
-              title: 'Xác nhận',
-              description: 'Xác nhận và hoàn tất',
-              icon: <CheckCircleOutlined />
-            }
-          ]}
-        />
-      </div>
-    </div>
-  );
 
   const renderSteps = () => {
     return (

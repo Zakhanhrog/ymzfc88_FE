@@ -120,12 +120,19 @@ const WithdrawForm = () => {
   const loadUserPaymentMethods = async () => {
     try {
       // Không set loading riêng, để checkingLockStatus xử lý
+      console.log('Loading user payment methods...');
       const response = await walletService.getUserPaymentMethods();
-      if (response.success) {
-        setUserPaymentMethods(response.data);
+      console.log('User payment methods response:', response);
+      if (response && response.success) {
+        setUserPaymentMethods(response.data || []);
+      } else {
+        console.warn('User payment methods response not successful:', response);
+        setUserPaymentMethods([]);
       }
     } catch (error) {
+      console.error('Error loading user payment methods:', error);
       message.error('Lỗi khi tải phương thức rút tiền: ' + error.message);
+      setUserPaymentMethods([]);
     }
   };
 
@@ -304,34 +311,69 @@ const WithdrawForm = () => {
     form.resetFields();
   };
 
-  const renderMobileSteps = () => {
+  const renderProgressBar = () => {
     const steps = [
-      { key: 0, label: 'Chọn phương thức', icon: <BankOutlined /> },
-      { key: 1, label: 'Nhập số tiền', icon: <DollarOutlined /> },
-      { key: 2, label: 'Hoàn thành', icon: <CheckCircleOutlined /> }
+      { key: 0, label: 'Rút tiền' },
+      { key: 1, label: 'Thanh toán' },
+      { key: 2, label: 'Hoàn thành' }
     ];
 
+    // Determine active step: 0 = Rút tiền, 1 = Thanh toán, 2 = Hoàn thành
+    let activeStep = currentStep;
+    if (currentStep === 0) activeStep = 0; // Chọn phương thức = Rút tiền
+    else if (currentStep === 1) activeStep = 1; // Nhập số tiền = Thanh toán
+    else if (currentStep === 2) activeStep = 2; // Hoàn thành = Hoàn thành
+
     return (
-      <div className="md:hidden mb-6">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.key} className="flex-1 flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 ${
-                currentStep === step.key 
-                  ? 'bg-gradient-to-r from-green-400 to-emerald-600 text-white' 
-                  : currentStep > step.key
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-200 text-gray-500'
-              }`}>
-                {currentStep > step.key ? <CheckCircleOutlined /> : step.key + 1}
+      <div className="mb-6 py-2">
+        <div className="flex items-center justify-between relative">
+          {/* Connecting line - luôn cố định giữa các circle (center của circle = 12px từ top) */}
+          <div 
+            className="absolute h-[1px] z-0"
+            style={{ 
+              background: '#d1d5db',
+              top: '12px',
+              left: 'calc(16.67% + 12px)',
+              width: 'calc(66.66% - 24px)'
+            }}
+          ></div>
+          
+          {steps.map((step, index) => {
+            const isActive = activeStep === step.key;
+            const isCompleted = activeStep > step.key;
+            
+            return (
+              <div key={step.key} className="flex-1 flex flex-col items-center relative z-10">
+                <div 
+                  className={`w-6 h-6 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-300 ${
+                    isActive 
+                      ? 'bg-green-500 border-2 border-green-500' 
+                      : isCompleted
+                      ? 'bg-green-500 border-2 border-green-500'
+                      : 'bg-white border-2 border-gray-300'
+                  }`}
+                >
+                  {isActive && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                  )}
+                  {isCompleted && (
+                    <CheckCircleOutlined className="text-white" style={{ fontSize: '14px' }} />
+                  )}
+                  {!isActive && !isCompleted && (
+                    <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                  )}
               </div>
-              <span className={`text-xs text-center ${
-                currentStep === step.key ? 'font-semibold text-green-600' : 'text-gray-500'
-              }`}>
+                <span 
+                  className="text-xs text-center italic font-normal transition-colors duration-300"
+                  style={{
+                    color: isActive || isCompleted ? '#16a34a' : '#9ca3af'
+                  }}
+                >
                 {step.label}
               </span>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -711,43 +753,34 @@ const WithdrawForm = () => {
           <Loading />
         ) : (
           <>
-            {/* Mobile Steps */}
-            {renderMobileSteps()}
-            
-            {/* Desktop Steps */}
-            <div className="hidden md:block">
-              <Steps current={currentStep} className="mb-8">
-                {steps.map(item => (
-                  <Step key={item.title} title={item.title} />
-                ))}
-              </Steps>
-            </div>
+            {/* Progress Bar */}
+            {renderProgressBar()}
 
             <div className="min-h-64 md:min-h-96">
-              {steps[currentStep].content}
-            </div>
+          {steps[currentStep].content}
+        </div>
 
-            {currentStep === 0 && selectedUserMethod && userPaymentMethods.length > 0 && (
+        {currentStep === 0 && selectedUserMethod && userPaymentMethods.length > 0 && (
               <div className="flex justify-end mt-4 md:mt-6">
-                <Button
-                  type="primary"
-                  size="large"
-                  disabled={withdrawalLocked}
-                  onClick={() => {
-                    form.setFieldsValue({ userPaymentMethodId: selectedUserMethod.id });
-                    setCurrentStep(1);
-                  }}
+            <Button
+              type="primary"
+              size="large"
+              disabled={withdrawalLocked}
+              onClick={() => {
+                form.setFieldsValue({ userPaymentMethodId: selectedUserMethod.id });
+                setCurrentStep(1);
+              }}
                   className="w-full md:w-auto h-11 md:h-12 text-sm text-white font-semibold hover:opacity-90"
-                  style={{
-                    background: withdrawalLocked ? '#d9d9d9' : THEME_COLORS.primaryGradient,
-                    border: 'none',
+              style={{
+                background: withdrawalLocked ? '#d9d9d9' : THEME_COLORS.primaryGradient,
+                border: 'none',
                     borderRadius: '8px',
                     color: '#ffffff'
-                  }}
-                >
-                  Tiếp tục
-                </Button>
-              </div>
+              }}
+            >
+              Tiếp tục
+            </Button>
+          </div>
             )}
           </>
         )}

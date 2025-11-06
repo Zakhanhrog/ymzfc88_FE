@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAdminLoginPath } from '../utils/navigation';
 
 // Tạo axios instance
 const apiClient = axios.create({
@@ -39,7 +40,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('user');
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
-      window.location.href = '/admin/login';
+      window.location.href = getAdminLoginPath();
     }
     return Promise.reject(error);
   }

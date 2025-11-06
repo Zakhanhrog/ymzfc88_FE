@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
@@ -20,6 +20,50 @@ import LotteryCarousel from '../../lottery/components/LotteryCarousel';
 import WeekdayNavigation from '../components/WeekdayNavigation';
 import { bannerService } from '../../../services/bannerService';
 import lotteryResultService from '../../../services/lotteryResultService';
+
+// Cache keys
+const CACHE_KEYS = {
+  MAIN_BANNERS: 'homepage_main_banners',
+  SIDE_BANNERS: 'homepage_side_banners',
+  MIEN_BAC_RESULT: 'homepage_mien_bac_result',
+};
+
+// Cache duration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
+
+// Helper function to get cached data
+const getCachedData = (key) => {
+  try {
+    const cached = sessionStorage.getItem(key);
+    if (!cached) return null;
+    
+    const { data, timestamp } = JSON.parse(cached);
+    const now = Date.now();
+    
+    // Check if cache is still valid
+    if (now - timestamp < CACHE_DURATION) {
+      return data;
+    }
+    
+    // Cache expired, remove it
+    sessionStorage.removeItem(key);
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Helper function to set cached data
+const setCachedData = (key, data) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (error) {
+    // Ignore storage errors
+  }
+};
 
 const HomePage = () => {
   const location = useLocation();
@@ -46,9 +90,17 @@ const HomePage = () => {
     }
   }, [location.state, navigate, location.pathname]);
 
-  // Load Miền Bắc result
+  // Load Miền Bắc result with caching
   useEffect(() => {
     const loadMienBacResult = async () => {
+      // Check cache first
+      const cached = getCachedData(CACHE_KEYS.MIEN_BAC_RESULT);
+      if (cached) {
+        setMienBacResult(cached);
+        setMienBacLoading(false);
+        return;
+      }
+
       try {
         setMienBacLoading(true);
         const response = await lotteryResultService.getLatestPublishedResult('mienBac', null);
@@ -57,10 +109,11 @@ const HomePage = () => {
           const prize = lotteryResultService.getSpecialPrize(response.data);
           if (prize && prize.length > 0) {
             setMienBacResult(prize);
+            setCachedData(CACHE_KEYS.MIEN_BAC_RESULT, prize);
           }
         }
       } catch (error) {
-        console.error('Error loading Miền Bắc result:', error);
+        // Silent error handling
       } finally {
         setMienBacLoading(false);
       }
@@ -69,32 +122,52 @@ const HomePage = () => {
     loadMienBacResult();
   }, []);
 
-  // Load banners from API
+  // Load banners from API with caching
   useEffect(() => {
     const loadBanners = async () => {
+      // Check cache first
+      const cachedMain = getCachedData(CACHE_KEYS.MAIN_BANNERS);
+      const cachedSide = getCachedData(CACHE_KEYS.SIDE_BANNERS);
+      
+      if (cachedMain) {
+        setMainBanners(cachedMain);
+      }
+      if (cachedSide) {
+        setSideBanners(cachedSide);
+      }
+      
+      // If both are cached, skip API call
+      if (cachedMain && cachedSide) {
+        return;
+      }
+
       try {
         const [mainResponse, sideResponse] = await Promise.all([
-          bannerService.getActiveBannersByType('MAIN_BANNER'),
-          bannerService.getActiveBannersByType('SIDEBAR_BANNER')
+          cachedMain ? Promise.resolve({ success: false }) : bannerService.getActiveBannersByType('MAIN_BANNER'),
+          cachedSide ? Promise.resolve({ success: false }) : bannerService.getActiveBannersByType('SIDEBAR_BANNER')
         ]);
         
         if (mainResponse.success) {
-          setMainBanners(mainResponse.data.map(banner => ({
+          const mappedBanners = mainResponse.data.map(banner => ({
             id: banner.id,
             url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
-          })));
+          }));
+          setMainBanners(mappedBanners);
+          setCachedData(CACHE_KEYS.MAIN_BANNERS, mappedBanners);
         }
         
         if (sideResponse.success) {
-          setSideBanners(sideResponse.data.map(banner => ({
+          const mappedBanners = sideResponse.data.map(banner => ({
             id: banner.id,
             url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
-          })));
+          }));
+          setSideBanners(mappedBanners);
+          setCachedData(CACHE_KEYS.SIDE_BANNERS, mappedBanners);
         }
       } catch (error) {
-        console.error('Error loading banners:', error);
+        // Silent error handling
       }
     };
     
@@ -102,15 +175,11 @@ const HomePage = () => {
   }, []);
 
 
-  // Lấy tỉnh theo ngày được chọn
-  const selectedDayProvinces = getProvincesByDay(selectedDay);
+  // Lấy tỉnh theo ngày được chọn - memoized
+  const selectedDayProvinces = useMemo(() => getProvincesByDay(selectedDay), [selectedDay]);
   
-  // Debug log
-  console.log('selectedDay:', selectedDay);
-  console.log('selectedDayProvinces:', selectedDayProvinces);
-  
-  // Fallback data nếu không có dữ liệu
-  const fallbackTrung = [
+  // Fallback data nếu không có dữ liệu - memoized
+  const fallbackTrung = useMemo(() => [
     {
       id: 'da-nang-fallback',
       name: 'Xổ Số Đà Nẵng',
@@ -123,9 +192,9 @@ const HomePage = () => {
       province: 'Khánh Hòa',
       image: '/images/games/mien-trung/thu-4/KHANH-HOA.jpg'
     }
-  ];
+  ], []);
   
-  const fallbackNam = [
+  const fallbackNam = useMemo(() => [
     {
       id: 'can-tho-fallback',
       name: 'Xổ Số Cần Thơ',
@@ -144,10 +213,10 @@ const HomePage = () => {
       province: 'Sóc Trăng',
       image: '/images/games/mien-nam/T4/SOC-TRANG.jpg'
     }
-  ];
+  ], []);
 
-  // Lottery regions data - Miền Bắc luôn cố định, Miền Trung và Nam thay đổi theo ngày
-  const regions = {
+  // Lottery regions data - Miền Bắc luôn cố định, Miền Trung và Nam thay đổi theo ngày - memoized
+  const regions = useMemo(() => ({
     bac: {
       name: 'Miền Bắc',
       color: 'from-green-500 to-green-600',
@@ -170,9 +239,9 @@ const HomePage = () => {
       color: 'from-green-500 to-green-600', 
       games: selectedDayProvinces?.nam || fallbackNam
     }
-  };
+  }), [selectedDayProvinces, fallbackTrung, fallbackNam]);
 
-  const handleGameSelect = (gameId) => {
+  const handleGameSelect = useCallback((gameId) => {
     if (gameId === 'mien-bac') {
       navigate('/lottery/mien-bac');
     } else {
@@ -183,13 +252,13 @@ const HomePage = () => {
         navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(game.name)}`);
       }
       }
-    };
+    }, [navigate, regions]);
 
-  const handleDaySelect = (dayKey) => {
+  const handleDaySelect = useCallback((dayKey) => {
     // Update selected day and refresh provinces data
     setSelectedDay(dayKey);
     // The regions will automatically update based on selectedDay
-  };
+  }, []);
 
   return (
     <Layout>
@@ -197,9 +266,9 @@ const HomePage = () => {
         {/* Main Navigation Bar - Only show on homepage */}
         {location.pathname === '/' && (
           <>
-            <MainNavigationBar />
+        <MainNavigationBar />
             {/* Spacer for fixed mobile navigation */}
-            <div className="md:hidden h-[75px]"></div>
+            <div className="md:hidden h-[65px]"></div>
           </>
         )}
         

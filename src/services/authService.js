@@ -53,8 +53,11 @@ class AuthService {
 
   // Auto-retry request with token refresh
   async makeAuthenticatedRequest(url, options = {}) {
-    // Check for admin token first (for admin pages)
-    let token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
+    // Check for admin token first (for admin pages), then user tokens
+    // Tìm token theo thứ tự: adminToken -> token (user) -> authToken
+    let token = localStorage.getItem('adminToken') || 
+                localStorage.getItem('token') || 
+                localStorage.getItem('authToken');
 
     // If no token, try to refresh first
     if (!token) {
@@ -91,8 +94,10 @@ class AuthService {
           return new Promise((resolve, reject) => {
             this.failedQueue.push({ resolve, reject });
           }).then(() => {
-            // Retry with new token
-            const newToken = localStorage.getItem('authToken');
+            // Retry with new token (check all possible token names)
+            const newToken = localStorage.getItem('token') || 
+                           localStorage.getItem('authToken') || 
+                           localStorage.getItem('adminToken');
             const newRequestOptions = {
               ...options,
               headers: {
@@ -174,7 +179,10 @@ class AuthService {
 
   // Check if user is authenticated
   isAuthenticated() {
-    return !!(localStorage.getItem('authToken') || localStorage.getItem('adminToken'));
+    // Check all possible token names
+    return !!(localStorage.getItem('token') || 
+              localStorage.getItem('authToken') || 
+              localStorage.getItem('adminToken'));
   }
 
   // Get current user

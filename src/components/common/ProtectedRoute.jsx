@@ -22,14 +22,14 @@ const ProtectedRoute = ({ children }) => {
         });
       } else {
         // On desktop, redirect về trang chủ và trigger modal đăng nhập
-        navigate('/', { 
-          state: { 
-            showLoginModal: true,
+      navigate('/', { 
+        state: { 
+          showLoginModal: true,
             redirectAfterLogin: location.pathname + location.search
           },
           replace: true
         });
-      }
+        } 
     }
   }, [isAuthenticated, loading, navigate, location.pathname, location.search]);
 

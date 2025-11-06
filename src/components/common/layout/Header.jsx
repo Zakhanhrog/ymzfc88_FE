@@ -187,7 +187,7 @@ const Header = ({
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-[60px] md:h-[70px] bg-gray-50 border-b border-gray-200 z-20 pl-2 pr-4 md:px-6">
+    <header className="fixed top-0 left-0 right-0 h-[56px] md:h-[70px] bg-gray-50 border-b border-gray-200 z-20 pl-2 pr-4 md:px-6">
       <div className="w-full h-full flex items-center justify-between">
         {/* Left: Logo & Menu Toggle */}
         <div className="flex items-center gap-2 md:gap-4">
@@ -285,36 +285,36 @@ const Header = ({
               </div>
 
               {/* Mobile Logged In Layout */}
-              <div className="md:hidden flex items-center gap-1.5">
+              <div className="md:hidden flex items-center gap-2">
                 {/* Notification icon */}
                 <div className="relative">
                   <button 
                     onClick={() => navigate('/notifications', { replace: false })}
                     data-notification-button
-                    className="w-[28px] h-[28px] flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="w-[32px] h-[32px] flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                   >
-                    <Icon icon="mdi:bell" className="w-5 h-5 text-gray-700" />
+                    <Icon icon="mdi:bell" className="w-6 h-6 text-gray-700" />
                   </button>
                   {/* Notification badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
                 </div>
                 
                 {/* Balance Display with integrated Add button */}
-                <div className="flex items-center gap-1.5 pl-2.5 pr-1 h-[28px] bg-gray-200 rounded-lg">
-                  <span className="font-semibold text-yellow-500 text-xs">
+                <div className="flex items-center gap-1.5 pl-3 pr-1.5 h-[32px] bg-gray-200 rounded-lg">
+                  <span className="font-semibold text-yellow-500 text-sm">
                     {userBalance.toLocaleString()} điểm
                   </span>
                   {/* Add/Deposit button inside */}
                   <button
                     onClick={() => navigate('/wallet?tab=deposit-withdraw')}
                     className="flex items-center justify-center bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 rounded-md transition-colors flex-shrink-0 my-0.5"
-                    style={{ width: '22px', height: '22px' }}
+                    style={{ width: '26px', height: '26px' }}
                   >
-                    <Icon icon="mdi:plus" className="w-4 h-4 text-gray-900" />
+                    <Icon icon="mdi:plus" className="w-5 h-5 text-gray-900" />
                   </button>
                 </div>
               </div>

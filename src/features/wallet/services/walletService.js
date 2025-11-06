@@ -4,7 +4,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 class WalletService {
   // Helper method để lấy headers
   getHeaders() {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+    // Tìm token theo thứ tự: token (user) -> authToken -> adminToken
+    const token = localStorage.getItem('token') || 
+                  localStorage.getItem('authToken') || 
+                  localStorage.getItem('adminToken');
     return {
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
@@ -69,12 +72,18 @@ class WalletService {
   // Lấy số dư ví
   async getWalletBalance() {
     try {
+      const headers = this.getHeaders();
+      console.log('Fetching wallet balance with headers:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'none' });
+      
       const response = await fetch(`${API_BASE_URL}/wallet/balance`, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers: headers
       });
       
-      return await this.handleResponse(response);
+      console.log('Wallet balance response status:', response.status);
+      const result = await this.handleResponse(response);
+      console.log('Wallet balance result:', result);
+      return result;
     } catch (error) {
       console.error('Error fetching wallet balance:', error);
       throw error;
@@ -239,12 +248,18 @@ class WalletService {
   // Lấy danh sách phương thức thanh toán cá nhân của user
   async getUserPaymentMethods() {
     try {
+      const headers = this.getHeaders();
+      console.log('Fetching user payment methods with headers:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'none' });
+      
       const response = await fetch(`${API_BASE_URL}/user/payment-methods`, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers: headers
       });
       
-      return await this.handleResponse(response);
+      console.log('User payment methods response status:', response.status);
+      const result = await this.handleResponse(response);
+      console.log('User payment methods result:', result);
+      return result;
     } catch (error) {
       console.error('Error fetching user payment methods:', error);
       throw error;

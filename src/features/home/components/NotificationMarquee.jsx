@@ -4,6 +4,39 @@ import { THEME_COLORS } from '../../../utils/theme';
 import { marqueeNotificationService } from '../../../services/marqueeNotificationService';
 import DynamicMarquee from '../../../components/common/DynamicMarquee';
 
+const CACHE_KEY = 'marquee_notifications';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const getCachedNotifications = () => {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+    
+    const { data, timestamp } = JSON.parse(cached);
+    const now = Date.now();
+    
+    if (now - timestamp < CACHE_DURATION) {
+      return data;
+    }
+    
+    sessionStorage.removeItem(CACHE_KEY);
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const setCachedNotifications = (data) => {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (error) {
+    // Ignore storage errors
+  }
+};
+
 const NotificationMarquee = ({ message }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,16 +46,23 @@ const NotificationMarquee = ({ message }) => {
   }, []);
 
   const loadMarqueeNotifications = async () => {
+    // Check cache first
+    const cached = getCachedNotifications();
+    if (cached) {
+      setNotifications(cached);
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await marqueeNotificationService.getActiveMarqueeNotifications();
       if (response.success) {
         setNotifications(response.data);
+        setCachedNotifications(response.data);
       } else {
-        console.warn('Failed to load marquee notifications:', response.message);
         setNotifications([]);
       }
     } catch (error) {
-      console.error('Error loading marquee notifications:', error);
       setNotifications([]);
     } finally {
       setLoading(false);

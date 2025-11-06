@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spinner } from '../ui';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
+import { getAdminLoginPath } from '../../utils/navigation';
 
 const AdminProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ const AdminProtectedRoute = ({ children }) => {
     const checkAuth = () => {
       const isAuthenticated = adminAuthService.isAuthenticated();
       if (!isAuthenticated) {
-        navigate('/admin/login');
+        navigate(getAdminLoginPath());
       }
     };
 

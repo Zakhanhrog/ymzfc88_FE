@@ -6,6 +6,8 @@ import { adminAuthService } from '../../features/admin/services/adminAuthService
 import { adminMenuItems } from './sidebar/adminMenuData';
 import { LAYOUT } from '../../utils/theme';
 import LogoutConfirmModal from '../common/LogoutConfirmModal';
+import { getAdminLoginPath, getAdminPath } from '../../utils/navigation';
+import { isAdminSubdomain } from '../../utils/subdomain';
 
 const { Sider } = Layout;
 const { DashboardOutlined, LogoutOutlined } = AntIcons;
@@ -41,7 +43,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     try {
       adminAuthService.logout();
       setShowLogoutModal(false);
-      navigate('/admin/login');
+      navigate(getAdminLoginPath());
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -58,18 +60,19 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     const path = location.pathname;
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
+    const isAdmin = isAdminSubdomain();
     
-    // Check specific paths first
-    if (path.includes('/admin/points')) {
+    // Check specific paths first (handle both /admin/points and /points)
+    if (path.includes('/points') && (isAdmin || path.includes('/admin/points'))) {
       return ['points-management'];
     }
     
-    if (path.includes('/admin/betting-odds')) {
+    if (path.includes('/betting-odds') && (isAdmin || path.includes('/admin/betting-odds'))) {
       return ['betting-odds'];
     }
     
     
-    if (path.includes('/admin/dashboard')) {
+    if (path.includes('/dashboard') && (isAdmin || path.includes('/admin/dashboard'))) {
       if (tab) {
         return [tab];
       }
@@ -82,13 +85,14 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     const path = location.pathname;
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
+    const isAdmin = isAdminSubdomain();
     
-    // Check specific paths first
-    if (path.includes('/admin/points')) {
+    // Check specific paths first (handle both /admin/points and /points)
+    if (path.includes('/points') && (isAdmin || path.includes('/admin/points'))) {
       return ['financial-management'];
     }
     
-    if (path.includes('/admin/betting-odds')) {
+    if (path.includes('/betting-odds') && (isAdmin || path.includes('/admin/betting-odds'))) {
       return ['game-management'];
     }
     
@@ -117,32 +121,32 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
 
   const handleMenuClick = ({ key }) => {
     const menuActions = {
-      'overview': () => navigate('/admin/dashboard'),
-      'analytics': () => navigate('/admin/dashboard?tab=analytics'),
-      'users': () => navigate('/admin/dashboard?tab=users'),
-      'kyc-verification': () => navigate('/admin/dashboard?tab=kyc-verification'),
-      'user-roles': () => navigate('/admin/dashboard?tab=user-roles'),
-      'user-activities': () => navigate('/admin/dashboard?tab=user-activities'),
-      'deposits': () => navigate('/admin/dashboard?tab=deposits'),
-      'withdraws': () => navigate('/admin/dashboard?tab=withdraws'),
-      'transactions': () => navigate('/admin/dashboard?tab=transactions'),
-      'payment-methods': () => navigate('/admin/dashboard?tab=payment-methods'),
-      'points-management': () => navigate('/admin/points'),
-      'games': () => navigate('/admin/dashboard?tab=games'),
-      'bet-management': () => navigate('/admin/dashboard?tab=bet-management'),
-      'game-results': () => navigate('/admin/dashboard?tab=game-results'),
-      'game-settings': () => navigate('/admin/dashboard?tab=game-settings'),
-      'betting-odds': () => navigate('/admin/betting-odds'),
-      'banners': () => navigate('/admin/dashboard?tab=banners'),
-      'news': () => navigate('/admin/dashboard?tab=news'),
-      'notifications': () => navigate('/admin/dashboard?tab=notifications'),
-      'marquee-notifications': () => navigate('/admin/dashboard?tab=marquee-notifications'),
-      'settings': () => navigate('/admin/dashboard?tab=settings'),
-      'contact-links': () => navigate('/admin/dashboard?tab=contact-links'),
-      'promotions': () => navigate('/admin/dashboard?tab=promotions'),
-      'maintenance': () => navigate('/admin/dashboard?tab=maintenance'),
-      'logs': () => navigate('/admin/dashboard?tab=logs'),
-      'telegram-settings': () => navigate('/admin/dashboard?tab=telegram-settings'),
+      'overview': () => navigate(getAdminPath('/dashboard')),
+      'analytics': () => navigate(getAdminPath('/dashboard?tab=analytics')),
+      'users': () => navigate(getAdminPath('/dashboard?tab=users')),
+      'kyc-verification': () => navigate(getAdminPath('/dashboard?tab=kyc-verification')),
+      'user-roles': () => navigate(getAdminPath('/dashboard?tab=user-roles')),
+      'user-activities': () => navigate(getAdminPath('/dashboard?tab=user-activities')),
+      'deposits': () => navigate(getAdminPath('/dashboard?tab=deposits')),
+      'withdraws': () => navigate(getAdminPath('/dashboard?tab=withdraws')),
+      'transactions': () => navigate(getAdminPath('/dashboard?tab=transactions')),
+      'payment-methods': () => navigate(getAdminPath('/dashboard?tab=payment-methods')),
+      'points-management': () => navigate(getAdminPath('/points')),
+      'games': () => navigate(getAdminPath('/dashboard?tab=games')),
+      'bet-management': () => navigate(getAdminPath('/dashboard?tab=bet-management')),
+      'game-results': () => navigate(getAdminPath('/dashboard?tab=game-results')),
+      'game-settings': () => navigate(getAdminPath('/dashboard?tab=game-settings')),
+      'betting-odds': () => navigate(getAdminPath('/betting-odds')),
+      'banners': () => navigate(getAdminPath('/dashboard?tab=banners')),
+      'news': () => navigate(getAdminPath('/dashboard?tab=news')),
+      'notifications': () => navigate(getAdminPath('/dashboard?tab=notifications')),
+      'marquee-notifications': () => navigate(getAdminPath('/dashboard?tab=marquee-notifications')),
+      'settings': () => navigate(getAdminPath('/dashboard?tab=settings')),
+      'contact-links': () => navigate(getAdminPath('/dashboard?tab=contact-links')),
+      'promotions': () => navigate(getAdminPath('/dashboard?tab=promotions')),
+      'maintenance': () => navigate(getAdminPath('/dashboard?tab=maintenance')),
+      'logs': () => navigate(getAdminPath('/dashboard?tab=logs')),
+      'telegram-settings': () => navigate(getAdminPath('/dashboard?tab=telegram-settings')),
       'logout': handleLogout
     };
 

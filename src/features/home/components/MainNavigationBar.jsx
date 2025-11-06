@@ -173,7 +173,7 @@ const MainNavigationBar = () => {
 
       {/* Mobile Navigation - Card Grid Layout */}
       {!isNotificationModalOpen && (
-        <div className="md:hidden fixed top-[60px] left-0 right-0 z-30 bg-gray-100 rounded-lg px-3 py-1 pt-2">
+        <div className="md:hidden fixed top-[56px] left-0 right-0 z-30 bg-gray-100 rounded-lg px-3 py-1 pt-1">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           {menuItems.filter(item => item.mobileIcon).map((item) => {
           const isActive = activeItem === item.id 

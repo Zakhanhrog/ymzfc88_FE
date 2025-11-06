@@ -10,10 +10,21 @@ const MobileWalletBalance = ({ onTabChange }) => {
   const [pointData, setPointData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     loadWalletBalance();
     loadUserPoints();
+    // Get username from localStorage
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        setUserName(userData.username || userData.name || '');
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
   }, []);
 
   const loadWalletBalance = async () => {
@@ -88,6 +99,17 @@ const MobileWalletBalance = ({ onTabChange }) => {
     return points ? points.toLocaleString() + ' điểm' : '0 điểm';
   };
 
+  const formatWalletBalance = (points) => {
+    if (!balanceVisible) return '****';
+    return points ? points.toLocaleString() + ' điểm' : '0 điểm';
+  };
+
+  const maskUsername = (username) => {
+    if (!username) return '';
+    if (username.length <= 4) return username;
+    return username.substring(0, 4) + '****';
+  };
+
   // Remove loading state, always show content with fallback data
 
   const {
@@ -109,37 +131,77 @@ const MobileWalletBalance = ({ onTabChange }) => {
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        {/* Main Balance Card - Mobile Optimized */}
-        <Card className="rounded-xl p-5 shadow-lg bg-gradient-to-br from-yellow-400 to-orange-500 border-none">
-          <CardContent className="p-0">
-            <div className="flex items-center justify-between">
+        {/* User Profile & Wallet Card - Mobile */}
+        <Card className="rounded-xl bg-white border-none">
+          <CardContent className="p-4">
+            {/* User Profile Section */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-200 to-teal-300 flex items-center justify-center flex-shrink-0">
+                <img 
+                  src="/iconacc/imgi_29_account.avif" 
+                  alt="Account"
+                  className="w-8 h-8"
+                />
+              </div>
               <div className="flex-1">
-                <div className="text-orange-900/80 text-sm font-medium mb-2">
-                  Điểm hiện tại
+                <div className="text-gray-900 text-sm font-medium mb-1">
+                  {maskUsername(userName) || 'Người dùng'}
                 </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-orange-900 text-xl font-bold">
-                    {formatPoints(displayPoints)}
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="w-5 h-5 bg-orange-900/20 hover:bg-orange-900/30 rounded-full flex items-center justify-center text-orange-900 text-xs font-medium transition-colors">
-                        ?
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">1000 VNĐ = 1 điểm. Dùng điểm để đặt cược và rút tiền</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <div className="text-orange-900/80 text-xs">
-                  Đã nhận: {balanceVisible ? lifetimeEarned.toLocaleString() : '****'} | 
-                  Đã dùng: {balanceVisible ? lifetimeSpent.toLocaleString() : '****'}
+                <div className="text-gray-700 text-xs">
+                  Số dư ví: {formatWalletBalance(displayPoints)}
                 </div>
               </div>
-              <div className="text-orange-900/30">
-                <Icon icon="mdi:star" className="w-10 h-10" />
               </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-4 gap-2">
+              <button
+                onClick={() => onTabChange && onTabChange('deposit-withdraw')}
+                className="flex flex-col items-center gap-1.5 p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                <img 
+                  src="/iconacc/imgi_25_deposit.avif" 
+                  alt="Deposit"
+                  className="w-9 h-9"
+                />
+                <span className="text-xs text-gray-700 font-medium">Nạp Tiền</span>
+              </button>
+
+              <button
+                onClick={() => onTabChange && onTabChange('withdraw')}
+                className="flex flex-col items-center gap-1.5 p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                <img 
+                  src="/iconacc/imgi_26_withdraw.avif" 
+                  alt="Withdraw"
+                  className="w-9 h-9"
+                />
+                <span className="text-xs text-gray-700 font-medium">Rút Tiền</span>
+              </button>
+
+              <button
+                onClick={() => onTabChange && onTabChange('account')}
+                className="flex flex-col items-center gap-1.5 p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                <img 
+                  src="/iconacc/imgi_29_account.avif" 
+                  alt="Account"
+                  className="w-9 h-9"
+                />
+                <span className="text-xs text-gray-700 font-medium">Tài Khoản</span>
+              </button>
+
+              <button
+                onClick={() => onTabChange && onTabChange('transaction-history')}
+                className="flex flex-col items-center gap-1.5 p-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                <img 
+                  src="/iconacc/imgi_28_history.avif" 
+                  alt="History"
+                  className="w-9 h-9"
+                />
+                <span className="text-xs text-gray-700 font-medium">Lịch Sử</span>
+              </button>
             </div>
           </CardContent>
         </Card>

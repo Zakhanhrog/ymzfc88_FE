@@ -69,19 +69,6 @@ const MobileTransactionHistory = () => {
     }
   };
 
-  const calculateStats = () => {
-    return {
-      totalDeposit: transactions.filter(t => t.type === 'DEPOSIT' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + (t.amount || 0), 0),
-      totalWithdraw: transactions.filter(t => t.type === 'WITHDRAW' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + (t.amount || 0), 0),
-      totalBonus: transactions.filter(t => t.type === 'BONUS' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + (t.amount || 0), 0),
-      pendingCount: transactions.filter(t => t.status === 'PENDING').length
-    };
-  };
-
-  const stats = calculateStats();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -195,41 +182,6 @@ const MobileTransactionHistory = () => {
 
   return (
     <div className="space-y-4">
-      {/* Statistics Cards - Mobile Optimized */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center">
-          <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-          <div className="text-green-600 flex items-center justify-center gap-1">
-            <ArrowUpOutlined className="text-xs" />
-            <span className="text-sm font-bold">{stats.totalDeposit.toLocaleString()}</span>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center">
-          <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-          <div className="text-green-600 flex items-center justify-center gap-1">
-            <ArrowDownOutlined className="text-xs" />
-            <span className="text-sm font-bold">{stats.totalWithdraw.toLocaleString()}</span>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center">
-          <div className="text-xs text-gray-500 mb-1">Tổng thưởng</div>
-          <div className="text-blue-600 flex items-center justify-center gap-1">
-            <ArrowUpOutlined className="text-xs" />
-            <span className="text-sm font-bold">{stats.totalBonus.toLocaleString()}</span>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl p-3 shadow-sm text-center">
-          <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
-          <div className="text-orange-500 flex flex-col items-center gap-1">
-            <span className="text-sm font-bold">{stats.pendingCount}</span>
-            <span className="text-xs">giao dịch</span>
-          </div>
-        </div>
-      </div>
-
       {/* Transaction List - Mobile Optimized */}
       <div className="space-y-2">
         {paginatedTransactions.length === 0 ? ( 

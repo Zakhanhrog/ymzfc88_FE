@@ -143,7 +143,7 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
   // Return mobile version
   if (isMobile) {
     // If on promotions route, show PromotionMobileWrapper
-    if (location.pathname === '/promotions' || location.pathname.startsWith('/promotions/')) {
+    if (location.pathname === '/promotions') {
       return <PromotionMobileWrapper />;
     }
     return <MobileWalletPage />;

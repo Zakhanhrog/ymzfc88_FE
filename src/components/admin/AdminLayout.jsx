@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './layout/AdminHeader';
 import { LAYOUT } from '../../utils/theme';
+import { getAdminLoginPath } from '../../utils/navigation';
 
 const { Content } = Layout;
 
@@ -15,7 +16,7 @@ const AdminLayout = ({ children }) => {
     // Check admin authentication
     const adminToken = localStorage.getItem('adminToken');
     if (!adminToken) {
-      navigate('/admin/login');
+      navigate(getAdminLoginPath());
       return;
     }
   }, [navigate]);

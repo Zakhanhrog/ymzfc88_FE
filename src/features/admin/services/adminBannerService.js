@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAdminLoginPath } from '../../../utils/navigation';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 const BASE_URL = '/banners';
@@ -39,7 +40,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminRefreshToken');
       localStorage.removeItem('adminData');
-      window.location.href = '/admin/login';
+      window.location.href = getAdminLoginPath();
     }
     return Promise.reject(error);
   }

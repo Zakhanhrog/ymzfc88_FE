@@ -37,7 +37,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
 
   // Load data when component mounts
   useEffect(() => {
-    loadPromotions();
+      loadPromotions();
   }, []); // Chỉ chạy một lần khi mount
 
   if (!isOpen) return null;
@@ -45,7 +45,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
   return (
     <Layout>
       <div className="md:hidden w-full bg-gray-50 pb-20 pt-3">
-        {/* Content */}
+      {/* Content */}
         <div className="px-0 pt-3">
         {loading ? (
           <Loading />
@@ -77,7 +77,7 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat'
                       }}
-                    >
+                          >
                       {/* Content overlay */}
                       <div className="relative z-10">
                         {/* Title - Oswald font, smaller */}
@@ -95,8 +95,8 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                         </Text>
 
                         {/* CTA Button */}
-                        <Button 
-                          onClick={() => navigate(`/promotions/${promotion.id}`)}
+                          <Button 
+                            onClick={() => navigate(`/promotions/${promotion.id}`)}
                           className="!bg-gradient-to-r !from-yellow-400 !to-amber-500 !border-none hover:!from-yellow-500 hover:!to-amber-600 !text-gray-900 !font-semibold"
                           style={{ 
                             borderRadius: '8px',
@@ -104,10 +104,10 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
                             border: 'none',
                             color: '#111827'
                           }}
-                        >
+                          >
                           Xem khuyến mãi
-                        </Button>
-                      </div>
+                          </Button>
+                        </div>
                     </div>
                   </Card>
                 ))}
@@ -115,8 +115,8 @@ const PromotionMobilePage = ({ isOpen, onClose }) => {
             )}
           </>
         )}
-        </div>
       </div>
+    </div>
     </Layout>
   );
 };

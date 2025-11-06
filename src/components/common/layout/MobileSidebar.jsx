@@ -105,9 +105,9 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
       >
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-100 bg-white flex items-center justify-between">
-          <button
-            onClick={handleClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            <button
+              onClick={handleClose}
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
             aria-label="Đóng"
           >
             <Icon icon="mdi:close" className="w-5 h-5 text-gray-700" />

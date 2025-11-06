@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Header from './layout/Header';
+import MobileDepositHeader from './layout/MobileDepositHeader';
 import Sidebar from './layout/Sidebar';
 import MobileSidebar from './layout/MobileSidebar';
 import AuthModal from './layout/AuthModal';
@@ -277,10 +278,74 @@ const Layout = ({ children }) => {
   const isNotificationPage = location.pathname === '/notifications';
   const shouldHideHeader = isNotificationPage;
 
+  // Check if on mobile deposit/withdraw page
+  const isWalletPage = location.pathname === '/wallet';
+  const searchParams = new URLSearchParams(location.search);
+  const walletTab = searchParams.get('tab');
+  const isDepositPage = isWalletPage && walletTab === 'deposit-withdraw';
+  const isWithdrawPage = isWalletPage && walletTab === 'withdraw';
+  const isTransactionHistoryPage = isWalletPage && walletTab === 'transaction-history';
+  const isKycVerificationPage = isWalletPage && (walletTab === 'kyc-verification' || walletTab === 'account');
+  const isMobileDepositPage = isMobile && (isDepositPage || isWithdrawPage);
+  const isMobileTransactionHistoryPage = isMobile && isTransactionHistoryPage;
+  const isMobileKycVerificationPage = isMobile && isKycVerificationPage;
+  const depositPageTitle = isDepositPage ? 'Nạp tiền' : isWithdrawPage ? 'Rút tiền' : '';
+
+  // Check if on mobile promotions page
+  const isPromotionsPage = location.pathname === '/promotions';
+  const isMobilePromotionsPage = isMobile && isPromotionsPage;
+
+  // Check if on mobile KYC page
+  const isKycPage = location.pathname === '/kyc';
+  const isMobileKycPage = isMobile && isKycPage;
+
+  // Check if on mobile betting history page
+  const isBettingHistoryPage = location.pathname === '/betting-history';
+  const isMobileBettingHistoryPage = isMobile && isBettingHistoryPage;
+
+  // Check if on mobile contact/support page
+  const isContactPage = location.pathname === '/contact';
+  const isMobileContactPage = isMobile && isContactPage;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header - Hidden on mobile notification page only */}
-      {!shouldHideHeader && (
+      {/* Mobile Deposit/Withdraw Header */}
+      {isMobileDepositPage && depositPageTitle && (
+        <MobileDepositHeader title={depositPageTitle} backPath="/wallet?tab=balance" />
+      )}
+
+      {/* Mobile Transaction History Header */}
+      {isMobileTransactionHistoryPage && (
+        <MobileDepositHeader title="Lịch sử giao dịch" backPath="/wallet?tab=balance" />
+      )}
+
+      {/* Mobile KYC Verification Header (from wallet tab) */}
+      {isMobileKycVerificationPage && (
+        <MobileDepositHeader title="Xác thực tài khoản" backPath="/wallet?tab=balance" />
+      )}
+
+      {/* Mobile Promotions Header */}
+      {isMobilePromotionsPage && (
+        <MobileDepositHeader title="Khuyến mãi" />
+      )}
+
+      {/* Mobile KYC Page Header */}
+      {isMobileKycPage && (
+        <MobileDepositHeader title="Xác thực tài khoản" />
+      )}
+
+      {/* Mobile Betting History Header */}
+      {isMobileBettingHistoryPage && (
+        <MobileDepositHeader title="Lịch sử cược" />
+      )}
+
+      {/* Mobile Contact/Support Header */}
+      {isMobileContactPage && (
+        <MobileDepositHeader title="Hỗ trợ" />
+      )}
+
+      {/* Header - Hidden on mobile notification page and mobile special pages */}
+      {!shouldHideHeader && !isMobileDepositPage && !isMobilePromotionsPage && !isMobileTransactionHistoryPage && !isMobileKycVerificationPage && !isMobileKycPage && !isMobileBettingHistoryPage && !isMobileContactPage && (
       <Header
         isLoggedIn={isLoggedIn}
         sidebarCollapsed={sidebarCollapsed}
@@ -317,7 +382,7 @@ const Layout = ({ children }) => {
       {/* Main Content */}
       <main 
         className={`flex-1 ml-0 w-full md:transition-all md:duration-300 md:ease-in-out ${
-          shouldHideHeader ? 'pt-0' : 'pt-[60px] md:pt-[70px]'
+          shouldHideHeader ? 'pt-0' : (isMobileDepositPage || isMobilePromotionsPage || isMobileTransactionHistoryPage || isMobileKycVerificationPage || isMobileKycPage || isMobileBettingHistoryPage || isMobileContactPage) ? 'pt-[56px]' : 'pt-[56px] md:pt-[70px]'
         }`}
         style={{ 
           marginLeft: '0px',
