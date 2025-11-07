@@ -69,8 +69,7 @@ const LiveCasinoPage = () => {
       }
       return;
     }
-    // TODO: Điều hướng tới game cụ thể khi API sẵn sàng
-    console.log('Selected live casino game:', gameId);
+    navigate(`/casino/live/${gameId}`);
   };
 
   return (
@@ -184,7 +183,7 @@ const LiveCasinoMobilePage = () => {
       });
       return;
     }
-    console.log('Selected live casino game:', gameId);
+    navigate(`/casino/live/${gameId}`);
   };
 
   return (
