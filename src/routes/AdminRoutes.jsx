@@ -3,6 +3,7 @@ import AdminLoginPage from '../features/admin/pages/AdminLoginPage';
 import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
 import AdminPointManagementPage from '../features/admin/pages/AdminPointManagementPage';
 import AdminBettingOddsPage from '../features/admin/pages/AdminBettingOddsPage';
+import AdminXocDiaQuickBetPage from '../features/admin/pages/AdminXocDiaQuickBetPage';
 import AdminLotteryResultManagement from '../features/admin/components/AdminLotteryResultManagement';
 import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
 import NotFoundPage from '../components/common/NotFoundPage';
@@ -55,6 +56,16 @@ const AdminRoutes = () => {
               <AdminBettingOddsPage />
             </AdminProtectedRoute>
           } 
+        />
+        
+        {/* Admin Xoc Dia Quick Bets */}
+        <Route
+          path="/admin/xoc-dia/quick-bets"
+          element={
+            <AdminProtectedRoute>
+              <AdminXocDiaQuickBetPage />
+            </AdminProtectedRoute>
+          }
         />
         
         {/* Admin Lottery Results */}
@@ -112,6 +123,16 @@ const AdminRoutes = () => {
         } 
       />
       
+      {/* Admin Xoc Dia Quick Bets */}
+      <Route
+        path="/xoc-dia/quick-bets"
+        element={
+          <AdminProtectedRoute>
+            <AdminXocDiaQuickBetPage />
+          </AdminProtectedRoute>
+        }
+      />
+      
       {/* Admin Lottery Results */}
       <Route 
         path="/lottery-results" 
@@ -128,6 +149,7 @@ const AdminRoutes = () => {
       <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
       <Route path="/admin/points" element={<Navigate to="/points" replace />} />
       <Route path="/admin/betting-odds" element={<Navigate to="/betting-odds" replace />} />
+      <Route path="/admin/xoc-dia/quick-bets" element={<Navigate to="/xoc-dia/quick-bets" replace />} />
       <Route path="/admin/lottery-results" element={<Navigate to="/lottery-results" replace />} />
       
       {/* 404 Route - Must be last */}

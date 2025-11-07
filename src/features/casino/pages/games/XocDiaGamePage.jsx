@@ -1,60 +1,75 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import pointService from '../../../../services/pointService';
+import xocDiaQuickBetService from '../../../../services/xocDiaQuickBetService';
 
 const CACHE_KEY = 'user_info_cache';
 const CACHE_DURATION_MS = 30000;
 
 const gameName = 'Xóc Đĩa Jackpot';
 
-const quickBetOptions = [
+const defaultQuickBetConfigs = [
   {
-    id: 'even',
+    code: 'even',
     label: 'Chẵn',
-    ratio: '1 : 1.96',
+    payoutMultiplier: 1.96,
     pattern: [],
+    layoutGroup: 'TOP',
+    displayOrder: 1,
   },
   {
-    id: 'two-two',
+    code: 'two-two',
     label: '2 Trắng 2 Đỏ',
-    ratio: '1 : 2.55',
+    payoutMultiplier: 2.55,
     pattern: ['white', 'white', 'red', 'red'],
+    layoutGroup: 'TOP',
+    displayOrder: 2,
   },
   {
-    id: 'odd',
+    code: 'odd',
     label: 'Lẻ',
-    ratio: '1 : 1.96',
+    payoutMultiplier: 1.96,
     pattern: [],
+    layoutGroup: 'TOP',
+    displayOrder: 3,
   },
   {
-    id: 'four-white',
+    code: 'four-white',
     label: '4 Trắng',
-    ratio: '1 : 14.5',
+    payoutMultiplier: 14.5,
     pattern: ['white', 'white', 'white', 'white'],
+    layoutGroup: 'BOTTOM',
+    displayOrder: 4,
   },
   {
-    id: 'three-white',
+    code: 'three-white',
     label: 'Lớn',
-    ratio: '1 : 3.7',
+    payoutMultiplier: 3.7,
     pattern: [],
+    layoutGroup: 'BOTTOM',
+    displayOrder: 5,
   },
   {
-    id: 'three-red',
+    code: 'three-red',
     label: 'Nhỏ',
-    ratio: '1 : 3.7',
+    payoutMultiplier: 3.7,
     pattern: [],
+    layoutGroup: 'BOTTOM',
+    displayOrder: 6,
   },
   {
-    id: 'four-red',
+    code: 'four-red',
     label: '4 Đỏ',
-    ratio: '1 : 14.5',
+    payoutMultiplier: 14.5,
     pattern: ['red', 'red', 'red', 'red'],
+    layoutGroup: 'BOTTOM',
+    displayOrder: 7,
   },
 ];
 
-const topQuickBets = quickBetOptions.slice(0, 3);
-const bottomQuickBets = quickBetOptions.slice(3);
+const COUNTDOWN_DURATION = 30;
+
 const statsHistory = [
   ['4', '1', '2', '3', '2', '1', '1', '2', '1', '2', '2', '1', '2', '1', '2', '3', '2'],
   ['0', '', '1', '', '', '2', '', '1', '', '1', '2', '1', '', '1', '3', '', '2'],
@@ -71,15 +86,126 @@ const statsBreakdown = [
   { label: '1 đỏ 3 trắng', value: 3, chips: ['red', 'white', 'white', 'white'] },
 ];
 
+const parsePatternString = (pattern) => {
+  if (!pattern) return [];
+  if (Array.isArray(pattern)) return pattern;
+  return pattern
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const formatRatioLabel = (value) => {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) {
+    return value ? `1 : ${value}` : '';
+  }
+  const formatted = Number.isInteger(numeric)
+    ? numeric.toFixed(0)
+    : numeric.toFixed(2).replace(/\.?0+$/, '');
+  return `1 : ${formatted}`;
+};
+
+const convertConfigToOption = (config) => {
+  const payoutMultiplier = config.payoutMultiplier ?? config.multiplier ?? config.ratioMultiplier ?? 0;
+  return {
+    code: config.code ?? config.id,
+    label: config.label ?? config.name ?? '',
+    ratio: formatRatioLabel(payoutMultiplier),
+    payoutMultiplier,
+    pattern: parsePatternString(config.pattern),
+    layoutGroup: (config.layoutGroup || 'TOP').toUpperCase(),
+    displayOrder: config.displayOrder ?? 0,
+  };
+};
+
 const XocDiaGamePage = () => {
   const navigate = useNavigate();
   const [selectedQuickBet, setSelectedQuickBet] = useState(null);
+  const [quickBetOptions, setQuickBetOptions] = useState(
+    defaultQuickBetConfigs.map(convertConfigToOption).sort((a, b) => a.displayOrder - b.displayOrder)
+  );
+  const [quickBetLoading, setQuickBetLoading] = useState(false);
+  const [quickBetError, setQuickBetError] = useState(null);
+  const [countdownSeconds, setCountdownSeconds] = useState(COUNTDOWN_DURATION);
+  const [countdownAngle, setCountdownAngle] = useState(360);
+  const countdownResetRef = useRef(Date.now() + COUNTDOWN_DURATION * 1000);
+  const countdownAngleRef = useRef(360);
   const [userPoints, setUserPoints] = useState(0);
   const [loadingPoints, setLoadingPoints] = useState(true);
   const totalBetDisplay = '0₫';
+  const topQuickBets = quickBetOptions.filter((option) => option.layoutGroup === 'TOP');
+  const bottomQuickBets = quickBetOptions.filter((option) => option.layoutGroup === 'BOTTOM');
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdownSeconds((prev) => {
+        if (prev <= 1) {
+          countdownResetRef.current = Date.now() + COUNTDOWN_DURATION * 1000;
+          countdownAngleRef.current = 360;
+          setCountdownAngle(360);
+          return COUNTDOWN_DURATION;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let animationFrameId;
+
+    const updateAngle = () => {
+      const now = Date.now();
+      const remainingMs = countdownResetRef.current - now;
+      const progress = Math.max(0, Math.min(1, remainingMs / (COUNTDOWN_DURATION * 1000)));
+      const angle = progress * 360;
+
+      if (Math.abs(angle - countdownAngleRef.current) > 0.5) {
+        countdownAngleRef.current = angle;
+        setCountdownAngle(angle);
+      }
+
+      animationFrameId = requestAnimationFrame(updateAngle);
+    };
+
+    animationFrameId = requestAnimationFrame(updateAngle);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
+
+    const fetchQuickBets = async () => {
+      try {
+        setQuickBetLoading(true);
+        const response = await xocDiaQuickBetService.getActiveQuickBets();
+
+        if (!isMounted) return;
+
+        if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+          const options = response.data
+            .map(convertConfigToOption)
+            .sort((a, b) => a.displayOrder - b.displayOrder);
+
+          setQuickBetOptions(options);
+          setQuickBetError(null);
+        } else if (!response.success) {
+          setQuickBetError(response.message || 'Không thể tải cấu hình quick bet');
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        setQuickBetError('Không thể tải cấu hình quick bet');
+      } finally {
+        if (isMounted) {
+          setQuickBetLoading(false);
+        }
+      }
+    };
+
+    fetchQuickBets();
 
     const updateStoredUserData = (points) => {
       try {
@@ -184,6 +310,10 @@ const XocDiaGamePage = () => {
     ? 'Đang tải...'
     : `${Number(userPoints || 0).toLocaleString('vi-VN')}₫`;
 
+  const countdownCircleStyle = {
+    background: `conic-gradient(#facc15 ${countdownAngle}deg, #1c5b3f ${countdownAngle}deg)`,
+  };
+
   const flatStats = statsHistory.flat();
   const columns = 17;
   const rows = 6;
@@ -283,7 +413,17 @@ const XocDiaGamePage = () => {
               <div className="rounded-2xl border border-[#1aab6f]/50 bg-gradient-to-r from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-1.5 md:py-2 shadow-sm">
                 <div className="flex flex-row flex-wrap items-center justify-between text-[#e6fff4] divide-y-0 sm:divide-x divide-[#149b60]/60 gap-x-4">
                   <div className="flex items-center justify-center px-2.5 py-0.5 md:py-1.5 sm:px-4">
-                    <Icon icon="mdi:casino-chip" className="w-6 h-6 sm:w-7 sm:h-7 text-[#2fd683]" />
+                    <div
+                      className="relative flex h-12 w-12 items-center justify-center rounded-full p-[3px]"
+                      style={countdownCircleStyle}
+                      aria-label="Đếm ngược 30 giây"
+                    >
+                      <span className="flex h-full w-full items-center justify-center rounded-full bg-[#0b3b24] text-[#fef3c7] shadow-inner">
+                        <span className="text-[9px] font-semibold leading-none tracking-wide">
+                          {countdownSeconds}
+                        </span>
+                      </span>
+                    </div>
                   </div>
                   <div className="flex flex-1 flex-col items-center gap-0.5 px-2.5 py-0.5 md:py-1.5 sm:px-4 min-w-[110px]">
                     <span className="text-xs uppercase tracking-wide">Số dư</span>
@@ -297,14 +437,26 @@ const XocDiaGamePage = () => {
               </div>
 
               <section className="space-y-3">
+                {quickBetError && (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    {quickBetError}
+                  </div>
+                )}
+
+                {quickBetLoading && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    Đang tải tỷ lệ Quick Bet...
+                  </div>
+                )}
+
                 <div className="grid grid-cols-3 gap-2 md:gap-3">
                   {topQuickBets.map((option) => (
                     <button
-                      key={option.id}
+                      key={option.code}
                       type="button"
-                      onClick={() => setSelectedQuickBet(option.id)}
+                      onClick={() => setSelectedQuickBet(option.code)}
                       className={`group relative rounded-2xl border px-3 py-2 text-center shadow-sm transition ${
-                        selectedQuickBet === option.id
+                        selectedQuickBet === option.code
                           ? 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
                           : 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] hover:shadow-lg text-[#0f4c2c]'
                       }`}
@@ -313,20 +465,20 @@ const XocDiaGamePage = () => {
                         <>
                           <div
                             className={`font-black uppercase tracking-wide ${
-                              option.id === 'even'
+                              option.code === 'even'
                                 ? 'text-[#b91c1c]'
-                                : option.id === 'odd'
+                                : option.code === 'odd'
                                   ? 'text-[#b45309]'
-                                  : selectedQuickBet === option.id
+                                  : selectedQuickBet === option.code
                                     ? 'text-white'
                                     : 'text-[#0f4c2c]'
-                            } ${option.id === 'even' || option.id === 'odd' ? 'text-lg' : 'text-sm'}`}
+                            } ${option.code === 'even' || option.code === 'odd' ? 'text-lg' : 'text-sm'}`}
                           >
                             {option.label}
                           </div>
                           <div
                             className={`mt-1 inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-                              selectedQuickBet === option.id
+                              selectedQuickBet === option.code
                                 ? 'bg-white/20 text-white'
                                 : 'bg-white/70 text-[#0f4c2c]'
                             }`}
@@ -339,7 +491,7 @@ const XocDiaGamePage = () => {
                         <>
                           <div
                             className={`inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-                              selectedQuickBet === option.id
+                              selectedQuickBet === option.code
                                 ? 'bg-white/20 text-white'
                                 : 'bg-white/70 text-[#0f4c2c]'
                             }`}
@@ -350,7 +502,7 @@ const XocDiaGamePage = () => {
                           <div className="mt-1.5 flex items-center justify-center gap-1">
                             {option.pattern.map((color, index) => (
                               <span
-                                key={`${option.id}-${index}`}
+                                key={`${option.code}-${index}`}
                                 className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
                                   color === 'white'
                                     ? 'bg-white border-black'
@@ -368,11 +520,11 @@ const XocDiaGamePage = () => {
                 <div className="grid grid-cols-4 gap-2 md:gap-3">
                   {bottomQuickBets.map((option) => (
                     <button
-                      key={option.id}
+                      key={option.code}
                       type="button"
-                      onClick={() => setSelectedQuickBet(option.id)}
+                      onClick={() => setSelectedQuickBet(option.code)}
                       className={`group relative rounded-2xl border px-3 py-2 text-center shadow-sm transition ${
-                        selectedQuickBet === option.id
+                        selectedQuickBet === option.code
                           ? 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
                           : 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] hover:shadow-lg text-[#0f4c2c]'
                       }`}
@@ -381,14 +533,14 @@ const XocDiaGamePage = () => {
                         <>
                           <div
                             className={`font-black uppercase tracking-wide ${
-                              selectedQuickBet === option.id ? 'text-white' : 'text-[#0f4c2c]'
-                            } ${option.id === 'even' || option.id === 'odd' ? 'text-lg' : 'text-sm'}`}
+                              selectedQuickBet === option.code ? 'text-white' : 'text-[#0f4c2c]'
+                            } ${option.code === 'even' || option.code === 'odd' ? 'text-lg' : 'text-sm'}`}
                           >
                             {option.label}
                           </div>
                           <div
                             className={`mt-1 inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-                              selectedQuickBet === option.id
+                              selectedQuickBet === option.code
                                 ? 'bg-white/20 text-white'
                                 : 'bg-white/70 text-[#0f4c2c]'
                             }`}
@@ -401,7 +553,7 @@ const XocDiaGamePage = () => {
                         <>
                           <div
                             className={`inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-                              selectedQuickBet === option.id
+                              selectedQuickBet === option.code
                                 ? 'bg-white/20 text-white'
                                 : 'bg-white/70 text-[#0f4c2c]'
                             }`}
@@ -412,7 +564,7 @@ const XocDiaGamePage = () => {
                           <div className="mt-1.5 flex items-center justify-center gap-1">
                             {option.pattern.map((color, index) => (
                               <span
-                                key={`${option.id}-${index}`}
+                                key={`${option.code}-${index}`}
                                 className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
                                   color === 'white'
                                     ? 'bg-white border-black'

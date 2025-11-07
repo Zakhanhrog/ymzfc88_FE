@@ -71,6 +71,9 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       return ['betting-odds'];
     }
     
+    if (path.includes('/xoc-dia/quick-bets') && (isAdmin || path.includes('/admin/xoc-dia/quick-bets'))) {
+      return ['xoc-dia-quick-bets'];
+    }
     
     if (path.includes('/dashboard') && (isAdmin || path.includes('/admin/dashboard'))) {
       if (tab) {
@@ -96,6 +99,9 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       return ['game-management'];
     }
     
+    if (path.includes('/xoc-dia/quick-bets') && (isAdmin || path.includes('/admin/xoc-dia/quick-bets'))) {
+      return ['game-management'];
+    }
     
     if (tab === 'users' || tab === 'kyc-verification' || tab === 'user-roles' || tab === 'user-activities') {
       return ['user-management'];
@@ -137,6 +143,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'game-results': () => navigate(getAdminPath('/dashboard?tab=game-results')),
       'game-settings': () => navigate(getAdminPath('/dashboard?tab=game-settings')),
       'betting-odds': () => navigate(getAdminPath('/betting-odds')),
+      'xoc-dia-quick-bets': () => navigate(getAdminPath('/xoc-dia/quick-bets')),
       'banners': () => navigate(getAdminPath('/dashboard?tab=banners')),
       'news': () => navigate(getAdminPath('/dashboard?tab=news')),
       'notifications': () => navigate(getAdminPath('/dashboard?tab=notifications')),

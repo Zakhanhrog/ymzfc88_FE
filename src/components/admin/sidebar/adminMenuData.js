@@ -107,6 +107,11 @@ export const adminMenuItems = [
         key: 'betting-odds',
         icon: 'PercentageOutlined',
         label: 'Tỷ lệ cược',
+      },
+      {
+        key: 'xoc-dia-quick-bets',
+        icon: 'DotChartOutlined',
+        label: 'Xóc Đĩa Quick Bet',
       }
     ]
   },
