@@ -56,7 +56,14 @@ const MobileTransactionHistory = () => {
       );
       
       if (response.success) {
-        setTransactions(response.data.content || []);
+        let transactions = response.data.content || [];
+        // Sắp xếp theo createdAt DESC (mới nhất trước) để đảm bảo thứ tự đúng
+        transactions.sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return dateB - dateA; // DESC order
+        });
+        setTransactions(transactions);
         setPagination(prev => ({
           ...prev,
           total: response.data.totalElements || 0
@@ -116,34 +123,41 @@ const MobileTransactionHistory = () => {
     }
   };
 
-  const filteredTransactions = transactions.filter(transaction => {
-    if (filters.type !== 'all' && transaction.type !== filters.type.toUpperCase()) {
-      return false;
-    }
-    
-    if (filters.status !== 'all' && transaction.status !== filters.status.toUpperCase()) {
-      return false;
-    }
-    
-    if (filters.dateRange && filters.dateRange.length === 2) {
-      const transactionDate = dayjs(transaction.createdAt);
-      const [startDate, endDate] = filters.dateRange;
-      if (!transactionDate.isBetween(startDate, endDate, 'day', '[]')) {
+  const filteredTransactions = transactions
+    .filter(transaction => {
+      if (filters.type !== 'all' && transaction.type !== filters.type.toUpperCase()) {
         return false;
       }
-    }
-    
-    if (filters.searchText) {
-      const searchLower = filters.searchText.toLowerCase();
-      return (
-        transaction.transactionCode.toLowerCase().includes(searchLower) ||
-        (transaction.description && transaction.description.toLowerCase().includes(searchLower)) ||
-        (transaction.paymentMethod && transaction.paymentMethod.name.toLowerCase().includes(searchLower))
-      );
-    }
-    
-    return true;
-  });
+      
+      if (filters.status !== 'all' && transaction.status !== filters.status.toUpperCase()) {
+        return false;
+      }
+      
+      if (filters.dateRange && filters.dateRange.length === 2) {
+        const transactionDate = dayjs(transaction.createdAt);
+        const [startDate, endDate] = filters.dateRange;
+        if (!transactionDate.isBetween(startDate, endDate, 'day', '[]')) {
+          return false;
+        }
+      }
+      
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        return (
+          transaction.transactionCode.toLowerCase().includes(searchLower) ||
+          (transaction.description && transaction.description.toLowerCase().includes(searchLower)) ||
+          (transaction.paymentMethod && transaction.paymentMethod.name.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      return true;
+    })
+    // Đảm bảo sắp xếp theo createdAt DESC sau khi filter
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB - dateA; // DESC order
+    });
 
   const paginatedTransactions = filteredTransactions.slice(
     (pagination.current - 1) * pagination.pageSize,

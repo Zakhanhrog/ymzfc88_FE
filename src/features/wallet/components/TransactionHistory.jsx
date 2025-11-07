@@ -62,7 +62,14 @@ const TransactionHistory = () => {
       );
       
       if (response.success) {
-        setTransactions(response.data.content || []);
+        let transactions = response.data.content || [];
+        // Sắp xếp theo createdAt DESC (mới nhất trước) để đảm bảo thứ tự đúng
+        transactions.sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return dateB - dateA; // DESC order
+        });
+        setTransactions(transactions);
         setPagination(prev => ({
           ...prev,
           total: response.data.totalElements || 0
@@ -137,38 +144,45 @@ const TransactionHistory = () => {
   };
 
   // Filter transactions
-  const filteredTransactions = transactions.filter(transaction => {
-    // Filter by type
-    if (filters.type !== 'all' && transaction.type !== filters.type.toUpperCase()) {
-      return false;
-    }
-    
-    // Filter by status
-    if (filters.status !== 'all' && transaction.status !== filters.status.toUpperCase()) {
-      return false;
-    }
-    
-    // Filter by date range
-    if (filters.dateRange && filters.dateRange.length === 2) {
-      const transactionDate = dayjs(transaction.createdAt);
-      const [startDate, endDate] = filters.dateRange;
-      if (!transactionDate.isBetween(startDate, endDate, 'day', '[]')) {
+  const filteredTransactions = transactions
+    .filter(transaction => {
+      // Filter by type
+      if (filters.type !== 'all' && transaction.type !== filters.type.toUpperCase()) {
         return false;
       }
-    }
-    
-    // Filter by search text
-    if (filters.searchText) {
-      const searchLower = filters.searchText.toLowerCase();
-      return (
-        transaction.transactionCode.toLowerCase().includes(searchLower) ||
-        (transaction.description && transaction.description.toLowerCase().includes(searchLower)) ||
-        (transaction.paymentMethod && transaction.paymentMethod.name.toLowerCase().includes(searchLower))
-      );
-    }
-    
-    return true;
-  });
+      
+      // Filter by status
+      if (filters.status !== 'all' && transaction.status !== filters.status.toUpperCase()) {
+        return false;
+      }
+      
+      // Filter by date range
+      if (filters.dateRange && filters.dateRange.length === 2) {
+        const transactionDate = dayjs(transaction.createdAt);
+        const [startDate, endDate] = filters.dateRange;
+        if (!transactionDate.isBetween(startDate, endDate, 'day', '[]')) {
+          return false;
+        }
+      }
+      
+      // Filter by search text
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        return (
+          transaction.transactionCode.toLowerCase().includes(searchLower) ||
+          (transaction.description && transaction.description.toLowerCase().includes(searchLower)) ||
+          (transaction.paymentMethod && transaction.paymentMethod.name.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      return true;
+    })
+    // Đảm bảo sắp xếp theo createdAt DESC sau khi filter
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB - dateA; // DESC order
+    });
 
   // Paginated transactions
   const paginatedTransactions = filteredTransactions.slice(

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   Row, 
@@ -34,6 +35,7 @@ import walletService from '../services/walletService';
 const { Step } = Steps;
 
 const DepositWithdraw = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [amount, setAmount] = useState(null);
@@ -158,6 +160,11 @@ const DepositWithdraw = () => {
         setTransactionResult(response.data);
         setCurrentStep(3);
         message.success('Đã tạo lệnh nạp tiền thành công!');
+        
+        // Dispatch custom event to notify other components to refresh
+        window.dispatchEvent(new CustomEvent('transactionCreated', {
+          detail: { type: 'DEPOSIT', transaction: response.data }
+        }));
       } else {
         message.error('Lỗi: ' + (response.message || 'Không xác định'));
       }
@@ -595,7 +602,10 @@ const DepositWithdraw = () => {
           </div>
         }
           extra={[
-          <Button key="history" onClick={() => window.location.href = '/wallet?tab=transaction-history'} style={{ fontSize: '14px' }}>
+          <Button key="history" onClick={() => {
+            // Navigate to transaction history with refresh parameter
+            navigate(`/wallet?tab=transaction-history&refresh=${Date.now()}`);
+          }} style={{ fontSize: '14px' }}>
             Xem lịch sử
             </Button>,
             <Button 

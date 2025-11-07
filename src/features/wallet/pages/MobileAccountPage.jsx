@@ -66,9 +66,30 @@ const MobileAccountPage = () => {
     
     setIsLoggingOut(true);
     try {
+      // Call logout API if needed
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          await fetch('http://localhost:8080/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refreshToken }),
+          });
+        } catch (apiError) {
+          console.error('Logout API error:', apiError);
+          // Continue with local logout even if API fails
+        }
+      }
+      
+      // Remove all tokens and user data
       localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('adminUser');
       setShowLogoutModal(false);
       
       setTimeout(() => {
@@ -77,6 +98,14 @@ const MobileAccountPage = () => {
       }, 100);
     } catch (error) {
       console.error('Logout error:', error);
+      // Still logout locally even if API fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('adminUser');
+      setShowLogoutModal(false);
       setIsLoggingOut(false);
     }
   };

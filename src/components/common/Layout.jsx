@@ -85,9 +85,27 @@ const Layout = ({ children }) => {
     }
   }, [location.pathname]);
 
-  // Function để fetch thông tin user từ API
-  const fetchUserInfo = async () => {
+  // Function để fetch thông tin user từ API với caching
+  const fetchUserInfo = async (forceRefresh = false) => {
     try {
+      // Check cache first (cache 30 seconds)
+      if (!forceRefresh) {
+        const cached = sessionStorage.getItem('user_info_cache');
+        if (cached) {
+          try {
+            const { data, timestamp } = JSON.parse(cached);
+            const now = Date.now();
+            if (now - timestamp < 30000) { // 30 seconds cache
+              setUserName(data.username || data.name || '');
+              setUserPoints(data.points || 0);
+              return;
+            }
+          } catch (e) {
+            // Cache invalid, continue to fetch
+          }
+        }
+      }
+
       // Gọi API /auth/me để lấy thông tin user mới nhất
       const response = await fetch('http://localhost:8080/api/auth/me', {
         method: 'GET',
@@ -108,6 +126,16 @@ const Layout = ({ children }) => {
           
           // Lưu vào localStorage
           localStorage.setItem('user', JSON.stringify(user));
+          
+          // Cache in sessionStorage
+          try {
+            sessionStorage.setItem('user_info_cache', JSON.stringify({
+              data: user,
+              timestamp: Date.now()
+            }));
+          } catch (e) {
+            // Ignore storage errors
+          }
           return;
         }
       }
@@ -120,13 +148,16 @@ const Layout = ({ children }) => {
         setUserPoints(userData.points || 0);
       }
     } catch (error) {
-      console.error('Error fetching user info:', error);
-      // Fallback: lấy từ localStorage
+      // Silent error handling - fallback to localStorage
       const user = localStorage.getItem('user');
       if (user) {
+        try {
         const userData = JSON.parse(user);
         setUserName(userData.username || userData.name || '');
         setUserPoints(userData.points || 0);
+        } catch (e) {
+          // Ignore parse errors
+        }
       }
     }
   };
@@ -195,12 +226,13 @@ const Layout = ({ children }) => {
         }
       }
       
-      // Sau đó gọi API để cập nhật thông tin mới nhất
+      // Sau đó gọi API để cập nhật thông tin mới nhất (với cache)
       fetchUserInfo();
 
+      // Refresh points less frequently (every 60 seconds instead of 30)
       const interval = setInterval(() => {
         fetchUserPoints();
-      }, 30000);
+      }, 60000);
 
       return () => clearInterval(interval);
     } else {
@@ -234,9 +266,30 @@ const Layout = ({ children }) => {
     setIsLoggingOut(true);
     try {
       // Call logout API if needed
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          await fetch('http://localhost:8080/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refreshToken }),
+          });
+        } catch (apiError) {
+          console.error('Logout API error:', apiError);
+          // Continue with local logout even if API fails
+        }
+      }
+      
+      // Remove all tokens and user data
       localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('adminUser');
+      
       setIsLoggedIn(false);
       setUserName('');
       setUserPoints(0);
@@ -251,8 +304,11 @@ const Layout = ({ children }) => {
       console.error('Logout error:', error);
       // Still logout locally even if API fails
       localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('adminUser');
       setIsLoggedIn(false);
       setUserName('');
       setUserPoints(0);

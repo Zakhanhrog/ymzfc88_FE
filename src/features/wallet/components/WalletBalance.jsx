@@ -44,6 +44,40 @@ const WalletBalance = ({ onTabChange }) => {
     }
   }, []);
 
+  // Reload transactions when component becomes visible (e.g., after deposit/withdraw)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadRecentTransactions();
+    };
+    
+    // Listen for transaction created event
+    const handleTransactionCreated = () => {
+      // Refresh immediately and then retry after delay to ensure backend has processed
+      loadRecentTransactions();
+      loadWalletBalance();
+      
+      // Retry after delay to catch any transactions that might take longer to process
+      setTimeout(() => {
+        loadRecentTransactions();
+        loadWalletBalance();
+      }, 1000);
+      
+      // One more retry after longer delay
+      setTimeout(() => {
+        loadRecentTransactions();
+        loadWalletBalance();
+      }, 3000);
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('transactionCreated', handleTransactionCreated);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('transactionCreated', handleTransactionCreated);
+    };
+  }, [transactionTab]);
+
   useEffect(() => {
     loadRecentTransactions();
   }, [transactionTab]);
@@ -86,6 +120,12 @@ const WalletBalance = ({ onTabChange }) => {
         if (transactionTab !== 'all') {
           transactions = transactions.filter(t => t.type === transactionTab);
         }
+        // Sắp xếp theo createdAt DESC (mới nhất trước) để đảm bảo thứ tự đúng
+        transactions.sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return dateB - dateA; // DESC order
+        });
         setRecentTransactions(transactions);
       }
     } catch (error) {

@@ -85,17 +85,29 @@ export const authService = {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
+        try {
         await authAPI.post('/auth/logout', { refreshToken });
+        } catch (apiError) {
+          console.error('Logout API error:', apiError);
+          // Continue with local logout even if API fails
+        }
       }
+      // Remove all tokens and user data
       localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('adminUser');
       return true;
     } catch (error) {
       // Vẫn clear localStorage dù API thất bại
       localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('adminUser');
       return true;
     }
   },

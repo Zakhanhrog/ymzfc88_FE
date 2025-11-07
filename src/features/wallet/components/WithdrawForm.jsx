@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Form,
@@ -43,6 +44,7 @@ const { Step } = Steps;
 const { Title, Text } = Typography;
 
 const WithdrawForm = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [userPaymentMethods, setUserPaymentMethods] = useState([]);
   const [selectedUserMethod, setSelectedUserMethod] = useState(null);
@@ -244,6 +246,11 @@ const WithdrawForm = () => {
         setTransactionResult(response.data);
         setCurrentStep(2);
         message.success(`Đã gửi yêu cầu rút ${points} điểm (${formatCurrency(amount)}) thành công!`);
+        
+        // Dispatch custom event to notify other components to refresh
+        window.dispatchEvent(new CustomEvent('transactionCreated', {
+          detail: { type: 'WITHDRAW', transaction: response.data }
+        }));
       }
     } catch (error) {
       // Check if error message contains WITHDRAWAL_LOCKED
@@ -693,7 +700,10 @@ const WithdrawForm = () => {
           </div>
         }
         extra={[
-          <Button key="history" onClick={() => window.location.href = '/wallet?tab=transaction-history'}>
+          <Button key="history" onClick={() => {
+            // Navigate to transaction history with refresh parameter
+            navigate(`/wallet?tab=transaction-history&refresh=${Date.now()}`);
+          }}>
             Xem lịch sử
           </Button>,
           <Button

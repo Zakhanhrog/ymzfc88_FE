@@ -1,173 +1,38 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { App as AntApp } from 'antd';
-
-// Pages
-import HomePage from './features/home/pages/HomePage';
-import ResponsiveWalletWrapper from './features/wallet/components/ResponsiveWalletWrapper';
-import MobileKycPage from './features/wallet/pages/MobileKycPage';
-import PointsPage from './features/points/pages/PointsPage';
-import ResponsiveLotteryWrapper from './features/lottery/components/ResponsiveLotteryWrapper';
-import MienBacGamePage from './features/lottery/pages/MienBacGamePage';
-import MienTrungNamGamePage from './features/lottery/pages/MienTrungNamGamePage';
-import BettingHistoryPage from './features/lottery/pages/BettingHistoryPage';
-import ContactPage from './features/contact/pages/ContactPage';
-import PromotionPage from './features/promotions/pages/PromotionPage';
-import NotificationDetailPage from './features/notification/pages/NotificationDetailPage';
-import MobileNotificationPage from './features/notification/pages/MobileNotificationPage';
-import MobileLoginPage from './features/auth/pages/MobileLoginPage';
-import MobileRegisterPage from './features/auth/pages/MobileRegisterPage';
-import MobileAccountPage from './features/wallet/pages/MobileAccountPage';
-import ResponsiveAccountWrapper from './features/wallet/components/ResponsiveAccountWrapper';
-
-// Admin Pages
-import AdminLoginPage from './features/admin/pages/AdminLoginPage';
-import AdminDashboardPage from './features/admin/pages/AdminDashboardPage';
-import AdminPointManagementPage from './features/admin/pages/AdminPointManagementPage';
-import AdminBettingOddsPage from './features/admin/pages/AdminBettingOddsPage';
-import AdminLotteryResultManagement from './features/admin/components/AdminLotteryResultManagement';
-import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
-import ProtectedRoute from './components/common/ProtectedRoute';
-import NotFoundPage from './components/common/NotFoundPage';
+import { useEffect } from 'react';
+import { isAdminSubdomain } from './utils/subdomain';
+import AdminRoutes from './routes/AdminRoutes';
+import UserRoutes from './routes/UserRoutes';
 
 function App() {
+  // Redirect if accessing wrong domain
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const pathname = window.location.pathname;
+    const protocol = window.location.protocol;
+    const port = window.location.port ? `:${window.location.port}` : '';
+    
+    const isAdmin = isAdminSubdomain();
+    
+    // If on user domain but accessing admin routes - redirect to admin subdomain
+    if (!isAdmin && pathname.startsWith('/admin')) {
+      // On production: redirect to admin subdomain
+      if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
+        const adminDomain = `admin.${hostname}`;
+        // Remove /admin prefix for admin subdomain
+        const adminPath = pathname.replace('/admin', '') || '/login';
+        window.location.href = `${protocol}//${adminDomain}${port}${adminPath}`;
+        return;
+      }
+    }
+  }, []);
+
   return (
     <AntApp>
       <Router>
         <div className="App">
-              <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route 
-                path="/wallet" 
-                element={
-                  <ProtectedRoute>
-                    <ResponsiveWalletWrapper />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/kyc" 
-                element={
-                  <ProtectedRoute>
-                    <MobileKycPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/points" 
-                element={
-                  <ProtectedRoute>
-                    <PointsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/lottery" 
-                element={
-                  <ProtectedRoute>
-                    <ResponsiveLotteryWrapper />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/lottery/mien-bac" 
-                element={
-                  <ProtectedRoute>
-                    <MienBacGamePage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/lottery/mien-trung-nam" 
-                element={
-                  <ProtectedRoute>
-                    <MienTrungNamGamePage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/betting-history" 
-                element={
-                  <ProtectedRoute>
-                    <BettingHistoryPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/contact" 
-                element={<ContactPage />} 
-              />
-              <Route 
-                path="/login" 
-                element={<MobileLoginPage />} 
-              />
-              <Route 
-                path="/register" 
-                element={<MobileRegisterPage />} 
-              />
-              <Route 
-                path="/promotions" 
-                element={
-                  <ProtectedRoute>
-                    <ResponsiveWalletWrapper initialTab="promotions" />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/notifications" 
-                element={<MobileNotificationPage />} 
-              />
-              <Route 
-                path="/notifications/:id" 
-                element={<NotificationDetailPage />} 
-              />
-              <Route 
-                path="/account" 
-                element={
-                  <ProtectedRoute>
-                    <ResponsiveAccountWrapper />
-                  </ProtectedRoute>
-                } 
-              />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <AdminProtectedRoute>
-                <AdminDashboardPage />
-              </AdminProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/points" 
-            element={
-              <AdminProtectedRoute>
-                <AdminPointManagementPage />
-              </AdminProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/betting-odds" 
-            element={
-              <AdminProtectedRoute>
-                <AdminBettingOddsPage />
-              </AdminProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/lottery-results" 
-            element={
-              <AdminProtectedRoute>
-                <AdminLotteryResultManagement />
-              </AdminProtectedRoute>
-            } 
-          />
-          
-          {/* 404 Route - Must be last */}
-          <Route path="*" element={<NotFoundPage />} />
-              </Routes>
+          {isAdminSubdomain() ? <AdminRoutes /> : <UserRoutes />}
         </div>
       </Router>
     </AntApp>
