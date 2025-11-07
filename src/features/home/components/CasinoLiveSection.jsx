@@ -1,33 +1,23 @@
+import { useNavigate } from 'react-router-dom';
+import liveCasinoGames from '../../casino/data/liveCasinoGames';
+
 const CasinoLiveSection = () => {
-  // 3 game casino trực tiếp
-  const casinoGames = [
-    {
-      id: 'xocdia',
-      name: 'Xóc Đĩa',
-      image: '/images/casinolive/xocdia.png'
-    },
-    {
-      id: 'taixiu',
-      name: 'Tài Xỉu',
-      image: '/images/casinolive/taixiu.png'
-    },
-    {
-      id: 'baucua',
-      name: 'Bầu Cua',
-      image: '/images/casinolive/baucua.png'
-    }
-  ];
+  const navigate = useNavigate();
 
   const handleGameClick = (gameId) => {
     // Handle game click - có thể navigate hoặc mở game
     console.log('Game clicked:', gameId);
   };
 
+  const handleViewAll = () => {
+    navigate('/casino/live');
+  };
+
   return (
     <div className="w-full bg-gray-100 py-6">
       <div className="w-full px-6">
         {/* Header */}
-        <div className="flex items-center mb-4">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-black text-gray-800 pl-2 pr-8 py-2 rounded-md bg-gradient-to-r from-green-400 via-green-200 to-transparent uppercase relative flex items-center tracking-wide font-oswald" style={{ fontWeight: 900, fontFamily: "'Oswald', sans-serif" }}>
               <span className="absolute left-0 w-1 h-8 bg-green-300 rounded-r-md"></span>
@@ -37,6 +27,13 @@ const CasinoLiveSection = () => {
               </span>
             </h2>
           </div>
+          <button
+            type="button"
+            onClick={handleViewAll}
+            className="text-sm font-semibold text-green-600 hover:text-green-700 transition-colors"
+          >
+            Xem tất cả
+          </button>
         </div>
 
         {/* Container với background image - Full width như phần trên */}
@@ -54,7 +51,7 @@ const CasinoLiveSection = () => {
         >
           {/* Games Grid - 3 cards - To hơn một chút */}
           <div className="grid grid-cols-3 gap-4 max-w-6xl">
-            {casinoGames.map((game) => (
+            {liveCasinoGames.map((game) => (
               <div
                 key={game.id}
                 onClick={() => handleGameClick(game.id)}

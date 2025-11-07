@@ -256,6 +256,33 @@ const Layout = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleLoginSuccess = (event) => {
+      setIsLoginModalOpen(false);
+      setIsRegisterModalOpen(false);
+      setIsLoggedIn(true);
+
+      const user = event.detail?.user;
+      if (user) {
+        setUserName(user.username || user.name || '');
+        setUserPoints(user.points || 0);
+        try {
+          localStorage.setItem('user', JSON.stringify(user));
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+
+      fetchUserInfo(true);
+    };
+
+    window.addEventListener('userLoginSuccess', handleLoginSuccess);
+
+    return () => {
+      window.removeEventListener('userLoginSuccess', handleLoginSuccess);
+    };
+  }, []);
+
   const handleLogout = () => {
     setShowLogoutModal(true);
   };

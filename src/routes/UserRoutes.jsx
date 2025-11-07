@@ -15,6 +15,7 @@ import MobileRegisterPage from '../features/auth/pages/MobileRegisterPage';
 import ResponsiveAccountWrapper from '../features/wallet/components/ResponsiveAccountWrapper';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 import NotFoundPage from '../components/common/NotFoundPage';
+import LiveCasinoPage from '../features/casino/pages/LiveCasinoPage';
 
 /**
  * User Routes - Used when accessing tathiet168.com
@@ -59,11 +60,7 @@ const UserRoutes = () => {
       {/* Lottery */}
       <Route 
         path="/lottery" 
-        element={
-          <ProtectedRoute>
-            <ResponsiveLotteryWrapper />
-          </ProtectedRoute>
-        } 
+        element={<ResponsiveLotteryWrapper />} 
       />
       <Route 
         path="/lottery/mien-bac" 
@@ -81,6 +78,9 @@ const UserRoutes = () => {
           </ProtectedRoute>
         } 
       />
+
+      {/* Live Casino */}
+      <Route path="/casino/live" element={<LiveCasinoPage />} />
       
       {/* Betting History */}
       <Route 

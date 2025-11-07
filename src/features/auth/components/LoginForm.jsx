@@ -48,16 +48,20 @@ const LoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) => {
       localStorage.setItem('user', JSON.stringify(response.user));
       
       message.success('Đăng nhập thành công!');
-      
+
+      window.dispatchEvent(new CustomEvent('userLoginSuccess', {
+        detail: {
+          user: response.user
+        }
+      }));
+
       setTimeout(() => {
         onClose && onClose();
         
         if (redirectAfterLogin) {
           navigate(redirectAfterLogin);
-        } else {
-          window.location.reload();
         }
-      }, 1000);
+      }, 500);
     } catch (error) {
       message.error(error.message || 'Đăng nhập thất bại!');
     } finally {

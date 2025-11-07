@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
@@ -10,6 +10,34 @@ const LotteryPage = () => {
   const navigate = useNavigate();
   const [selectedRegion, setSelectedRegion] = useState('bac');
   const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const syncLoginState = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    const handleLoginSuccess = (event) => {
+      setIsLoggedIn(true);
+      if (event?.detail?.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(event.detail.user));
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+    };
+
+    syncLoginState();
+    window.addEventListener('userLoginSuccess', handleLoginSuccess);
+    window.addEventListener('storage', syncLoginState);
+
+    return () => {
+      window.removeEventListener('userLoginSuccess', handleLoginSuccess);
+      window.removeEventListener('storage', syncLoginState);
+    };
+  }, []);
 
   // Lấy tỉnh theo ngày được chọn
   const selectedDayProvinces = getProvincesByDay(selectedDay);
@@ -40,16 +68,30 @@ const LotteryPage = () => {
   };
 
   const handleGameSelect = (gameId) => {
+    let redirectPath = '';
+
     if (gameId === 'mien-bac') {
-      navigate('/lottery/mien-bac');
+      redirectPath = '/lottery/mien-bac';
     } else {
       // Tất cả các cổng game Miền Trung và Nam đều vào trang chung với tên cổng
       const allGames = regions.trung.games.concat(regions.nam.games);
-      const game = allGames.find(g => g.id === gameId);
-      if (game) {
-        navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(game.name)}`);
+      const game = allGames.find((g) => g.id === gameId);
+      if (!game) {
+        return;
       }
+      redirectPath = `/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(game.name)}`;
     }
+
+    if (!isLoggedIn) {
+      window.dispatchEvent(
+        new CustomEvent('showLoginModal', {
+          detail: { redirectAfterLogin: redirectPath }
+        })
+      );
+      return;
+    }
+
+    navigate(redirectPath);
   };
 
   return (

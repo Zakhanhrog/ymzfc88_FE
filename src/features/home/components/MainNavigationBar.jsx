@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MainNavigationBar = () => {
@@ -6,6 +6,7 @@ const MainNavigationBar = () => {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState('trang-chu');
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const itemRefs = useRef({});
 
   // Check if notification modal is open
   useEffect(() => {
@@ -49,7 +50,8 @@ const MainNavigationBar = () => {
       hasBadge: true,
       badgeText: 'Live',
       hasFireIcon: false,
-      mobileIcon: '/icondieuhuongmb/imgi_22_casino.avif'
+      mobileIcon: '/icondieuhuongmb/imgi_22_casino.avif',
+      path: '/casino/live'
     },
     { 
       id: 'no-hu', 
@@ -84,7 +86,8 @@ const MainNavigationBar = () => {
       label: 'Lô Đề', 
       hasBadge: false,
       hasFireIcon: false,
-      mobileIcon: '/icondieuhuongmb/imgi_29_lode.avif'
+      mobileIcon: '/icondieuhuongmb/imgi_29_lode.avif',
+      path: '/lottery'
     },
     { 
       id: 'da-ga', 
@@ -113,7 +116,10 @@ const MainNavigationBar = () => {
   const getActiveItemFromPath = () => {
     const path = location.pathname;
     if (path === '/lottery' || path.startsWith('/lottery')) {
-      return 'xo-so';
+      return 'lo-de';
+    }
+    if (path === '/casino/live' || path.startsWith('/casino')) {
+      return 'song-bai';
     }
     if (path === '/') {
       return 'trang-chu';
@@ -134,6 +140,17 @@ const MainNavigationBar = () => {
     }
   };
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    const activeButton = itemRefs.current[activeItem];
+    if (activeButton && typeof activeButton.scrollIntoView === 'function') {
+      activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeItem]);
+
   return (
     <>
       {/* Desktop Navigation */}
@@ -141,7 +158,8 @@ const MainNavigationBar = () => {
         <div className="flex items-center justify-between px-6 py-3 relative z-10">
         {menuItems.map((item) => {
           const isActive = activeItem === item.id 
-            || (item.id === 'xo-so' && (location.pathname === '/lottery' || location.pathname.startsWith('/lottery')))
+            || (item.id === 'lo-de' && (location.pathname === '/lottery' || location.pathname.startsWith('/lottery')))
+            || (item.id === 'song-bai' && (location.pathname === '/casino/live' || location.pathname.startsWith('/casino')))
             || (item.id === 'trang-chu' && location.pathname === '/');
           
           return (
@@ -177,17 +195,25 @@ const MainNavigationBar = () => {
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           {menuItems.filter(item => item.mobileIcon).map((item) => {
           const isActive = activeItem === item.id 
-            || (item.id === 'xo-so' && (location.pathname === '/lottery' || location.pathname.startsWith('/lottery')))
+            || (item.id === 'lo-de' && (location.pathname === '/lottery' || location.pathname.startsWith('/lottery')))
+            || (item.id === 'song-bai' && (location.pathname === '/casino/live' || location.pathname.startsWith('/casino')))
             || (item.id === 'trang-chu' && location.pathname === '/');
           
           return (
             <button
               key={item.id}
+              ref={(el) => {
+                if (el) {
+                  itemRefs.current[item.id] = el;
+                }
+              }}
               onClick={() => handleItemClick(item)}
               className={`
                   relative flex flex-col items-center justify-center px-2 py-1.5 rounded-lg
                   transition-all duration-300 flex-shrink-0 min-w-[60px]
-                  ${isActive ? 'bg-gray-300' : 'bg-gray-200 hover:bg-gray-300'}
+                  ${isActive 
+                    ? 'bg-green-100' 
+                    : 'bg-gray-200 hover:bg-gray-300'}
                 `}
               >
                 {/* Icon */}

@@ -62,10 +62,15 @@ const MobileLoginPage = () => {
       // Get redirect path from location state or default to homepage
       const redirectPath = location.state?.redirectAfterLogin || '/';
       
+      window.dispatchEvent(new CustomEvent('userLoginSuccess', {
+        detail: {
+          user: response.user
+        }
+      }));
+
       setTimeout(() => {
         navigate(redirectPath, { replace: true });
-        window.location.reload();
-      }, 1000);
+      }, 500);
     } catch (error) {
       message.error(error.message || 'Đăng nhập thất bại!');
     } finally {

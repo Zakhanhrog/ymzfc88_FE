@@ -12,6 +12,7 @@ const MobileLotteryPage = () => {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const [mienBacResult, setMienBacResult] = useState(null);
   const [mienBacLoading, setMienBacLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Load Miền Bắc result
   useEffect(() => {
@@ -34,6 +35,33 @@ const MobileLotteryPage = () => {
     };
 
     loadMienBacResult();
+  }, []);
+
+  useEffect(() => {
+    const syncLoginState = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    const handleLoginSuccess = (event) => {
+      setIsLoggedIn(true);
+      if (event?.detail?.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(event.detail.user));
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+    };
+
+    syncLoginState();
+    window.addEventListener('userLoginSuccess', handleLoginSuccess);
+    window.addEventListener('storage', syncLoginState);
+
+    return () => {
+      window.removeEventListener('userLoginSuccess', handleLoginSuccess);
+      window.removeEventListener('storage', syncLoginState);
+    };
   }, []);
 
   // Lấy tỉnh theo ngày được chọn
@@ -103,16 +131,31 @@ const MobileLotteryPage = () => {
   };
 
   const handleGameSelect = (gameId) => {
+    let redirectPath = '';
+
     if (gameId === 'mien-bac') {
-      navigate('/lottery/mien-bac');
+      redirectPath = '/lottery/mien-bac';
     } else {
       // Tất cả các cổng game Miền Trung và Nam đều vào trang chung với tên cổng
       const allGames = regions.trung.games.concat(regions.nam.games);
-      const game = allGames.find(g => g.id === gameId);
-      if (game) {
-        navigate(`/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(game.name)}`);
+      const game = allGames.find((g) => g.id === gameId);
+      if (!game) {
+        return;
       }
+      redirectPath = `/lottery/mien-trung-nam?port=${gameId}&name=${encodeURIComponent(game.name)}`;
     }
+
+    if (!isLoggedIn) {
+      navigate('/login', {
+        replace: false,
+        state: {
+          redirectAfterLogin: redirectPath
+        }
+      });
+      return;
+    }
+
+    navigate(redirectPath);
   };
 
   const handleDaySelect = (dayKey) => {
@@ -125,9 +168,9 @@ const MobileLotteryPage = () => {
     <Layout>
       <div className="md:hidden mt-0">
         {/* Main Navigation Bar */}
-        <div className="mb-4">
-          <MainNavigationBar />
-        </div>
+        <MainNavigationBar />
+        {/* Spacer for fixed mobile navigation */}
+        <div className="h-[72px]" aria-hidden="true"></div>
 
         {/* Breadcrumb */}
         <div className="mb-4 px-2">
