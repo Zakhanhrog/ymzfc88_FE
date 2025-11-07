@@ -238,7 +238,7 @@ const XocDiaGamePage = () => {
         </div>
       </header>
 
-      <main className="px-0 sm:px-2 md:px-3 lg:px-4 py-4 md:py-6">
+      <main className="px-3 sm:px-3 md:px-5 lg:px-8 py-4 md:py-6">
         <div className="max-w-screen-2xl mx-auto space-y-6">
           <div className="grid gap-4 lg:gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
             <section className="relative rounded-2xl bg-gray-900 aspect-[3/2] overflow-hidden shadow-lg">
@@ -280,24 +280,24 @@ const XocDiaGamePage = () => {
             </section>
 
             <div className="grid gap-3 lg:gap-4 content-start">
-              <div className="rounded-2xl border border-[#2f2618]/80 bg-gradient-to-r from-[#3b3224] via-[#2b241b] to-[#201910] px-3 py-2 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-center text-[#f6cf6a] divide-y sm:divide-y-0 sm:divide-x divide-[#4d402c]">
-                  <div className="flex items-center justify-center w-full sm:w-auto px-4 py-2 sm:py-0">
-                    <Icon icon="mdi:casino-chip" className="w-6 h-6 sm:w-7 sm:h-7 text-[#f4c564]" />
+              <div className="rounded-2xl border border-[#1aab6f]/50 bg-gradient-to-r from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-1.5 md:py-2 shadow-sm">
+                <div className="flex flex-row flex-wrap items-center justify-between text-[#e6fff4] divide-y-0 sm:divide-x divide-[#149b60]/60 gap-x-4">
+                  <div className="flex items-center justify-center px-2.5 py-0.5 md:py-1.5 sm:px-4">
+                    <Icon icon="mdi:casino-chip" className="w-6 h-6 sm:w-7 sm:h-7 text-[#2fd683]" />
                   </div>
-                  <div className="flex flex-1 flex-col items-center gap-0.5 px-4 py-2 sm:py-0">
+                  <div className="flex flex-1 flex-col items-center gap-0.5 px-2.5 py-0.5 md:py-1.5 sm:px-4 min-w-[110px]">
                     <span className="text-xs uppercase tracking-wide">Số dư</span>
-                    <span className="text-sm sm:text-base font-semibold text-[#ffbf47]">{balanceDisplay}</span>
+                    <span className="text-base sm:text-lg font-semibold text-[#fef3c7]">{balanceDisplay}</span>
                   </div>
-                  <div className="flex flex-1 flex-col items-center gap-0.5 px-4 py-2 sm:py-0">
+                  <div className="flex flex-1 flex-col items-center gap-0.5 px-2.5 py-0.5 md:py-1.5 sm:px-4 min-w-[110px]">
                     <span className="text-xs uppercase tracking-wide">Tổng cược</span>
-                    <span className="text-sm sm:text-base font-semibold text-[#ffbf47]">{totalBetDisplay}</span>
+                    <span className="text-base sm:text-lg font-semibold text-[#fef3c7]">{totalBetDisplay}</span>
                   </div>
                 </div>
               </div>
 
               <section className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
                   {topQuickBets.map((option) => (
                     <button
                       key={option.id}
@@ -305,25 +305,31 @@ const XocDiaGamePage = () => {
                       onClick={() => setSelectedQuickBet(option.id)}
                       className={`group relative rounded-2xl border px-3 py-2 text-center shadow-sm transition ${
                         selectedQuickBet === option.id
-                          ? 'bg-gradient-to-b from-[#fff7cc] via-[#fde68a] to-[#f97316] shadow-lg'
-                          : 'bg-gradient-to-b from-white via-[#fff8e5] to-[#ffe9b3] hover:shadow-lg'
+                          ? 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
+                          : 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] hover:shadow-lg text-[#0f4c2c]'
                       }`}
                     >
                       {option.pattern.length === 0 ? (
                         <>
                           <div
-                            className={`font-black ${
+                            className={`font-black uppercase tracking-wide ${
                               option.id === 'even'
-                                ? 'text-lg text-[#e02020] group-hover:text-[#ff2f2f] uppercase'
+                                ? 'text-[#b91c1c]'
                                 : option.id === 'odd'
-                                  ? 'text-lg text-[#a16207] uppercase'
-                                  : 'text-sm text-gray-900 group-hover:text-amber-600 uppercase tracking-wide'
-                            }`}
+                                  ? 'text-[#b45309]'
+                                  : selectedQuickBet === option.id
+                                    ? 'text-white'
+                                    : 'text-[#0f4c2c]'
+                            } ${option.id === 'even' || option.id === 'odd' ? 'text-lg' : 'text-sm'}`}
                           >
                             {option.label}
                           </div>
                           <div
-                            className="mt-1 inline-block rounded-lg bg-white/70 px-2 py-0.5 font-semibold uppercase tracking-[0.2em] text-[#b7791f] group-hover:text-[#d69e2e] leading-tight backdrop-blur-sm"
+                            className={`mt-1 inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
+                              selectedQuickBet === option.id
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white/70 text-[#0f4c2c]'
+                            }`}
                             style={{ fontSize: '14px' }}
                           >
                             {option.ratio}
@@ -332,7 +338,11 @@ const XocDiaGamePage = () => {
                       ) : (
                         <>
                           <div
-                            className="inline-block rounded-lg bg-white/70 px-2 py-0.5 font-semibold uppercase tracking-[0.2em] text-[#b7791f] group-hover:text-[#d69e2e] leading-tight backdrop-blur-sm"
+                            className={`inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
+                              selectedQuickBet === option.id
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white/70 text-[#0f4c2c]'
+                            }`}
                             style={{ fontSize: '14px' }}
                           >
                             {option.ratio}
@@ -341,10 +351,10 @@ const XocDiaGamePage = () => {
                             {option.pattern.map((color, index) => (
                               <span
                                 key={`${option.id}-${index}`}
-                                className={`h-4 w-4 rounded-full shadow-inner ${
+                                className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
                                   color === 'white'
-                                    ? 'bg-white border border-gray-200'
-                                    : 'bg-[#e02020] border border-[#c81e1e]'
+                                    ? 'bg-white border-black'
+                                    : 'bg-[#e02020] border-black'
                                 }`}
                               />
                             ))}
@@ -355,7 +365,7 @@ const XocDiaGamePage = () => {
                   ))}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
+                <div className="grid grid-cols-4 gap-2 md:gap-3">
                   {bottomQuickBets.map((option) => (
                     <button
                       key={option.id}
@@ -363,25 +373,25 @@ const XocDiaGamePage = () => {
                       onClick={() => setSelectedQuickBet(option.id)}
                       className={`group relative rounded-2xl border px-3 py-2 text-center shadow-sm transition ${
                         selectedQuickBet === option.id
-                          ? 'bg-gradient-to-b from-[#fff7cc] via-[#fde68a] to-[#f97316] shadow-lg'
-                          : 'bg-gradient-to-b from-white via-[#fff8e5] to-[#ffe9b3] hover:shadow-lg'
+                          ? 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
+                          : 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] hover:shadow-lg text-[#0f4c2c]'
                       }`}
                     >
                       {option.pattern.length === 0 ? (
                         <>
                           <div
-                            className={`font-black ${
-                              option.id === 'even'
-                                ? 'text-lg text-[#e02020] group-hover:text-[#ff2f2f] uppercase'
-                                : option.id === 'odd'
-                                  ? 'text-lg text-[#a16207] uppercase'
-                                  : 'text-sm text-gray-900 group-hover:text-amber-600 uppercase tracking-wide'
-                            }`}
+                            className={`font-black uppercase tracking-wide ${
+                              selectedQuickBet === option.id ? 'text-white' : 'text-[#0f4c2c]'
+                            } ${option.id === 'even' || option.id === 'odd' ? 'text-lg' : 'text-sm'}`}
                           >
                             {option.label}
                           </div>
                           <div
-                            className="mt-1 inline-block rounded-lg bg-white/70 px-2 py-0.5 font-semibold uppercase tracking-[0.2em] text-[#b7791f] group-hover:text-[#d69e2e] leading-tight backdrop-blur-sm"
+                            className={`mt-1 inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
+                              selectedQuickBet === option.id
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white/70 text-[#0f4c2c]'
+                            }`}
                             style={{ fontSize: '14px' }}
                           >
                             {option.ratio}
@@ -390,7 +400,11 @@ const XocDiaGamePage = () => {
                       ) : (
                         <>
                           <div
-                            className="inline-block rounded-lg bg-white/70 px-2 py-0.5 font-semibold uppercase tracking-[0.2em] text-[#b7791f] group-hover:text-[#d69e2e] leading-tight backdrop-blur-sm"
+                            className={`inline-block rounded-lg px-2 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
+                              selectedQuickBet === option.id
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white/70 text-[#0f4c2c]'
+                            }`}
                             style={{ fontSize: '14px' }}
                           >
                             {option.ratio}
@@ -399,10 +413,10 @@ const XocDiaGamePage = () => {
                             {option.pattern.map((color, index) => (
                               <span
                                 key={`${option.id}-${index}`}
-                                className={`h-4 w-4 rounded-full shadow-inner ${
+                                className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
                                   color === 'white'
-                                    ? 'bg-white border border-gray-200'
-                                    : 'bg-[#e02020] border border-[#c81e1e]'
+                                    ? 'bg-white border-black'
+                                    : 'bg-[#e02020] border-black'
                                 }`}
                               />
                             ))}
@@ -413,29 +427,29 @@ const XocDiaGamePage = () => {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-2 md:gap-3 flex-wrap">
                   <input
                     type="number"
-                    className="w-full flex-1 min-w-[140px] rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                    className="flex-1 min-w-[180px] rounded-lg border border-[#19C963]/40 px-3 py-1.5 text-sm focus:border-[#19C963] focus:ring-2 focus:ring-[#19C963]/30 outline-none"
                     placeholder="Nhập số tiền muốn cược"
                   />
-                  <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#3b3224] via-[#2b241b] to-[#201910] text-[#f6cf6a] text-sm font-semibold hover:from-[#4a3a26] hover:via-[#352918] hover:to-[#261c0d] transition shadow">
+                  <button className="shrink-0 px-4 py-2 rounded-lg bg-gradient-to-r from-[#17a76a] to-[#2fd683] text-white text-sm font-semibold hover:from-[#14985e] hover:to-[#29c776] transition shadow-lg shadow-[#16925f]/25">
                     Đặt cược
                   </button>
                 </div>
 
-                <section className="rounded-xl border border-[#2f2618]/60 bg-gradient-to-br from-[#2b241c] via-[#221c15] to-[#1b150f] px-3 py-3 text-[#f6cf6a] shadow-inner space-y-3">
+                <section className="rounded-xl border border-[#1aab6f]/50 bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-3 text-white shadow-inner space-y-3">
                   <header className="flex items-center gap-2 text-xs font-semibold uppercase">
-                    <button className="rounded-lg bg-[#3b3224] px-3 py-1.5 text-[#facc15] shadow">Thống kê 1</button>
-                    <button className="rounded-lg bg-transparent px-3 py-1.5 text-[#cbd5f5] opacity-60">Thống kê 2</button>
+                    <button className="rounded-lg bg-white px-3 py-1.5 text-[#0b2919] shadow">Thống kê 1</button>
+                    <button className="rounded-lg bg-white/10 px-3 py-1.5 text-white/80">Thống kê 2</button>
                   </header>
 
                   <div className="space-y-3">
-                    <div className="rounded-lg border border-[#3f3424] bg-[#1b150f] p-2">
+                    <div className="rounded-lg border border-white/15 bg-white/5 p-2">
                       <div className="grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
                         {statsGrid.map((row, rowIndex) =>
                           row.map((cell, cellIndex) => (
-                            <div key={`cell-${rowIndex}-${cellIndex}`} className="flex h-5 w-full items-center justify-center border border-[#4c4133]">
+                            <div key={`cell-${rowIndex}-${cellIndex}`} className="flex h-5 w-full items-center justify-center border border-white/20">
                               {cell ? (
                                 <span
                                   className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border leading-none ${getChipClasses(cell)}`}
@@ -450,9 +464,9 @@ const XocDiaGamePage = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-[#3f3424] bg-[#1b150f] p-2 space-y-2">
+                    <div className="rounded-lg border border-white/15 bg-white/5 p-2 space-y-2">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-4 w-full overflow-hidden rounded-full bg-[#3f3424] font-semibold tracking-wide">
+                          <div className="relative h-4 w-full overflow-hidden rounded-full bg-white/20 font-semibold tracking-wide">
                             <div
                               className="absolute inset-y-0 left-0 flex items-center justify-center bg-[#ef4444] px-1 text-white"
                               style={{ width: `${statsDistribution[0].value}%` }}
@@ -460,18 +474,18 @@ const XocDiaGamePage = () => {
                               <span style={{ fontSize: '11px', lineHeight: '1.1' }}>{`${statsDistribution[0].value}%`}</span>
                             </div>
                             <div
-                              className="absolute inset-y-0 right-0 flex items-center justify-center bg-white px-1 text-[#1f2937]"
+                              className="absolute inset-y-0 right-0 flex items-center justify-center bg-white px-1 text-[#0f3b20] font-semibold"
                               style={{ width: `${statsDistribution[1].value}%` }}
                             >
                               <span style={{ fontSize: '11px', lineHeight: '1.1' }}>{`${statsDistribution[1].value}%`}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.25em]">
-                            <span className="flex items-center gap-1 text-[#ff5a5a]">
+                            <span className="flex items-center gap-1 text-white">
                               <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
                               <span>Chẵn</span>
                             </span>
-                            <span className="flex items-center gap-1 text-white/90">
+                            <span className="flex items-center gap-1 text-white">
                               <span className="h-2 w-2 rounded-full bg-white" />
                               <span>Lẻ</span>
                             </span>
