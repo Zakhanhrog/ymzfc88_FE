@@ -99,6 +99,11 @@ export const adminMenuItems = [
         label: 'Kết quả game',
       },
       {
+        key: 'xoc-dia-results',
+        icon: 'DotChartOutlined',
+        label: 'Kết quả Xóc Đĩa',
+      },
+      {
         key: 'game-settings',
         icon: 'SettingOutlined',
         label: 'Cài đặt game',

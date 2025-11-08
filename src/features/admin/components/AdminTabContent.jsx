@@ -17,6 +17,7 @@ import AdminSystemSettings from './AdminSystemSettings';
 import AdminNotificationManagement from './AdminNotificationManagement';
 import AdminBetManagement from './AdminBetManagement';
 import AdminLotteryResultManagement from './AdminLotteryResultManagement';
+import AdminXocDiaResultManagement from './AdminXocDiaResultManagement';
 import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
@@ -168,6 +169,13 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Quản lý kết quả xổ số cho từng vùng miền và tỉnh" 
             />
             <AdminLotteryResultManagement />
+          </div>
+        );
+
+      case 'xoc-dia-results':
+        return (
+          <div className="space-y-6">
+            <AdminXocDiaResultManagement />
           </div>
         );
 

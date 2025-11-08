@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
+import { message } from 'antd';
 import pointService from '../../../../services/pointService';
 import xocDiaQuickBetService from '../../../../services/xocDiaQuickBetService';
+import useXocDiaSession from '../../hooks/useXocDiaSession';
+import xocDiaBetService from '../../../../services/xocDiaBetService';
 
 const CACHE_KEY = 'user_info_cache';
 const CACHE_DURATION_MS = 30000;
@@ -92,16 +95,6 @@ const defaultQuickBetConfigs = [
   },
 ];
 
-const COUNTDOWN_DURATION = 30;
-
-const PHASE_SEQUENCE = [
-  { key: 'countdown', durationMs: COUNTDOWN_DURATION * 1000 },
-  { key: 'betting-closed', label: 'Ngưng cược', durationMs: 1500 },
-  { key: 'waiting-result', label: 'Chờ kết quả', durationMs: 3000 },
-  { key: 'show-result', label: 'Trả kết quả', durationMs: 2000 },
-  { key: 'invite-bet', label: 'Mời đặt cược', durationMs: 500 },
-];
-
 const statsHistory = [
   ['4', '1', '2', '3', '2', '1', '1', '2', '1', '2', '2', '1', '2', '1', '2', '3', '2'],
   ['0', '', '1', '', '', '2', '', '1', '', '1', '2', '1', '', '1', '3', '', '2'],
@@ -178,6 +171,13 @@ const formatChipDisplayValue = (value) => {
   }
 
   return value.toLocaleString('vi-VN');
+};
+
+const extractUserName = (data) => {
+  if (!data || typeof data !== 'object') {
+    return '';
+  }
+  return data.username || data.name || data.displayName || '';
 };
 
 const convertConfigToOption = (config) => {
@@ -264,14 +264,18 @@ const XocDiaGamePage = () => {
   const [quickBetOptions, setQuickBetOptions] = useState(defaultQuickBetOptions);
   const [quickBetLoading, setQuickBetLoading] = useState(false);
   const [quickBetError, setQuickBetError] = useState(null);
-  const [countdownSeconds, setCountdownSeconds] = useState(COUNTDOWN_DURATION);
-  const [countdownAngle, setCountdownAngle] = useState(360);
-  const countdownResetRef = useRef(Date.now() + COUNTDOWN_DURATION * 1000);
-  const countdownAngleRef = useRef(360);
-  const [phaseIndex, setPhaseIndex] = useState(0);
-  const currentPhase = PHASE_SEQUENCE[phaseIndex];
+  const {
+    sessionStatus,
+    timer: { phaseKey, phaseLabel, countdownSeconds, countdownAngle },
+    resultCode: sessionResultCode,
+    sessionId,
+  } = useXocDiaSession({ pollIntervalMs: 1000 });
+  const [displayedResult, setDisplayedResult] = useState(null);
+  const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [lastPlacedBets, setLastPlacedBets] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
   const [loadingPoints, setLoadingPoints] = useState(true);
+  const [userName, setUserName] = useState('');
   const [selectedChipValue, setSelectedChipValue] = useState(null);
   const [selectedChipLabel, setSelectedChipLabel] = useState(null);
   const [activeStatsTab, setActiveStatsTab] = useState('1');
@@ -313,7 +317,42 @@ const XocDiaGamePage = () => {
     ],
     []
   );
-  const totalBetDisplay = '0₫';
+  const resultTimeoutRef = useRef(null);
+  const allowedPatternBetCodes = useMemo(
+    () =>
+      new Set(
+        quickBetOptions
+          .filter((option) => Array.isArray(option.pattern) && option.pattern.length > 0)
+          .map((option) => option.code)
+      ),
+    [quickBetOptions]
+  );
+  const placeableBets = useMemo(
+    () =>
+      Object.entries(selectedQuickBets).filter(([code, bet]) => {
+        const value = bet?.totalValue ?? bet?.value ?? 0;
+        return allowedPatternBetCodes.has(code) && value > 0;
+      }),
+    [allowedPatternBetCodes, selectedQuickBets]
+  );
+  const totalBetValue = useMemo(
+    () =>
+      placeableBets.reduce((sum, [, bet]) => {
+        const value = bet?.totalValue ?? bet?.value ?? 0;
+        return sum + value;
+      }, 0),
+    [placeableBets]
+  );
+  const totalBetPointsDisplay = useMemo(
+    () => `${Number(totalBetValue || 0).toLocaleString('vi-VN')} điểm`,
+    [totalBetValue]
+  );
+  const unsupportedSelectedCodes = useMemo(
+    () =>
+      Object.keys(selectedQuickBets).filter((code) => !allowedPatternBetCodes.has(code)),
+    [allowedPatternBetCodes, selectedQuickBets]
+  );
+  const hasUnsupportedSelection = unsupportedSelectedCodes.length > 0;
   const styledPlainCodes = new Set(['even', 'odd', 'three-white', 'three-red']);
   const findOptionByCode = (code) => quickBetOptions.find((option) => option.code === code);
   const columnCodes = {
@@ -354,6 +393,42 @@ const XocDiaGamePage = () => {
     right: fillColumn(rightOptions, 3),
   };
 
+  const isSessionRunning = sessionStatus === 'RUNNING';
+  const isCountdownPhase = isSessionRunning && phaseKey === 'countdown';
+  const currentPhaseLabel = isSessionRunning ? phaseLabel ?? '' : 'Chờ phiên mới';
+  const bettingLockedPhases = ['betting-closed', 'waiting-result', 'show-result', 'payout', 'invite-bet'];
+  const isBettingLocked = !isSessionRunning || bettingLockedPhases.includes(phaseKey);
+
+  const placeableBetDetails = useMemo(
+    () =>
+      placeableBets.map(([code, bet]) => {
+        const option =
+          quickBetOptions.find((item) => item.code === code) || defaultQuickBetOptionMap.get(code);
+        return {
+          code,
+          label: option?.label ?? option?.name ?? code,
+          amount: bet?.totalValue ?? bet?.value ?? 0,
+        };
+      }),
+    [defaultQuickBetOptionMap, placeableBets, quickBetOptions]
+  );
+
+  const placeableBetCount = placeableBets.length;
+  const disablePlaceButton = isBettingLocked || isPlacingBet || placeableBetCount === 0;
+
+  useEffect(() => {
+    setSelectedQuickBets((prev) => {
+      const entries = Object.entries(prev).filter(([code]) => allowedPatternBetCodes.has(code));
+      if (entries.length === Object.keys(prev).length) {
+        return prev;
+      }
+      return entries.reduce((acc, [code, bet]) => {
+        acc[code] = bet;
+        return acc;
+      }, {});
+    });
+  }, [allowedPatternBetCodes]);
+
   const findChipLabelByValue = useCallback(
     (value) => {
       if (value == null) {
@@ -374,7 +449,18 @@ const XocDiaGamePage = () => {
 
   const handleQuickBetSelect = useCallback(
     (option) => {
+      if (isBettingLocked) {
+        message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
+        return;
+      }
+
+      if (!allowedPatternBetCodes.has(option.code)) {
+        message.info('Loại cược này sẽ được mở trong phiên bản tiếp theo.');
+        return;
+      }
+
       if (!selectedChipValue) {
+        message.warning('Vui lòng chọn mệnh giá phỉnh trước khi đặt cược');
         return;
       }
 
@@ -396,71 +482,8 @@ const XocDiaGamePage = () => {
         };
       });
     },
-    [findChipLabelByValue, selectedChipLabel, selectedChipValue]
+    [allowedPatternBetCodes, findChipLabelByValue, isBettingLocked, selectedChipLabel, selectedChipValue]
   );
-
-  useEffect(() => {
-    if (currentPhase.key !== 'countdown') {
-      return undefined;
-    }
-
-    setCountdownSeconds(COUNTDOWN_DURATION);
-
-    const timer = setInterval(() => {
-      setCountdownSeconds((prev) => {
-        if (prev <= 1) {
-          setPhaseIndex((prevIndex) => (prevIndex + 1) % PHASE_SEQUENCE.length);
-          return COUNTDOWN_DURATION;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [currentPhase.key]);
-
-  useEffect(() => {
-    if (currentPhase.key === 'countdown') {
-      return undefined;
-    }
-
-    const timeout = setTimeout(() => {
-      setPhaseIndex((prevIndex) => (prevIndex + 1) % PHASE_SEQUENCE.length);
-    }, currentPhase.durationMs);
-
-    return () => clearTimeout(timeout);
-  }, [currentPhase.key, currentPhase.durationMs]);
-
-  useEffect(() => {
-    if (currentPhase.key !== 'countdown') {
-      setCountdownAngle(0);
-      return undefined;
-    }
-
-    countdownResetRef.current = Date.now() + COUNTDOWN_DURATION * 1000;
-    countdownAngleRef.current = 360;
-    setCountdownAngle(360);
-
-    let animationFrameId;
-
-    const updateAngle = () => {
-      const now = Date.now();
-      const remainingMs = countdownResetRef.current - now;
-      const progress = Math.max(0, Math.min(1, remainingMs / (COUNTDOWN_DURATION * 1000)));
-      const angle = progress * 360;
-
-      if (Math.abs(angle - countdownAngleRef.current) > 0.5) {
-        countdownAngleRef.current = angle;
-        setCountdownAngle(angle);
-      }
-
-      animationFrameId = requestAnimationFrame(updateAngle);
-    };
-
-    animationFrameId = requestAnimationFrame(updateAngle);
-
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [currentPhase.key]);
 
   useEffect(() => {
     let isMounted = true;
@@ -494,22 +517,23 @@ const XocDiaGamePage = () => {
 
     fetchQuickBets();
 
-    const updateStoredUserData = (points) => {
+    const updateStoredUserData = (partialData = {}) => {
       try {
         const storedUser = localStorage.getItem('user');
-        const userData = storedUser ? JSON.parse(storedUser) : {};
-        userData.points = points;
-        localStorage.setItem('user', JSON.stringify(userData));
+        const existingUser = storedUser ? JSON.parse(storedUser) : {};
+        const mergedUser = { ...existingUser, ...partialData };
+        localStorage.setItem('user', JSON.stringify(mergedUser));
         sessionStorage.setItem(
           CACHE_KEY,
-          JSON.stringify({ data: userData, timestamp: Date.now() })
+          JSON.stringify({ data: mergedUser, timestamp: Date.now() })
         );
+        return mergedUser;
       } catch (error) {
-        // Ignore storage errors silently
+        return null;
       }
     };
 
-    const loadPointsFromCache = () => {
+    const loadUserDataFromCache = () => {
       try {
         const cached = sessionStorage.getItem(CACHE_KEY);
         if (!cached) return null;
@@ -518,37 +542,45 @@ const XocDiaGamePage = () => {
         if (Date.now() - timestamp > CACHE_DURATION_MS) {
           return null;
         }
-        if (data && typeof data.points === 'number') {
-          return data.points;
-        }
-        return null;
+        return data && typeof data === 'object' ? data : null;
       } catch (error) {
         return null;
       }
     };
 
-    const loadPointsFromLocalStorage = () => {
+    const loadUserDataFromLocalStorage = () => {
       try {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           const userData = JSON.parse(storedUser);
-          if (typeof userData.points === 'number') {
-            return userData.points;
-          }
+          return userData && typeof userData === 'object' ? userData : null;
         }
       } catch (error) {
         // Ignore parse errors
       }
-      return 0;
+      return null;
+    };
+
+    const updateUserStateFromData = (data) => {
+      if (!isMounted || !data) {
+        return;
+      }
+      if (typeof data.points === 'number') {
+        setUserPoints(data.points);
+      }
+      const name = extractUserName(data);
+      if (name) {
+        setUserName(name);
+      }
     };
 
     const fetchPoints = async () => {
       if (!isMounted) return;
       setLoadingPoints(true);
 
-      const cachedPoints = loadPointsFromCache();
-      if (cachedPoints !== null) {
-        setUserPoints(cachedPoints);
+      const cachedData = loadUserDataFromCache();
+      if (cachedData) {
+        updateUserStateFromData(cachedData);
         setLoadingPoints(false);
         return;
       }
@@ -556,9 +588,14 @@ const XocDiaGamePage = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          const pointsFromStorage = loadPointsFromLocalStorage();
+          const userData = loadUserDataFromLocalStorage();
+          if (userData) {
+            updateUserStateFromData(userData);
+          } else {
+            setUserPoints(0);
+            setUserName('');
+          }
           if (isMounted) {
-            setUserPoints(pointsFromStorage);
             setLoadingPoints(false);
           }
           return;
@@ -569,16 +606,34 @@ const XocDiaGamePage = () => {
 
         if (response?.success) {
           const points = response.data?.totalPoints ?? response.data?.points ?? 0;
+          const mergedUser = updateStoredUserData({ points });
           setUserPoints(points);
-          updateStoredUserData(points);
+          if (mergedUser) {
+            updateUserStateFromData(mergedUser);
+          } else {
+            const localUser = loadUserDataFromLocalStorage();
+            if (localUser) {
+              updateUserStateFromData({ ...localUser, points });
+            }
+          }
         } else {
-          const pointsFromStorage = loadPointsFromLocalStorage();
-          setUserPoints(pointsFromStorage);
+          const userData = loadUserDataFromLocalStorage();
+          if (userData) {
+            updateUserStateFromData(userData);
+          } else {
+            setUserPoints(0);
+            setUserName('');
+          }
         }
       } catch (error) {
         if (!isMounted) return;
-        const pointsFromStorage = loadPointsFromLocalStorage();
-        setUserPoints(pointsFromStorage);
+        const userData = loadUserDataFromLocalStorage();
+        if (userData) {
+          updateUserStateFromData(userData);
+        } else {
+          setUserPoints(0);
+          setUserName('');
+        }
       } finally {
         if (isMounted) {
           setLoadingPoints(false);
@@ -595,14 +650,58 @@ const XocDiaGamePage = () => {
 
   const balanceDisplay = loadingPoints
     ? 'Đang tải...'
-    : `${Number(userPoints || 0).toLocaleString('vi-VN')}₫`;
-
-  const isCountdownPhase = currentPhase.key === 'countdown';
-  const currentPhaseLabel = currentPhase.label ?? '';
+    : `${Number(userPoints || 0).toLocaleString('vi-VN')} điểm`;
 
   const countdownCircleStyle = {
     background: `conic-gradient(#ef4444 ${countdownAngle}deg, #3b0f0f ${countdownAngle}deg)`,
   };
+
+  const activeResultOption = useMemo(() => {
+    if (!sessionResultCode) {
+      return null;
+    }
+    return (
+      quickBetOptions.find((option) => option.code === sessionResultCode) ||
+      defaultQuickBetOptionMap.get(sessionResultCode) ||
+      null
+    );
+  }, [sessionResultCode, quickBetOptions, defaultQuickBetOptionMap]);
+
+  const shouldShowResultOverlay =
+    isSessionRunning &&
+    activeResultOption &&
+    Array.isArray(activeResultOption.pattern) &&
+    activeResultOption.pattern.length > 0 &&
+    ['show-result', 'payout', 'invite-bet'].includes(phaseKey);
+
+  useEffect(() => {
+    if (shouldShowResultOverlay && activeResultOption) {
+      if (resultTimeoutRef.current) {
+        clearTimeout(resultTimeoutRef.current);
+        resultTimeoutRef.current = null;
+      }
+      setDisplayedResult(activeResultOption);
+      return;
+    }
+
+    if (!shouldShowResultOverlay && displayedResult) {
+      if (resultTimeoutRef.current) {
+        clearTimeout(resultTimeoutRef.current);
+      }
+      resultTimeoutRef.current = setTimeout(() => {
+        setDisplayedResult(null);
+        resultTimeoutRef.current = null;
+      }, 500);
+    }
+  }, [shouldShowResultOverlay, activeResultOption, displayedResult]);
+
+  useEffect(() => {
+    return () => {
+      if (resultTimeoutRef.current) {
+        clearTimeout(resultTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const flatStats = statsHistory.flat();
   const columns = 17;
@@ -668,17 +767,32 @@ const XocDiaGamePage = () => {
       selectedBet?.label ?? formatChipDisplayValue(selectedBet?.value);
 
     const isCentralLabel = styledPlainCodes.has(option.code);
+    const isPatternBet = Array.isArray(option.pattern) && option.pattern.length > 0;
+    const isDisabled = isBettingLocked || (!isPatternBet && !allowedPatternBetCodes.has(option.code));
+    const isComingSoon = !isPatternBet;
+    const baseClass =
+      'group relative flex h-full w-full flex-col items-center justify-center rounded-xl border px-3 pt-3 pb-1.5 sm:pt-[13px] sm:pb-[8px] text-center shadow-sm transition';
+    const variantClass = isDisabled
+      ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+      : isSelected
+      ? 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] text-[#0f4c2c]'
+      : 'border-[#3abf86] bg-white text-[#0f4c2c] shadow hover:border-[#f5c453] hover:shadow-md';
+
+    const handleButtonClick = () => {
+      if (!isPatternBet) {
+        message.info('Cược Tài/Xỉu/Chẵn/Lẻ sẽ được hỗ trợ trong bản cập nhật tiếp theo.');
+        return;
+      }
+      handleQuickBetSelect(option);
+    };
 
     return (
       <button
         key={option.code}
         type="button"
-        onClick={() => handleQuickBetSelect(option)}
-        className={`group relative flex h-full w-full flex-col items-center justify-center rounded-xl border px-3 pt-3 pb-1.5 sm:pt-[13px] sm:pb-[8px] text-center shadow-sm transition ${
-          isSelected
-            ? 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] text-[#0f4c2c]'
-            : 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
-        }`}
+        onClick={handleButtonClick}
+        aria-disabled={isDisabled}
+        className={`${baseClass} ${variantClass}`}
       >
         {isSelected && displayLabel ? (
           <span
@@ -712,6 +826,11 @@ const XocDiaGamePage = () => {
             >
               {option.ratio}
             </div>
+            {isComingSoon ? (
+              <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.3em] text-gray-400">
+                Sắp ra mắt
+              </span>
+            ) : null}
           </>
         ) : (
           <>
@@ -804,8 +923,24 @@ const XocDiaGamePage = () => {
           return next;
         });
         break;
+      case 'repeat':
+        if (!lastPlacedBets || Object.keys(lastPlacedBets).length === 0) {
+          message.info('Chưa có lịch sử cược gần nhất để lặp lại');
+          return;
+        }
+        if (isBettingLocked) {
+          message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
+          return;
+        }
+        setSelectedQuickBets(
+          Object.entries(lastPlacedBets).reduce((acc, [code, bet]) => {
+            acc[code] = { ...bet };
+            return acc;
+          }, {})
+        );
+        break;
       default:
-        console.log(`Quick action selected: ${action}`);
+        break;
     }
   };
 
@@ -986,6 +1121,75 @@ const XocDiaGamePage = () => {
     </div>
   );
 
+  const resultOverlay = displayedResult ? (
+    <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-6 py-4 backdrop-blur-md shadow-[0_12px_35px_rgba(15,23,42,0.35)]">
+        <div className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Kết quả</div>
+        <div className="mt-2 text-lg font-bold uppercase tracking-[0.15em] text-white">
+          {displayedResult.label}
+        </div>
+        <div className="mt-3 flex flex-col items-center justify-center gap-1.5">
+              {chunkPattern(displayedResult.pattern).map((row, rowIndex) => (
+            <div key={`result-row-${rowIndex}`} className="flex items-center justify-center gap-2">
+              {row.map((chip, chipIndex) => (
+                <span
+                  key={`result-chip-${rowIndex}-${chipIndex}`}
+                  className={`h-5 w-5 rounded-full border-2 shadow-lg ${
+                    chip === 'white' ? 'border-white bg-white' : 'border-[#ef4444] bg-[#ef4444]'
+                  }`}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  const handlePlaceBet = useCallback(async () => {
+    if (disablePlaceButton) {
+      return;
+    }
+
+    setIsPlacingBet(true);
+    try {
+      const payload = {
+        sessionId: sessionId,
+        bets: placeableBetDetails.map((item) => ({
+          code: item.code,
+          amount: item.amount,
+        })),
+      };
+
+      const response = await xocDiaBetService.placeBets(payload);
+      if (response.success) {
+        message.success(response.message || 'Đặt cược thành công');
+        setLastPlacedBets(
+          placeableBetDetails.reduce((acc, item) => {
+            acc[item.code] = selectedQuickBets[item.code];
+            return acc;
+          }, {})
+        );
+        setSelectedQuickBets({});
+        if (response.data?.balanceAfter != null) {
+          setUserPoints(response.data.balanceAfter);
+        } else {
+          await pointService.getMyPoints().then((res) => {
+            if (res?.success) {
+              setUserPoints(res.data?.totalPoints ?? res.data?.points ?? 0);
+            }
+          });
+        }
+      } else {
+        message.error(response.message || 'Không thể đặt cược');
+      }
+    } catch (error) {
+      message.error(error?.message || 'Không thể đặt cược');
+    } finally {
+      setIsPlacingBet(false);
+    }
+  }, [disablePlaceButton, placeableBetDetails, selectedQuickBets, sessionId]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 z-30">
@@ -1000,13 +1204,20 @@ const XocDiaGamePage = () => {
           <h1 className="text-lg md:text-xl font-semibold text-gray-900">{gameName}</h1>
         </div>
 
-        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500">
-          <span className="uppercase text-red-600 font-semibold flex items-center gap-1">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            Live Casino
-          </span>
-          <span className="hidden md:inline">•</span>
-          <span>Dealer trực tiếp</span>
+        <div className="flex items-center">
+          <div className="flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 text-left">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gray-200 text-gray-600">
+              <Icon icon="mdi:account" className="h-4 w-4" />
+            </span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-xs font-semibold text-gray-800 truncate max-w-[110px]">
+                {userName || 'Người chơi'}
+              </span>
+              <span className="text-xs font-semibold text-amber-500">
+                {balanceDisplay}
+              </span>
+            </span>
+          </div>
         </div>
       </header>
 
@@ -1049,6 +1260,7 @@ const XocDiaGamePage = () => {
                   </div>
                 </div>
               </div>
+              {resultOverlay}
               <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20">
                 <div className="flex items-center px-1 py-1">
                   {countdownDisplay}
@@ -1173,6 +1385,40 @@ const XocDiaGamePage = () => {
                     <span>{button.label}</span>
                   </button>
                 ))}
+              </div>
+
+              <div className="flex flex-col gap-2 rounded-xl border border-emerald-200 bg-white/70 p-3 text-sm text-emerald-900">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold uppercase tracking-wide">Tổng cược</span>
+                  <span className="text-base font-bold text-emerald-600">{totalBetPointsDisplay}</span>
+                </div>
+                {placeableBetDetails.length > 0 ? (
+                  <ul className="space-y-1">
+                    {placeableBetDetails.map((bet) => (
+                      <li key={bet.code} className="flex items-center justify-between text-xs">
+                        <span className="font-medium uppercase text-gray-600">{bet.label}</span>
+                        <span className="font-semibold text-emerald-700">
+                          {Number(bet.amount).toLocaleString('vi-VN')} điểm
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-xs text-gray-500">Chưa chọn cược hợp lệ</span>
+                )}
+                {hasUnsupportedSelection ? (
+                  <p className="text-xs font-medium text-amber-600">
+                    Một số cược (Chẵn/Lẻ/Tài/Xỉu) chưa được hỗ trợ đặt cược tự động.
+                  </p>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={handlePlaceBet}
+                  disabled={disablePlaceButton}
+                  className="mt-1 flex h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold uppercase tracking-wide text-white transition hover:from-emerald-600 hover:to-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                >
+                  {isPlacingBet ? 'Đang đặt...' : 'Đặt cược'}
+                </button>
               </div>
 
                 <section className="rounded-xl border border-[#1aab6f]/50 bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-3 text-white shadow-inner space-y-3">

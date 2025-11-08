@@ -109,7 +109,14 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods' || tab === 'points-management') {
       return ['financial-management'];
     }
-    if (tab === 'games' || tab === 'bet-management' || tab === 'game-results' || tab === 'game-settings' || tab === 'betting-odds') {
+    if (
+      tab === 'games' ||
+      tab === 'bet-management' ||
+      tab === 'game-results' ||
+      tab === 'xoc-dia-results' ||
+      tab === 'game-settings' ||
+      tab === 'betting-odds'
+    ) {
       return ['game-management'];
     }
     if (tab === 'banners' || tab === 'news' || tab === 'notifications' || tab === 'marquee-notifications') {
@@ -141,6 +148,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'games': () => navigate(getAdminPath('/dashboard?tab=games')),
       'bet-management': () => navigate(getAdminPath('/dashboard?tab=bet-management')),
       'game-results': () => navigate(getAdminPath('/dashboard?tab=game-results')),
+      'xoc-dia-results': () => navigate(getAdminPath('/dashboard?tab=xoc-dia-results')),
       'game-settings': () => navigate(getAdminPath('/dashboard?tab=game-settings')),
       'betting-odds': () => navigate(getAdminPath('/betting-odds')),
       'xoc-dia-quick-bets': () => navigate(getAdminPath('/xoc-dia/quick-bets')),
