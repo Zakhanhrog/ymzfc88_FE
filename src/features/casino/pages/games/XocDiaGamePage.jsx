@@ -106,17 +106,6 @@ const statsHistory = [
   ['4', '1', '2', '3', '2', '1', '1', '2', '1', '2', '2', '1', '2', '1', '2', '3', '2'],
   ['0', '', '1', '', '', '2', '', '1', '', '1', '2', '1', '', '1', '3', '', '2'],
 ];
-const statsDistribution = [
-  { label: 'Chẵn', value: 44, color: '#ef4444', chips: 6 },
-  { label: 'Lẻ', value: 56, color: '#f9fafb', chips: 5 },
-];
-const statsBreakdown = [
-  { label: '4 trắng', value: 3, chips: ['white', 'white', 'white', 'white'] },
-  { label: '3 trắng 1 đỏ', value: 34, chips: ['white', 'white', 'white', 'red'] },
-  { label: '3 đỏ 1 trắng', value: 38, chips: ['red', 'red', 'red', 'white'] },
-  { label: '4 đỏ', value: 22, chips: ['red', 'red', 'red', 'red'] },
-  { label: '1 đỏ 3 trắng', value: 3, chips: ['red', 'white', 'white', 'white'] },
-];
 const statsPatternGridData = [
   ['T', 'X', 'T', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
   ['X', '2', 'X', 'X', '', '', '', '', '', '', '', '', '', '', '', '', ''],
@@ -169,6 +158,26 @@ const formatRatioLabel = (value) => {
     ? numeric.toFixed(0)
     : numeric.toFixed(2).replace(/\.?0+$/, '');
   return `1 : ${formatted}`;
+};
+
+const formatChipDisplayValue = (value) => {
+  if (value == null) {
+    return '';
+  }
+
+  if (value >= 1000000) {
+    const millions = value / 1000000;
+    const formatted = millions.toFixed(3).replace(/\.?0+$/, '');
+    return `${formatted}M`;
+  }
+
+  if (value >= 1000) {
+    const thousands = value / 1000;
+    const formatted = thousands.toFixed(3).replace(/\.?0+$/, '');
+    return `${formatted}K`;
+  }
+
+  return value.toLocaleString('vi-VN');
 };
 
 const convertConfigToOption = (config) => {
@@ -240,7 +249,7 @@ const normalizeQuickBetOptions = (options, defaultOptionMap) => {
 
 const XocDiaGamePage = () => {
   const navigate = useNavigate();
-  const [selectedQuickBet, setSelectedQuickBet] = useState(null);
+  const [selectedQuickBets, setSelectedQuickBets] = useState({});
   const defaultQuickBetOptions = useMemo(
     () => defaultQuickBetConfigs.map(convertConfigToOption).sort((a, b) => a.displayOrder - b.displayOrder),
     []
@@ -264,6 +273,7 @@ const XocDiaGamePage = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [loadingPoints, setLoadingPoints] = useState(true);
   const [selectedChipValue, setSelectedChipValue] = useState(null);
+  const [selectedChipLabel, setSelectedChipLabel] = useState(null);
   const [activeStatsTab, setActiveStatsTab] = useState('1');
   const chipScrollRef = useRef(null);
   const [chipScrollState, setChipScrollState] = useState({ canScrollLeft: false, canScrollRight: false });
@@ -343,6 +353,51 @@ const XocDiaGamePage = () => {
     middleRight: fillColumn(middleRightOptions, 2),
     right: fillColumn(rightOptions, 3),
   };
+
+  const findChipLabelByValue = useCallback(
+    (value) => {
+      if (value == null) {
+        return '';
+      }
+      const fromDisplayed = chipOptions.find((chip) => chip.value === value);
+      if (fromDisplayed) {
+        return fromDisplayed.label;
+      }
+      const fromAvailable = availableChipOptions.find((chip) => chip.value === value);
+      if (fromAvailable) {
+        return fromAvailable.label;
+      }
+      return formatChipDisplayValue(value);
+    },
+    [availableChipOptions, chipOptions]
+  );
+
+  const handleQuickBetSelect = useCallback(
+    (option) => {
+      if (!selectedChipValue) {
+        return;
+      }
+
+      setSelectedQuickBets((prev) => {
+        const existing = prev[option.code];
+        const previousTotal = existing?.value ?? existing?.totalValue ?? 0;
+        const newTotal = previousTotal + selectedChipValue;
+        const chipLabel = selectedChipLabel ?? findChipLabelByValue(selectedChipValue);
+
+        return {
+          ...prev,
+          [option.code]: {
+            value: newTotal,
+            totalValue: newTotal,
+            label: formatChipDisplayValue(newTotal),
+            lastChipValue: selectedChipValue,
+            lastChipLabel: chipLabel,
+          },
+        };
+      });
+    },
+    [findChipLabelByValue, selectedChipLabel, selectedChipValue]
+  );
 
   useEffect(() => {
     if (currentPhase.key !== 'countdown') {
@@ -606,63 +661,87 @@ const XocDiaGamePage = () => {
     return chunks;
   };
 
-  const renderQuickBetButton = (option) => (
-    <button
-      key={option.code}
-      type="button"
-      onClick={() => setSelectedQuickBet(option.code)}
-      className={`group relative rounded-xl border px-3 py-2 sm:py-[8px] text-center shadow-sm transition ${
-        selectedQuickBet === option.code
-          ? 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] text-[#0f4c2c]'
-          : 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
-      } w-full h-full flex flex-col items-center justify-center`}
-    >
-      {option.pattern.length === 0 ? (
-        <>
-          <div
-            className={`font-black uppercase tracking-wide ${
-              styledPlainCodes.has(option.code) ? 'text-[#111827]' : selectedQuickBet === option.code ? 'text-[#0f4c2c]' : 'text-[#0f4c2c]'
-            } ${styledPlainCodes.has(option.code) ? 'text-lg' : 'text-sm'}`}
-          >
-            {option.label}
-          </div>
-          <div
-            className={`mt-0.5 inline-block rounded-md px-1 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-              selectedQuickBet === option.code ? 'bg-white text-[#111827]' : 'bg-white/70 text-[#0f4c2c]'
+  const renderQuickBetButton = (option) => {
+    const selectedBet = selectedQuickBets[option.code];
+    const isSelected = Boolean(selectedBet);
+    const displayLabel =
+      selectedBet?.label ?? formatChipDisplayValue(selectedBet?.value);
+
+    const isCentralLabel = styledPlainCodes.has(option.code);
+
+    return (
+      <button
+        key={option.code}
+        type="button"
+        onClick={() => handleQuickBetSelect(option)}
+        className={`group relative flex h-full w-full flex-col items-center justify-center rounded-xl border px-3 pt-3 pb-1.5 sm:pt-[13px] sm:pb-[8px] text-center shadow-sm transition ${
+          isSelected
+            ? 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] text-[#0f4c2c]'
+            : 'border-[#f5c34a] bg-gradient-to-b from-[#1c9c65] via-[#25c37f] to-[#3adf99] text-white shadow-lg'
+        }`}
+      >
+        {isSelected && displayLabel ? (
+          <span
+            className={`absolute z-10 rounded-md bg-[#f5c453] px-1.5 py-0.5 font-semibold uppercase tracking-wide text-[#0f4c2c] leading-none shadow-md ${
+              isCentralLabel
+                ? 'left-1/2 top-1 -translate-x-1/2 px-2 py-[3px] text-base sm:text-lg'
+                : 'left-1 top-1 text-sm'
             }`}
-            style={{ fontSize: '12px' }}
           >
-            {option.ratio}
-          </div>
-        </>
-      ) : (
-        <>
-          <div
-            className={`inline-block rounded-md px-1 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-              selectedQuickBet === option.code ? 'bg-white text-[#111827]' : 'bg-white/70 text-[#0f4c2c]'
-            }`}
-            style={{ fontSize: '12px' }}
-          >
-            {option.ratio}
-          </div>
-          <div className="mt-0.5 flex flex-col items-center justify-center gap-1">
-            {chunkPattern(option.pattern).map((row, rowIndex) => (
-              <div key={`${option.code}-row-${rowIndex}`} className="flex items-center justify-center gap-1">
-                {row.map((color, index) => (
-                  <span
-                    key={`${option.code}-${rowIndex}-${index}`}
-                    className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
-                      color === 'white' ? 'bg-white border-black' : 'bg-[#e02020] border-black'
-                    }`}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </button>
-  );
+            {displayLabel}
+          </span>
+        ) : null}
+        {option.pattern.length === 0 ? (
+          <>
+            <div
+              className={`font-black uppercase tracking-wide ${
+                styledPlainCodes.has(option.code)
+                  ? 'text-[#111827]'
+                  : isSelected
+                  ? 'text-[#0f4c2c]'
+                  : 'text-[#0f4c2c]'
+              } ${styledPlainCodes.has(option.code) ? 'text-lg' : 'text-sm'}`}
+            >
+              {option.label}
+            </div>
+            <div
+              className={`mt-0.5 inline-block rounded-md px-1 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
+                isSelected ? 'bg-white text-[#111827]' : 'bg-white/70 text-[#0f4c2c]'
+              }`}
+              style={{ fontSize: '12px' }}
+            >
+              {option.ratio}
+            </div>
+          </>
+        ) : (
+          <>
+            <div
+              className={`inline-block rounded-md px-1 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
+                isSelected ? 'bg-white text-[#111827]' : 'bg-white/70 text-[#0f4c2c]'
+              }`}
+              style={{ fontSize: '12px' }}
+            >
+              {option.ratio}
+            </div>
+            <div className="mt-2 flex flex-col items-center justify-center gap-1">
+              {chunkPattern(option.pattern).map((row, rowIndex) => (
+                <div key={`${option.code}-row-${rowIndex}`} className="flex items-center justify-center gap-1">
+                  {row.map((color, index) => (
+                    <span
+                      key={`${option.code}-${rowIndex}-${index}`}
+                      className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
+                        color === 'white' ? 'bg-white border-black' : 'bg-[#e02020] border-black'
+                      }`}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </button>
+    );
+  };
 
   const handleOpenCustomChipModal = () => {
     setCustomChipValue('');
@@ -709,7 +788,25 @@ const XocDiaGamePage = () => {
   };
 
   const handleQuickAction = (action) => {
-    console.log(`Quick action selected: ${action}`);
+    switch (action) {
+      case 'clear-all':
+        setSelectedQuickBets({});
+        break;
+      case 'clear':
+        setSelectedQuickBets((prev) => {
+          const entries = Object.entries(prev);
+          if (entries.length === 0) {
+            return prev;
+          }
+          const next = { ...prev };
+          const lastKey = entries[entries.length - 1][0];
+          delete next[lastKey];
+          return next;
+        });
+        break;
+      default:
+        console.log(`Quick action selected: ${action}`);
+    }
   };
 
   const handleCustomChipSubmit = (event) => {
@@ -770,13 +867,21 @@ const XocDiaGamePage = () => {
     setCustomChipSelections(new Set(newOrder.map((chip) => chip.label)));
     if (label && value !== null) {
       setSelectedChipValue(value);
+      setSelectedChipLabel(label);
     } else if (newOrder.length > 0) {
       const stillSelected = newOrder.some((chip) => chip.value === selectedChipValue);
       if (!stillSelected) {
         setSelectedChipValue(newOrder[0].value);
+        setSelectedChipLabel(newOrder[0].label);
+      } else {
+        const currentSelection = newOrder.find((chip) => chip.value === selectedChipValue);
+        if (currentSelection) {
+          setSelectedChipLabel(currentSelection.label);
+        }
       }
     } else {
       setSelectedChipValue(null);
+      setSelectedChipLabel(null);
     }
     setIsCustomChipModalOpen(false);
     setTimeout(() => {
@@ -852,7 +957,15 @@ const XocDiaGamePage = () => {
   };
 
   const handleQuickChipSelect = (chipValue) => {
+    if (chipValue == null) {
+      return;
+    }
+    const label =
+      chipOptions.find((chip) => chip.value === chipValue)?.label ??
+      availableChipOptions.find((chip) => chip.value === chipValue)?.label ??
+      formatChipDisplayValue(chipValue);
     setSelectedChipValue(chipValue);
+    setSelectedChipLabel(label);
   };
 
   const countdownDisplay = isCountdownPhase ? (
@@ -1126,52 +1239,6 @@ const XocDiaGamePage = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-white/15 bg-white/5 p-2 space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-4 w-full overflow-hidden rounded-full bg-white/20 font-semibold tracking-wide">
-                          <div
-                            className="absolute inset-y-0 left-0 flex items-center justify-center bg-[#ef4444] px-1 text-white"
-                            style={{ width: `${statsDistribution[0].value}%` }}
-                          >
-                            <span style={{ fontSize: '11px', lineHeight: '1.1' }}>{`${statsDistribution[0].value}%`}</span>
-                          </div>
-                          <div
-                            className="absolute inset-y-0 right-0 flex items-center justify-center bg-white px-1 text-[#0f3b20] font-semibold"
-                            style={{ width: `${statsDistribution[1].value}%` }}
-                          >
-                            <span style={{ fontSize: '11px', lineHeight: '1.1' }}>{`${statsDistribution[1].value}%`}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.25em]">
-                          <span className="flex items-center gap-1 text-white">
-                            <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
-                            <span>Chẵn</span>
-                          </span>
-                          <span className="flex items-center gap-1 text-white">
-                            <span className="h-2 w-2 rounded-full bg-white" />
-                            <span>Lẻ</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-y-2 text-center text-[10px] text-white uppercase">
-                        {statsBreakdown.map((item) => (
-                          <div key={item.label} className="flex flex-col items-center gap-1">
-                            <div className="flex gap-1">
-                              {item.chips.map((color, index) => (
-                                <span
-                                  key={`${item.label}-${index}`}
-                                  className={`h-3 w-3 rounded-full border ${
-                                    color === 'red' ? 'border-red-500 bg-red-500' : 'border-white bg-white'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span>{item.value}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </section>
               </section>
