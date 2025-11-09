@@ -1,251 +1,36 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icon } from '@iconify/react';
 import { message } from 'antd';
 import pointService from '../../../../services/pointService';
 import xocDiaQuickBetService from '../../../../services/xocDiaQuickBetService';
 import useXocDiaSession from '../../hooks/useXocDiaSession';
 import xocDiaBetService from '../../../../services/xocDiaBetService';
-
-const CACHE_KEY = 'user_info_cache';
-const CACHE_DURATION_MS = 30000;
-
-const gameName = 'Xóc Đĩa Jackpot';
-
-const defaultQuickBetConfigs = [
-  {
-    code: 'even',
-    label: 'Chẵn',
-    payoutMultiplier: 1.96,
-    pattern: [],
-    layoutGroup: 'TOP',
-    displayOrder: 1,
-  },
-  {
-    code: 'two-two',
-    label: '2 Trắng 2 Đỏ',
-    payoutMultiplier: 2.55,
-    pattern: ['white', 'white', 'red', 'red'],
-    layoutGroup: 'TOP',
-    displayOrder: 4,
-  },
-  {
-    code: 'odd',
-    label: 'Lẻ',
-    payoutMultiplier: 1.96,
-    pattern: [],
-    layoutGroup: 'TOP',
-    displayOrder: 5,
-  },
-  {
-    code: 'four-white',
-    label: '4 Trắng',
-    payoutMultiplier: 14.5,
-    pattern: ['white', 'white', 'white', 'white'],
-    layoutGroup: 'BOTTOM',
-    displayOrder: 1,
-  },
-  {
-    code: 'three-white',
-    label: 'Lớn',
-    payoutMultiplier: 3.7,
-    pattern: [],
-    layoutGroup: 'TOP',
-    displayOrder: 2,
-  },
-  {
-    code: 'three-red',
-    label: 'Nhỏ',
-    payoutMultiplier: 3.7,
-    pattern: [],
-    layoutGroup: 'TOP',
-    displayOrder: 3,
-  },
-  {
-    code: 'three-white-one-red',
-    label: '3 Trắng 1 Đỏ',
-    payoutMultiplier: 1.95,
-    pattern: ['white', 'white', 'white', 'red'],
-    layoutGroup: 'BOTTOM',
-    displayOrder: 2,
-  },
-  {
-    code: 'three-red-one-white',
-    label: '3 Đỏ 1 Trắng',
-    payoutMultiplier: 1.95,
-    pattern: ['red', 'red', 'red', 'white'],
-    layoutGroup: 'BOTTOM',
-    displayOrder: 3,
-  },
-  {
-    code: 'four-red',
-    label: '4 Đỏ',
-    payoutMultiplier: 14.5,
-    pattern: ['red', 'red', 'red', 'red'],
-    layoutGroup: 'BOTTOM',
-    displayOrder: 4,
-  },
-  {
-    code: 'four-white-or-four-red',
-    label: '4 Trắng & 4 Đỏ',
-    payoutMultiplier: 7,
-    pattern: ['white', 'white', 'white', 'white', 'red', 'red', 'red', 'red'],
-    layoutGroup: 'BOTTOM',
-    displayOrder: 5,
-  },
-];
-
-const statsHistory = [
-  ['4', '1', '2', '3', '2', '1', '1', '2', '1', '2', '2', '1', '2', '1', '2', '3', '2'],
-  ['0', '', '1', '', '', '2', '', '1', '', '1', '2', '1', '', '1', '3', '', '2'],
-];
-const statsPatternGridData = [
-  ['T', 'X', 'T', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-  ['X', '2', 'X', 'X', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-  ['T', 'X', '2', 'T', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-  ['2', '2', 'T', '2', '2', '', '', '', '', '', '', '', '', '', '', '', ''],
-  ['T', 'T', '2', 'T', 'X', '', '', '', '', '', '', '', '', '', '', '', ''],
-  ['X', 'X', '', '2', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-];
-
-const essentialQuickBetCodes = [
-  'even',
-  'three-white',
-  'three-red',
-  'two-two',
-  'odd',
-  'four-white',
-  'three-white-one-red',
-  'three-red-one-white',
-  'four-red',
-  'four-white-or-four-red',
-];
-
-const defaultChipOptions = [
-  { label: '10K', value: 10000 },
-  { label: '20K', value: 20000 },
-  { label: '50K', value: 50000 },
-  { label: '100K', value: 100000 },
-  { label: '200K', value: 200000 },
-  { label: '500K', value: 500000 },
-  { label: '1M', value: 1000000 },
-  { label: '10M', value: 10000000 },
-];
-const defaultChipLabels = defaultChipOptions.map((chip) => chip.label);
-
-const parsePatternString = (pattern) => {
-  if (!pattern) return [];
-  if (Array.isArray(pattern)) return pattern;
-  return pattern
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
-
-const formatRatioLabel = (value) => {
-  const numeric = Number(value);
-  if (Number.isNaN(numeric)) {
-    return value ? `1 : ${value}` : '';
-  }
-  const formatted = Number.isInteger(numeric)
-    ? numeric.toFixed(0)
-    : numeric.toFixed(2).replace(/\.?0+$/, '');
-  return `1 : ${formatted}`;
-};
-
-const formatChipDisplayValue = (value) => {
-  if (value == null) {
-    return '';
-  }
-
-  if (value >= 1000000) {
-    const millions = value / 1000000;
-    const formatted = millions.toFixed(3).replace(/\.?0+$/, '');
-    return `${formatted}M`;
-  }
-
-  if (value >= 1000) {
-    const thousands = value / 1000;
-    const formatted = thousands.toFixed(3).replace(/\.?0+$/, '');
-    return `${formatted}K`;
-  }
-
-  return value.toLocaleString('vi-VN');
-};
-
-const extractUserName = (data) => {
-  if (!data || typeof data !== 'object') {
-    return '';
-  }
-  return data.username || data.name || data.displayName || '';
-};
-
-const convertConfigToOption = (config) => {
-  const payoutMultiplier = config.payoutMultiplier ?? config.multiplier ?? config.ratioMultiplier ?? 0;
-  return {
-    code: config.code ?? config.id,
-    label: config.label ?? config.name ?? '',
-    ratio: formatRatioLabel(payoutMultiplier),
-    payoutMultiplier,
-    pattern: parsePatternString(config.pattern),
-    layoutGroup: (config.layoutGroup || 'TOP').toUpperCase(),
-    displayOrder: config.displayOrder ?? 0,
-  };
-};
-
-const normalizeQuickBetOptions = (options, defaultOptionMap) => {
-  const mergeWithDefault = (option) => {
-    if (!option?.code) {
-      return option;
-    }
-
-    const defaultOption = defaultOptionMap.get(option.code);
-    if (!defaultOption) {
-      const payoutMultiplier = option.payoutMultiplier ?? 0;
-      return {
-        ...option,
-        payoutMultiplier,
-        ratio: formatRatioLabel(payoutMultiplier),
-      };
-    }
-
-    const payoutMultiplier =
-      option.payoutMultiplier && option.payoutMultiplier > 0
-        ? option.payoutMultiplier
-        : defaultOption.payoutMultiplier;
-
-    const pattern =
-      option.pattern && option.pattern.length > 0 ? option.pattern : defaultOption.pattern;
-
-    return {
-      ...defaultOption,
-      ...option,
-      payoutMultiplier,
-      pattern,
-      ratio: formatRatioLabel(payoutMultiplier),
-      layoutGroup: defaultOption.layoutGroup,
-      displayOrder: defaultOption.displayOrder,
-    };
-  };
-
-  const optionMap = new Map();
-  options.forEach((option) => {
-    const merged = mergeWithDefault(option);
-    if (merged?.code) {
-      optionMap.set(merged.code, merged);
-    }
-  });
-
-  essentialQuickBetCodes.forEach((code) => {
-    if (!optionMap.has(code) && defaultOptionMap.has(code)) {
-      optionMap.set(code, defaultOptionMap.get(code));
-    }
-  });
-
-  const normalized = Array.from(optionMap.values()).map((option) => mergeWithDefault(option));
-  normalized.sort((a, b) => a.displayOrder - b.displayOrder);
-  return normalized;
-};
+import { API_BASE_URL } from '../../../../utils/constants';
+import {
+  CACHE_KEY,
+  CACHE_DURATION_MS,
+  gameName,
+  defaultQuickBetConfigs,
+  statsHistory,
+  statsPatternGridData,
+  defaultChipOptions,
+  defaultChipLabels,
+  styledPlainCodes,
+} from './xocDiaConfig';
+import {
+  convertConfigToOption,
+  normalizeQuickBetOptions,
+  formatChipDisplayValue,
+  extractUserName,
+  chunkPattern,
+} from './xocDiaUtils';
+import XocDiaHeader from './components/XocDiaHeader';
+import XocDiaLiveStream from './components/XocDiaLiveStream';
+import XocDiaQuickBetBoard from './components/XocDiaQuickBetBoard';
+import XocDiaChipSelector from './components/XocDiaChipSelector';
+import XocDiaQuickActionBar from './components/XocDiaQuickActionBar';
+import XocDiaStatsPanel from './components/XocDiaStatsPanel';
+import XocDiaCustomChipModal from './components/XocDiaCustomChipModal';
 
 const XocDiaGamePage = () => {
   const navigate = useNavigate();
@@ -269,6 +54,7 @@ const XocDiaGamePage = () => {
     timer: { phaseKey, phaseLabel, countdownSeconds, countdownAngle },
     resultCode: sessionResultCode,
     sessionId,
+    refreshSession,
   } = useXocDiaSession({ pollIntervalMs: 1000 });
   const [displayedResult, setDisplayedResult] = useState(null);
   const [isPlacingBet, setIsPlacingBet] = useState(false);
@@ -279,8 +65,6 @@ const XocDiaGamePage = () => {
   const [selectedChipValue, setSelectedChipValue] = useState(null);
   const [selectedChipLabel, setSelectedChipLabel] = useState(null);
   const [activeStatsTab, setActiveStatsTab] = useState('1');
-  const chipScrollRef = useRef(null);
-  const [chipScrollState, setChipScrollState] = useState({ canScrollLeft: false, canScrollRight: false });
   const [chipOptions, setChipOptions] = useState(defaultChipOptions);
   const [isCustomChipModalOpen, setIsCustomChipModalOpen] = useState(false);
   const [customChipValue, setCustomChipValue] = useState('');
@@ -292,6 +76,7 @@ const XocDiaGamePage = () => {
     chipOptions.forEach((chip) => map.set(chip.label, chip.value));
     return Array.from(map.entries()).map(([label, value]) => ({ label, value }));
   }, [chipOptions]);
+  const plainEnabledCodes = useMemo(() => new Set(['chan', 'le', 'tai', 'xiu', 'even', 'odd']), []);
   const allChipsSelected =
     availableChipOptions.length > 0 && customChipSelections.size === availableChipOptions.length;
   const quickActionButtons = useMemo(
@@ -318,15 +103,26 @@ const XocDiaGamePage = () => {
     []
   );
   const resultTimeoutRef = useRef(null);
-  const allowedPatternBetCodes = useMemo(
-    () =>
-      new Set(
-        quickBetOptions
-          .filter((option) => Array.isArray(option.pattern) && option.pattern.length > 0)
-          .map((option) => option.code)
-      ),
-    [quickBetOptions]
-  );
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  const allowedPatternBetCodes = useMemo(() => {
+    const codes = new Set(
+      quickBetOptions
+        .filter((option) => Array.isArray(option.pattern) && option.pattern.length > 0)
+        .map((option) => option.code)
+    );
+    quickBetOptions.forEach((option) => {
+      if (plainEnabledCodes.has(option.code)) {
+        codes.add(option.code);
+      }
+    });
+    return codes;
+  }, [plainEnabledCodes, quickBetOptions]);
   const placeableBets = useMemo(
     () =>
       Object.entries(selectedQuickBets).filter(([code, bet]) => {
@@ -335,30 +131,12 @@ const XocDiaGamePage = () => {
       }),
     [allowedPatternBetCodes, selectedQuickBets]
   );
-  const totalBetValue = useMemo(
-    () =>
-      placeableBets.reduce((sum, [, bet]) => {
-        const value = bet?.totalValue ?? bet?.value ?? 0;
-        return sum + value;
-      }, 0),
-    [placeableBets]
-  );
-  const totalBetPointsDisplay = useMemo(
-    () => `${Number(totalBetValue || 0).toLocaleString('vi-VN')} điểm`,
-    [totalBetValue]
-  );
-  const unsupportedSelectedCodes = useMemo(
-    () =>
-      Object.keys(selectedQuickBets).filter((code) => !allowedPatternBetCodes.has(code)),
-    [allowedPatternBetCodes, selectedQuickBets]
-  );
-  const hasUnsupportedSelection = unsupportedSelectedCodes.length > 0;
-  const styledPlainCodes = new Set(['even', 'odd', 'three-white', 'three-red']);
+  const autoSubmitStateRef = useRef({ sessionId: null, triggered: false, signature: '' });
   const findOptionByCode = (code) => quickBetOptions.find((option) => option.code === code);
   const columnCodes = {
     left: ['four-white', 'three-white-one-red', 'two-two'],
-    middleLeft: ['even', 'three-white'],
-    middleRight: ['odd', 'three-red'],
+    middleLeft: ['chan', 'tai', 'even', 'three-red'],
+    middleRight: ['le', 'xiu', 'odd', 'three-white'],
     right: ['four-red', 'three-red-one-white', 'four-white-or-four-red'],
   };
   const assignedCodes = new Set(Object.values(columnCodes).flat());
@@ -412,9 +190,6 @@ const XocDiaGamePage = () => {
       }),
     [defaultQuickBetOptionMap, placeableBets, quickBetOptions]
   );
-
-  const placeableBetCount = placeableBets.length;
-  const disablePlaceButton = isBettingLocked || isPlacingBet || placeableBetCount === 0;
 
   useEffect(() => {
     setSelectedQuickBets((prev) => {
@@ -485,6 +260,148 @@ const XocDiaGamePage = () => {
     [allowedPatternBetCodes, findChipLabelByValue, isBettingLocked, selectedChipLabel, selectedChipValue]
   );
 
+  const updateStoredUserData = useCallback((partialData = {}) => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const existingUser = storedUser ? JSON.parse(storedUser) : {};
+        const mergedUser = { ...existingUser, ...partialData };
+        localStorage.setItem('user', JSON.stringify(mergedUser));
+        sessionStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ data: mergedUser, timestamp: Date.now() })
+        );
+        return mergedUser;
+      } catch (error) {
+        return null;
+      }
+  }, []);
+
+  const loadUserDataFromCache = useCallback(() => {
+      try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp > CACHE_DURATION_MS) {
+          return null;
+        }
+        return data && typeof data === 'object' ? data : null;
+      } catch (error) {
+        return null;
+      }
+  }, []);
+
+  const loadUserDataFromLocalStorage = useCallback(() => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          return userData && typeof userData === 'object' ? userData : null;
+        }
+      } catch (error) {
+        // Ignore parse errors
+      }
+      return null;
+  }, []);
+
+  const updateUserStateFromData = useCallback(
+    (data) => {
+      if (!isMountedRef.current || !data) {
+        return;
+      }
+      if (typeof data.points === 'number') {
+        setUserPoints(data.points);
+      }
+      const name = extractUserName(data);
+      if (name) {
+        setUserName(name);
+      }
+    },
+    []
+  );
+
+  const applyPointsUpdate = useCallback(
+    (points) => {
+      if (!isMountedRef.current) {
+        return;
+      }
+      const mergedUser = updateStoredUserData({ points });
+      if (!isMountedRef.current) {
+          return;
+        }
+          setUserPoints(points);
+          if (mergedUser) {
+            updateUserStateFromData(mergedUser);
+          } else {
+            const localUser = loadUserDataFromLocalStorage();
+            if (localUser) {
+              updateUserStateFromData({ ...localUser, points });
+            }
+          }
+    },
+    [loadUserDataFromLocalStorage, updateStoredUserData, updateUserStateFromData]
+  );
+
+  const fetchAndUpdateUserPoints = useCallback(async () => {
+    let pointsUpdated = false;
+    const authToken =
+      localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+
+    if (authToken) {
+      try {
+        const walletResponse = await fetch(`${API_BASE_URL}/wallet/balance`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (walletResponse.ok) {
+          const walletData = await walletResponse.json();
+          if (walletData?.success) {
+            const points =
+              walletData.data?.points ??
+              walletData.data?.balance ??
+              walletData.data?.totalPoints ??
+              walletData.data?.totalBalance;
+            if (typeof points === 'number') {
+              applyPointsUpdate(points);
+              pointsUpdated = true;
+            }
+          }
+        }
+      } catch (error) {
+        // ignore, fallback below
+      }
+    }
+
+    if (!pointsUpdated) {
+      try {
+        const response = await pointService.getMyPoints();
+        if (response?.success) {
+          const points = response.data?.totalPoints ?? response.data?.points ?? 0;
+          applyPointsUpdate(points);
+          pointsUpdated = true;
+        }
+      } catch (error) {
+        // ignore, fallback below
+      }
+    }
+
+    if (!pointsUpdated) {
+      const fallback = loadUserDataFromLocalStorage();
+      if (fallback) {
+        updateUserStateFromData(fallback);
+      } else if (isMountedRef.current) {
+            setUserPoints(0);
+            setUserName('');
+          }
+    }
+
+    return pointsUpdated;
+  }, [applyPointsUpdate, loadUserDataFromLocalStorage, updateUserStateFromData]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -517,63 +434,6 @@ const XocDiaGamePage = () => {
 
     fetchQuickBets();
 
-    const updateStoredUserData = (partialData = {}) => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        const existingUser = storedUser ? JSON.parse(storedUser) : {};
-        const mergedUser = { ...existingUser, ...partialData };
-        localStorage.setItem('user', JSON.stringify(mergedUser));
-        sessionStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify({ data: mergedUser, timestamp: Date.now() })
-        );
-        return mergedUser;
-      } catch (error) {
-        return null;
-      }
-    };
-
-    const loadUserDataFromCache = () => {
-      try {
-        const cached = sessionStorage.getItem(CACHE_KEY);
-        if (!cached) return null;
-
-        const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp > CACHE_DURATION_MS) {
-          return null;
-        }
-        return data && typeof data === 'object' ? data : null;
-      } catch (error) {
-        return null;
-      }
-    };
-
-    const loadUserDataFromLocalStorage = () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          return userData && typeof userData === 'object' ? userData : null;
-        }
-      } catch (error) {
-        // Ignore parse errors
-      }
-      return null;
-    };
-
-    const updateUserStateFromData = (data) => {
-      if (!isMounted || !data) {
-        return;
-      }
-      if (typeof data.points === 'number') {
-        setUserPoints(data.points);
-      }
-      const name = extractUserName(data);
-      if (name) {
-        setUserName(name);
-      }
-    };
-
     const fetchPoints = async () => {
       if (!isMounted) return;
       setLoadingPoints(true);
@@ -581,55 +441,15 @@ const XocDiaGamePage = () => {
       const cachedData = loadUserDataFromCache();
       if (cachedData) {
         updateUserStateFromData(cachedData);
-        setLoadingPoints(false);
-        return;
       }
 
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          const userData = loadUserDataFromLocalStorage();
-          if (userData) {
-            updateUserStateFromData(userData);
-          } else {
-            setUserPoints(0);
-            setUserName('');
-          }
-          if (isMounted) {
-            setLoadingPoints(false);
-          }
-          return;
-        }
-
-        const response = await pointService.getMyPoints();
-        if (!isMounted) return;
-
-        if (response?.success) {
-          const points = response.data?.totalPoints ?? response.data?.points ?? 0;
-          const mergedUser = updateStoredUserData({ points });
-          setUserPoints(points);
-          if (mergedUser) {
-            updateUserStateFromData(mergedUser);
-          } else {
-            const localUser = loadUserDataFromLocalStorage();
-            if (localUser) {
-              updateUserStateFromData({ ...localUser, points });
-            }
-          }
-        } else {
-          const userData = loadUserDataFromLocalStorage();
-          if (userData) {
-            updateUserStateFromData(userData);
-          } else {
-            setUserPoints(0);
-            setUserName('');
-          }
-        }
+        await fetchAndUpdateUserPoints();
       } catch (error) {
         if (!isMounted) return;
-        const userData = loadUserDataFromLocalStorage();
-        if (userData) {
-          updateUserStateFromData(userData);
+        const fallback = loadUserDataFromLocalStorage();
+        if (fallback) {
+          updateUserStateFromData(fallback);
         } else {
           setUserPoints(0);
           setUserName('');
@@ -646,7 +466,12 @@ const XocDiaGamePage = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [
+    fetchAndUpdateUserPoints,
+    loadUserDataFromCache,
+    loadUserDataFromLocalStorage,
+    updateUserStateFromData,
+  ]);
 
   const balanceDisplay = loadingPoints
     ? 'Đang tải...'
@@ -725,142 +550,7 @@ const XocDiaGamePage = () => {
     columnsData.map((columnValues) => columnValues[rowIndex])
   );
 
-  const patternGridRows = statsPatternGridData.length;
-  const patternGridColumns = statsPatternGridData[0]?.length ?? 0;
 
-  const getChipClasses = (value) => {
-    if (!value) return null;
-    const isWhite = value === '0' || value === '1' || value === '3';
-    return isWhite
-      ? 'border-white bg-white text-[#1f1f1f]'
-      : 'border-red-500 bg-red-500 text-white';
-  };
-
-  const getPatternCellClasses = (value) => {
-    switch (value) {
-      case 'T':
-        return 'bg-[#ef4444] text-white border-[#ef4444]';
-      case 'X':
-        return 'bg-white text-[#0f4c2c] border-white';
-      case '2':
-        return 'bg-[#2563eb] text-white border-[#1d4ed8]';
-      default:
-        return '';
-    }
-  };
-
-  const chunkPattern = (pattern, chunkSize = 4) => {
-    if (!pattern?.length) {
-      return [];
-    }
-    const chunks = [];
-    for (let i = 0; i < pattern.length; i += chunkSize) {
-      chunks.push(pattern.slice(i, i + chunkSize));
-    }
-    return chunks;
-  };
-
-  const renderQuickBetButton = (option) => {
-    const selectedBet = selectedQuickBets[option.code];
-    const isSelected = Boolean(selectedBet);
-    const displayLabel =
-      selectedBet?.label ?? formatChipDisplayValue(selectedBet?.value);
-
-    const isCentralLabel = styledPlainCodes.has(option.code);
-    const isPatternBet = Array.isArray(option.pattern) && option.pattern.length > 0;
-    const isDisabled = isBettingLocked || (!isPatternBet && !allowedPatternBetCodes.has(option.code));
-    const isComingSoon = !isPatternBet;
-    const baseClass =
-      'group relative flex h-full w-full flex-col items-center justify-center rounded-xl border px-3 pt-3 pb-1.5 sm:pt-[13px] sm:pb-[8px] text-center shadow-sm transition';
-    const variantClass = isDisabled
-      ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
-      : isSelected
-      ? 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] text-[#0f4c2c]'
-      : 'border-[#3abf86] bg-white text-[#0f4c2c] shadow hover:border-[#f5c453] hover:shadow-md';
-
-    const handleButtonClick = () => {
-      if (!isPatternBet) {
-        message.info('Cược Tài/Xỉu/Chẵn/Lẻ sẽ được hỗ trợ trong bản cập nhật tiếp theo.');
-        return;
-      }
-      handleQuickBetSelect(option);
-    };
-
-    return (
-      <button
-        key={option.code}
-        type="button"
-        onClick={handleButtonClick}
-        aria-disabled={isDisabled}
-        className={`${baseClass} ${variantClass}`}
-      >
-        {isSelected && displayLabel ? (
-          <span
-            className={`absolute z-10 rounded-md bg-[#f5c453] px-1.5 py-0.5 font-semibold uppercase tracking-wide text-[#0f4c2c] leading-none shadow-md ${
-              isCentralLabel
-                ? 'left-1/2 top-1 -translate-x-1/2 px-2 py-[3px] text-base sm:text-lg'
-                : 'left-1 top-1 text-sm'
-            }`}
-          >
-            {displayLabel}
-          </span>
-        ) : null}
-        {option.pattern.length === 0 ? (
-          <>
-            <div
-              className={`font-black uppercase tracking-wide ${
-                styledPlainCodes.has(option.code)
-                  ? 'text-[#111827]'
-                  : isSelected
-                  ? 'text-[#0f4c2c]'
-                  : 'text-[#0f4c2c]'
-              } ${styledPlainCodes.has(option.code) ? 'text-lg' : 'text-sm'}`}
-            >
-              {option.label}
-            </div>
-            <div
-              className={`mt-0.5 inline-block rounded-md px-1 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-                isSelected ? 'bg-white text-[#111827]' : 'bg-white/70 text-[#0f4c2c]'
-              }`}
-              style={{ fontSize: '12px' }}
-            >
-              {option.ratio}
-            </div>
-            {isComingSoon ? (
-              <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.3em] text-gray-400">
-                Sắp ra mắt
-              </span>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <div
-              className={`inline-block rounded-md px-1 py-0.5 font-semibold uppercase tracking-[0.2em] leading-tight backdrop-blur-sm ${
-                isSelected ? 'bg-white text-[#111827]' : 'bg-white/70 text-[#0f4c2c]'
-              }`}
-              style={{ fontSize: '12px' }}
-            >
-              {option.ratio}
-            </div>
-            <div className="mt-2 flex flex-col items-center justify-center gap-1">
-              {chunkPattern(option.pattern).map((row, rowIndex) => (
-                <div key={`${option.code}-row-${rowIndex}`} className="flex items-center justify-center gap-1">
-                  {row.map((color, index) => (
-                    <span
-                      key={`${option.code}-${rowIndex}-${index}`}
-                      className={`h-3 w-3 sm:h-4 sm:w-4 rounded-full border-2 shadow-sm transition-shadow ${
-                        color === 'white' ? 'bg-white border-black' : 'bg-[#e02020] border-black'
-                      }`}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </button>
-    );
-  };
 
   const handleOpenCustomChipModal = () => {
     setCustomChipValue('');
@@ -877,7 +567,7 @@ const XocDiaGamePage = () => {
   };
 
   const handleCustomChipValueChange = (event) => {
-    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 3);
+    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 4);
     setCustomChipValue(digitsOnly);
     if (customChipError) {
       setCustomChipError('');
@@ -951,8 +641,8 @@ const XocDiaGamePage = () => {
     let value = null;
 
     if (trimmed) {
-      if (!/^\d{1,3}$/.test(trimmed)) {
-        setCustomChipError('Chỉ nhập tối đa 3 chữ số');
+      if (!/^\d{1,4}$/.test(trimmed)) {
+        setCustomChipError('Chỉ nhập tối đa 4 chữ số');
         return;
       }
 
@@ -962,8 +652,8 @@ const XocDiaGamePage = () => {
         return;
       }
 
-      label = `${numeric}K`;
-      value = numeric * 1000;
+      value = numeric;
+      label = formatChipDisplayValue(value);
     }
 
     const nextSelections = new Set(customChipSelections);
@@ -1019,76 +709,6 @@ const XocDiaGamePage = () => {
       setSelectedChipLabel(null);
     }
     setIsCustomChipModalOpen(false);
-    setTimeout(() => {
-      if (chipScrollRef.current) {
-        chipScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        updateChipScrollState();
-      }
-    }, 60);
-  };
-
-  const updateChipScrollState = useCallback(() => {
-    const container = chipScrollRef.current;
-    if (!container) {
-      return;
-    }
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    setChipScrollState({
-      canScrollLeft: scrollLeft > 0,
-      canScrollRight: scrollLeft + clientWidth < scrollWidth - 1,
-    });
-  }, []);
-
-  useEffect(() => {
-    const container = chipScrollRef.current;
-    if (!container) {
-      return undefined;
-    }
-
-    updateChipScrollState();
-    container.addEventListener('scroll', updateChipScrollState);
-    window.addEventListener('resize', updateChipScrollState);
-
-    return () => {
-      container.removeEventListener('scroll', updateChipScrollState);
-      window.removeEventListener('resize', updateChipScrollState);
-    };
-  }, [updateChipScrollState]);
-
-  useEffect(() => {
-    updateChipScrollState();
-  }, [chipOptions, updateChipScrollState]);
-
-  const scrollChips = (direction) => {
-    const container = chipScrollRef.current;
-    if (!container) {
-      return;
-    }
-    const scrollAmount = container.clientWidth * 0.8;
-    container.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
-    });
-
-    setTimeout(updateChipScrollState, 350);
-  };
-
-  const renderChipButton = (chip) => {
-    const isSelected = selectedChipValue === chip.value;
-    return (
-      <button
-        key={chip.value}
-        type="button"
-        onClick={() => handleQuickChipSelect(chip.value)}
-        className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold uppercase tracking-wide transition ${
-          isSelected
-            ? 'border-[#f5c34a] bg-[#0f4c2c] text-white shadow-lg shadow-[#f5c34a]/30'
-            : 'border-[#149b60]/70 bg-white text-[#0f4c2c] shadow-sm hover:shadow-md'
-        }`}
-      >
-        {chip.label}
-      </button>
-    );
   };
 
   const handleQuickChipSelect = (chipValue) => {
@@ -1146,8 +766,41 @@ const XocDiaGamePage = () => {
     </div>
   ) : null;
 
-  const handlePlaceBet = useCallback(async () => {
-    if (disablePlaceButton) {
+  const betSignature = useMemo(() => {
+    if (placeableBetDetails.length === 0) {
+      return '';
+    }
+    return placeableBetDetails
+      .map((item) => `${item.code}:${item.amount}`)
+      .sort()
+      .join('|');
+  }, [placeableBetDetails]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      autoSubmitStateRef.current = { sessionId: null, triggered: false, signature: '' };
+      return;
+    }
+    const state = autoSubmitStateRef.current;
+    if (state.sessionId !== sessionId) {
+      autoSubmitStateRef.current = { sessionId, triggered: false, signature: betSignature };
+      return;
+    }
+    if (state.signature !== betSignature) {
+      autoSubmitStateRef.current = { sessionId, triggered: false, signature: betSignature };
+    }
+  }, [sessionId, betSignature]);
+
+  const submitBets = useCallback(
+    async ({ force = false, signatureOverride } = {}) => {
+    if (isPlacingBet) {
+      return;
+    }
+    if (placeableBetDetails.length === 0) {
+      return;
+    }
+    if (!force && isBettingLocked) {
+      message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
       return;
     }
 
@@ -1171,6 +824,11 @@ const XocDiaGamePage = () => {
           }, {})
         );
         setSelectedQuickBets({});
+        autoSubmitStateRef.current = {
+          sessionId,
+          triggered: true,
+          signature: signatureOverride ?? betSignature,
+        };
         if (response.data?.balanceAfter != null) {
           setUserPoints(response.data.balanceAfter);
         } else {
@@ -1181,92 +839,200 @@ const XocDiaGamePage = () => {
           });
         }
       } else {
-        message.error(response.message || 'Không thể đặt cược');
+        const errorMessage = response.message || 'Không thể đặt cược';
+        const normalized = errorMessage.toLowerCase();
+        message.error(errorMessage);
+        if (normalized.includes('không đủ') || normalized.includes('insufficient')) {
+          message.info('Số dư không đủ, vui lòng nạp thêm để tiếp tục đặt cược.');
+        }
+        autoSubmitStateRef.current = {
+          sessionId,
+          triggered: false,
+          signature: signatureOverride ?? betSignature,
+        };
       }
     } catch (error) {
-      message.error(error?.message || 'Không thể đặt cược');
+      let fallbackMessage = error?.message || 'Không thể đặt cược';
+      if (error?.response?.json) {
+        try {
+          const data = await error.response.json();
+          if (data?.message) {
+            fallbackMessage = data.message;
+          }
+        } catch (parseError) {
+          // ignore
+        }
+      }
+      const normalized = fallbackMessage.toLowerCase();
+      message.error(fallbackMessage);
+      if (normalized.includes('không đủ') || normalized.includes('insufficient')) {
+        message.info('Số dư không đủ, vui lòng nạp thêm để tiếp tục đặt cược.');
+      }
+      autoSubmitStateRef.current = {
+        sessionId,
+        triggered: false,
+        signature: signatureOverride ?? betSignature,
+      };
     } finally {
       setIsPlacingBet(false);
     }
-  }, [disablePlaceButton, placeableBetDetails, selectedQuickBets, sessionId]);
+    },
+    [
+      betSignature,
+      isBettingLocked,
+      isPlacingBet,
+      placeableBetDetails,
+      selectedQuickBets,
+      sessionId,
+    ]
+  );
+
+  useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+    if (!isCountdownPhase) {
+      return;
+    }
+    if (countdownSeconds > 1) {
+      return;
+    }
+    if (placeableBetDetails.length === 0) {
+      return;
+    }
+    if (isPlacingBet) {
+      return;
+    }
+    const state = autoSubmitStateRef.current;
+    if (state.sessionId === sessionId && state.triggered && state.signature === betSignature) {
+      return;
+    }
+    autoSubmitStateRef.current = { sessionId, triggered: true, signature: betSignature };
+    submitBets({ force: true, signatureOverride: betSignature });
+  }, [
+    sessionId,
+    isCountdownPhase,
+    countdownSeconds,
+    placeableBetDetails,
+    isPlacingBet,
+    betSignature,
+    submitBets,
+  ]);
+
+  const pendingResultRef = useRef({ sessionId: null, resultCode: null });
+
+  useEffect(() => {
+    if (!sessionId || Object.keys(selectedQuickBets).length === 0) {
+      return;
+    }
+    if (!bettingLockedPhases.includes(phaseKey)) {
+      return;
+    }
+    autoSubmitStateRef.current = { sessionId, triggered: false, signature: '' };
+  }, [sessionId, phaseKey, selectedQuickBets]);
+
+  useEffect(() => {
+    if (!sessionResultCode || !sessionId) {
+      pendingResultRef.current = { sessionId: null, resultCode: null };
+      return;
+    }
+
+    const alreadyHandled =
+      pendingResultRef.current.sessionId === sessionId &&
+      pendingResultRef.current.resultCode === sessionResultCode;
+    if (alreadyHandled) {
+      return;
+    }
+
+    pendingResultRef.current = { sessionId, resultCode: sessionResultCode };
+
+    let cancelled = false;
+
+    const refreshBalance = async () => {
+      try {
+        const authToken =
+          localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+        if (authToken) {
+          try {
+            const walletResponse = await fetch(`${API_BASE_URL}/wallet/balance`, {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (walletResponse.ok) {
+              const walletData = await walletResponse.json();
+              if (walletData?.success) {
+                const points =
+                  walletData.data?.points ??
+                  walletData.data?.balance ??
+                  walletData.data?.totalPoints ??
+                  walletData.data?.totalBalance;
+                if (!cancelled && typeof points === 'number') {
+                  setUserPoints(points);
+                  const mergedUser = updateStoredUserData({ points });
+                  if (mergedUser) {
+                    updateUserStateFromData(mergedUser);
+                  }
+                }
+              }
+            }
+          } catch (walletError) {
+            // fallback below
+          }
+        }
+
+        const response = await pointService.getMyPoints();
+        if (!cancelled && response?.success) {
+          const points = response.data?.totalPoints ?? response.data?.points ?? 0;
+          setUserPoints(points);
+          const mergedUser = updateStoredUserData({ points });
+          if (mergedUser) {
+            updateUserStateFromData(mergedUser);
+          }
+        }
+      } catch (error) {
+        // ignore; balance will refresh on next poll
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchAndUpdateUserPoints();
+    }, 600);
+    refreshSession?.();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [sessionResultCode, sessionId, refreshSession, fetchAndUpdateUserPoints]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+    if (!['payout', 'invite-bet'].includes(phaseKey)) {
+      return;
+    }
+    fetchAndUpdateUserPoints();
+  }, [sessionId, phaseKey, fetchAndUpdateUserPoints]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center gap-2 text-gray-600">
-          <button
-            type="button"
-            onClick={() => navigate('/casino/live')}
-            className="flex items-center gap-2 hover:text-gray-900 transition-colors"
-          >
-            <Icon icon="mdi:arrow-left" className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg md:text-xl font-semibold text-gray-900">{gameName}</h1>
-        </div>
-
-        <div className="flex items-center">
-          <div className="flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 text-left">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gray-200 text-gray-600">
-              <Icon icon="mdi:account" className="h-4 w-4" />
-            </span>
-            <span className="flex flex-col leading-tight">
-              <span className="text-xs font-semibold text-gray-800 truncate max-w-[110px]">
-                {userName || 'Người chơi'}
-              </span>
-              <span className="text-xs font-semibold text-amber-500">
-                {balanceDisplay}
-              </span>
-            </span>
-          </div>
-        </div>
-      </header>
+      <XocDiaHeader
+        onBack={() => navigate('/casino/live')}
+        gameName={gameName}
+        userName={userName}
+        balanceDisplay={balanceDisplay}
+        isLoadingBalance={loadingPoints}
+      />
 
       <main className="px-3 sm:px-3 md:px-5 lg:px-8 pt-2 md:pt-4 pb-4 md:pb-6">
         <div className="max-w-screen-2xl mx-auto space-y-4 md:space-y-6">
           <div className="grid gap-2 sm:gap-3 lg:gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
-            <section className="relative rounded-2xl bg-gray-900 aspect-[3/2] overflow-hidden shadow-lg">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent)]" />
-              <div className="relative z-10 h-full flex flex-col">
-                <div className="flex items-center justify-between px-4 md:px-6 py-2 border-b border-white/10">
-                  <div className="flex items-center h-full">
-                    <span className="text-xs uppercase tracking-wide text-white/60">Live Stream</span>
-                  </div>
-
-                  <div className="hidden md:flex items-center gap-4 text-xs md:text-sm text-white/70">
-                    <span className="flex items-center gap-2">
-                      <Icon icon="mdi:account" className="w-4 h-4" />
-                      Dealer: Ngọc Anh
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Icon icon="mdi:account-group" className="w-4 h-4" />
-                      Người chơi: 128
-                    </span>
-                  </div>
-
-                  <span className="flex items-center gap-2 text-sm text-red-400">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                    Đang phát
-                  </span>
-                </div>
-
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-2 text-white/70">
-                    <div className="w-20 h-20 rounded-full border-4 border-white/20 flex items-center justify-center">
-                      <Icon icon="mdi:play" className="w-8 h-8" />
-                    </div>
-                    <p className="text-sm md:text-base text-center max-w-xs">
-                      Live stream Xóc Đĩa sẽ hiển thị tại đây.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              {resultOverlay}
-              <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20">
-                <div className="flex items-center px-1 py-1">
-                  {countdownDisplay}
-                </div>
-              </div>
-            </section>
+            <XocDiaLiveStream resultOverlay={resultOverlay} countdownDisplay={countdownDisplay} />
 
             <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">
               <section className="space-y-1 sm:space-y-1.5">
@@ -1282,292 +1048,54 @@ const XocDiaGamePage = () => {
                   </div>
                 )}
 
-                <div
-                  className="grid gap-1 sm:gap-1.5 items-stretch"
-                  style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
-                >
-                  <div className="grid h-full grid-rows-3 gap-1 sm:gap-1.5">
-                    {columnOptions.left.map((option, index) =>
-                      option ? (
-                        renderQuickBetButton(option)
-                      ) : (
-                        <div key={`left-placeholder-${index}`} className="pointer-events-none opacity-0" />
-                      )
-                    )}
-                  </div>
-                  <div className="grid h-full grid-rows-2 gap-1 sm:gap-1.5">
-                    {columnOptions.middleLeft.map((option, index) =>
-                      option ? (
-                        renderQuickBetButton(option)
-                      ) : (
-                        <div key={`middle-left-placeholder-${index}`} className="pointer-events-none opacity-0" />
-                      )
-                    )}
-                  </div>
-                  <div className="grid h-full grid-rows-2 gap-1 sm:gap-1.5">
-                    {columnOptions.middleRight.map((option, index) =>
-                      option ? (
-                        renderQuickBetButton(option)
-                      ) : (
-                        <div key={`middle-right-placeholder-${index}`} className="pointer-events-none opacity-0" />
-                      )
-                    )}
-                  </div>
-                  <div className="grid h-full grid-rows-3 gap-1 sm:gap-1.5">
-                    {columnOptions.right.map((option, index) =>
-                      option ? (
-                        renderQuickBetButton(option)
-                      ) : (
-                        <div key={`right-placeholder-${index}`} className="pointer-events-none opacity-0" />
-                      )
-                    )}
-                  </div>
-                </div>
+                <XocDiaQuickBetBoard
+                  columnOptions={columnOptions}
+                  selectedQuickBets={selectedQuickBets}
+                  isBettingLocked={isBettingLocked}
+                  plainEnabledCodes={plainEnabledCodes}
+                  styledPlainCodes={styledPlainCodes}
+                  onSelectQuickBet={handleQuickBetSelect}
+                />
 
-              <div
-                className="grid items-center gap-2.5 rounded-2xl p-1.5 sm:p-2"
-                style={{ gridTemplateColumns: 'minmax(0,6fr) minmax(0,1fr)' }}
-              >
-                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 sm:gap-2">
-                  <button
-                    type="button"
-                    onClick={() => scrollChips('left')}
-                    aria-label="Xem phỉnh phía trước"
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500/40 bg-white text-emerald-600 shadow-sm transition hover:bg-emerald-50 ${
-                      chipScrollState.canScrollLeft ? '' : 'opacity-40'
-                    }`}
-                    disabled={!chipScrollState.canScrollLeft}
-                  >
-                    <Icon icon="mdi:chevron-left" className="h-5 w-5" />
-                  </button>
+                <XocDiaChipSelector
+                  chipOptions={chipOptions}
+                  selectedChipValue={selectedChipValue}
+                  onSelectChip={handleQuickChipSelect}
+                  onOpenCustomChipModal={handleOpenCustomChipModal}
+                />
 
-                  <div
-                    ref={chipScrollRef}
-                    className="flex w-full gap-2 overflow-x-auto py-0 pr-1"
-                    style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none' }}
-                  >
-                    {chipOptions.map((chip) => renderChipButton(chip))}
-                  </div>
+                <XocDiaQuickActionBar
+                  quickActionButtons={quickActionButtons}
+                  onAction={handleQuickAction}
+                  disabled={isBettingLocked || isPlacingBet}
+                />
 
-                  <button
-                    type="button"
-                    onClick={() => scrollChips('right')}
-                    aria-label="Xem phỉnh phía sau"
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500/40 bg-white text-emerald-600 shadow-sm transition hover:bg-emerald-50 ${
-                      chipScrollState.canScrollRight ? '' : 'opacity-40'
-                    }`}
-                    disabled={!chipScrollState.canScrollRight}
-                  >
-                    <Icon icon="mdi:chevron-right" className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-center">
-                  <button
-                    type="button"
-                    onClick={handleOpenCustomChipModal}
-                    className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border-2 border-dashed border-[#149b60]/40 text-xs font-semibold uppercase tracking-wide text-[#149b60]/60 transition hover:border-[#0f4c2c] hover:text-[#0f4c2c]"
-                  >
-                    --
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                {quickActionButtons.map((button) => (
-                  <button
-                    key={button.action}
-                    type="button"
-                    onClick={() => handleQuickAction(button.action)}
-                    className={`flex flex-1 min-w-[120px] items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold tracking-wide transition hover:shadow-md focus:outline-none focus:ring-0 focus:ring-offset-0 active:scale-[0.99] ${button.style}`}
-                  >
-                    <Icon icon={button.icon} className="h-5 w-5" />
-                    <span>{button.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex flex-col gap-2 rounded-xl border border-emerald-200 bg-white/70 p-3 text-sm text-emerald-900">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold uppercase tracking-wide">Tổng cược</span>
-                  <span className="text-base font-bold text-emerald-600">{totalBetPointsDisplay}</span>
-                </div>
-                {placeableBetDetails.length > 0 ? (
-                  <ul className="space-y-1">
-                    {placeableBetDetails.map((bet) => (
-                      <li key={bet.code} className="flex items-center justify-between text-xs">
-                        <span className="font-medium uppercase text-gray-600">{bet.label}</span>
-                        <span className="font-semibold text-emerald-700">
-                          {Number(bet.amount).toLocaleString('vi-VN')} điểm
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <span className="text-xs text-gray-500">Chưa chọn cược hợp lệ</span>
-                )}
-                {hasUnsupportedSelection ? (
-                  <p className="text-xs font-medium text-amber-600">
-                    Một số cược (Chẵn/Lẻ/Tài/Xỉu) chưa được hỗ trợ đặt cược tự động.
-                  </p>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={handlePlaceBet}
-                  disabled={disablePlaceButton}
-                  className="mt-1 flex h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold uppercase tracking-wide text-white transition hover:from-emerald-600 hover:to-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-                >
-                  {isPlacingBet ? 'Đang đặt...' : 'Đặt cược'}
-                </button>
-              </div>
-
-                <section className="rounded-xl border border-[#1aab6f]/50 bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-3 text-white shadow-inner space-y-3">
-                  <header className="flex items-center gap-2 text-xs font-semibold uppercase">
-                    <button
-                      type="button"
-                      onClick={() => setActiveStatsTab('1')}
-                      className={`rounded-lg px-3 py-1.5 shadow transition ${
-                        activeStatsTab === '1'
-                          ? 'bg-white text-[#0b2919]'
-                          : 'bg-white/10 text-white/75 hover:bg-white/20 hover:text-white'
-                      }`}
-                    >
-                      Thống kê 1
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveStatsTab('2')}
-                      className={`rounded-lg px-3 py-1.5 shadow transition ${
-                        activeStatsTab === '2'
-                          ? 'bg-white text-[#0b2919]'
-                          : 'bg-white/10 text-white/75 hover:bg-white/20 hover:text-white'
-                      }`}
-                    >
-                      Thống kê 2
-                    </button>
-                  </header>
-
-                  <div className="space-y-3">
-                    <div className="rounded-lg border border-white/15 bg-white/5 p-2">
-                      <div
-                        className="grid"
-                        style={{
-                          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-                          gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-                        }}
-                      >
-                        {(activeStatsTab === '1' ? statsGrid : statsPatternGridData).map((row, rowIndex) =>
-                          row.map((cell, cellIndex) => (
-                            <div
-                              key={`${activeStatsTab === '1' ? 'cell' : 'pattern'}-${rowIndex}-${cellIndex}`}
-                              className="flex h-5 w-full items-center justify-center border border-white/20"
-                            >
-                              {cell ? (
-                                activeStatsTab === '1' ? (
-                                  <span
-                                    className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border leading-none ${getChipClasses(cell)}`}
-                                    style={{ fontSize: '10px' }}
-                                  >
-                                    {cell}
-                                  </span>
-                                ) : (
-                                  <span
-                                    className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border leading-none ${getPatternCellClasses(cell)}`}
-                                    style={{ fontSize: '10px' }}
-                                  >
-                                    {cell}
-                                  </span>
-                                )
-                              ) : null}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                </section>
+                <XocDiaStatsPanel
+                  activeStatsTab={activeStatsTab}
+                  onChangeTab={setActiveStatsTab}
+                  columns={columns}
+                  rows={rows}
+                  statsGrid={statsGrid}
+                  statsPatternGridData={statsPatternGridData}
+                />
               </section>
             </div>
           </div>
         </div>
       </main>
 
-      {isCustomChipModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="w-full max-w-xs rounded-2xl bg-white p-4 shadow-lg space-y-4">
-            <form className="space-y-3" onSubmit={handleCustomChipSubmit}>
-              <div className="space-y-2">
-                <label className="block text-xs font-medium uppercase tracking-wide text-gray-600">
-                  Giá trị (K)
-                </label>
-                <input
-                  autoFocus
-                  type="text"
-                  inputMode="numeric"
-                  value={customChipValue}
-                  onChange={handleCustomChipValueChange}
-                    className="w-full rounded-xl border border-emerald-400/40 px-3 py-2 text-sm text-gray-800 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  placeholder="Ví dụ: 250"
-                />
-                {customChipError ? (
-                  <p className="text-xs font-medium text-red-500">{customChipError}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-600">
-                    Chọn phỉnh hiển thị
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleSelectAllChips}
-                    className="rounded-lg border border-emerald-500/40 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600 transition hover:bg-emerald-50"
-                  >
-                    Tất cả
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {availableChipOptions.map((chip) => {
-                    const isActive = customChipSelections.has(chip.label);
-                    return (
-                      <button
-                        key={chip.label}
-                        type="button"
-                        onClick={() => handleToggleChipSelection(chip.label)}
-                        className={`flex h-11 w-11 items-center justify-center rounded-full border text-xs font-semibold uppercase tracking-wide transition ${
-                          isActive
-                            ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-sm'
-                            : 'border-gray-300 bg-white text-gray-500 hover:border-emerald-300 hover:text-emerald-600'
-                        }`}
-                      >
-                        {chip.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleCloseCustomChipModal}
-                  className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
-                >
-                  Huỷ
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:from-emerald-600 hover:to-emerald-700"
-                >
-                  Lưu
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <XocDiaCustomChipModal
+        isOpen={isCustomChipModalOpen}
+        customChipValue={customChipValue}
+        onCustomChipValueChange={handleCustomChipValueChange}
+        customChipError={customChipError}
+        availableChipOptions={availableChipOptions}
+        customChipSelections={customChipSelections}
+        onToggleChipSelection={handleToggleChipSelection}
+        onSelectAllChips={handleSelectAllChips}
+        onClose={handleCloseCustomChipModal}
+        onSubmit={handleCustomChipSubmit}
+      />
     </div>
   );
 };

@@ -1,15 +1,6 @@
 import { API_BASE_URL } from '../utils/constants';
 import authService from './authService';
 
-const parseJsonResponse = async (response) => {
-  const data = await response.json().catch(() => ({}));
-  return {
-    success: data?.success ?? false,
-    data: data?.data ?? null,
-    message: data?.message,
-  };
-};
-
 const xocDiaBetService = {
   placeBets: async (payload) => {
     try {
@@ -20,7 +11,24 @@ const xocDiaBetService = {
         },
         body: JSON.stringify(payload),
       });
-      return parseJsonResponse(response);
+
+      const cloned = response.clone();
+      const data = await cloned.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const errorMessage = data?.message || 'Không thể đặt cược';
+        return {
+          success: false,
+          message: errorMessage,
+          data: data?.data ?? null,
+        };
+      }
+
+      return {
+        success: data?.success ?? response.ok,
+        data: data?.data ?? null,
+        message: data?.message,
+      };
     } catch (error) {
       return {
         success: false,
