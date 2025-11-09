@@ -122,13 +122,10 @@ const WithdrawForm = () => {
   const loadUserPaymentMethods = async () => {
     try {
       // Không set loading riêng, để checkingLockStatus xử lý
-      console.log('Loading user payment methods...');
       const response = await walletService.getUserPaymentMethods();
-      console.log('User payment methods response:', response);
       if (response && response.success) {
         setUserPaymentMethods(response.data || []);
       } else {
-        console.warn('User payment methods response not successful:', response);
         setUserPaymentMethods([]);
       }
     } catch (error) {

@@ -1,5 +1,12 @@
 import { essentialQuickBetCodes } from './xocDiaConfig';
 
+const QUICK_BET_CODE_ALIASES = {
+  even: 'chan',
+  odd: 'le',
+  'three-white': 'tai',
+  'three-red': 'xiu',
+};
+
 export const parsePatternString = (pattern) => {
   if (!pattern) return [];
   if (Array.isArray(pattern)) return pattern;
@@ -60,11 +67,16 @@ export const normalizeQuickBetOptions = (options, defaultOptionMap) => {
       return option;
     }
 
-    const defaultOption = defaultOptionMap.get(option.code);
+    const normalizedCode = option.code.toLowerCase();
+    const aliasCode = QUICK_BET_CODE_ALIASES[normalizedCode] || normalizedCode;
+
+    const defaultOption = defaultOptionMap.get(aliasCode);
     if (!defaultOption) {
       const payoutMultiplier = option.payoutMultiplier ?? 0;
       return {
         ...option,
+        code: aliasCode,
+        originalCode: option.code,
         payoutMultiplier,
         ratio: formatRatioLabel(payoutMultiplier),
       };
@@ -81,6 +93,8 @@ export const normalizeQuickBetOptions = (options, defaultOptionMap) => {
     return {
       ...defaultOption,
       ...option,
+      code: aliasCode,
+      originalCode: option.code,
       payoutMultiplier,
       pattern,
       ratio: formatRatioLabel(payoutMultiplier),

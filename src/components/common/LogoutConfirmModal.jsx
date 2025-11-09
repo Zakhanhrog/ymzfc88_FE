@@ -1,6 +1,19 @@
 import { Icon } from '@iconify/react';
 
-const LogoutConfirmModal = ({ isOpen, onClose, onConfirm, loading = false }) => {
+const LogoutConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  loading = false,
+  title = 'Xác nhận đăng xuất',
+  message = 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?',
+  icon = 'mdi:logout',
+  iconContainerClass = 'bg-green-100 text-green-600',
+  confirmLabel = 'Đăng xuất',
+  confirmLoadingLabel = 'Đang đăng xuất...',
+  confirmIcon = 'mdi:logout',
+  confirmButtonClass = 'bg-green-500 hover:bg-green-600',
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -18,18 +31,18 @@ const LogoutConfirmModal = ({ isOpen, onClose, onConfirm, loading = false }) => 
       >
         {/* Header */}
         <div className="flex items-center justify-center p-6 pb-4">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-2">
-            <Icon icon="mdi:logout" className="w-8 h-8 text-green-600" />
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${iconContainerClass}`}>
+            <Icon icon={icon} className="w-8 h-8" />
           </div>
         </div>
 
         {/* Content */}
         <div className="px-6 pb-6 text-center">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Xác nhận đăng xuất
+            {title}
           </h3>
           <p className="text-sm text-gray-600 mb-6">
-            Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?
+            {message}
           </p>
 
           {/* Action Buttons */}
@@ -70,17 +83,17 @@ const LogoutConfirmModal = ({ isOpen, onClose, onConfirm, loading = false }) => 
                 }
               }}
               disabled={loading}
-              className="flex-1 py-2.5 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation select-none"
+              className={`flex-1 py-2.5 px-4 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation select-none ${confirmButtonClass}`}
             >
               {loading ? (
                 <>
                   <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
-                  <span>Đang đăng xuất...</span>
+                  <span>{confirmLoadingLabel}</span>
                 </>
               ) : (
                 <>
-                  <Icon icon="mdi:logout" className="w-4 h-4" />
-                  <span>Đăng xuất</span>
+                  <Icon icon={confirmIcon} className="w-4 h-4" />
+                  <span>{confirmLabel}</span>
                 </>
               )}
             </button>

@@ -439,7 +439,7 @@ const Layout = ({ children }) => {
         userBalance={userPoints}
         onRefreshBalance={fetchUserInfo}
         onLogout={handleLogout}
-          onMobileMenuToggle={() => setShowMobileSidebar(true)}
+        onMobileMenuToggle={() => setShowMobileSidebar(true)}
       />
       )}
 
@@ -572,6 +572,7 @@ const Layout = ({ children }) => {
           LIÊN HỆ
         </span>
       </button>
+
     </div>
   );
 };

@@ -1,16 +1,15 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 const getAuthHeader = () => {
-  // Ưu tiên userToken cho user endpoints, adminToken cho admin endpoints
-  const userToken = localStorage.getItem('authToken');
+  const authToken = localStorage.getItem('authToken');
+  const legacyUserToken = localStorage.getItem('token');
   const adminToken = localStorage.getItem('adminToken');
   
-  // Ưu tiên user token trước (vì đây là kycService cho user)
-  const token = userToken || adminToken;
+  const token = authToken || legacyUserToken || adminToken;
   
-  return {
-    'Authorization': `Bearer ${token}`
-  };
+  return token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
 };
 
 const kycService = {

@@ -11,7 +11,6 @@ import {
   CACHE_DURATION_MS,
   gameName,
   defaultQuickBetConfigs,
-  statsPatternGridData,
   defaultChipOptions,
   defaultChipLabels,
   styledPlainCodes,
@@ -31,6 +30,8 @@ import XocDiaChipSelector from './components/XocDiaChipSelector';
 import XocDiaQuickActionBar from './components/XocDiaQuickActionBar';
 import XocDiaStatsPanel from './components/XocDiaStatsPanel';
 import XocDiaCustomChipModal from './components/XocDiaCustomChipModal';
+import XocDiaBetHistoryDrawer from '../../../../components/common/layout/XocDiaBetHistoryDrawer';
+import LogoutConfirmModal from '../../../../components/common/LogoutConfirmModal';
 
 const STATS_ROWS = 6;
 const STATS_COLUMNS = 17;
@@ -90,6 +91,9 @@ const resolveRedCountFromCode = (code) => {
 const createEmptyStatsGrid = () =>
   Array.from({ length: STATS_ROWS }, () => Array(STATS_COLUMNS).fill(null));
 
+const createEmptyColumns = () =>
+  Array.from({ length: STATS_COLUMNS }, () => Array(STATS_ROWS).fill(null));
+
 const XocDiaGamePage = () => {
   const navigate = useNavigate();
   const [selectedQuickBets, setSelectedQuickBets] = useState({});
@@ -129,14 +133,42 @@ const XocDiaGamePage = () => {
   const [customChipError, setCustomChipError] = useState('');
   const [customChipSelections, setCustomChipSelections] = useState(new Set(defaultChipOptions.map((chip) => chip.label)));
   const [chanLeStatsGrid, setChanLeStatsGrid] = useState(() => createEmptyStatsGrid());
+  const [taiXiuStatsGrid, setTaiXiuStatsGrid] = useState(() => createEmptyStatsGrid());
   const [chanLeHistory, setChanLeHistory] = useState([]);
+  const [taiXiuHistory, setTaiXiuHistory] = useState([]);
+  const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
+  const quickBetOptionLookup = useMemo(() => {
+    const map = new Map();
+    quickBetOptions.forEach((option) => {
+      const normalizedCode = option.code.toLowerCase();
+      map.set(normalizedCode, option);
+      if (option.originalCode) {
+        map.set(option.originalCode.toLowerCase(), option);
+      }
+    });
+    return map;
+  }, [quickBetOptions]);
   const availableChipOptions = useMemo(() => {
     const map = new Map();
     defaultChipOptions.forEach((chip) => map.set(chip.label, chip.value));
     chipOptions.forEach((chip) => map.set(chip.label, chip.value));
     return Array.from(map.entries()).map(([label, value]) => ({ label, value }));
   }, [chipOptions]);
-  const plainEnabledCodes = useMemo(() => new Set(['chan', 'le', 'tai', 'xiu', 'even', 'odd']), []);
+  const plainEnabledCodes = useMemo(
+    () =>
+      new Set([
+        'chan',
+        'le',
+        'tai',
+        'xiu',
+        'even',
+        'odd',
+        'three-red',
+        'three-white',
+      ]),
+    []
+  );
   const allChipsSelected =
     availableChipOptions.length > 0 && customChipSelections.size === availableChipOptions.length;
   const quickActionButtons = useMemo(
@@ -166,6 +198,8 @@ const XocDiaGamePage = () => {
   const isMountedRef = useRef(true);
   const lastHistorySignatureRef = useRef(null);
   const pendingHistoryRefreshRef = useRef(null);
+  const chanLeCursorRef = useRef({ column: 0, row: -1, lastKey: null });
+  const taiXiuCursorRef = useRef({ column: 0, row: -1, lastKey: null });
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -176,67 +210,144 @@ const XocDiaGamePage = () => {
       }
     };
   }, []);
-  const buildChanLeStatsGrid = useCallback((historyItems) => {
-    if (!Array.isArray(historyItems) || historyItems.length === 0) {
-      setChanLeStatsGrid(createEmptyStatsGrid());
-      return;
-    }
+  const columnsToGrid = useCallback(
+    (columnsData) =>
+      Array.from({ length: STATS_ROWS }, (_, rowIndex) =>
+        columnsData.map((columnValues) => columnValues[rowIndex] ?? null)
+      ),
+    []
+  );
 
-    const columnsData = Array.from({ length: STATS_COLUMNS }, () => Array(STATS_ROWS).fill(null));
-    let currentColumn = 0;
-    let currentRow = 0;
-    let previousParity = null;
-
-    const limitedHistory = historyItems.slice(-MAX_STATS_ITEMS);
-
-    limitedHistory.forEach((item) => {
-      if (!item || currentColumn >= STATS_COLUMNS) {
-        return;
+  const buildStatsGrid = useCallback(
+    (historyItems, resolveCell) => {
+      if (!Array.isArray(historyItems) || historyItems.length === 0) {
+        return {
+          grid: createEmptyStatsGrid(),
+          cursor: { column: 0, row: -1, lastKey: null },
+        };
       }
 
-      const redCount = typeof item.redCount === 'number' ? item.redCount : null;
-      if (redCount === null) {
-        return;
-      }
+      const columnsData = createEmptyColumns();
+      let currentColumn = 0;
+      let currentRow = 0;
+      let previousKey = null;
 
-      const parity =
-        typeof item.parity === 'string'
-          ? item.parity.toUpperCase()
-          : redCount % 2 === 0
-            ? 'CHAN'
-            : 'LE';
+      historyItems.slice(-MAX_STATS_ITEMS).forEach((item) => {
+        const resolved = resolveCell(item);
+        if (!resolved) {
+          return;
+        }
 
-      if (previousParity !== null) {
-        const isSameParity = parity === previousParity;
-        if (isSameParity && currentRow < STATS_ROWS - 1) {
+        const { key, cell } = resolved;
+
+        if (previousKey !== null && key === previousKey && currentRow < STATS_ROWS - 1) {
           currentRow += 1;
         } else {
-          currentColumn += 1;
+          currentColumn = previousKey === null ? 0 : currentColumn + 1;
           currentRow = 0;
+        }
+
+        if (currentColumn >= STATS_COLUMNS) {
+          for (let col = 0; col < STATS_COLUMNS - 1; col += 1) {
+            columnsData[col] = columnsData[col + 1].slice();
+          }
+          columnsData[STATS_COLUMNS - 1] = Array(STATS_ROWS).fill(null);
+          currentColumn = STATS_COLUMNS - 1;
+        }
+
+        columnsData[currentColumn][currentRow] = cell;
+        previousKey = key;
+      });
+
+      const cursor = {
+        column: Math.min(currentColumn, STATS_COLUMNS - 1),
+        row: Math.min(currentRow, STATS_ROWS - 1),
+        lastKey: previousKey,
+      };
+
+      return {
+        grid: columnsToGrid(columnsData),
+        cursor,
+      };
+    },
+    [columnsToGrid]
+  );
+
+  const appendToStatsGrid = useCallback(
+    (currentGrid, cursorRef, entry) => {
+      if (!entry) {
+        return currentGrid || createEmptyStatsGrid();
+      }
+
+      const columnsData = createEmptyColumns();
+      for (let col = 0; col < STATS_COLUMNS; col += 1) {
+        for (let row = 0; row < STATS_ROWS; row += 1) {
+          columnsData[col][row] = currentGrid?.[row]?.[col] ?? null;
         }
       }
 
-      if (currentColumn >= STATS_COLUMNS) {
-        return;
+      let { column, row, lastKey } = cursorRef.current || { column: 0, row: -1, lastKey: null };
+
+      if (lastKey === entry.key && row < STATS_ROWS - 1) {
+        row += 1;
+      } else {
+        column = lastKey === null ? 0 : column + 1;
+        row = 0;
+
+        if (column >= STATS_COLUMNS) {
+          for (let col = 0; col < STATS_COLUMNS - 1; col += 1) {
+            columnsData[col] = columnsData[col + 1].slice();
+          }
+          columnsData[STATS_COLUMNS - 1] = Array(STATS_ROWS).fill(null);
+          column = STATS_COLUMNS - 1;
+        } else {
+          columnsData[column] = Array(STATS_ROWS).fill(null);
+        }
       }
 
-      columnsData[currentColumn][currentRow] = {
-        value: redCount,
-        parity,
-      };
-      previousParity = parity;
-    });
-
-    const grid = Array.from({ length: STATS_ROWS }, (_, rowIndex) =>
-      columnsData.map((columnValues) => columnValues[rowIndex])
-    );
-
-    setChanLeStatsGrid(grid);
-  }, []);
+      columnsData[column][row] = entry.cell;
+      cursorRef.current = { column, row, lastKey: entry.key };
+      return columnsToGrid(columnsData);
+    },
+    [columnsToGrid]
+  );
 
   useEffect(() => {
-    buildChanLeStatsGrid(chanLeHistory);
-  }, [chanLeHistory, buildChanLeStatsGrid]);
+    const { grid, cursor } = buildStatsGrid(chanLeHistory, (item) => {
+      if (!item || typeof item.redCount !== 'number') {
+        return null;
+      }
+      const parity =
+        typeof item.parity === 'string'
+          ? item.parity.toUpperCase()
+          : item.redCount % 2 === 0
+            ? 'CHAN'
+            : 'LE';
+      return {
+        key: parity,
+        cell: {
+          value: item.redCount,
+          parity,
+        },
+      };
+    });
+    setChanLeStatsGrid(grid);
+    chanLeCursorRef.current = cursor;
+  }, [chanLeHistory, buildStatsGrid]);
+
+  useEffect(() => {
+    const { grid, cursor } = buildStatsGrid(taiXiuHistory, (item) => {
+      if (!item || !item.display || !item.category) {
+        return null;
+      }
+      return {
+        key: item.category,
+        cell: item.display,
+      };
+    });
+    setTaiXiuStatsGrid(grid);
+    taiXiuCursorRef.current = cursor;
+  }, [taiXiuHistory, buildStatsGrid]);
 
   const fetchResultHistories = useCallback(async () => {
     const response = await xocDiaResultHistoryService.fetchHistories({
@@ -250,6 +361,7 @@ const XocDiaGamePage = () => {
 
     if (!response.success) {
       setChanLeHistory([]);
+      setTaiXiuHistory([]);
       return;
     }
 
@@ -271,16 +383,36 @@ const XocDiaGamePage = () => {
             : redCount % 2 === 0
               ? 'CHAN'
               : 'LE';
+        const category =
+          redCount === 2 ? 'HOA' : redCount >= 3 ? 'TAI' : 'XIU';
+        const display = category === 'HOA' ? '2' : category === 'TAI' ? 'T' : 'X';
+
         return {
           sessionId: item.sessionId ?? null,
           redCount,
           parity,
+          category,
+          display,
         };
       })
       .filter(Boolean);
 
     const limitedHistory = normalizedHistory.slice(-MAX_STATS_ITEMS);
-    setChanLeHistory(limitedHistory);
+    setChanLeHistory(
+      limitedHistory.map(({ sessionId, redCount, parity }) => ({
+        sessionId,
+        redCount,
+        parity,
+      }))
+    );
+    setTaiXiuHistory(
+      limitedHistory.map(({ sessionId, redCount, category, display }) => ({
+        sessionId,
+        redCount,
+        category,
+        display,
+      }))
+    );
   }, []);
 
   useEffect(() => {
@@ -311,6 +443,34 @@ const XocDiaGamePage = () => {
         }
         return next;
       });
+      setChanLeStatsGrid((prev) =>
+        appendToStatsGrid(prev, chanLeCursorRef, {
+          key: parity,
+          cell: {
+            value: redCount,
+            parity,
+          },
+        })
+      );
+
+      const category = redCount === 2 ? 'HOA' : redCount >= 3 ? 'TAI' : 'XIU';
+      const display = category === 'HOA' ? '2' : category === 'TAI' ? 'T' : 'X';
+      setTaiXiuHistory((prev) => {
+        if (prev.some((item) => item.sessionId === sessionId)) {
+          return prev;
+        }
+        const next = [...prev, { sessionId, redCount, category, display }];
+        if (next.length > MAX_STATS_ITEMS) {
+          next.splice(0, next.length - MAX_STATS_ITEMS);
+        }
+        return next;
+      });
+      setTaiXiuStatsGrid((prev) =>
+        appendToStatsGrid(prev, taiXiuCursorRef, {
+          key: category,
+          cell: display,
+        })
+      );
     }
 
     if (pendingHistoryRefreshRef.current) {
@@ -744,7 +904,6 @@ const XocDiaGamePage = () => {
     };
   }, []);
 
-  const statsGrid = chanLeStatsGrid;
 
 
 
@@ -829,6 +988,15 @@ const XocDiaGamePage = () => {
         break;
     }
   };
+
+  const handleBackRequest = useCallback(() => {
+    setShowExitConfirmModal(true);
+  }, []);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowExitConfirmModal(false);
+    navigate('/casino/live');
+  }, [navigate]);
 
   const handleCustomChipSubmit = (event) => {
     event.preventDefault();
@@ -1218,11 +1386,12 @@ const XocDiaGamePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <XocDiaHeader
-        onBack={() => navigate('/casino/live')}
+        onBack={handleBackRequest}
         gameName={gameName}
         userName={userName}
         balanceDisplay={balanceDisplay}
         isLoadingBalance={loadingPoints}
+        onOpenBetHistory={() => setIsHistoryDrawerOpen(true)}
       />
 
       <main className="px-3 sm:px-3 md:px-5 lg:px-8 pt-2 md:pt-4 pb-4 md:pb-6">
@@ -1271,8 +1440,8 @@ const XocDiaGamePage = () => {
                   onChangeTab={setActiveStatsTab}
                   columns={STATS_COLUMNS}
                   rows={STATS_ROWS}
-                  statsGrid={statsGrid}
-                  statsPatternGridData={statsPatternGridData}
+                  chanLeGrid={chanLeStatsGrid}
+                  taiXiuGrid={taiXiuStatsGrid}
                 />
               </section>
             </div>
@@ -1291,6 +1460,24 @@ const XocDiaGamePage = () => {
         onSelectAllChips={handleSelectAllChips}
         onClose={handleCloseCustomChipModal}
         onSubmit={handleCustomChipSubmit}
+      />
+      <XocDiaBetHistoryDrawer
+        isOpen={isHistoryDrawerOpen}
+        onClose={() => setIsHistoryDrawerOpen(false)}
+        optionLookup={quickBetOptionLookup}
+      />
+      <LogoutConfirmModal
+        isOpen={showExitConfirmModal}
+        onClose={() => setShowExitConfirmModal(false)}
+        onConfirm={handleConfirmExit}
+        title="Thoát khỏi game?"
+        message="Bạn sẽ rời khỏi trò chơi hiện tại. Bạn có chắc chắn muốn thoát không?"
+        icon="mdi:exit-run"
+        confirmIcon="mdi:exit-to-app"
+        confirmLabel="Thoát game"
+        confirmLoadingLabel="Đang thoát..."
+        iconContainerClass="bg-red-100 text-red-600"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
     </div>
   );

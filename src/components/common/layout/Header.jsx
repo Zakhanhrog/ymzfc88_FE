@@ -25,7 +25,7 @@ const Header = ({
   userBalance,
   onRefreshBalance,
   onLogout,
-  onMobileMenuToggle
+  onMobileMenuToggle,
 }) => {
   const navigate = useNavigate();
   const [showNotificationModal, setShowNotificationModal] = useState(false);

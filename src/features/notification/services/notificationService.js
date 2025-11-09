@@ -1,21 +1,21 @@
 const API_URL = 'http://localhost:8080/api';
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('authToken');
+  const authToken = localStorage.getItem('authToken');
+  const legacyUserToken = localStorage.getItem('token');
   const adminToken = localStorage.getItem('adminToken');
   
-  // Prioritize user token for user-facing services
-  const activeToken = token || adminToken;
+  const activeToken = authToken || legacyUserToken || adminToken;
   
-  if (activeToken) {
-    return {
-      'Authorization': `Bearer ${activeToken}`,
-      'Content-Type': 'application/json',
-    };
-  }
-  return {
+  const headers = {
     'Content-Type': 'application/json',
   };
+
+  if (activeToken) {
+    headers.Authorization = `Bearer ${activeToken}`;
+  }
+
+  return headers;
 };
 
 const notificationService = {

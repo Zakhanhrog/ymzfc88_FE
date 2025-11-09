@@ -105,6 +105,10 @@ export const essentialQuickBetCodes = [
   'tai',
   'xiu',
   'le',
+  'even',
+  'odd',
+  'three-white',
+  'three-red',
   'two-two',
   'four-white',
   'three-white-one-red',
@@ -126,5 +130,5 @@ export const defaultChipOptions = [
 
 export const defaultChipLabels = defaultChipOptions.map((chip) => chip.label);
 
-export const styledPlainCodes = new Set(['chan', 'le', 'tai', 'xiu', 'even', 'odd']);
+export const styledPlainCodes = new Set(['chan', 'le', 'tai', 'xiu', 'even', 'odd', 'three-white', 'three-red']);
 

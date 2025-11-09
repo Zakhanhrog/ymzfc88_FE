@@ -19,13 +19,6 @@ class WalletService {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       
-      // Log response để debug
-      console.log('API Error Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData
-      });
-      
       // Xử lý các loại lỗi cụ thể
       if (response.status === 500) {
         throw new Error('Đã xảy ra lỗi máy chủ, vui lòng thử lại sau');
@@ -73,16 +66,13 @@ class WalletService {
   async getWalletBalance() {
     try {
       const headers = this.getHeaders();
-      console.log('Fetching wallet balance with headers:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'none' });
       
       const response = await fetch(`${API_BASE_URL}/wallet/balance`, {
         method: 'GET',
         headers: headers
       });
       
-      console.log('Wallet balance response status:', response.status);
       const result = await this.handleResponse(response);
-      console.log('Wallet balance result:', result);
       return result;
     } catch (error) {
       console.error('Error fetching wallet balance:', error);
@@ -142,11 +132,6 @@ class WalletService {
         billImageUrl: depositData.billImageUrl || null
       };
       
-      console.log('Sending deposit data:', {
-        ...requestData,
-        billImage: requestData.billImage ? '[BASE64_DATA]' : null // Don't log full base64
-      });
-      
       const response = await fetch(`${API_BASE_URL}/transactions/deposit`, {
         method: 'POST',
         headers: this.getHeaders(),
@@ -163,9 +148,6 @@ class WalletService {
   // Tạo lệnh rút tiền với UserPaymentMethod
   async createWithdrawOrder(withdrawData) {
     try {
-      // Log dữ liệu gửi đi để debug
-      console.log('Sending withdraw data:', withdrawData);
-      
       const response = await fetch(`${API_BASE_URL}/transactions/user-withdraw`, {
         method: 'POST',
         headers: this.getHeaders(),
@@ -182,9 +164,6 @@ class WalletService {
   // Tạo lệnh rút tiền (legacy method)
   async createLegacyWithdrawOrder(withdrawData) {
     try {
-      // Log dữ liệu gửi đi để debug
-      console.log('Sending legacy withdraw data:', withdrawData);
-      
       const response = await fetch(`${API_BASE_URL}/transactions/withdraw`, {
         method: 'POST',
         headers: this.getHeaders(),
@@ -249,16 +228,13 @@ class WalletService {
   async getUserPaymentMethods() {
     try {
       const headers = this.getHeaders();
-      console.log('Fetching user payment methods with headers:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'none' });
       
       const response = await fetch(`${API_BASE_URL}/user/payment-methods`, {
         method: 'GET',
         headers: headers
       });
       
-      console.log('User payment methods response status:', response.status);
       const result = await this.handleResponse(response);
-      console.log('User payment methods result:', result);
       return result;
     } catch (error) {
       console.error('Error fetching user payment methods:', error);
@@ -269,8 +245,6 @@ class WalletService {
   // Tạo phương thức thanh toán cá nhân mới
   async createUserPaymentMethod(paymentMethodData) {
     try {
-      console.log('Creating user payment method:', paymentMethodData);
-      
       const response = await fetch(`${API_BASE_URL}/user/payment-methods`, {
         method: 'POST',
         headers: this.getHeaders(),
@@ -287,8 +261,6 @@ class WalletService {
   // Cập nhật phương thức thanh toán cá nhân
   async updateUserPaymentMethod(id, paymentMethodData) {
     try {
-      console.log('Updating user payment method:', id, paymentMethodData);
-      
       const response = await fetch(`${API_BASE_URL}/user/payment-methods/${id}`, {
         method: 'PUT',
         headers: this.getHeaders(),
