@@ -19,7 +19,7 @@ const XocDiaStatsPanel = ({
             : 'bg-white/10 text-white/75 hover:bg-white/20 hover:text-white'
         }`}
       >
-        Thống kê 1
+        Cầu Chẵn / Lẻ
       </button>
       <button
         type="button"
@@ -49,15 +49,25 @@ const XocDiaStatsPanel = ({
                 key={`${activeStatsTab === '1' ? 'cell' : 'pattern'}-${rowIndex}-${cellIndex}`}
                 className="flex h-5 w-full items-center justify-center border border-white/20"
               >
-                {cell ? (
-                  activeStatsTab === '1' ? (
+                {(() => {
+                  if (cell == null) return null;
+                  const cellValue =
+                    typeof cell === 'object' && cell !== null ? cell.value ?? '' : cell;
+                  const hasValue =
+                    cellValue !== '' && cellValue !== null && cellValue !== undefined;
+                  if (!hasValue) {
+                    return null;
+                  }
+                  const displayValue =
+                    typeof cellValue === 'number' ? cellValue : `${cellValue}`;
+                  return activeStatsTab === '1' ? (
                     <span
                       className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border leading-none ${getChipClasses(
                         cell
                       )}`}
                       style={{ fontSize: '10px' }}
                     >
-                      {cell}
+                      {displayValue}
                     </span>
                   ) : (
                     <span
@@ -66,10 +76,10 @@ const XocDiaStatsPanel = ({
                       )}`}
                       style={{ fontSize: '10px' }}
                     >
-                      {cell}
+                      {displayValue}
                     </span>
-                  )
-                ) : null}
+                  );
+                })()}
               </div>
             ))
           )}

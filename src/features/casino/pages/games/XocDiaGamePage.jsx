@@ -11,7 +11,6 @@ import {
   CACHE_DURATION_MS,
   gameName,
   defaultQuickBetConfigs,
-  statsHistory,
   statsPatternGridData,
   defaultChipOptions,
   defaultChipLabels,
@@ -24,6 +23,7 @@ import {
   extractUserName,
   chunkPattern,
 } from './xocDiaUtils';
+import xocDiaResultHistoryService from '../../../../services/xocDiaResultHistoryService';
 import XocDiaHeader from './components/XocDiaHeader';
 import XocDiaLiveStream from './components/XocDiaLiveStream';
 import XocDiaQuickBetBoard from './components/XocDiaQuickBetBoard';
@@ -31,6 +31,64 @@ import XocDiaChipSelector from './components/XocDiaChipSelector';
 import XocDiaQuickActionBar from './components/XocDiaQuickActionBar';
 import XocDiaStatsPanel from './components/XocDiaStatsPanel';
 import XocDiaCustomChipModal from './components/XocDiaCustomChipModal';
+
+const STATS_ROWS = 6;
+const STATS_COLUMNS = 17;
+const MAX_STATS_ITEMS = STATS_ROWS * STATS_COLUMNS;
+
+const RED_COUNT_MAP = {
+  'four-white': 0,
+  'four-red': 4,
+  'three-white-one-red': 1,
+  'three-red-one-white': 3,
+  'two-two': 2,
+};
+
+const normalizeResultCode = (code) =>
+  code
+    ?.trim()
+    ?.toLowerCase()
+    ?.replace(/[\s_]+/g, '-') || '';
+
+const resolveRedCountFromCode = (code) => {
+  if (!code) {
+    return null;
+  }
+
+  const normalized = normalizeResultCode(code);
+  if (Object.prototype.hasOwnProperty.call(RED_COUNT_MAP, normalized)) {
+    return RED_COUNT_MAP[normalized];
+  }
+
+  if (normalized.includes('four-white')) {
+    return 0;
+  }
+  if (normalized.includes('four-red')) {
+    return 4;
+  }
+  if (normalized.includes('three-white-one-red')) {
+    return 1;
+  }
+  if (normalized.includes('three-red-one-white') || normalized.includes('three-red')) {
+    return 3;
+  }
+  if (normalized.includes('two-two')) {
+    return 2;
+  }
+  if (normalized.includes('one-red')) {
+    return 1;
+  }
+
+  const matches = normalized.match(/red/g);
+  if (matches && matches.length > 0) {
+    return Math.min(Math.max(matches.length, 0), 4);
+  }
+
+  return null;
+};
+
+const createEmptyStatsGrid = () =>
+  Array.from({ length: STATS_ROWS }, () => Array(STATS_COLUMNS).fill(null));
 
 const XocDiaGamePage = () => {
   const navigate = useNavigate();
@@ -70,6 +128,8 @@ const XocDiaGamePage = () => {
   const [customChipValue, setCustomChipValue] = useState('');
   const [customChipError, setCustomChipError] = useState('');
   const [customChipSelections, setCustomChipSelections] = useState(new Set(defaultChipOptions.map((chip) => chip.label)));
+  const [chanLeStatsGrid, setChanLeStatsGrid] = useState(() => createEmptyStatsGrid());
+  const [chanLeHistory, setChanLeHistory] = useState([]);
   const availableChipOptions = useMemo(() => {
     const map = new Map();
     defaultChipOptions.forEach((chip) => map.set(chip.label, chip.value));
@@ -104,12 +164,168 @@ const XocDiaGamePage = () => {
   );
   const resultTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
+  const lastHistorySignatureRef = useRef(null);
+  const pendingHistoryRefreshRef = useRef(null);
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      if (pendingHistoryRefreshRef.current) {
+        clearTimeout(pendingHistoryRefreshRef.current);
+        pendingHistoryRefreshRef.current = null;
+      }
     };
   }, []);
+  const buildChanLeStatsGrid = useCallback((historyItems) => {
+    if (!Array.isArray(historyItems) || historyItems.length === 0) {
+      setChanLeStatsGrid(createEmptyStatsGrid());
+      return;
+    }
+
+    const columnsData = Array.from({ length: STATS_COLUMNS }, () => Array(STATS_ROWS).fill(null));
+    let currentColumn = 0;
+    let currentRow = 0;
+    let previousParity = null;
+
+    const limitedHistory = historyItems.slice(-MAX_STATS_ITEMS);
+
+    limitedHistory.forEach((item) => {
+      if (!item || currentColumn >= STATS_COLUMNS) {
+        return;
+      }
+
+      const redCount = typeof item.redCount === 'number' ? item.redCount : null;
+      if (redCount === null) {
+        return;
+      }
+
+      const parity =
+        typeof item.parity === 'string'
+          ? item.parity.toUpperCase()
+          : redCount % 2 === 0
+            ? 'CHAN'
+            : 'LE';
+
+      if (previousParity !== null) {
+        const isSameParity = parity === previousParity;
+        if (isSameParity && currentRow < STATS_ROWS - 1) {
+          currentRow += 1;
+        } else {
+          currentColumn += 1;
+          currentRow = 0;
+        }
+      }
+
+      if (currentColumn >= STATS_COLUMNS) {
+        return;
+      }
+
+      columnsData[currentColumn][currentRow] = {
+        value: redCount,
+        parity,
+      };
+      previousParity = parity;
+    });
+
+    const grid = Array.from({ length: STATS_ROWS }, (_, rowIndex) =>
+      columnsData.map((columnValues) => columnValues[rowIndex])
+    );
+
+    setChanLeStatsGrid(grid);
+  }, []);
+
+  useEffect(() => {
+    buildChanLeStatsGrid(chanLeHistory);
+  }, [chanLeHistory, buildChanLeStatsGrid]);
+
+  const fetchResultHistories = useCallback(async () => {
+    const response = await xocDiaResultHistoryService.fetchHistories({
+      limit: MAX_STATS_ITEMS,
+      order: 'asc',
+    });
+
+    if (!isMountedRef.current) {
+      return;
+    }
+
+    if (!response.success) {
+      setChanLeHistory([]);
+      return;
+    }
+
+    const normalizedHistory = (response.data || [])
+      .map((item) => {
+        if (!item) {
+          return null;
+        }
+        const redCount =
+          typeof item.redCount === 'number'
+            ? item.redCount
+            : resolveRedCountFromCode(item.resultCode || item.normalizedResultCode);
+        if (redCount == null) {
+          return null;
+        }
+        const parity =
+          typeof item.parity === 'string'
+            ? item.parity.toUpperCase()
+            : redCount % 2 === 0
+              ? 'CHAN'
+              : 'LE';
+        return {
+          sessionId: item.sessionId ?? null,
+          redCount,
+          parity,
+        };
+      })
+      .filter(Boolean);
+
+    const limitedHistory = normalizedHistory.slice(-MAX_STATS_ITEMS);
+    setChanLeHistory(limitedHistory);
+  }, []);
+
+  useEffect(() => {
+    fetchResultHistories();
+  }, [fetchResultHistories]);
+
+  useEffect(() => {
+    if (!sessionId || !sessionResultCode) {
+      return;
+    }
+
+    const signature = `${sessionId}:${sessionResultCode}`;
+    if (signature === lastHistorySignatureRef.current) {
+      return;
+    }
+    lastHistorySignatureRef.current = signature;
+
+    const redCount = resolveRedCountFromCode(sessionResultCode);
+    if (redCount != null) {
+      const parity = redCount % 2 === 0 ? 'CHAN' : 'LE';
+      setChanLeHistory((prev) => {
+        if (prev.some((item) => item.sessionId === sessionId)) {
+          return prev;
+        }
+        const next = [...prev, { sessionId, redCount, parity }];
+        if (next.length > MAX_STATS_ITEMS) {
+          next.splice(0, next.length - MAX_STATS_ITEMS);
+        }
+        return next;
+      });
+    }
+
+    if (pendingHistoryRefreshRef.current) {
+      clearTimeout(pendingHistoryRefreshRef.current);
+      pendingHistoryRefreshRef.current = null;
+    }
+
+    pendingHistoryRefreshRef.current = setTimeout(() => {
+      pendingHistoryRefreshRef.current = null;
+      if (isMountedRef.current) {
+        fetchResultHistories();
+      }
+    }, 1000);
+  }, [sessionId, sessionResultCode, fetchResultHistories]);
+
   const allowedPatternBetCodes = useMemo(() => {
     const codes = new Set(
       quickBetOptions
@@ -528,27 +744,7 @@ const XocDiaGamePage = () => {
     };
   }, []);
 
-  const flatStats = statsHistory.flat();
-  const columns = 17;
-  const rows = 6;
-  const totalCells = columns * rows;
-  const sequence = [...flatStats, ...Array(Math.max(0, totalCells - flatStats.length)).fill('')].slice(0, totalCells);
-
-  const columnsData = Array.from({ length: columns }, () => Array(rows).fill(''));
-  let col = 0;
-  let row = 0;
-  sequence.forEach((value) => {
-    columnsData[col][row] = value;
-    row += 1;
-    if (row === rows) {
-      row = 0;
-      col += 1;
-    }
-  });
-
-  const statsGrid = Array.from({ length: rows }, (_, rowIndex) =>
-    columnsData.map((columnValues) => columnValues[rowIndex])
-  );
+  const statsGrid = chanLeStatsGrid;
 
 
 
@@ -1073,8 +1269,8 @@ const XocDiaGamePage = () => {
                 <XocDiaStatsPanel
                   activeStatsTab={activeStatsTab}
                   onChangeTab={setActiveStatsTab}
-                  columns={columns}
-                  rows={rows}
+                  columns={STATS_COLUMNS}
+                  rows={STATS_ROWS}
                   statsGrid={statsGrid}
                   statsPatternGridData={statsPatternGridData}
                 />

@@ -121,8 +121,25 @@ export const chunkPattern = (pattern, chunkSize = 4) => {
 
 export const getChipClasses = (value) => {
   if (!value) return null;
-  const isWhite = value === '0' || value === '1' || value === '3';
-  return isWhite ? 'border-white bg-white text-[#1f1f1f]' : 'border-red-500 bg-red-500 text-white';
+
+  let parity = null;
+  let numericValue = value;
+
+  if (typeof value === 'object') {
+    parity = typeof value.parity === 'string' ? value.parity.toUpperCase() : null;
+    numericValue = value.value;
+  }
+
+  const numberValue =
+    typeof numericValue === 'number'
+      ? numericValue
+      : Number.isFinite(Number(numericValue))
+        ? Number(numericValue)
+        : null;
+
+  const isLe = parity ? parity === 'LE' : numberValue != null ? numberValue % 2 !== 0 : false;
+
+  return isLe ? 'border-white bg-white text-[#1f1f1f]' : 'border-red-500 bg-red-500 text-white';
 };
 
 export const getPatternCellClasses = (value) => {
