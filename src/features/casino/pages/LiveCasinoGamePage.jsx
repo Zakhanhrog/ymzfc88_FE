@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import XocDiaGamePage from './games/XocDiaGamePage';
+import SicboGamePage from './games/SicboGamePage';
 import liveCasinoGames from '../data/liveCasinoGames';
 
 const LiveCasinoGamePage = () => {
@@ -8,6 +9,8 @@ const LiveCasinoGamePage = () => {
   switch (gameId) {
     case 'xocdia':
       return <XocDiaGamePage />;
+    case 'sicbo':
+      return <SicboGamePage />;
     default: {
       const fallbackGame = liveCasinoGames.find((game) => game.id === gameId);
       return (

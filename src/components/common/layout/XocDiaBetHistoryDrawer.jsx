@@ -111,16 +111,16 @@ const BetHistoryItem = ({ item, option }) => {
             <div className="flex items-center justify-between">
               <span className="font-medium text-gray-600">Tổng cược</span>
               <span className="font-semibold text-gray-900">{formattedStake}</span>
-            </div>
+        </div>
             <div className="flex items-center justify-between">
               <span className="font-medium text-gray-600">Thắng cược</span>
               <span className="font-semibold text-gray-900">{formattedWinAmount}</span>
-            </div>
+      </div>
             <div className="flex items-center justify-between">
               <span className="font-medium text-gray-600">Ngày cược</span>
               <span className="font-semibold text-gray-900">{createdAt}</span>
-            </div>
-          </div>
+        </div>
+        </div>
         </div>
       </div>
     </div>

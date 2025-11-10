@@ -1,3 +1,5 @@
+import { defaultChipLabels } from '../xocDiaConfig';
+
 const XocDiaCustomChipModal = ({
   isOpen,
   customChipValue,
@@ -44,20 +46,63 @@ const XocDiaCustomChipModal = ({
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {availableChipOptions.map((chip) => {
+              {availableChipOptions
+                .filter((chip) => defaultChipLabels.includes(chip.label))
+                .map((chip) => {
                 const isActive = customChipSelections.has(chip.label);
+                const iconSrc = (() => {
+                  switch (chip.label) {
+                    case '10K':
+                      return '/pokerchip/10K.svg';
+                    case '20K':
+                      return '/pokerchip/20K.svg';
+                    case '50K':
+                      return '/pokerchip/50K.svg';
+                    case '100K':
+                      return '/pokerchip/100K.svg';
+                    case '200K':
+                      return '/pokerchip/200K.svg';
+                    case '500K':
+                      return '/pokerchip/500K.svg';
+                    case '1M':
+                      return '/pokerchip/1M.svg';
+                    case '10M':
+                      return '/pokerchip/10M.svg';
+                    default:
+                      return null;
+                  }
+                })();
+                const formattedLabel = chip.label.endsWith('K')
+                  ? chip.label.replace(/K$/, '')
+                  : chip.label;
                 return (
                   <button
                     key={chip.label}
                     type="button"
                     onClick={() => onToggleChipSelection(chip.label)}
-                    className={`flex h-11 w-11 items-center justify-center rounded-full border text-xs font-semibold uppercase tracking-wide transition ${
+                    className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${
                       isActive
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-sm'
-                        : 'border-gray-300 bg-white text-gray-500 hover:border-emerald-300 hover:text-emerald-600'
+                        ? 'shadow-lg shadow-emerald-500/20 ring-2 ring-emerald-500'
+                        : 'shadow-sm hover:shadow-md'
                     }`}
                   >
-                    {chip.label}
+                    {iconSrc ? (
+                      <>
+                        <img
+                          src={iconSrc}
+                          alt={chip.label}
+                          className="absolute inset-0 h-full w-full object-contain"
+                          draggable={false}
+                        />
+                        <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
+                          {formattedLabel}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900">
+                        {formattedLabel}
+                      </span>
+                    )}
                   </button>
                 );
               })}

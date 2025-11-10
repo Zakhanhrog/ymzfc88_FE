@@ -131,7 +131,10 @@ const XocDiaGamePage = () => {
   const [isCustomChipModalOpen, setIsCustomChipModalOpen] = useState(false);
   const [customChipValue, setCustomChipValue] = useState('');
   const [customChipError, setCustomChipError] = useState('');
-  const [customChipSelections, setCustomChipSelections] = useState(new Set(defaultChipOptions.map((chip) => chip.label)));
+  const defaultChipLabelSet = useMemo(() => new Set(defaultChipLabels), []);
+  const [customChipSelections, setCustomChipSelections] = useState(
+    new Set(defaultChipOptions.map((chip) => chip.label))
+  );
   const [chanLeStatsGrid, setChanLeStatsGrid] = useState(() => createEmptyStatsGrid());
   const [taiXiuStatsGrid, setTaiXiuStatsGrid] = useState(() => createEmptyStatsGrid());
   const [chanLeHistory, setChanLeHistory] = useState([]);
@@ -153,6 +156,19 @@ const XocDiaGamePage = () => {
     const map = new Map();
     defaultChipOptions.forEach((chip) => map.set(chip.label, chip.value));
     chipOptions.forEach((chip) => map.set(chip.label, chip.value));
+    if (typeof window !== 'undefined') {
+      const stored = window.localStorage.getItem('xocdia_custom_chip');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed?.label && typeof parsed?.value === 'number') {
+            map.set(parsed.label, parsed.value);
+          }
+        } catch (error) {
+          // ignore malformed storage
+        }
+      }
+    }
     return Array.from(map.entries()).map(([label, value]) => ({ label, value }));
   }, [chipOptions]);
   const plainEnabledCodes = useMemo(
@@ -910,7 +926,9 @@ const XocDiaGamePage = () => {
   const handleOpenCustomChipModal = () => {
     setCustomChipValue('');
     setCustomChipError('');
-    setCustomChipSelections(new Set(chipOptions.map((chip) => chip.label)));
+    setCustomChipSelections(
+      new Set(chipOptions.filter((chip) => defaultChipLabelSet.has(chip.label)).map((chip) => chip.label))
+    );
     setIsCustomChipModalOpen(true);
   };
 
@@ -918,7 +936,9 @@ const XocDiaGamePage = () => {
     setIsCustomChipModalOpen(false);
     setCustomChipValue('');
     setCustomChipError('');
-    setCustomChipSelections(new Set(chipOptions.map((chip) => chip.label)));
+    setCustomChipSelections(
+      new Set(chipOptions.filter((chip) => defaultChipLabelSet.has(chip.label)).map((chip) => chip.label))
+    );
   };
 
   const handleCustomChipValueChange = (event) => {
@@ -945,7 +965,7 @@ const XocDiaGamePage = () => {
   };
 
   const handleSelectAllChips = () => {
-    setCustomChipSelections(new Set(availableChipOptions.map((chip) => chip.label)));
+    setCustomChipSelections(new Set(defaultChipLabels));
     if (customChipError) {
       setCustomChipError('');
     }
@@ -1028,9 +1048,6 @@ const XocDiaGamePage = () => {
     const availableMap = new Map();
     defaultChipOptions.forEach((chip) => availableMap.set(chip.label, chip.value));
     chipOptions.forEach((chip) => availableMap.set(chip.label, chip.value));
-    if (label && value !== null) {
-      availableMap.set(label, value);
-    }
 
     const newOrder = [];
 
@@ -1052,8 +1069,20 @@ const XocDiaGamePage = () => {
       }
     });
 
+    if (typeof window !== 'undefined') {
+      if (label && value !== null) {
+        window.localStorage.setItem('xocdia_custom_chip', JSON.stringify({ label, value }));
+        window.dispatchEvent(new CustomEvent('xocdia-custom-chip-updated', { detail: { label, value } }));
+      } else {
+        window.localStorage.removeItem('xocdia_custom_chip');
+        window.dispatchEvent(new CustomEvent('xocdia-custom-chip-updated', { detail: null }));
+      }
+    }
+
     setChipOptions(newOrder);
-    setCustomChipSelections(new Set(newOrder.map((chip) => chip.label)));
+    setCustomChipSelections(
+      new Set(newOrder.filter((chip) => defaultChipLabelSet.has(chip.label)).map((chip) => chip.label))
+    );
     if (label && value !== null) {
       setSelectedChipValue(value);
       setSelectedChipLabel(label);
@@ -1077,6 +1106,8 @@ const XocDiaGamePage = () => {
 
   const handleQuickChipSelect = (chipValue) => {
     if (chipValue == null) {
+      setSelectedChipValue(null);
+      setSelectedChipLabel(null);
       return;
     }
     const label =
@@ -1086,6 +1117,20 @@ const XocDiaGamePage = () => {
     setSelectedChipValue(chipValue);
     setSelectedChipLabel(label);
   };
+
+  const handleClearCustomChip = useCallback(
+    (chip) => {
+      setChipOptions((prev) => prev.filter((option) => option.label !== chip?.label));
+      setCustomChipSelections(new Set(defaultChipLabels));
+      setSelectedChipValue((prev) => (prev === chip?.value ? null : prev));
+      setSelectedChipLabel((prev) => (prev === chip?.label ? null : prev));
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('xocdia_custom_chip');
+        window.dispatchEvent(new CustomEvent('xocdia-custom-chip-updated', { detail: null }));
+      }
+    },
+    [defaultChipLabels]
+  );
 
   const countdownDisplay = isCountdownPhase ? (
     <div className="flex items-center">
@@ -1427,6 +1472,7 @@ const XocDiaGamePage = () => {
                   selectedChipValue={selectedChipValue}
                   onSelectChip={handleQuickChipSelect}
                   onOpenCustomChipModal={handleOpenCustomChipModal}
+                  onClearCustomChip={handleClearCustomChip}
                 />
 
                 <XocDiaQuickActionBar
@@ -1461,11 +1507,11 @@ const XocDiaGamePage = () => {
         onClose={handleCloseCustomChipModal}
         onSubmit={handleCustomChipSubmit}
       />
-      <XocDiaBetHistoryDrawer
-        isOpen={isHistoryDrawerOpen}
-        onClose={() => setIsHistoryDrawerOpen(false)}
-        optionLookup={quickBetOptionLookup}
-      />
+        <XocDiaBetHistoryDrawer
+          isOpen={isHistoryDrawerOpen}
+          onClose={() => setIsHistoryDrawerOpen(false)}
+          optionLookup={quickBetOptionLookup}
+        />
       <LogoutConfirmModal
         isOpen={showExitConfirmModal}
         onClose={() => setShowExitConfirmModal(false)}
