@@ -150,7 +150,7 @@ const HomePage = () => {
         if (mainResponse.success) {
           const mappedBanners = mainResponse.data.map(banner => ({
             id: banner.id,
-            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
+            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.tathiet168.com/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
           }));
           setMainBanners(mappedBanners);
@@ -160,7 +160,7 @@ const HomePage = () => {
         if (sideResponse.success) {
           const mappedBanners = sideResponse.data.map(banner => ({
             id: banner.id,
-            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:8080/api${banner.imageUrl}`,
+            url: banner.imageUrl.startsWith('http') ? banner.imageUrl : `https://api.tathiet168.com/api${banner.imageUrl}`,
             alt: `Banner ${banner.displayOrder}`
           }));
           setSideBanners(mappedBanners);

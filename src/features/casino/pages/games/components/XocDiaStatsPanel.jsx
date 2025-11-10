@@ -11,7 +11,7 @@ const XocDiaStatsPanel = ({
   const grid = activeStatsTab === '1' ? chanLeGrid : taiXiuGrid;
 
   return (
-    <section className="rounded-xl border border-[#1aab6f]/50 bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-3 text-white shadow-inner space-y-3">
+    <section className="rounded-xl border border-[#1aab6f]/40 bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] px-3 py-3 text-white shadow-inner space-y-3">
       <header className="flex items-center gap-2 text-xs font-semibold uppercase">
       <button
         type="button"
@@ -38,9 +38,9 @@ const XocDiaStatsPanel = ({
     </header>
 
       <div className="space-y-3">
-        <div className="rounded-lg border border-white/15 bg-white/5 p-2">
+        <div className="rounded-lg border border-white/20 bg-white/10 p-2 shadow-inner">
           <div
-            className="grid"
+            className="grid gap-[3px]"
             style={{
               gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
@@ -50,7 +50,7 @@ const XocDiaStatsPanel = ({
               row.map((cell, cellIndex) => (
                 <div
                   key={`${activeStatsTab === '1' ? 'cell' : 'pattern'}-${rowIndex}-${cellIndex}`}
-                  className="flex h-5 w-full items-center justify-center border border-white/20"
+                  className="flex h-5 w-full items-center justify-center rounded bg-white/10"
                 >
                   {(() => {
                     if (cell == null) return null;

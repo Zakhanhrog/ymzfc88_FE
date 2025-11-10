@@ -107,7 +107,7 @@ const Layout = ({ children }) => {
       }
 
       // Gọi API /auth/me để lấy thông tin user mới nhất
-      const response = await fetch('http://localhost:8080/api/auth/me', {
+      const response = await fetch('https://api.tathiet168.com/api/auth/me', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -166,7 +166,7 @@ const Layout = ({ children }) => {
   const fetchUserPoints = async () => {
     try {
       // Thử gọi API wallet/balance trước (có points)
-      const walletResponse = await fetch('http://localhost:8080/api/wallet/balance', {
+      const walletResponse = await fetch('https://api.tathiet168.com/api/wallet/balance', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -296,7 +296,7 @@ const Layout = ({ children }) => {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          await fetch('http://localhost:8080/api/auth/logout', {
+          await fetch('https://api.tathiet168.com/api/auth/logout', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

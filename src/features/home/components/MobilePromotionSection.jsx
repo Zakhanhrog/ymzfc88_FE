@@ -93,7 +93,7 @@ const MobilePromotionSection = () => {
               className="relative h-36 p-5 flex flex-col justify-between"
               style={{
                 backgroundImage: currentPromotion.imageUrl 
-                  ? `url(${currentPromotion.imageUrl.startsWith('http') ? currentPromotion.imageUrl : `http://localhost:8080/api${currentPromotion.imageUrl}`})`
+                  ? `url(${currentPromotion.imageUrl.startsWith('http') ? currentPromotion.imageUrl : `https://api.tathiet168.com/api${currentPromotion.imageUrl}`})`
                   : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',

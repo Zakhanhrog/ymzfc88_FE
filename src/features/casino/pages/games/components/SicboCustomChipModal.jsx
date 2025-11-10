@@ -1,6 +1,17 @@
-import { defaultChipLabels } from '../xocDiaConfig';
+import { defaultChipLabels } from '../sicboConfig';
 
-const XocDiaCustomChipModal = ({
+const chipIconMap = {
+  '10K': '/pokerchip/10K.svg',
+  '20K': '/pokerchip/20K.svg',
+  '50K': '/pokerchip/50K.svg',
+  '100K': '/pokerchip/100K.svg',
+  '200K': '/pokerchip/200K.svg',
+  '500K': '/pokerchip/500K.svg',
+  '1M': '/pokerchip/1M.svg',
+  '10M': '/pokerchip/10M.svg',
+};
+
+const SicboCustomChipModal = ({
   isOpen,
   customChipValue,
   onCustomChipValueChange,
@@ -48,63 +59,38 @@ const XocDiaCustomChipModal = ({
               {availableChipOptions
                 .filter((chip) => defaultChipLabels.includes(chip.label))
                 .map((chip) => {
-                const isActive = customChipSelections.has(chip.label);
-                const iconSrc = (() => {
-                  switch (chip.label) {
-                    case '10K':
-                      return '/pokerchip/10K.svg';
-                    case '20K':
-                      return '/pokerchip/20K.svg';
-                    case '50K':
-                      return '/pokerchip/50K.svg';
-                    case '100K':
-                      return '/pokerchip/100K.svg';
-                    case '200K':
-                      return '/pokerchip/200K.svg';
-                    case '500K':
-                      return '/pokerchip/500K.svg';
-                    case '1M':
-                      return '/pokerchip/1M.svg';
-                    case '10M':
-                      return '/pokerchip/10M.svg';
-                    default:
-                      return null;
-                  }
-                })();
-                const formattedLabel = chip.label.endsWith('K')
-                  ? chip.label.replace(/K$/, '')
-                  : chip.label;
-                return (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    onClick={() => onToggleChipSelection(chip.label)}
-                    className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${
-                      isActive
-                        ? 'shadow-lg shadow-emerald-500/20 ring-2 ring-emerald-500'
-                        : 'shadow-sm hover:shadow-md'
-                    }`}
-                  >
-                    {iconSrc ? (
-                      <>
-                        <img
-                          src={iconSrc}
-                          alt={chip.label}
-                          className="absolute inset-0 h-full w-full object-contain"
-                          draggable={false}
-                        />
-                        <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
+                  const isActive = customChipSelections.has(chip.label);
+                  const iconSrc = chipIconMap[chip.label] ?? null;
+                  const formattedLabel = chip.label.endsWith('K') ? chip.label.replace(/K$/, '') : chip.label;
+                  return (
+                    <button
+                      key={chip.label}
+                      type="button"
+                      onClick={() => onToggleChipSelection(chip.label)}
+                      className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${
+                        isActive ? 'shadow-lg shadow-emerald-500/20 ring-2 ring-emerald-500' : 'shadow-sm hover:shadow-md'
+                      }`}
+                    >
+                      {iconSrc ? (
+                        <>
+                          <img
+                            src={iconSrc}
+                            alt={chip.label}
+                            className="absolute inset-0 h-full w-full object-contain"
+                            draggable={false}
+                          />
+                          <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
+                            {formattedLabel}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900">
                           {formattedLabel}
                         </span>
-                      </>
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900">
-                        {formattedLabel}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+                      )}
+                    </button>
+                  );
+                })}
             </div>
           </div>
 
@@ -129,5 +115,5 @@ const XocDiaCustomChipModal = ({
   );
 };
 
-export default XocDiaCustomChipModal;
+export default SicboCustomChipModal;
 
