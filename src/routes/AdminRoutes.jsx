@@ -4,6 +4,7 @@ import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
 import AdminPointManagementPage from '../features/admin/pages/AdminPointManagementPage';
 import AdminBettingOddsPage from '../features/admin/pages/AdminBettingOddsPage';
 import AdminXocDiaQuickBetPage from '../features/admin/pages/AdminXocDiaQuickBetPage';
+import AdminSicboQuickBetPage from '../features/admin/pages/AdminSicboQuickBetPage';
 import AdminLotteryResultManagement from '../features/admin/components/AdminLotteryResultManagement';
 import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
 import NotFoundPage from '../components/common/NotFoundPage';
@@ -64,6 +65,16 @@ const AdminRoutes = () => {
           element={
             <AdminProtectedRoute>
               <AdminXocDiaQuickBetPage />
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* Admin Sicbo Quick Bets */}
+        <Route
+          path="/admin/sicbo/quick-bets"
+          element={
+            <AdminProtectedRoute>
+              <AdminSicboQuickBetPage />
             </AdminProtectedRoute>
           }
         />
@@ -132,6 +143,16 @@ const AdminRoutes = () => {
           </AdminProtectedRoute>
         }
       />
+
+      {/* Admin Sicbo Quick Bets */}
+      <Route
+        path="/sicbo/quick-bets"
+        element={
+          <AdminProtectedRoute>
+            <AdminSicboQuickBetPage />
+          </AdminProtectedRoute>
+        }
+      />
       
       {/* Admin Lottery Results */}
       <Route 
@@ -150,6 +171,7 @@ const AdminRoutes = () => {
       <Route path="/admin/points" element={<Navigate to="/points" replace />} />
       <Route path="/admin/betting-odds" element={<Navigate to="/betting-odds" replace />} />
       <Route path="/admin/xoc-dia/quick-bets" element={<Navigate to="/xoc-dia/quick-bets" replace />} />
+      <Route path="/admin/sicbo/quick-bets" element={<Navigate to="/sicbo/quick-bets" replace />} />
       <Route path="/admin/lottery-results" element={<Navigate to="/lottery-results" replace />} />
       
       {/* 404 Route - Must be last */}

@@ -31,7 +31,7 @@ export const isAdminDomain = () => {
  */
 export const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
-    return import.meta.env.VITE_API_URL || 'https://api.tathiet168.com/api';
+    return import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
   }
   
   // Use environment variable if set
@@ -49,7 +49,7 @@ export const getApiBaseUrl = () => {
   }
   
   // Default API URL
-  return 'https://api.tathiet168.com/api';
+  return 'http://localhost:8080/api';
 };
 
 /**

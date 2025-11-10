@@ -116,4 +116,3 @@ const SicboCustomChipModal = ({
 };
 
 export default SicboCustomChipModal;
-

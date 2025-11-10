@@ -14,3 +14,59 @@ export const defaultChipLabels = defaultChipOptions.map((chip) => chip.label);
 export const SICBO_CUSTOM_CHIP_STORAGE_KEY = 'sicbo_custom_chip';
 export const SICBO_CUSTOM_CHIP_EVENT = 'sicbo-custom-chip-updated';
 
+export const defaultSicboQuickBetConfigs = [
+  { code: 'sicbo_primary_small', name: 'Xỉu', payoutMultiplier: 0.97, layoutGroup: 'PRIMARY', displayOrder: 0 },
+  { code: 'sicbo_primary_big', name: 'Tài', payoutMultiplier: 0.97, layoutGroup: 'PRIMARY', displayOrder: 1 },
+
+  { code: 'sicbo_combo_triple_1', name: 'Bộ ba 1', payoutMultiplier: 20, layoutGroup: 'COMBINATION', displayOrder: 0 },
+  { code: 'sicbo_combo_triple_6', name: 'Bộ ba 6', payoutMultiplier: 20, layoutGroup: 'COMBINATION', displayOrder: 1 },
+  { code: 'sicbo_combo_triple_2', name: 'Bộ ba 2', payoutMultiplier: 20, layoutGroup: 'COMBINATION', displayOrder: 2 },
+  { code: 'sicbo_combo_triple_5', name: 'Bộ ba 5', payoutMultiplier: 20, layoutGroup: 'COMBINATION', displayOrder: 3 },
+  { code: 'sicbo_combo_triple_3', name: 'Bộ ba 3', payoutMultiplier: 20, layoutGroup: 'COMBINATION', displayOrder: 4 },
+  { code: 'sicbo_combo_triple_4', name: 'Bộ ba 4', payoutMultiplier: 20, layoutGroup: 'COMBINATION', displayOrder: 5 },
+
+  { code: 'sicbo_parity_even', name: 'Chẵn', payoutMultiplier: 0.97, layoutGroup: 'TOTAL_TOP', displayOrder: 0 },
+  { code: 'sicbo_total_4', name: 'Tổng 4', payoutMultiplier: 30, layoutGroup: 'TOTAL_TOP', displayOrder: 1 },
+  { code: 'sicbo_total_5', name: 'Tổng 5', payoutMultiplier: 18, layoutGroup: 'TOTAL_TOP', displayOrder: 2 },
+  { code: 'sicbo_total_6', name: 'Tổng 6', payoutMultiplier: 14, layoutGroup: 'TOTAL_TOP', displayOrder: 3 },
+  { code: 'sicbo_total_7', name: 'Tổng 7', payoutMultiplier: 12, layoutGroup: 'TOTAL_TOP', displayOrder: 4 },
+  { code: 'sicbo_total_8', name: 'Tổng 8', payoutMultiplier: 8, layoutGroup: 'TOTAL_TOP', displayOrder: 5 },
+  { code: 'sicbo_total_9', name: 'Tổng 9', payoutMultiplier: 6, layoutGroup: 'TOTAL_TOP', displayOrder: 6 },
+  { code: 'sicbo_total_10', name: 'Tổng 10', payoutMultiplier: 6, layoutGroup: 'TOTAL_TOP', displayOrder: 7 },
+
+  { code: 'sicbo_parity_odd', name: 'Lẻ', payoutMultiplier: 0.97, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 0 },
+  { code: 'sicbo_total_17', name: 'Tổng 17', payoutMultiplier: 30, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 1 },
+  { code: 'sicbo_total_16', name: 'Tổng 16', payoutMultiplier: 18, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 2 },
+  { code: 'sicbo_total_15', name: 'Tổng 15', payoutMultiplier: 14, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 3 },
+  { code: 'sicbo_total_14', name: 'Tổng 14', payoutMultiplier: 12, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 4 },
+  { code: 'sicbo_total_13', name: 'Tổng 13', payoutMultiplier: 8, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 5 },
+  { code: 'sicbo_total_12', name: 'Tổng 12', payoutMultiplier: 6, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 6 },
+  { code: 'sicbo_total_11', name: 'Tổng 11', payoutMultiplier: 6, layoutGroup: 'TOTAL_BOTTOM', displayOrder: 7 },
+
+  { code: 'sicbo_single_1', name: 'Một mặt 1', payoutMultiplier: 0.97, layoutGroup: 'SINGLE', displayOrder: 0 },
+  { code: 'sicbo_single_2', name: 'Một mặt 2', payoutMultiplier: 0.97, layoutGroup: 'SINGLE', displayOrder: 1 },
+  { code: 'sicbo_single_3', name: 'Một mặt 3', payoutMultiplier: 0.97, layoutGroup: 'SINGLE', displayOrder: 2 },
+  { code: 'sicbo_single_4', name: 'Một mặt 4', payoutMultiplier: 0.97, layoutGroup: 'SINGLE', displayOrder: 3 },
+  { code: 'sicbo_single_5', name: 'Một mặt 5', payoutMultiplier: 0.97, layoutGroup: 'SINGLE', displayOrder: 4 },
+  { code: 'sicbo_single_6', name: 'Một mặt 6', payoutMultiplier: 0.97, layoutGroup: 'SINGLE', displayOrder: 5 },
+];
+
+export const buildSicboQuickBetMap = (configs = []) => {
+  const map = {};
+  defaultSicboQuickBetConfigs.forEach((item) => {
+    map[item.code] = { ...item };
+  });
+  (configs || []).forEach((item) => {
+    if (!item || !item.code) return;
+    map[item.code] = {
+      ...map[item.code],
+      ...item,
+      payoutMultiplier:
+        item.payoutMultiplier !== undefined && item.payoutMultiplier !== null
+          ? Number(item.payoutMultiplier)
+          : map[item.code]?.payoutMultiplier,
+    };
+  });
+  return map;
+};
+

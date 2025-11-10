@@ -117,6 +117,11 @@ export const adminMenuItems = [
         key: 'xoc-dia-quick-bets',
         icon: 'DotChartOutlined',
         label: 'Xóc Đĩa Quick Bet',
+      },
+      {
+        key: 'sicbo-quick-bets',
+        icon: 'DotChartOutlined',
+        label: 'Sicbo Quick Bet',
       }
     ]
   },

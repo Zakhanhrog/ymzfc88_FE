@@ -91,7 +91,7 @@ const PromotionPage = () => {
                         <div className="relative h-48 overflow-hidden">
                           <img
                             alt={promotion.title}
-                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.tathiet168.com/api${promotion.imageUrl}`}
+                            src={promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => {
                               e.target.style.display = 'none';

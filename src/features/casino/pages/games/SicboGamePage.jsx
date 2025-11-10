@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  defaultChipOptions as defaultSicboChipOptions,
+  defaultChipLabels as defaultSicboChipLabels,
+  SICBO_CUSTOM_CHIP_EVENT,
+  SICBO_CUSTOM_CHIP_STORAGE_KEY,
+  buildSicboQuickBetMap,
+} from './sicboConfig';
+import sicboQuickBetService from '../../services/sicboQuickBetService';
 import SicboHeader from './components/SicboHeader';
 import SicboLiveStream from './components/SicboLiveStream';
 import SicboPrimaryBetPanel from './components/SicboPrimaryBetPanel';
@@ -7,12 +15,6 @@ import SicboHistoryDrawer from './components/SicboHistoryDrawer';
 import SicboChipSelector from './components/SicboChipSelector';
 import SicboCustomChipModal from './components/SicboCustomChipModal';
 import SicboBetActionBar from './components/SicboBetActionBar';
-import {
-  defaultChipOptions as defaultSicboChipOptions,
-  defaultChipLabels as defaultSicboChipLabels,
-  SICBO_CUSTOM_CHIP_EVENT,
-  SICBO_CUSTOM_CHIP_STORAGE_KEY,
-} from './sicboConfig';
 import { formatChipDisplayValue } from './sicboUtils';
 
 const defaultChipLabelSet = new Set(defaultSicboChipLabels);
@@ -31,6 +33,9 @@ const SicboGamePage = () => {
   const [customChipSelections, setCustomChipSelections] = useState(
     () => new Set(defaultSicboChipLabels)
   );
+  const [quickBetConfigs, setQuickBetConfigs] = useState(() => buildSicboQuickBetMap());
+  const [isLoadingQuickBets, setIsLoadingQuickBets] = useState(false);
+  const [quickBetError, setQuickBetError] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
@@ -45,6 +50,31 @@ const SicboGamePage = () => {
         setUserPoints(0);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchQuickBets = async () => {
+      setIsLoadingQuickBets(true);
+      const response = await sicboQuickBetService.getActiveQuickBets();
+      if (!isMounted) {
+        return;
+      }
+      if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+        setQuickBetConfigs(buildSicboQuickBetMap(response.data));
+        setQuickBetError(null);
+      } else if (!response.success) {
+        setQuickBetError(response.message || 'Không thể tải cấu hình quick bet Sicbo');
+      }
+      setIsLoadingQuickBets(false);
+    };
+
+    fetchQuickBets();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const balanceDisplay = useMemo(() => {
@@ -299,7 +329,16 @@ const SicboGamePage = () => {
             <SicboLiveStream />
 
             <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">
-              <SicboPrimaryBetPanel />
+              <div className="space-y-1">
+                <SicboPrimaryBetPanel quickBetConfigs={quickBetConfigs} />
+                {isLoadingQuickBets ? (
+                  <p className="text-xs text-gray-500">Đang tải tỷ lệ cược...</p>
+                ) : quickBetError ? (
+                  <p className="text-xs text-red-600">
+                    {quickBetError}
+                  </p>
+                ) : null}
+              </div>
               <SicboChipSelector
                 chipOptions={chipOptions}
                 selectedChipValue={selectedChipValue}
