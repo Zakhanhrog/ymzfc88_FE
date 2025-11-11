@@ -104,6 +104,11 @@ export const adminMenuItems = [
         label: 'Kết quả Xóc Đĩa',
       },
       {
+        key: 'sicbo-results',
+        icon: 'DotChartOutlined',
+        label: 'Kết quả Sicbo',
+      },
+      {
         key: 'game-settings',
         icon: 'SettingOutlined',
         label: 'Cài đặt game',

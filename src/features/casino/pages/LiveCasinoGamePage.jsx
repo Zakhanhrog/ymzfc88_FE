@@ -1,16 +1,23 @@
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import XocDiaGamePage from './games/XocDiaGamePage';
 import SicboGamePage from './games/SicboGamePage';
+import SicboTableSelectionPage from './games/SicboTableSelectionPage';
 import liveCasinoGames from '../data/liveCasinoGames';
 
 const LiveCasinoGamePage = () => {
   const { gameId } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tableParam = searchParams.get('table');
 
   switch (gameId) {
     case 'xocdia':
       return <XocDiaGamePage />;
     case 'sicbo':
-      return <SicboGamePage />;
+      if (!tableParam) {
+        return <SicboTableSelectionPage />;
+      }
+      return <SicboGamePage tableNumber={tableParam} />;
     default: {
       const fallbackGame = liveCasinoGames.find((game) => game.id === gameId);
       return (

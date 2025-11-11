@@ -649,7 +649,13 @@ const XocDiaGamePage = () => {
         };
       });
     },
-    [allowedPatternBetCodes, findChipLabelByValue, isBettingLocked, selectedChipLabel, selectedChipValue]
+    [
+      allowedPatternBetCodes,
+      findChipLabelByValue,
+      isBettingLocked,
+      selectedChipLabel,
+      selectedChipValue,
+    ]
   );
 
   const updateStoredUserData = useCallback((partialData = {}) => {
@@ -1202,92 +1208,76 @@ const XocDiaGamePage = () => {
 
   const submitBets = useCallback(
     async ({ force = false, signatureOverride } = {}) => {
-    if (isPlacingBet) {
-      return;
-    }
-    if (placeableBetDetails.length === 0) {
-      return;
-    }
-    if (!force && isBettingLocked) {
-      message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
-      return;
-    }
+      if (isPlacingBet) {
+        return;
+      }
+      if (placeableBetDetails.length === 0) {
+        return;
+      }
+      if (!force && isBettingLocked) {
+        message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
+        return;
+      }
 
-    setIsPlacingBet(true);
-    try {
-      const payload = {
-        sessionId: sessionId,
-        bets: placeableBetDetails.map((item) => ({
-          code: item.code,
-          amount: item.amount,
-        })),
-      };
-
-      const response = await xocDiaBetService.placeBets(payload);
-      if (response.success) {
-        message.success(response.message || 'Đặt cược thành công');
-        setLastPlacedBets(
-          placeableBetDetails.reduce((acc, item) => {
-            acc[item.code] = selectedQuickBets[item.code];
-            return acc;
-          }, {})
-        );
-        setSelectedQuickBets({});
-        autoSubmitStateRef.current = {
+      setIsPlacingBet(true);
+      try {
+        const payload = {
           sessionId,
-          triggered: true,
-          signature: signatureOverride ?? betSignature,
+          bets: placeableBetDetails.map((item) => ({
+            code: item.code,
+            amount: item.amount,
+          })),
         };
-        if (response.data?.balanceAfter != null) {
-          setUserPoints(response.data.balanceAfter);
+
+        const response = await xocDiaBetService.placeBets(payload);
+        if (response.success) {
+          message.success(response.message || 'Đặt cược thành công');
+          setLastPlacedBets(
+            placeableBetDetails.reduce((acc, item) => {
+              acc[item.code] = selectedQuickBets[item.code];
+              return acc;
+            }, {})
+          );
+          setSelectedQuickBets({});
+          autoSubmitStateRef.current = {
+            sessionId,
+            triggered: true,
+            signature: signatureOverride ?? betSignature,
+          };
+          if (response.data?.balanceAfter != null) {
+            applyPointsUpdate(response.data.balanceAfter);
+          } else {
+            await fetchAndUpdateUserPoints();
+          }
         } else {
-          await pointService.getMyPoints().then((res) => {
-            if (res?.success) {
-              setUserPoints(res.data?.totalPoints ?? res.data?.points ?? 0);
-            }
-          });
+          const errorMessage = response.message || 'Không thể đặt cược';
+          const normalized = errorMessage.toLowerCase();
+          message.error(errorMessage);
+          if (normalized.includes('không đủ') || normalized.includes('insufficient')) {
+            message.info('Số dư không đủ, vui lòng nạp thêm để tiếp tục đặt cược.');
+          }
+          autoSubmitStateRef.current = {
+            sessionId,
+            triggered: false,
+            signature: signatureOverride ?? betSignature,
+          };
         }
-      } else {
-        const errorMessage = response.message || 'Không thể đặt cược';
-        const normalized = errorMessage.toLowerCase();
-        message.error(errorMessage);
-        if (normalized.includes('không đủ') || normalized.includes('insufficient')) {
-          message.info('Số dư không đủ, vui lòng nạp thêm để tiếp tục đặt cược.');
-        }
+      } catch (error) {
+        const fallbackMessage = error?.message || 'Không thể đặt cược';
+        message.error(fallbackMessage);
         autoSubmitStateRef.current = {
           sessionId,
           triggered: false,
           signature: signatureOverride ?? betSignature,
         };
+      } finally {
+        setIsPlacingBet(false);
       }
-    } catch (error) {
-      let fallbackMessage = error?.message || 'Không thể đặt cược';
-      if (error?.response?.json) {
-        try {
-          const data = await error.response.json();
-          if (data?.message) {
-            fallbackMessage = data.message;
-          }
-        } catch (parseError) {
-          // ignore
-        }
-      }
-      const normalized = fallbackMessage.toLowerCase();
-      message.error(fallbackMessage);
-      if (normalized.includes('không đủ') || normalized.includes('insufficient')) {
-        message.info('Số dư không đủ, vui lòng nạp thêm để tiếp tục đặt cược.');
-      }
-      autoSubmitStateRef.current = {
-        sessionId,
-        triggered: false,
-        signature: signatureOverride ?? betSignature,
-      };
-    } finally {
-      setIsPlacingBet(false);
-    }
     },
     [
+      applyPointsUpdate,
       betSignature,
+      fetchAndUpdateUserPoints,
       isBettingLocked,
       isPlacingBet,
       placeableBetDetails,
@@ -1303,7 +1293,7 @@ const XocDiaGamePage = () => {
     if (!isCountdownPhase) {
       return;
     }
-    if (countdownSeconds > 1) {
+    if (countdownSeconds == null || countdownSeconds > 1) {
       return;
     }
     if (placeableBetDetails.length === 0) {
@@ -1312,33 +1302,25 @@ const XocDiaGamePage = () => {
     if (isPlacingBet) {
       return;
     }
+
     const state = autoSubmitStateRef.current;
     if (state.sessionId === sessionId && state.triggered && state.signature === betSignature) {
       return;
     }
+
     autoSubmitStateRef.current = { sessionId, triggered: true, signature: betSignature };
     submitBets({ force: true, signatureOverride: betSignature });
   }, [
-    sessionId,
-    isCountdownPhase,
-    countdownSeconds,
-    placeableBetDetails,
-    isPlacingBet,
     betSignature,
+    countdownSeconds,
+    isCountdownPhase,
+    isPlacingBet,
+    placeableBetDetails,
+    sessionId,
     submitBets,
   ]);
 
   const pendingResultRef = useRef({ sessionId: null, resultCode: null });
-
-  useEffect(() => {
-    if (!sessionId || Object.keys(selectedQuickBets).length === 0) {
-      return;
-    }
-    if (!bettingLockedPhases.includes(phaseKey)) {
-      return;
-    }
-    autoSubmitStateRef.current = { sessionId, triggered: false, signature: '' };
-  }, [sessionId, phaseKey, selectedQuickBets]);
 
   useEffect(() => {
     if (!sessionResultCode || !sessionId) {

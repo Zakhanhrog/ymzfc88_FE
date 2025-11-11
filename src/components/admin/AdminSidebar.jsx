@@ -122,6 +122,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       tab === 'bet-management' ||
       tab === 'game-results' ||
       tab === 'xoc-dia-results' ||
+      tab === 'sicbo-results' ||
       tab === 'game-settings' ||
       tab === 'betting-odds'
     ) {
@@ -157,6 +158,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'bet-management': () => navigate(getAdminPath('/dashboard?tab=bet-management')),
       'game-results': () => navigate(getAdminPath('/dashboard?tab=game-results')),
       'xoc-dia-results': () => navigate(getAdminPath('/dashboard?tab=xoc-dia-results')),
+      'sicbo-results': () => navigate(getAdminPath('/dashboard?tab=sicbo-results')),
       'game-settings': () => navigate(getAdminPath('/dashboard?tab=game-settings')),
       'betting-odds': () => navigate(getAdminPath('/betting-odds')),
       'xoc-dia-quick-bets': () => navigate(getAdminPath('/xoc-dia/quick-bets')),

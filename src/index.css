@@ -1,6 +1,7 @@
 /* Import Inter font từ Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -902,6 +903,10 @@ body::-webkit-scrollbar {
 /* Oswald font for section titles */
 .font-oswald {
   font-family: 'Oswald', sans-serif !important;
+}
+
+.font-pacifico {
+  font-family: 'Pacifico', cursive !important;
 }
 
 /* Wallet Transaction Table Styles */
