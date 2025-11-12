@@ -13,6 +13,9 @@ import AdminStaffManagement from './AdminStaffManagement';
 import AdminRoleAssignment from './AdminRoleAssignment';
 import AdminAgentManagement from './AdminAgentManagement';
 import AgentCustomerList from './AgentCustomerList';
+import AgentInviteCodes from './AgentInviteCodes';
+import AgentCommissionManagement from './AgentCommissionManagement';
+import AgentDashboard from './AgentDashboard';
 import AdminUserManagement from './AdminUserManagement';
 import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
@@ -134,80 +137,21 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
           </div>
         );
 
-      case 'agent-overview':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Thống kê tổng quan đại lý"
-              description="Tổng hợp số liệu cơ bản cho tài khoản đại lý"
-            />
-            <PlaceholderContent
-              icon={TeamOutlined}
-              message="Chức năng thống kê tổng quan cho đại lý sẽ được phát triển."
-            />
-          </div>
-        );
-
-      case 'agent-analytics':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Biểu đồ thống kê đại lý"
-              description="Theo dõi hiệu suất đại lý theo thời gian"
-            />
-            <PlaceholderContent
-              icon={TrophyOutlined}
-              message="Biểu đồ thống kê dành cho đại lý sẽ được triển khai trong thời gian tới."
-            />
-          </div>
-        );
-
       case 'agent-customer-list':
         return (
           <AgentCustomerList />
         );
 
-      case 'agent-customer-detail':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Chi tiết khách hàng"
-              description="Theo dõi thông tin và hoạt động của từng khách hàng"
-            />
-            <PlaceholderContent
-              icon={UserOutlined}
-              message="Chức năng xem chi tiết khách hàng sẽ sớm được bổ sung."
-            />
-          </div>
-        );
-
       case 'agent-invite-codes':
         return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Quản lý mã mời"
-              description="Theo dõi và quản lý mã giới thiệu của đại lý"
-            />
-            <PlaceholderContent
-              icon={TeamOutlined}
-              message="Chức năng quản lý mã mời dành cho đại lý đang được xây dựng."
-            />
-          </div>
+          <AgentInviteCodes />
         );
 
       case 'agent-commission':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Quản lý hoa hồng"
-              description="Theo dõi doanh thu và hoa hồng của đại lý"
-            />
-            <PlaceholderContent
-              icon={ShoppingOutlined}
-              message="Công cụ quản lý hoa hồng đang trong quá trình phát triển."
-            />
-          </div>
-        );
+        return <AgentCommissionManagement />;
+
+      case 'agent-dashboard':
+        return <AgentDashboard />;
 
       case 'staff-mkt-users':
         return (

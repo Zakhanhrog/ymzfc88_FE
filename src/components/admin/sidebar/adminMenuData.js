@@ -188,24 +188,14 @@ export const adminMenuItems = [
     label: 'Đại lý',
     children: [
       {
-        key: 'agent-overview',
+        key: 'agent-dashboard',
         icon: ICONS.agentOverview,
-        label: 'Thống kê tổng quan',
-      },
-      {
-        key: 'agent-analytics',
-        icon: ICONS.agentOverviewChart,
-        label: 'Thống kê',
+        label: 'Dashboard',
       },
       {
         key: 'agent-customer-list',
         icon: ICONS.agentCustomers,
         label: 'Danh sách khách hàng',
-      },
-      {
-        key: 'agent-customer-detail',
-        icon: ICONS.agentCustomerDetail,
-        label: 'Chi tiết khách hàng',
       },
       {
         key: 'agent-invite-codes',

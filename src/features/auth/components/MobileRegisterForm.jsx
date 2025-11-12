@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { Button, Input } from '../../../components/ui';
@@ -20,6 +20,17 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const inviteCode = params.get('inviteCode');
+    if (inviteCode) {
+      setFormData((prev) => ({
+        ...prev,
+        inviteCode
+      }));
+    }
+  }, []);
 
   const validate = () => {
     const newErrors = {};

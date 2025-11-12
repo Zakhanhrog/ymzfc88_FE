@@ -61,10 +61,8 @@ const PORTAL_TITLES = {
 
 const AGENT_ALLOWED_KEYS = new Set([
   'agent-portal',
-  'agent-overview',
-  'agent-analytics',
+  'agent-dashboard',
   'agent-customer-list',
-  'agent-customer-detail',
   'agent-invite-codes',
   'agent-commission'
 ]);
@@ -299,6 +297,7 @@ const AdminSidebar = ({ collapsed }) => {
   const menuActions = useMemo(
     () => ({
       overview: () => goTo('/dashboard'),
+      'agent-dashboard': () => goTo('/dashboard?tab=agent-dashboard'),
       analytics: () => goTo('/dashboard?tab=analytics'),
       users: () => goTo('/dashboard?tab=users'),
       'kyc-verification': () => goTo('/dashboard?tab=kyc-verification'),
@@ -309,10 +308,8 @@ const AdminSidebar = ({ collapsed }) => {
       withdraws: () => goTo('/dashboard?tab=withdraws'),
       'payment-methods': () => goTo('/dashboard?tab=payment-methods'),
       'points-management': () => goTo('/points'),
-      'agent-overview': () => goTo('/dashboard?tab=agent-overview'),
-      'agent-analytics': () => goTo('/dashboard?tab=agent-analytics'),
       'agent-customer-list': () => goTo('/dashboard?tab=agent-customer-list'),
-      'agent-customer-detail': () => goTo('/dashboard?tab=agent-customer-detail'),
+      'agent-dashboard': () => goTo('/dashboard?tab=agent-dashboard'),
       'agent-invite-codes': () => goTo('/dashboard?tab=agent-invite-codes'),
       'agent-commission': () => goTo('/dashboard?tab=agent-commission'),
       'staff-mkt-users': () => goTo('/dashboard?tab=staff-mkt-users'),

@@ -257,6 +257,16 @@ const Layout = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const inviteCode = params.get('inviteCode');
+    const shouldOpenRegister = params.get('register') === '1' || params.get('register') === 'true';
+
+    if (!isLoggedIn && (inviteCode || shouldOpenRegister)) {
+      setIsRegisterModalOpen(true);
+    }
+  }, [location.search, isLoggedIn]);
+
+  useEffect(() => {
     const handleLoginSuccess = (event) => {
       setIsLoginModalOpen(false);
       setIsRegisterModalOpen(false);

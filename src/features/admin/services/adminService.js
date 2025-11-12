@@ -617,6 +617,59 @@ export const adminService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử cược của khách hàng');
     }
+  },
+
+  getAgentInviteInfo: async () => {
+    try {
+      const response = await adminAPI.get('/admin/agent/invite-info');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải thông tin mã mời');
+    }
+  },
+
+  getAgentCommissionSummary: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/commission/summary', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải báo cáo hoa hồng');
+    }
+  },
+
+  getAgentCommissionHistory: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/commission/history', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử thanh toán hoa hồng');
+    }
+  },
+
+  getAgentDashboardSummary: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/dashboard/summary', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải tổng quan hoa hồng');
+    }
+  },
+
+  getAgentDashboardChart: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/dashboard/chart', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải biểu đồ hoa hồng');
+    }
   }
 };
 
