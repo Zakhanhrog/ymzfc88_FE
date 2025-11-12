@@ -1,21 +1,39 @@
-import { useState, useEffect } from 'react';
-import { Layout, Menu } from 'antd';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import * as AntIcons from '@ant-design/icons';
+import { DashboardOutlined, LogoutOutlined, DownOutlined } from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 import { adminMenuItems } from './sidebar/adminMenuData';
 import { LAYOUT } from '../../utils/theme';
 import LogoutConfirmModal from '../common/LogoutConfirmModal';
-import { getAdminLoginPath, getAdminPath } from '../../utils/navigation';
-import { isAdminSubdomain } from '../../utils/subdomain';
-
-const { Sider } = Layout;
-const { DashboardOutlined, LogoutOutlined } = AntIcons;
+import { getPortalLoginPath, getPortalPath } from '../../utils/navigation';
+import { getPortalType } from '../../utils/subdomain';
 
 // Helper function to convert icon name string to component
-const getIconComponent = (iconName) => {
-  const IconComponent = AntIcons[iconName];
-  return IconComponent ? <IconComponent /> : null;
+const getIconComponent = (iconValue) => {
+  if (!iconValue) {
+    return null;
+  }
+
+  if (typeof iconValue === 'string') {
+    const isImagePath = iconValue.startsWith('/') || iconValue.startsWith('http');
+    if (isImagePath) {
+      return (
+        <img
+          src={iconValue}
+          alt=""
+          style={{
+            width: 18,
+            height: 18,
+            objectFit: 'contain',
+          }}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  return iconValue;
 };
 
 // Convert menu data to include rendered icons
@@ -27,12 +45,233 @@ const convertMenuItems = (items) => {
   }));
 };
 
-const AdminSidebar = ({ collapsed, onCollapse }) => {
+const arraysEqual = (a = [], b = []) => {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
+
+const PORTAL_TITLES = {
+  admin: 'ADMIN PANEL',
+  agent: 'AGENT PORTAL',
+  staff: 'STAFF PORTAL'
+};
+
+const AGENT_ALLOWED_KEYS = new Set([
+  'agent-portal',
+  'agent-overview',
+  'agent-analytics',
+  'agent-customer-list',
+  'agent-customer-detail',
+  'agent-invite-codes',
+  'agent-commission'
+]);
+
+const STAFF_ROLE_ALLOWED_KEYS = {
+  STAFF_MKT: new Set([
+    'dashboard',
+    'overview',
+    'staff-portal',
+    'staff-mkt',
+    'staff-mkt-users',
+    'staff-mkt-finance',
+    'staff-mkt-games'
+  ]),
+  STAFF_XNK: new Set([
+    'dashboard',
+    'overview',
+    'staff-portal',
+    'staff-xnk',
+    'staff-xnk-users',
+    'staff-xnk-finance',
+    'staff-xnk-games'
+  ]),
+  STAFF_TX1: new Set([
+    'dashboard',
+    'overview',
+    'staff-portal',
+    'staff-tx1',
+    'staff-tx1-overview'
+  ]),
+  STAFF_TX2: new Set([
+    'dashboard',
+    'overview',
+    'staff-portal',
+    'staff-tx2',
+    'staff-tx2-overview'
+  ]),
+  STAFF_XD: new Set([
+    'dashboard',
+    'overview',
+    'staff-portal',
+    'staff-xd',
+    'staff-xd-overview'
+  ])
+};
+
+const filterMenuByKeys = (items, allowedKeys) => {
+  return items
+    .map(item => {
+      const shouldInclude = allowedKeys.has(item.key);
+      const children = item.children
+        ? filterMenuByKeys(item.children, allowedKeys)
+        : undefined;
+
+      if (!shouldInclude && (!children || children.length === 0)) {
+        return null;
+      }
+
+      return {
+        ...item,
+        children
+      };
+    })
+    .filter(Boolean);
+};
+
+const getMenuForPortal = (portalType, session) => {
+  if (portalType === 'agent') {
+    const filtered = filterMenuByKeys(adminMenuItems, AGENT_ALLOWED_KEYS);
+    const agentSection = filtered.find((item) => item.key === 'agent-portal');
+    const flattened = agentSection?.children
+      ? agentSection.children.map((child) => ({ ...child, children: undefined }))
+      : [];
+    return flattened;
+  }
+
+  if (portalType === 'staff') {
+    const staffRole = session?.staffRole;
+    const allowedKeys = staffRole ? STAFF_ROLE_ALLOWED_KEYS[staffRole] : null;
+    if (allowedKeys) {
+      return filterMenuByKeys(adminMenuItems, allowedKeys);
+    }
+    // No allowed menu -> return empty array
+    return [];
+  }
+
+  if (portalType === 'admin') {
+    return adminMenuItems.filter(
+      (item) => item.key !== 'agent-portal' && item.key !== 'staff-portal'
+    );
+  }
+
+  return adminMenuItems;
+};
+
+const stripPortalPrefix = (portalType, pathname) => {
+  if (!portalType || portalType === 'user') {
+    return pathname;
+  }
+  const prefix = `/${portalType}`;
+  if (pathname.startsWith(prefix)) {
+    const stripped = pathname.slice(prefix.length);
+    return stripped.startsWith('/') ? stripped : `/${stripped}`;
+  }
+  return pathname;
+};
+
+const getActiveKey = (portalType, location) => {
+  const path = stripPortalPrefix(portalType, location.pathname);
+  const searchParams = new URLSearchParams(location.search);
+  const tab = searchParams.get('tab');
+
+  if (path.includes('/points')) {
+    return 'points-management';
+  }
+  if (path.includes('/betting-odds')) {
+    return 'betting-odds';
+  }
+  if (path.includes('/xoc-dia/quick-bets')) {
+    return 'xoc-dia-quick-bets';
+  }
+  if (path.includes('/sicbo/quick-bets')) {
+    return 'sicbo-quick-bets';
+  }
+  if (path.includes('/dashboard')) {
+    return tab || 'overview';
+  }
+  return 'overview';
+};
+
+const isKeyInTree = (item, targetKey) => {
+  if (item.key === targetKey) {
+    return true;
+  }
+  if (!item.children) {
+    return false;
+  }
+  return item.children.some((child) => isKeyInTree(child, targetKey));
+};
+
+const collectParentKeys = (items, targetKey, trail = []) => {
+  for (const item of items) {
+    if (item.key === targetKey) {
+      return trail;
+    }
+    if (item.children && item.children.length > 0) {
+      const nextTrail = [...trail, item.key];
+      const result = collectParentKeys(item.children, targetKey, nextTrail);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return [];
+};
+
+const AdminSidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [openKeys, setOpenKeys] = useState([]);
+  const portalType = getPortalType();
+  const session = adminAuthService.getCurrentAdmin();
+  const menuData = useMemo(
+    () => getMenuForPortal(portalType, session),
+    [portalType, session]
+  );
+  const menuItems = useMemo(() => convertMenuItems(menuData), [menuData]);
+  const portalLoginPath = useMemo(() => getPortalLoginPath(portalType), [portalType]);
+  const buildPath = useCallback((path) => getPortalPath(portalType, path), [portalType]);
+  const goTo = useCallback((path) => navigate(buildPath(path)), [navigate, buildPath]);
+  const portalTitle = PORTAL_TITLES[portalType] || PORTAL_TITLES.admin;
+
+  const activeKey = useMemo(
+    () => getActiveKey(portalType, location),
+    [portalType, location]
+  );
+  const initialParents = useMemo(
+    () => collectParentKeys(menuData, activeKey),
+    [menuData, activeKey]
+  );
+  const [openGroups, setOpenGroups] = useState(initialParents);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const prevActiveKeyRef = useRef(activeKey);
+  const prevInitialParentsRef = useRef(initialParents);
+
+  useEffect(() => {
+    const hasActiveChanged = prevActiveKeyRef.current !== activeKey;
+    const hasParentsChanged = !arraysEqual(prevInitialParentsRef.current, initialParents);
+
+    if (hasActiveChanged || hasParentsChanged) {
+      setOpenGroups(initialParents);
+    }
+
+    if (hasActiveChanged) {
+      prevActiveKeyRef.current = activeKey;
+    }
+
+    if (hasParentsChanged) {
+      prevInitialParentsRef.current = initialParents;
+    }
+  }, [activeKey, initialParents]);
+
+  useEffect(() => {
+    if (collapsed) {
+      setOpenGroups([]);
+    }
+  }, [collapsed]);
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -43,7 +282,7 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     try {
       adminAuthService.logout();
       setShowLogoutModal(false);
-      navigate(getAdminLoginPath());
+      navigate(portalLoginPath);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -51,234 +290,201 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
     }
   };
 
-  // Update openKeys when location changes
-  useEffect(() => {
-    setOpenKeys(getOpenKeys());
-  }, [location]);
+  const toggleGroup = useCallback((key) => {
+    setOpenGroups((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  }, []);
 
-  const getSelectedKeys = () => {
-    const path = location.pathname;
-    const searchParams = new URLSearchParams(location.search);
-    const tab = searchParams.get('tab');
-    const isAdmin = isAdminSubdomain();
-    
-    // Check specific paths first (handle both /admin/points and /points)
-    if (path.includes('/points') && (isAdmin || path.includes('/admin/points'))) {
-      return ['points-management'];
-    }
-    
-    if (path.includes('/betting-odds') && (isAdmin || path.includes('/admin/betting-odds'))) {
-      return ['betting-odds'];
-    }
-    
-    if (path.includes('/xoc-dia/quick-bets') && (isAdmin || path.includes('/admin/xoc-dia/quick-bets'))) {
-      return ['xoc-dia-quick-bets'];
-    }
-    
-    if (path.includes('/sicbo/quick-bets') && (isAdmin || path.includes('/admin/sicbo/quick-bets'))) {
-      return ['sicbo-quick-bets'];
-    }
-    
-    if (path.includes('/dashboard') && (isAdmin || path.includes('/admin/dashboard'))) {
-      if (tab) {
-        return [tab];
+  const menuActions = useMemo(
+    () => ({
+      overview: () => goTo('/dashboard'),
+      analytics: () => goTo('/dashboard?tab=analytics'),
+      users: () => goTo('/dashboard?tab=users'),
+      'kyc-verification': () => goTo('/dashboard?tab=kyc-verification'),
+      'user-roles': () => goTo('/dashboard?tab=user-roles'),
+      'staff-management': () => goTo('/dashboard?tab=staff-management'),
+      'agent-management': () => goTo('/dashboard?tab=agent-management'),
+      deposits: () => goTo('/dashboard?tab=deposits'),
+      withdraws: () => goTo('/dashboard?tab=withdraws'),
+      'payment-methods': () => goTo('/dashboard?tab=payment-methods'),
+      'points-management': () => goTo('/points'),
+      'agent-overview': () => goTo('/dashboard?tab=agent-overview'),
+      'agent-analytics': () => goTo('/dashboard?tab=agent-analytics'),
+      'agent-customer-list': () => goTo('/dashboard?tab=agent-customer-list'),
+      'agent-customer-detail': () => goTo('/dashboard?tab=agent-customer-detail'),
+      'agent-invite-codes': () => goTo('/dashboard?tab=agent-invite-codes'),
+      'agent-commission': () => goTo('/dashboard?tab=agent-commission'),
+      'staff-mkt-users': () => goTo('/dashboard?tab=staff-mkt-users'),
+      'staff-mkt-finance': () => goTo('/dashboard?tab=staff-mkt-finance'),
+      'staff-mkt-games': () => goTo('/dashboard?tab=staff-mkt-games'),
+      'staff-xnk-users': () => goTo('/dashboard?tab=staff-xnk-users'),
+      'staff-xnk-finance': () => goTo('/dashboard?tab=staff-xnk-finance'),
+      'staff-xnk-games': () => goTo('/dashboard?tab=staff-xnk-games'),
+      'staff-tx1-overview': () => goTo('/dashboard?tab=staff-tx1-overview'),
+      'staff-tx2-overview': () => goTo('/dashboard?tab=staff-tx2-overview'),
+      'staff-xd-overview': () => goTo('/dashboard?tab=staff-xd-overview'),
+      games: () => goTo('/dashboard?tab=games'),
+      'bet-management': () => goTo('/dashboard?tab=bet-management'),
+      'game-results': () => goTo('/dashboard?tab=game-results'),
+      'xoc-dia-results': () => goTo('/dashboard?tab=xoc-dia-results'),
+      'sicbo-results': () => goTo('/dashboard?tab=sicbo-results'),
+      'game-settings': () => goTo('/dashboard?tab=game-settings'),
+      'betting-odds': () => goTo('/betting-odds'),
+      'xoc-dia-quick-bets': () => goTo('/xoc-dia/quick-bets'),
+      'sicbo-quick-bets': () => goTo('/sicbo/quick-bets'),
+      banners: () => goTo('/dashboard?tab=banners'),
+      news: () => goTo('/dashboard?tab=news'),
+      notifications: () => goTo('/dashboard?tab=notifications'),
+      'marquee-notifications': () => goTo('/dashboard?tab=marquee-notifications'),
+      settings: () => goTo('/dashboard?tab=settings'),
+      'contact-links': () => goTo('/dashboard?tab=contact-links'),
+      promotions: () => goTo('/dashboard?tab=promotions'),
+      'telegram-settings': () => goTo('/dashboard?tab=telegram-settings')
+    }),
+    [goTo]
+  );
+
+  const handleNavigate = useCallback(
+    (key) => {
+      const action = menuActions[key];
+      if (action) {
+        action();
       }
-      return ['overview'];
-    }
-    return ['overview'];
-  };
+    },
+    [menuActions]
+  );
 
-  const getOpenKeys = () => {
-    const path = location.pathname;
-    const searchParams = new URLSearchParams(location.search);
-    const tab = searchParams.get('tab');
-    const isAdmin = isAdminSubdomain();
-    
-    // Check specific paths first (handle both /admin/points and /points)
-    if (path.includes('/points') && (isAdmin || path.includes('/admin/points'))) {
-      return ['financial-management'];
-    }
-    
-    if (path.includes('/betting-odds') && (isAdmin || path.includes('/admin/betting-odds'))) {
-      return ['game-management'];
-    }
-    
-    if (path.includes('/xoc-dia/quick-bets') && (isAdmin || path.includes('/admin/xoc-dia/quick-bets'))) {
-      return ['game-management'];
-    }
-    
-    if (path.includes('/sicbo/quick-bets') && (isAdmin || path.includes('/admin/sicbo/quick-bets'))) {
-      return ['game-management'];
-    }
-    
-    if (
-      tab === 'users' ||
-      tab === 'kyc-verification' ||
-      tab === 'user-roles' ||
-      tab === 'user-activities' ||
-      tab === 'staff-management' ||
-      tab === 'agent-management'
-    ) {
-      return ['user-management'];
-    }
-    if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods' || tab === 'points-management') {
-      return ['financial-management'];
-    }
-    if (
-      tab === 'games' ||
-      tab === 'bet-management' ||
-      tab === 'game-results' ||
-      tab === 'xoc-dia-results' ||
-      tab === 'sicbo-results' ||
-      tab === 'game-settings' ||
-      tab === 'betting-odds'
-    ) {
-      return ['game-management'];
-    }
-    if (tab === 'banners' || tab === 'news' || tab === 'notifications' || tab === 'marquee-notifications') {
-      return ['content-management'];
-    }
-    if (tab === 'settings' || tab === 'contact-links' || tab === 'promotions' || tab === 'maintenance' || tab === 'logs' || tab === 'telegram-settings') {
-      return ['system-management'];
-    }
-    if (tab === 'analytics' || !tab) {
-      return ['dashboard'];
-    }
-    
-    return ['dashboard'];
-  };
+  const renderMenuNode = useCallback(
+    (item, depth = 0) => {
+      const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+      const isOpen = openGroups.includes(item.key);
+      const isSelfActive = activeKey === item.key;
+      const isDescendantActive =
+        hasChildren && item.children.some((child) => isKeyInTree(child, activeKey));
+      const isActive = isSelfActive || isDescendantActive;
 
-  const handleMenuClick = ({ key }) => {
-    const menuActions = {
-      'overview': () => navigate(getAdminPath('/dashboard')),
-      'analytics': () => navigate(getAdminPath('/dashboard?tab=analytics')),
-      'users': () => navigate(getAdminPath('/dashboard?tab=users')),
-      'kyc-verification': () => navigate(getAdminPath('/dashboard?tab=kyc-verification')),
-      'user-roles': () => navigate(getAdminPath('/dashboard?tab=user-roles')),
-      'user-activities': () => navigate(getAdminPath('/dashboard?tab=user-activities')),
-      'staff-management': () => navigate(getAdminPath('/dashboard?tab=staff-management')),
-      'agent-management': () => navigate(getAdminPath('/dashboard?tab=agent-management')),
-      'deposits': () => navigate(getAdminPath('/dashboard?tab=deposits')),
-      'withdraws': () => navigate(getAdminPath('/dashboard?tab=withdraws')),
-      'transactions': () => navigate(getAdminPath('/dashboard?tab=transactions')),
-      'payment-methods': () => navigate(getAdminPath('/dashboard?tab=payment-methods')),
-      'points-management': () => navigate(getAdminPath('/points')),
-      'games': () => navigate(getAdminPath('/dashboard?tab=games')),
-      'bet-management': () => navigate(getAdminPath('/dashboard?tab=bet-management')),
-      'game-results': () => navigate(getAdminPath('/dashboard?tab=game-results')),
-      'xoc-dia-results': () => navigate(getAdminPath('/dashboard?tab=xoc-dia-results')),
-      'sicbo-results': () => navigate(getAdminPath('/dashboard?tab=sicbo-results')),
-      'game-settings': () => navigate(getAdminPath('/dashboard?tab=game-settings')),
-      'betting-odds': () => navigate(getAdminPath('/betting-odds')),
-      'xoc-dia-quick-bets': () => navigate(getAdminPath('/xoc-dia/quick-bets')),
-      'sicbo-quick-bets': () => navigate(getAdminPath('/sicbo/quick-bets')),
-      'banners': () => navigate(getAdminPath('/dashboard?tab=banners')),
-      'news': () => navigate(getAdminPath('/dashboard?tab=news')),
-      'notifications': () => navigate(getAdminPath('/dashboard?tab=notifications')),
-      'marquee-notifications': () => navigate(getAdminPath('/dashboard?tab=marquee-notifications')),
-      'settings': () => navigate(getAdminPath('/dashboard?tab=settings')),
-      'contact-links': () => navigate(getAdminPath('/dashboard?tab=contact-links')),
-      'promotions': () => navigate(getAdminPath('/dashboard?tab=promotions')),
-      'maintenance': () => navigate(getAdminPath('/dashboard?tab=maintenance')),
-      'logs': () => navigate(getAdminPath('/dashboard?tab=logs')),
-      'telegram-settings': () => navigate(getAdminPath('/dashboard?tab=telegram-settings')),
-      'logout': handleLogout
-    };
+      const baseClasses = collapsed
+        ? 'w-full flex items-center justify-center py-3 rounded-lg transition-colors'
+        : 'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors';
+      const stateClasses = isActive
+        ? 'bg-emerald-500/10 text-emerald-200'
+        : 'text-slate-300 hover:text-white hover:bg-white/5';
 
-    if (menuActions[key]) {
-      menuActions[key]();
-    }
-  };
+      const paddingStyle = collapsed
+        ? undefined
+        : { paddingLeft: 12 + depth * 12 };
 
-  const handleOpenChange = (keys) => {
-    setOpenKeys(keys);
-  };
+      const content = (
+        <>
+          {item.icon && (
+            <span className={collapsed ? 'text-lg' : 'text-base'}>
+              {item.icon}
+            </span>
+          )}
+          {!collapsed && (
+            <span className="flex-1 text-left text-sm font-medium">
+              {item.label}
+            </span>
+          )}
+          {!collapsed && hasChildren && (
+            <DownOutlined
+              className={`ml-auto text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            />
+          )}
+        </>
+      );
+
+      const handleClick = () => {
+        if (hasChildren) {
+          toggleGroup(item.key);
+        } else {
+          handleNavigate(item.key);
+        }
+      };
+
+      return (
+        <div key={item.key} className="space-y-1">
+          <button
+            type="button"
+            onClick={handleClick}
+            className={`${baseClasses} ${stateClasses}`}
+            style={paddingStyle}
+          >
+            {content}
+          </button>
+          {hasChildren && isOpen && (
+            <div className="space-y-1">
+              {item.children.map((child) => renderMenuNode(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    },
+    [collapsed, openGroups, activeKey, toggleGroup, handleNavigate]
+  );
+
+  const sidebarWidth = useMemo(
+    () =>
+      parseInt(
+        collapsed ? LAYOUT.adminSidebarCollapsedWidth : LAYOUT.adminSidebarWidth,
+        10
+      ),
+    [collapsed]
+  );
 
   return (
-    <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={onCollapse}
-      trigger={null}
-      width={parseInt(LAYOUT.adminSidebarWidth)}
-      collapsedWidth={parseInt(LAYOUT.adminSidebarCollapsedWidth)}
-      className="admin-sidebar"
-      style={{
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        zIndex: 100,
-        background: '#001529'
-      }}
+    <aside
+      className="fixed left-0 top-0 z-[100] flex h-screen flex-col border-r border-white/10 bg-[#001529] shadow-lg transition-[width] duration-200"
+      style={{ width: sidebarWidth }}
     >
-      {/* Admin Logo */}
-      <div className="admin-logo" style={{
-        height: LAYOUT.headerHeight,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'flex-start',
-        padding: collapsed ? '0' : '0 24px',
-        background: '#002140',
-        borderBottom: '1px solid #1a1a1a'
-      }}>
+      <div
+        className="flex items-center border-b border-white/10 bg-[#002140]"
+        style={{
+          height: LAYOUT.headerHeight,
+          padding: collapsed ? '0' : '0 24px',
+          justifyContent: collapsed ? 'center' : 'flex-start'
+        }}
+      >
         {collapsed ? (
           <DashboardOutlined style={{ fontSize: '24px', color: '#fff' }} />
         ) : (
-          <div style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>
-            ADMIN PANEL
-          </div>
+          <div className="text-lg font-semibold text-white">{portalTitle}</div>
         )}
       </div>
 
-      {/* Menu */}
-      <Menu
-        theme="dark"
-        mode="inline"
-        selectedKeys={getSelectedKeys()}
-        openKeys={openKeys}
-        onOpenChange={handleOpenChange}
-        onClick={handleMenuClick}
-        items={convertMenuItems(adminMenuItems)}
-        style={{
-          height: `calc(100vh - ${LAYOUT.headerHeight} - 64px)`,
-          borderRight: 0,
-          overflow: 'auto'
-        }}
-      />
+      <div className="flex flex-1 flex-col">
+        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+          {menuItems.length > 0 ? (
+            menuItems.map((item) => renderMenuNode(item))
+          ) : (
+            <div className="flex h-full items-center justify-center px-3 text-center text-sm text-slate-400">
+              Không có menu khả dụng cho tài khoản này.
+            </div>
+          )}
+        </nav>
 
-      {/* Logout Button */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        borderTop: '1px solid #1a1a1a',
-        background: '#001529'
-      }}>
-        <Menu
-          theme="dark"
-          mode="inline"
-          onClick={handleMenuClick}
-          items={[
-            {
-              key: 'logout',
-              icon: <LogoutOutlined />,
-              label: collapsed ? '' : 'Đăng xuất',
-              style: { color: '#ff4d4f' }
-            }
-          ]}
-        />
+        <div className="border-t border-white/10 px-2 py-3">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={`w-full rounded-lg px-3 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/10 ${
+              collapsed ? 'flex items-center justify-center' : 'flex items-center gap-3'
+            }`}
+          >
+            <LogoutOutlined />
+            {!collapsed && <span>Đăng xuất</span>}
+          </button>
+        </div>
       </div>
 
-      {/* Logout Confirmation Modal */}
       <LogoutConfirmModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}
         loading={isLoggingOut}
       />
-    </Sider>
+    </aside>
   );
 };
 

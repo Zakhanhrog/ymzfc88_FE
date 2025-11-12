@@ -172,6 +172,8 @@ const MobileAccountPage = () => {
 
   const activeTab = getActiveSection();
 
+  const referralCode = userInfo?.referralCode;
+
   return (
     <Layout>
       <div className="md:hidden w-full bg-gray-50 pb-20">
@@ -193,13 +195,11 @@ const MobileAccountPage = () => {
                 <p className="text-white text-lg font-bold mb-2">
                   {userBalance.toLocaleString()} điểm
                 </p>
-                <button 
-                  onClick={() => navigate('/wallet?tab=vip')}
-                  className="flex items-center gap-1 text-white text-xs hover:text-green-200 transition-colors"
-                >
-                  Xem Đặc Quyền VIP
-                  <Icon icon="mdi:chevron-right" className="w-3 h-3" />
-                </button>
+                {referralCode ? (
+                  <p className="text-white/90 text-xs">
+                    Mã mời: <span className="font-semibold text-white">{referralCode}</span>
+                  </p>
+                ) : null}
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-1 border-2 border-white/30">

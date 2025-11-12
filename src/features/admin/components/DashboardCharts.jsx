@@ -146,8 +146,8 @@ const DashboardCharts = ({ chartData = [], activities = [] }) => {
                               maximumFractionDigits: 0
                             }).format(item.amount)}
                           </span>
-                        </div>
-                      </div>
+            </div>
+          </div>
                     }
                   />
                 </List.Item>

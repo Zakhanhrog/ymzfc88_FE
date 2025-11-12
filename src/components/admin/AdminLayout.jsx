@@ -4,29 +4,30 @@ import { useNavigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './layout/AdminHeader';
 import { LAYOUT } from '../../utils/theme';
-import { getAdminLoginPath } from '../../utils/navigation';
+import { getPortalLoginPath } from '../../utils/navigation';
+import { getPortalType } from '../../utils/subdomain';
+import { adminAuthService } from '../../features/admin/services/adminAuthService';
 
 const { Content } = Layout;
 
 const AdminLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const portalType = getPortalType();
 
   useEffect(() => {
     // Check admin authentication
-    const adminToken = localStorage.getItem('adminToken');
-    if (!adminToken) {
-      navigate(getAdminLoginPath());
-      return;
+    const isAuthenticated = adminAuthService.isAuthenticated(portalType);
+    const isAuthorized = adminAuthService.isAuthorizedForPortal(portalType);
+    if (!isAuthenticated || !isAuthorized) {
+      adminAuthService.logout();
+      navigate(getPortalLoginPath(portalType));
     }
-  }, [navigate]);
+  }, [navigate, portalType]);
 
   return (
     <Layout className="min-h-screen">
-      <AdminSidebar 
-        collapsed={collapsed} 
-        onCollapse={setCollapsed}
-      />
+      <AdminSidebar collapsed={collapsed} />
       
       <Layout style={{ 
         marginLeft: collapsed ? LAYOUT.adminSidebarCollapsedWidth : LAYOUT.adminSidebarWidth, 

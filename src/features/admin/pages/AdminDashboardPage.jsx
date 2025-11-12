@@ -1,23 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import AdminLayout from '../../../components/admin/AdminLayout';
 import AdminTabContent from '../components/AdminTabContent';
 import { adminService } from '../services/adminService';
+import { getPortalType } from '../../../utils/subdomain';
 
 const AdminDashboardPage = () => {
   const location = useLocation();
+  const portalType = getPortalType();
   const [dashboardStats, setDashboardStats] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // Get current tab from URL params
-  const searchParams = new URLSearchParams(location.search);
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const currentTab = searchParams.get('tab') || 'overview';
 
   useEffect(() => {
-    if (currentTab === 'overview') {
+    if (portalType === 'admin' && currentTab === 'overview') {
       loadDashboardStats();
     }
-  }, [currentTab]);
+  }, [currentTab, portalType]);
 
   const loadDashboardStats = async () => {
     setLoading(true);
@@ -27,6 +28,7 @@ const AdminDashboardPage = () => {
         setDashboardStats(response.data);
       }
     } catch (error) {
+      // Silently ignore for now
     } finally {
       setLoading(false);
     }
@@ -34,10 +36,10 @@ const AdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <AdminTabContent 
+      <AdminTabContent
         currentTab={currentTab}
         dashboardStats={dashboardStats}
-        loading={loading}
+        loading={loading && portalType === 'admin'}
       />
     </AdminLayout>
   );

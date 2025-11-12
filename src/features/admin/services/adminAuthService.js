@@ -1,4 +1,25 @@
 import axios from 'axios';
+import { getPortalType } from '../../../utils/subdomain';
+
+const ADMIN_PORTAL_KEY = 'adminPortalType';
+const STAFF_PORTAL_ROLES = [
+  'STAFF_MKT',
+  'STAFF_XNK',
+  'STAFF_TX1',
+  'STAFF_TX2',
+  'STAFF_XD'
+];
+
+const isUserAuthorizedForPortal = (portal, user) => {
+  if (!user) return false;
+  if (portal === 'agent') {
+    return user.staffRole === 'AGENT';
+  }
+  if (portal === 'staff') {
+    return STAFF_PORTAL_ROLES.includes(user.staffRole);
+  }
+  return user.role === 'ADMIN';
+};
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -28,32 +49,40 @@ export const adminAuthService = {
   // Login admin
   login: async (credentials) => {
     try {
-      const response = await adminAPI.post('/admin/login', {
+      const portalType = getPortalType();
+      const payload = {
         usernameOrEmail: credentials.username,
-        password: credentials.password
+        password: credentials.password,
+        portal: portalType?.toUpperCase?.() || 'ADMIN'
+      };
+
+      const response = await adminAPI.post('/admin/login', {
+        ...payload
       });
 
       const { data } = response.data;
-      
-      // Verify user is admin
-      if (data.user.role !== 'ADMIN') {
-        throw new Error('Bạn không có quyền truy cập admin');
+
+      if (!isUserAuthorizedForPortal(portalType, data.user)) {
+        throw new Error('Bạn không có quyền truy cập vào cổng này');
       }
 
-      const adminData = {
+      const session = {
         id: data.user.id,
         username: data.user.username,
         email: data.user.email,
         fullName: data.user.fullName,
-        role: 'admin',
+        role: data.user.role,
+        staffRole: data.user.staffRole,
+        portal: portalType,
         token: data.accessToken
       };
-      
+
+      localStorage.setItem(ADMIN_PORTAL_KEY, portalType);
       localStorage.setItem('adminToken', data.accessToken);
       localStorage.setItem('adminRefreshToken', data.refreshToken);
-      localStorage.setItem('adminData', JSON.stringify(adminData));
+      localStorage.setItem('adminData', JSON.stringify(session));
       
-      return { success: true, data: adminData };
+      return { success: true, data: session };
     } catch (error) {
       if (error.response && error.response.data) {
         throw new Error(error.response.data.message || 'Đăng nhập thất bại');
@@ -64,15 +93,32 @@ export const adminAuthService = {
 
   // Logout admin
   logout: () => {
+    localStorage.removeItem(ADMIN_PORTAL_KEY);
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminRefreshToken');
     localStorage.removeItem('adminData');
   },
 
   // Check if admin is authenticated
-  isAuthenticated: () => {
+  isAuthenticated: (portal = getPortalType()) => {
+    const storedPortal = localStorage.getItem(ADMIN_PORTAL_KEY);
     const token = localStorage.getItem('adminToken');
-    return !!token;
+    if (!token || !storedPortal) {
+      return false;
+    }
+    if (portal && storedPortal !== portal) {
+      return false;
+    }
+    return true;
+  },
+
+  isAuthorizedForPortal: (portal = getPortalType()) => {
+    const session = adminAuthService.getCurrentAdmin();
+    if (!session) {
+      return false;
+    }
+
+    return isUserAuthorizedForPortal(portal, session);
   },
 
   // Get current admin data
@@ -84,5 +130,9 @@ export const adminAuthService = {
   // Get admin token
   getToken: () => {
     return localStorage.getItem('adminToken');
+  },
+
+  getCurrentPortal: () => {
+    return localStorage.getItem(ADMIN_PORTAL_KEY) || null;
   }
 };

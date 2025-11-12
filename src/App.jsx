@@ -1,38 +1,53 @@
 import { BrowserRouter as Router } from 'react-router-dom';
 import { App as AntApp } from 'antd';
 import { useEffect } from 'react';
-import { isAdminSubdomain } from './utils/subdomain';
+import { getPortalType, isLocalhost } from './utils/subdomain';
 import AdminRoutes from './routes/AdminRoutes';
 import UserRoutes from './routes/UserRoutes';
 
+const redirectToSubdomain = (portal, hostname, protocol, port, pathname) => {
+  const subdomain = `${portal}.${hostname}`;
+  const cleanedPath = pathname.replace(`/${portal}`, '') || '/login';
+  window.location.href = `${protocol}//${subdomain}${port}${cleanedPath}`;
+};
+
 function App() {
-  // Redirect if accessing wrong domain
+  const portalType = getPortalType();
+
   useEffect(() => {
     const hostname = window.location.hostname;
     const pathname = window.location.pathname;
     const protocol = window.location.protocol;
     const port = window.location.port ? `:${window.location.port}` : '';
-    
-    const isAdmin = isAdminSubdomain();
-    
-    // If on user domain but accessing admin routes - redirect to admin subdomain
-    if (!isAdmin && pathname.startsWith('/admin')) {
-      // On production: redirect to admin subdomain
-      if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
-        const adminDomain = `admin.${hostname}`;
-        // Remove /admin prefix for admin subdomain
-        const adminPath = pathname.replace('/admin', '') || '/login';
-        window.location.href = `${protocol}//${adminDomain}${port}${adminPath}`;
-        return;
+    const isLocal = isLocalhost();
+
+    if (isLocal) {
+      return;
+    }
+
+    if (portalType === 'user') {
+      if (pathname.startsWith('/admin')) {
+        redirectToSubdomain('admin', hostname, protocol, port, pathname);
+      } else if (pathname.startsWith('/agent')) {
+        redirectToSubdomain('agent', hostname, protocol, port, pathname);
+      } else if (pathname.startsWith('/staff')) {
+        redirectToSubdomain('staff', hostname, protocol, port, pathname);
       }
     }
-  }, []);
+  }, [portalType]);
+
+  const renderRoutes = () => {
+    if (portalType === 'admin' || portalType === 'agent' || portalType === 'staff') {
+      return <AdminRoutes />;
+    }
+    return <UserRoutes />;
+  };
 
   return (
     <AntApp>
       <Router>
         <div className="App">
-          {isAdminSubdomain() ? <AdminRoutes /> : <UserRoutes />}
+          {renderRoutes()}
         </div>
       </Router>
     </AntApp>

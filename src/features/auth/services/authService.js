@@ -62,9 +62,10 @@ export const authService = {
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        confirmPassword: userData.password,
+        confirmPassword: userData.confirmPassword ?? userData.password,
         fullName: userData.name || userData.fullName,
-        phoneNumber: userData.phone || userData.phoneNumber
+        phoneNumber: userData.phone || userData.phoneNumber,
+        inviteCode: userData.inviteCode || undefined
       });
 
       // Chỉ trả về thông báo thành công, không tự động đăng nhập

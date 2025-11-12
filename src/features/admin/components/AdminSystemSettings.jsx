@@ -3,6 +3,7 @@ import {
   Card,
   Form,
   Input,
+  InputNumber,
   Button,
   message,
   Spin,
@@ -21,7 +22,8 @@ import {
   LockOutlined,
   UnlockOutlined,
   DollarOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  PercentageOutlined
 } from '@ant-design/icons';
 import { adminService } from '../services/adminService';
 
@@ -32,6 +34,13 @@ const AdminSystemSettings = () => {
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({});
   const [form] = Form.useForm();
+  const [commissionForm] = Form.useForm();
+  const currentCommissionValue =
+    settings.agent_commission_percentage !== undefined &&
+    settings.agent_commission_percentage !== null &&
+    settings.agent_commission_percentage !== ''
+      ? parseFloat(settings.agent_commission_percentage)
+      : undefined;
 
   useEffect(() => {
     loadSettings();
@@ -49,6 +58,15 @@ const AdminSystemSettings = () => {
         });
         setSettings(settingsMap);
         form.setFieldsValue(settingsMap);
+        const commissionValueRaw = settingsMap.agent_commission_percentage;
+        commissionForm.setFieldsValue({
+          agent_commission_percentage:
+            commissionValueRaw !== undefined &&
+            commissionValueRaw !== null &&
+            commissionValueRaw !== ''
+              ? parseFloat(commissionValueRaw)
+              : undefined
+        });
       }
     } catch (error) {
       message.error('Lỗi khi tải cài đặt: ' + error.message);
@@ -60,9 +78,14 @@ const AdminSystemSettings = () => {
   const handleSaveSetting = async (settingKey, settingValue, description, category) => {
     try {
       setLoading(true);
+      const normalizedValue =
+        settingValue === undefined || settingValue === null
+          ? ''
+          : String(settingValue);
+
       const response = await adminService.createOrUpdateSystemSetting({
         settingKey,
-        settingValue,
+        settingValue: normalizedValue,
         description,
         category
       });
@@ -76,6 +99,15 @@ const AdminSystemSettings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveCommissionSettings = (values) => {
+    handleSaveSetting(
+      'agent_commission_percentage',
+      values.agent_commission_percentage,
+      'Tỷ lệ hoa hồng mặc định cho đại lý (đơn vị %)',
+      'COMMISSION'
+    );
   };
 
   const handleSaveWithdrawalSettings = (values) => {
@@ -314,6 +346,105 @@ const AdminSystemSettings = () => {
                       </Button>
                     </Form.Item>
                   </Form>
+                </Card>
+              )
+            },
+            {
+              key: 'commission',
+              label: (
+                <span>
+                  <PercentageOutlined />
+                  Cài đặt hoa hồng
+                </span>
+              ),
+              children: (
+                <Card>
+                  <Space direction="vertical" size="large" className="w-full">
+                    <Alert
+                      type="info"
+                      showIcon
+                      message="Thiết lập tỷ lệ hoa hồng cho đại lý"
+                      description="Giá trị này được áp dụng làm tỷ lệ hoa hồng mặc định cho toàn bộ hệ thống đại lý. Bạn có thể thay đổi bất kỳ lúc nào khi chính sách thay đổi."
+                    />
+
+                    <div>
+                      <Title level={4} className="mb-1">
+                        Hoa hồng đại lý
+                      </Title>
+                      <Text type="secondary">
+                        Hiện tại đang áp dụng:{' '}
+                        <Text strong>
+                          {currentCommissionValue !== undefined && !Number.isNaN(currentCommissionValue)
+                            ? `${currentCommissionValue}%`
+                            : 'Chưa thiết lập'}
+                        </Text>
+                      </Text>
+                    </div>
+
+                    <Form
+                      form={commissionForm}
+                      layout="vertical"
+                      onFinish={handleSaveCommissionSettings}
+                    >
+                      <Form.Item
+                        name="agent_commission_percentage"
+                        label="Tỷ lệ hoa hồng đại lý (%)"
+                        rules={[
+                          { required: true, message: 'Vui lòng nhập tỷ lệ hoa hồng' },
+                          {
+                            validator: (_, value) => {
+                              if (value === undefined || value === null) {
+                                return Promise.resolve();
+                              }
+                              if (value < 0 || value > 100) {
+                                return Promise.reject(
+                                  new Error('Tỷ lệ hoa hồng phải nằm trong khoảng 0 - 100%')
+                                );
+                              }
+                              return Promise.resolve();
+                            }
+                          }
+                        ]}
+                      >
+                        <InputNumber
+                          min={0}
+                          max={100}
+                          step={0.1}
+                          placeholder="5"
+                          style={{ width: '100%' }}
+                          formatter={(value) =>
+                            value === undefined || value === null ? '' : `${value}%`
+                          }
+                          parser={(value) =>
+                            value ? value.replace(/\s?%/g, '').replace(',', '.') : ''
+                          }
+                        />
+                      </Form.Item>
+
+                      <Form.Item>
+                        <Space>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            icon={<SaveOutlined />}
+                            loading={loading}
+                          >
+                            Lưu tỷ lệ hoa hồng
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              commissionForm.setFieldsValue({
+                                agent_commission_percentage: currentCommissionValue
+                              })
+                            }
+                            disabled={loading}
+                          >
+                            Đặt lại
+                          </Button>
+                        </Space>
+                      </Form.Item>
+                    </Form>
+                  </Space>
                 </Card>
               )
             }

@@ -8,173 +8,105 @@ import AdminSicboQuickBetPage from '../features/admin/pages/AdminSicboQuickBetPa
 import AdminLotteryResultManagement from '../features/admin/components/AdminLotteryResultManagement';
 import AdminProtectedRoute from '../components/admin/AdminProtectedRoute';
 import NotFoundPage from '../components/common/NotFoundPage';
-import { isLocalhost } from '../utils/subdomain';
+import { isLocalhost, getPortalType } from '../utils/subdomain';
 
-/**
- * Admin Routes - Used when accessing admin.tathiet168.com or /admin/* on localhost
- * On production (subdomain): Routes don't have /admin prefix
- * On localhost (path-based): Routes have /admin prefix
- */
+const createPathHelpers = (portalType, isLocal) => {
+  const base = isLocal ? `/${portalType}` : '';
+  const withBase = (path = '') => `${base}${path}`;
+  const loginPath = withBase('/login');
+  const dashboardPath = withBase('/dashboard');
+  const pointsPath = withBase('/points');
+  const bettingOddsPath = withBase('/betting-odds');
+  const xocDiaQuickBetPath = withBase('/xoc-dia/quick-bets');
+  const sicboQuickBetPath = withBase('/sicbo/quick-bets');
+  const lotteryResultsPath = withBase('/lottery-results');
+  const rootPath = base || '/';
+
+  return {
+    base,
+    rootPath,
+    loginPath,
+    dashboardPath,
+    pointsPath,
+    bettingOddsPath,
+    xocDiaQuickBetPath,
+    sicboQuickBetPath,
+    lotteryResultsPath
+  };
+};
+
 const AdminRoutes = () => {
+  const portalType = getPortalType();
   const isLocal = isLocalhost();
-  
-  // On localhost: use /admin/* paths
-  // On production: use /* paths (no /admin prefix)
-  if (isLocal) {
-    return (
-      <Routes>
-        {/* Redirect root to login */}
-        <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-        
-        {/* Admin Login */}
-        <Route path="/admin/login" element={<AdminLoginPage />} />
-        
-        {/* Admin Dashboard */}
-        <Route 
-          path="/admin/dashboard" 
-          element={
-            <AdminProtectedRoute>
-              <AdminDashboardPage />
-            </AdminProtectedRoute>
-          } 
-        />
-        
-        {/* Admin Points Management */}
-        <Route 
-          path="/admin/points" 
-          element={
-            <AdminProtectedRoute>
-              <AdminPointManagementPage />
-            </AdminProtectedRoute>
-          } 
-        />
-        
-        {/* Admin Betting Odds */}
-        <Route 
-          path="/admin/betting-odds" 
-          element={
-            <AdminProtectedRoute>
-              <AdminBettingOddsPage />
-            </AdminProtectedRoute>
-          } 
-        />
-        
-        {/* Admin Xoc Dia Quick Bets */}
-        <Route
-          path="/admin/xoc-dia/quick-bets"
-          element={
-            <AdminProtectedRoute>
-              <AdminXocDiaQuickBetPage />
-            </AdminProtectedRoute>
-          }
-        />
+  const paths = createPathHelpers(portalType, isLocal);
 
-        {/* Admin Sicbo Quick Bets */}
-        <Route
-          path="/admin/sicbo/quick-bets"
-          element={
-            <AdminProtectedRoute>
-              <AdminSicboQuickBetPage />
-            </AdminProtectedRoute>
-          }
-        />
-        
-        {/* Admin Lottery Results */}
-        <Route 
-          path="/admin/lottery-results" 
-          element={
-            <AdminProtectedRoute>
-              <AdminLotteryResultManagement />
-            </AdminProtectedRoute>
-          } 
-        />
-        
-        {/* 404 Route - Must be last */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    );
-  }
-  
-  // On production: use paths without /admin prefix
   return (
     <Routes>
-      {/* Redirect root to login */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      
-      {/* Admin Login */}
-      <Route path="/login" element={<AdminLoginPage />} />
-      
-      {/* Admin Dashboard */}
-      <Route 
-        path="/dashboard" 
+      <Route path={paths.rootPath} element={<Navigate to={paths.loginPath} replace />} />
+      <Route path={paths.loginPath} element={<AdminLoginPage />} />
+      <Route
+        path={paths.dashboardPath}
         element={
           <AdminProtectedRoute>
             <AdminDashboardPage />
           </AdminProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Admin Points Management */}
-      <Route 
-        path="/points" 
+      <Route
+        path={paths.pointsPath}
         element={
           <AdminProtectedRoute>
             <AdminPointManagementPage />
           </AdminProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Admin Betting Odds */}
-      <Route 
-        path="/betting-odds" 
+      <Route
+        path={paths.bettingOddsPath}
         element={
           <AdminProtectedRoute>
             <AdminBettingOddsPage />
           </AdminProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Admin Xoc Dia Quick Bets */}
       <Route
-        path="/xoc-dia/quick-bets"
+        path={paths.xocDiaQuickBetPath}
         element={
           <AdminProtectedRoute>
             <AdminXocDiaQuickBetPage />
           </AdminProtectedRoute>
         }
       />
-
-      {/* Admin Sicbo Quick Bets */}
       <Route
-        path="/sicbo/quick-bets"
+        path={paths.sicboQuickBetPath}
         element={
           <AdminProtectedRoute>
             <AdminSicboQuickBetPage />
           </AdminProtectedRoute>
         }
       />
-      
-      {/* Admin Lottery Results */}
-      <Route 
-        path="/lottery-results" 
+      <Route
+        path={paths.lotteryResultsPath}
         element={
           <AdminProtectedRoute>
             <AdminLotteryResultManagement />
           </AdminProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Redirect old /admin/* routes to new routes (for backward compatibility) */}
-      <Route path="/admin" element={<Navigate to="/login" replace />} />
-      <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-      <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
-      <Route path="/admin/points" element={<Navigate to="/points" replace />} />
-      <Route path="/admin/betting-odds" element={<Navigate to="/betting-odds" replace />} />
-      <Route path="/admin/xoc-dia/quick-bets" element={<Navigate to="/xoc-dia/quick-bets" replace />} />
-      <Route path="/admin/sicbo/quick-bets" element={<Navigate to="/sicbo/quick-bets" replace />} />
-      <Route path="/admin/lottery-results" element={<Navigate to="/lottery-results" replace />} />
-      
-      {/* 404 Route - Must be last */}
+
+      {/* Backward compatibility routes for admin portal */}
+      {portalType === 'admin' && !isLocal && (
+        <>
+          <Route path="/admin" element={<Navigate to={paths.loginPath} replace />} />
+          <Route path="/admin/login" element={<Navigate to={paths.loginPath} replace />} />
+          <Route path="/admin/dashboard" element={<Navigate to={paths.dashboardPath} replace />} />
+          <Route path="/admin/points" element={<Navigate to={paths.pointsPath} replace />} />
+          <Route path="/admin/betting-odds" element={<Navigate to={paths.bettingOddsPath} replace />} />
+          <Route path="/admin/xoc-dia/quick-bets" element={<Navigate to={paths.xocDiaQuickBetPath} replace />} />
+          <Route path="/admin/sicbo/quick-bets" element={<Navigate to={paths.sicboQuickBetPath} replace />} />
+          <Route path="/admin/lottery-results" element={<Navigate to={paths.lotteryResultsPath} replace />} />
+        </>
+      )}
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

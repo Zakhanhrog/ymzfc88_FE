@@ -1,24 +1,39 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { adminAuthService } from '../services/adminAuthService';
 
-const AdminLoginForm = ({ onLogin }) => {
+const PORTAL_LABELS = {
+  admin: {
+    title: 'ADMIN LOGIN',
+    description: 'Đăng nhập vào hệ thống quản trị'
+  },
+  agent: {
+    title: 'AGENT LOGIN',
+    description: 'Đăng nhập vào cổng quản lý đại lý'
+  },
+  staff: {
+    title: 'STAFF LOGIN',
+    description: 'Đăng nhập vào cổng làm việc của nhân viên'
+  }
+};
+
+const AdminLoginForm = ({ onLogin, portalType = 'admin' }) => {
   const [loading, setLoading] = useState(false);
+
+  const portalLabel = useMemo(() => {
+    return PORTAL_LABELS[portalType] || PORTAL_LABELS.admin;
+  }, [portalType]);
 
   const onFinish = async (values) => {
     setLoading(true);
-    
-    // Test thông báo trước
-    message.info('Đang xử lý đăng nhập admin...');
-    
+    message.info('Đang xử lý đăng nhập...');
+
     try {
       const result = await adminAuthService.login(values);
       if (result.success) {
-        message.success('Đăng nhập admin thành công!');
-        setTimeout(() => {
-          onLogin && onLogin();
-        }, 1000);
+        message.success('Đăng nhập thành công!');
+        onLogin?.(result.data);
       }
     } catch (error) {
       message.error(error.message || 'Đăng nhập thất bại!');
@@ -29,9 +44,9 @@ const AdminLoginForm = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
-      <Card 
+      <Card
         className="w-full max-w-md shadow-2xl"
-        style={{ 
+        style={{
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
           borderRadius: '16px'
@@ -41,12 +56,14 @@ const AdminLoginForm = ({ onLogin }) => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-4">
             <UserOutlined className="text-2xl text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">ADMIN LOGIN</h1>
-          <p className="text-gray-600">Đăng nhập vào hệ thống quản trị</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            {portalLabel.title}
+          </h1>
+          <p className="text-gray-600">{portalLabel.description}</p>
         </div>
 
         <Form
-          name="admin-login"
+          name="portal-login"
           onFinish={onFinish}
           layout="vertical"
           autoComplete="off"
@@ -98,10 +115,6 @@ const AdminLoginForm = ({ onLogin }) => {
             </Button>
           </Form.Item>
         </Form>
-
-        <div className="text-center text-sm text-gray-500 mt-4">
-          <p>Demo: admin / admin123</p>
-        </div>
       </Card>
     </div>
   );

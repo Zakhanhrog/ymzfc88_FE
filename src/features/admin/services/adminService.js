@@ -593,6 +593,30 @@ export const adminService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi xóa cấu hình Telegram');
     }
+  },
+
+  // ============ AGENT PORTAL ============
+
+  getAgentCustomers: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/customers', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải danh sách khách hàng đại lý');
+    }
+  },
+
+  getAgentCustomerBetHistory: async (customerId, params = {}) => {
+    try {
+      const response = await adminAPI.get(`/admin/agent/customers/${customerId}/bet-history`, {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử cược của khách hàng');
+    }
   }
 };
 

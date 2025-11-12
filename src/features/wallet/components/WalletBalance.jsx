@@ -19,6 +19,7 @@ const WalletBalance = ({ onTabChange }) => {
   const [loading, setLoading] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [userName, setUserName] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [promotions, setPromotions] = useState([]);
   const [transactionTab, setTransactionTab] = useState('DEPOSIT');
@@ -38,6 +39,7 @@ const WalletBalance = ({ onTabChange }) => {
       try {
         const userData = JSON.parse(user);
         setUserName(userData.username || userData.name || '');
+        setCurrentUser(userData);
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
@@ -249,6 +251,7 @@ const WalletBalance = ({ onTabChange }) => {
   } = pointData || {};
   
   const displayPoints = points || totalPoints;
+  const referralCode = currentUser?.referralCode;
 
   return (
     <TooltipProvider>
@@ -269,6 +272,11 @@ const WalletBalance = ({ onTabChange }) => {
                 <div className="flex flex-col justify-center" style={{ justifyContent: 'center', height: '100%' }}>
                   <p className="text-gray-600 text-sm whitespace-nowrap" style={{ lineHeight: '1.2', margin: 0, padding: 0 }}>Xin chào,</p>
                   <p className="text-gray-900 text-lg font-semibold whitespace-nowrap" style={{ lineHeight: '1.2', margin: 0, padding: 0, marginTop: '2px' }}>{userName || 'Người dùng'}</p>
+                  {referralCode ? (
+                    <p className="text-gray-500 text-sm mt-1" style={{ lineHeight: '1.2', margin: 0 }}>
+                      Mã mời: <span className="font-semibold text-gray-900">{referralCode}</span>
+                    </p>
+                  ) : null}
                 </div>
               </div>
 

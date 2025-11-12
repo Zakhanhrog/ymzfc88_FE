@@ -12,6 +12,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     username: '',
     email: '',
     phoneNumber: '',
+    inviteCode: '',
     password: '',
     confirmPassword: '',
     agreedToTerms: false
@@ -39,6 +40,10 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu!';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Mật khẩu không khớp!';
+
+    if (formData.inviteCode && !/^[A-Za-z0-9]{5,10}$/.test(formData.inviteCode)) {
+      newErrors.inviteCode = 'Mã mời chỉ gồm chữ và số (5-10 ký tự)';
+    }
     
     if (!formData.agreedToTerms) newErrors.agreedToTerms = 'Vui lòng đồng ý với điều khoản!';
     
@@ -59,7 +64,7 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     message.info('Đang xử lý đăng ký...');
     
     try {
-      const { confirmPassword, agreedToTerms, ...userData } = formData;
+      const { agreedToTerms, ...userData } = formData;
       await authService.register(userData);
       
       message.success('Đăng ký thành công! Vui lòng đăng nhập.');
@@ -177,6 +182,23 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
                   className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
+            </div>
+
+            {/* Row 2.5: Mã mời (optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mã mời (nếu có)
+              </label>
+              <Input
+                name="inviteCode"
+                value={formData.inviteCode}
+                onChange={handleChange}
+                placeholder="Nhập mã mời của bạn"
+                prefix={<Icon icon="mdi:ticket-confirmation" className="text-gray-400 text-base" />}
+                error={errors.inviteCode}
+                maxLength={10}
+                className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+              />
             </div>
 
             {/* Row 3: Mật khẩu + Xác nhận mật khẩu */}

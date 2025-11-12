@@ -12,7 +12,8 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
     email: '',
     password: '',
     confirmPassword: '',
-    phone: ''
+    phone: '',
+    inviteCode: ''
   });
   const [errors, setErrors] = useState({});
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -49,6 +50,12 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
     
     if (!formData.phone) {
       newErrors.phone = 'Vui lòng nhập số điện thoại!';
+    } else if (!/^[0-9]{10,11}$/.test(formData.phone)) {
+      newErrors.phone = 'Số điện thoại không hợp lệ!';
+    }
+
+    if (formData.inviteCode && !/^[A-Za-z0-9]{5,10}$/.test(formData.inviteCode)) {
+      newErrors.inviteCode = 'Mã mời chỉ gồm chữ và số (5-10 ký tự)';
     }
     
     if (!agreeTerms) {
@@ -192,6 +199,25 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   placeholder="Nhập số điện thoại"
                   prefix={<Icon icon="mdi:phone" className="text-gray-400 text-base" />}
                   error={errors.phone}
+                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+            </div>
+
+            {/* Invite Code Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mã mời (nếu có)
+              </label>
+              <div className="relative">
+                <Input
+                  name="inviteCode"
+                  value={formData.inviteCode}
+                  onChange={handleChange}
+                  placeholder="Nhập mã mời của bạn"
+                  prefix={<Icon icon="mdi:ticket-confirmation" className="text-gray-400 text-base" />}
+                  error={errors.inviteCode}
+                  maxLength={10}
                   className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>

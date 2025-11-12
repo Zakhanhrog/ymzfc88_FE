@@ -62,6 +62,9 @@ export const isAdminPath = () => {
  * On localhost: also check if path starts with /admin or subdomain is admin
  * @returns {boolean}
  */
+const isAgentPath = () => window.location.pathname.startsWith('/agent');
+const isStaffPath = () => window.location.pathname.startsWith('/staff');
+
 export const isAdminSubdomain = () => {
   // Check subdomain first
   const subdomain = getSubdomain();
@@ -77,11 +80,50 @@ export const isAdminSubdomain = () => {
   return false;
 };
 
+export const isAgentSubdomain = () => {
+  const subdomain = getSubdomain();
+  if (subdomain === 'agent') {
+    return true;
+  }
+
+  if (isLocalhost()) {
+    return isAgentPath();
+  }
+
+  return false;
+};
+
+export const isStaffSubdomain = () => {
+  const subdomain = getSubdomain();
+  if (subdomain === 'staff') {
+    return true;
+  }
+
+  if (isLocalhost()) {
+    return isStaffPath();
+  }
+  
+  return false;
+};
+
 /**
  * Check if current domain is user domain (no subdomain)
  * @returns {boolean}
  */
 export const isUserDomain = () => {
   return !isAdminSubdomain();
+};
+
+export const getPortalType = () => {
+  if (isAdminSubdomain()) {
+    return 'admin';
+  }
+  if (isAgentSubdomain()) {
+    return 'agent';
+  }
+  if (isStaffSubdomain()) {
+    return 'staff';
+  }
+  return 'user';
 };
 

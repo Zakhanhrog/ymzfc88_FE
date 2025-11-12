@@ -12,6 +12,7 @@ import AdminAnalyticsDashboard from './AdminAnalyticsDashboard';
 import AdminStaffManagement from './AdminStaffManagement';
 import AdminRoleAssignment from './AdminRoleAssignment';
 import AdminAgentManagement from './AdminAgentManagement';
+import AgentCustomerList from './AgentCustomerList';
 import AdminUserManagement from './AdminUserManagement';
 import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
@@ -28,11 +29,28 @@ import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
 import AdminBannerManagement from './AdminBannerManagement';
 import TelegramSettings from '../pages/TelegramSettings';
+import { getPortalType } from '../../../utils/subdomain';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
+  const portalType = getPortalType();
+
   const renderContent = () => {
     switch (currentTab) {
       case 'overview':
+        if (portalType !== 'admin') {
+          return (
+            <div className="space-y-6">
+              <TabPageHeader
+                title="Dashboard"
+                description="Trang tổng quan dành cho quản trị viên"
+              />
+              <PlaceholderContent
+                icon={TrophyOutlined}
+                message="Bạn không có quyền truy cập vào bảng tổng quan hệ thống."
+              />
+            </div>
+          );
+        }
         return (
           <div className="space-y-6">
             <TabPageHeader 
@@ -48,6 +66,20 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         );
 
       case 'analytics':
+        if (portalType !== 'admin') {
+          return (
+            <div className="space-y-6">
+              <TabPageHeader
+                title="Thống kê"
+                description="Chỉ dành cho quản trị viên hệ thống"
+              />
+              <PlaceholderContent
+                icon={TrophyOutlined}
+                message="Bạn không có quyền truy cập mục thống kê hệ thống."
+              />
+            </div>
+          );
+        }
         return (
           <div className="space-y-6">
             <TabPageHeader 
@@ -99,6 +131,207 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Danh sách đại lý hiện có trong hệ thống"
             />
             <AdminAgentManagement />
+          </div>
+        );
+
+      case 'agent-overview':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Thống kê tổng quan đại lý"
+              description="Tổng hợp số liệu cơ bản cho tài khoản đại lý"
+            />
+            <PlaceholderContent
+              icon={TeamOutlined}
+              message="Chức năng thống kê tổng quan cho đại lý sẽ được phát triển."
+            />
+          </div>
+        );
+
+      case 'agent-analytics':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Biểu đồ thống kê đại lý"
+              description="Theo dõi hiệu suất đại lý theo thời gian"
+            />
+            <PlaceholderContent
+              icon={TrophyOutlined}
+              message="Biểu đồ thống kê dành cho đại lý sẽ được triển khai trong thời gian tới."
+            />
+          </div>
+        );
+
+      case 'agent-customer-list':
+        return (
+          <AgentCustomerList />
+        );
+
+      case 'agent-customer-detail':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Chi tiết khách hàng"
+              description="Theo dõi thông tin và hoạt động của từng khách hàng"
+            />
+            <PlaceholderContent
+              icon={UserOutlined}
+              message="Chức năng xem chi tiết khách hàng sẽ sớm được bổ sung."
+            />
+          </div>
+        );
+
+      case 'agent-invite-codes':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Quản lý mã mời"
+              description="Theo dõi và quản lý mã giới thiệu của đại lý"
+            />
+            <PlaceholderContent
+              icon={TeamOutlined}
+              message="Chức năng quản lý mã mời dành cho đại lý đang được xây dựng."
+            />
+          </div>
+        );
+
+      case 'agent-commission':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Quản lý hoa hồng"
+              description="Theo dõi doanh thu và hoa hồng của đại lý"
+            />
+            <PlaceholderContent
+              icon={ShoppingOutlined}
+              message="Công cụ quản lý hoa hồng đang trong quá trình phát triển."
+            />
+          </div>
+        );
+
+      case 'staff-mkt-users':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên MKT - Quản lý người dùng"
+              description="Hỗ trợ đại lý trong việc chăm sóc và quản lý người chơi"
+            />
+            <PlaceholderContent
+              icon={UserOutlined}
+              message="Trang làm việc của nhân viên MKT đang được phát triển."
+            />
+          </div>
+        );
+
+      case 'staff-mkt-finance':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên MKT - Quản lý tài chính"
+              description="Theo dõi các chương trình khuyến mại và đối soát giao dịch"
+            />
+            <PlaceholderContent
+              icon={ShoppingOutlined}
+              message="Chức năng quản lý tài chính cho nhân viên MKT sẽ sớm ra mắt."
+            />
+          </div>
+        );
+
+      case 'staff-mkt-games':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên MKT - Quản lý game"
+              description="Quản lý nội dung marketing liên quan tới trò chơi"
+            />
+            <PlaceholderContent
+              icon={TrophyOutlined}
+              message="Chức năng quản lý game dành cho nhân viên MKT đang được hoàn thiện."
+            />
+          </div>
+        );
+
+      case 'staff-xnk-users':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên XNK - Quản lý người dùng"
+              description="Hỗ trợ người dùng trong các giao dịch nạp rút"
+            />
+            <PlaceholderContent
+              icon={UserOutlined}
+              message="Trang quản lý người dùng cho nhân viên XNK đang được xây dựng."
+            />
+          </div>
+        );
+
+      case 'staff-xnk-finance':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên XNK - Quản lý tài chính"
+              description="Theo dõi và xử lý giao dịch nạp rút cho người dùng"
+            />
+            <PlaceholderContent
+              icon={ShoppingOutlined}
+              message="Chức năng tài chính cho nhân viên XNK sẽ được cập nhật sau."
+            />
+          </div>
+        );
+
+      case 'staff-xnk-games':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên XNK - Quản lý game"
+              description="Kiểm soát dữ liệu trò chơi phục vụ nghiệp vụ nạp/rút"
+            />
+            <PlaceholderContent
+              icon={TrophyOutlined}
+              message="Trang quản lý game của nhân viên XNK đang phát triển."
+            />
+          </div>
+        );
+
+      case 'staff-tx1-overview':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên bàn TX1"
+              description="Trang làm việc dành cho nhân viên phụ trách bàn Tài Xỉu 1"
+            />
+            <PlaceholderContent
+              icon={TeamOutlined}
+              message="Nội dung riêng cho nhân viên bàn TX1 sẽ được cập nhật."
+            />
+          </div>
+        );
+
+      case 'staff-tx2-overview':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên bàn TX2"
+              description="Trang làm việc dành cho nhân viên phụ trách bàn Tài Xỉu 2"
+            />
+            <PlaceholderContent
+              icon={TeamOutlined}
+              message="Nội dung riêng cho nhân viên bàn TX2 sẽ được cập nhật."
+            />
+          </div>
+        );
+
+      case 'staff-xd-overview':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Nhân viên Xóc Đĩa"
+              description="Trang làm việc dành cho nhân viên phụ trách bàn Xóc Đĩa"
+            />
+            <PlaceholderContent 
+              icon={TeamOutlined}
+              message="Nội dung riêng cho nhân viên Xóc Đĩa đang được phát triển."
+            />
           </div>
         );
 
