@@ -8,11 +8,6 @@ const liveCasinoGames = [
     id: 'sicbo',
     name: 'Sicbo Bigwin',
     image: '/images/casinolive/taixiu.png'
-  },
-  {
-    id: 'baucua',
-    name: 'Bầu Cua Bigwin',
-    image: '/images/casinolive/baucua.png'
   }
 ];
 

@@ -1,41 +1,82 @@
-import { Card, Row, Col, Statistic } from 'antd';
+import { Card, Row, Col, Statistic, Tag, Tooltip } from 'antd';
 import { 
   UserOutlined, 
   DollarOutlined, 
   ShoppingOutlined, 
-  TrophyOutlined
+  ThunderboltOutlined
 } from '@ant-design/icons';
 
-const DashboardStats = ({ loading, stats }) => {
+const numberFormatter = new Intl.NumberFormat('vi-VN');
+const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0
+});
+
+const DashboardStats = ({ loading, stats = {} }) => {
+  const totalUsers = Number(stats.totalUsers ?? 0);
+  const newUsersToday = Number(stats.newUsersToday ?? 0);
+  const revenueToday = Number(stats.revenueToday ?? 0);
+  const transactionsTodayCount = Number(stats.transactionsTodayCount ?? 0);
+  const transactionsTodayAmount = Number(stats.transactionsTodayAmount ?? 0);
+  const onlineUsers = Number(stats.onlineUsers ?? 0);
+  const activeUsers = Number(stats.activeUsers ?? 0);
+
   const statsCards = [
     {
       id: 'users',
       title: 'Tổng người dùng',
-      value: stats.totalUsers || 0,
+      value: totalUsers,
       icon: <UserOutlined className="text-blue-600" />,
-      valueStyle: { color: '#1890ff' }
+      valueStyle: { color: '#1890ff' },
+      extra: newUsersToday > 0 ? (
+        <Tag color="blue" className="mt-2">
+          +{numberFormatter.format(newUsersToday)} hôm nay
+        </Tag>
+      ) : (
+        <span className="mt-2 block text-xs text-gray-500">
+          Tích lũy toàn hệ thống
+        </span>
+      )
     },
     {
       id: 'revenue',
       title: 'Doanh thu hôm nay',
-      value: 567890,
+      value: revenueToday,
       icon: <DollarOutlined className="text-green-600" />,
-      suffix: 'VNĐ',
-      valueStyle: { color: '#52c41a' }
+      valueStyle: { color: '#52c41a' },
+      formatter: (value) => currencyFormatter.format(value),
+      extra: (
+        <span className="mt-2 block text-xs text-gray-500">
+          Tổng tiền từ các lệnh cược thua
+        </span>
+      )
     },
     {
       id: 'transactions',
       title: 'Giao dịch hôm nay',
-      value: 89,
+      value: transactionsTodayCount,
       icon: <ShoppingOutlined className="text-orange-600" />,
-      valueStyle: { color: '#fa8c16' }
+      valueStyle: { color: '#fa8c16' },
+      extra: (
+        <Tooltip title="Tổng giá trị giao dịch đã duyệt trong ngày">
+          <span className="mt-2 block text-xs text-gray-500">
+            {currencyFormatter.format(transactionsTodayAmount)}
+          </span>
+        </Tooltip>
+      )
     },
     {
-      id: 'games',
-      title: 'Game đang hoạt động',
-      value: 8,
-      icon: <TrophyOutlined className="text-purple-600" />,
-      valueStyle: { color: '#722ed1' }
+      id: 'onlineUsers',
+      title: 'Người dùng đang online',
+      value: onlineUsers,
+      icon: <ThunderboltOutlined className="text-purple-600" />,
+      valueStyle: { color: '#722ed1' },
+      extra: (
+        <span className="mt-2 block text-xs text-gray-500">
+          {numberFormatter.format(activeUsers)} người dùng hoạt động
+        </span>
+      )
     }
   ];
 
@@ -48,9 +89,10 @@ const DashboardStats = ({ loading, stats }) => {
               title={stat.title}
               value={stat.value}
               prefix={stat.icon}
-              suffix={stat.suffix}
               valueStyle={stat.valueStyle}
+              formatter={stat.formatter}
             />
+            {stat.extra}
           </Card>
         </Col>
       ))}

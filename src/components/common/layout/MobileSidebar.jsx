@@ -168,7 +168,7 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
         <nav className="py-2">
           {[
             { label: 'Thể Thao', icon: '/icondieuhuongmb/imgi_21_sport.avif', path: '/' },
-            { label: 'Sòng Bài', icon: '/icondieuhuongmb/imgi_22_casino.avif', path: '/' , badge: 'LIVE' },
+            { label: 'Sòng Bài', icon: '/icondieuhuongmb/imgi_22_casino.avif', path: '/casino/live' , badge: 'LIVE' },
             { label: 'Nổ Hũ', icon: '/icondieuhuongmb/imgi_24_slots.avif', path: '/' },
             { label: 'Quay Số', icon: '/icondieuhuongmb/imgi_25_lottery.avif', path: '/' },
             { label: 'Game Bài', icon: '/icondieuhuongmb/imgi_27_game-cards.avif', path: '/' },

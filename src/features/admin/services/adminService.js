@@ -346,6 +346,99 @@ export const adminService = {
     }
   },
 
+  // ============ ANALYTICS ============
+
+  getBetAnalytics: async ({
+    gameType = 'lottery',
+    status,
+    startDate,
+    endDate,
+    page = 0,
+    size = 20,
+  } = {}) => {
+    try {
+      const params = new URLSearchParams({
+        gameType,
+        page: page.toString(),
+        size: size.toString(),
+      });
+      if (status && status !== 'all') {
+        params.append('status', status);
+      }
+      if (startDate) {
+        params.append('startDate', startDate);
+      }
+      if (endDate) {
+        params.append('endDate', endDate);
+      }
+
+      const response = await adminAPI.get(`/admin/analytics/bets?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy báo cáo cược');
+    }
+  },
+
+  getTransactionAnalytics: async ({
+    type,
+    status,
+    startDate,
+    endDate,
+    page = 0,
+    size = 20,
+  } = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+      });
+      if (type && type !== 'all') {
+        params.append('type', type);
+      }
+      if (status && status !== 'all') {
+        params.append('status', status);
+      }
+      if (startDate) {
+        params.append('startDate', startDate);
+      }
+      if (endDate) {
+        params.append('endDate', endDate);
+      }
+
+      const response = await adminAPI.get(`/admin/analytics/transactions?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy báo cáo giao dịch');
+    }
+  },
+
+  // ============ STAFF & AGENTS ============
+
+  getStaffUsers: async ({ staffRole = 'ALL', page = 0, size = 20 } = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+      });
+      params.append('staffRole', staffRole);
+      const response = await adminAPI.get(`/admin/staff?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải danh sách nhân viên');
+    }
+  },
+
+  updateStaffRole: async (userId, staffRole) => {
+    try {
+      const response = await adminAPI.put(`/admin/users/${userId}/staff-role`, {
+        staffRole: staffRole ?? null,
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật phân quyền');
+    }
+  },
+
   // Lấy thông tin admin profile
   getAdminProfile: async () => {
     try {

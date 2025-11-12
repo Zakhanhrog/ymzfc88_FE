@@ -8,6 +8,10 @@ import DashboardStats from './DashboardStats';
 import DashboardCharts from './DashboardCharts';
 import TabPageHeader from './TabPageHeader';
 import PlaceholderContent from './PlaceholderContent';
+import AdminAnalyticsDashboard from './AdminAnalyticsDashboard';
+import AdminStaffManagement from './AdminStaffManagement';
+import AdminRoleAssignment from './AdminRoleAssignment';
+import AdminAgentManagement from './AdminAgentManagement';
 import AdminUserManagement from './AdminUserManagement';
 import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
@@ -35,8 +39,11 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               title="Dashboard" 
               description="Tổng quan hệ thống" 
             />
-            <DashboardStats loading={loading} stats={dashboardStats} />
-            <DashboardCharts />
+            <DashboardStats loading={loading} stats={dashboardStats?.summary} />
+            <DashboardCharts 
+              chartData={dashboardStats?.chart}
+              activities={dashboardStats?.recentActivities}
+            />
           </div>
         );
 
@@ -45,12 +52,9 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
           <div className="space-y-6">
             <TabPageHeader 
               title="Thống kê" 
-              description="Phân tích dữ liệu chi tiết" 
+              description="Báo cáo chi tiết cược và giao dịch nạp rút" 
             />
-            <PlaceholderContent 
-              icon={ShoppingOutlined}
-              message="Trang thống kê sẽ được phát triển"
-            />
+            <AdminAnalyticsDashboard />
           </div>
         );
 
@@ -70,12 +74,31 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
           <div className="space-y-6">
             <TabPageHeader 
               title="Phân quyền người dùng" 
-              description="Quản lý vai trò và quyền hạn người dùng" 
+              description="Phân quyền đại lý và nhân viên cho người dùng" 
             />
-            <PlaceholderContent 
-              icon={TeamOutlined}
-              message="Trang phân quyền sẽ được phát triển"
+            <AdminRoleAssignment />
+          </div>
+        );
+
+      case 'staff-management':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Quản lý nhân viên"
+              description="Danh sách nhân viên theo từng nhóm phân quyền"
             />
+            <AdminStaffManagement readOnly initialRole="STAFF" />
+          </div>
+        );
+
+      case 'agent-management':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Quản lý đại lý"
+              description="Danh sách đại lý hiện có trong hệ thống"
+            />
+            <AdminAgentManagement />
           </div>
         );
 

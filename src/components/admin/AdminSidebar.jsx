@@ -111,7 +111,14 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       return ['game-management'];
     }
     
-    if (tab === 'users' || tab === 'kyc-verification' || tab === 'user-roles' || tab === 'user-activities') {
+    if (
+      tab === 'users' ||
+      tab === 'kyc-verification' ||
+      tab === 'user-roles' ||
+      tab === 'user-activities' ||
+      tab === 'staff-management' ||
+      tab === 'agent-management'
+    ) {
       return ['user-management'];
     }
     if (tab === 'deposits' || tab === 'withdraws' || tab === 'transactions' || tab === 'payment-methods' || tab === 'points-management') {
@@ -149,6 +156,8 @@ const AdminSidebar = ({ collapsed, onCollapse }) => {
       'kyc-verification': () => navigate(getAdminPath('/dashboard?tab=kyc-verification')),
       'user-roles': () => navigate(getAdminPath('/dashboard?tab=user-roles')),
       'user-activities': () => navigate(getAdminPath('/dashboard?tab=user-activities')),
+      'staff-management': () => navigate(getAdminPath('/dashboard?tab=staff-management')),
+      'agent-management': () => navigate(getAdminPath('/dashboard?tab=agent-management')),
       'deposits': () => navigate(getAdminPath('/dashboard?tab=deposits')),
       'withdraws': () => navigate(getAdminPath('/dashboard?tab=withdraws')),
       'transactions': () => navigate(getAdminPath('/dashboard?tab=transactions')),

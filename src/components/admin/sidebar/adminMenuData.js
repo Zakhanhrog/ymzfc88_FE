@@ -43,6 +43,16 @@ export const adminMenuItems = [
         key: 'user-activities',
         icon: 'BarChartOutlined',
         label: 'Hoạt động người dùng',
+      },
+      {
+        key: 'staff-management',
+        icon: 'TeamOutlined',
+        label: 'Quản lý nhân viên',
+      },
+      {
+        key: 'agent-management',
+        icon: 'UserSwitchOutlined',
+        label: 'Quản lý đại lý',
       }
     ]
   },
@@ -89,6 +99,16 @@ export const adminMenuItems = [
         label: 'Danh sách game',
       },
       {
+        key: 'game-settings',
+        icon: 'SettingOutlined',
+        label: 'Cài đặt game',
+      },
+      {
+        key: 'betting-odds',
+        icon: 'PercentageOutlined',
+        label: 'Tỷ lệ cược',
+      },
+      {
         key: 'bet-management',
         icon: 'ShoppingOutlined',
         label: 'Quản lý cược',
@@ -107,16 +127,6 @@ export const adminMenuItems = [
         key: 'sicbo-results',
         icon: 'DotChartOutlined',
         label: 'Kết quả Sicbo',
-      },
-      {
-        key: 'game-settings',
-        icon: 'SettingOutlined',
-        label: 'Cài đặt game',
-      },
-      {
-        key: 'betting-odds',
-        icon: 'PercentageOutlined',
-        label: 'Tỷ lệ cược',
       },
       {
         key: 'xoc-dia-quick-bets',
@@ -178,6 +188,11 @@ export const adminMenuItems = [
         label: 'Khuyến mãi',
       },
       {
+        key: 'telegram-settings',
+        icon: 'MessageOutlined',
+        label: 'Cài đặt Telegram',
+      },
+      {
         key: 'maintenance',
         icon: 'ToolOutlined',
         label: 'Bảo trì',
@@ -186,11 +201,6 @@ export const adminMenuItems = [
         key: 'logs',
         icon: 'FileTextOutlined',
         label: 'Nhật ký hệ thống',
-      },
-      {
-        key: 'telegram-settings',
-        icon: 'MessageOutlined',
-        label: 'Cài đặt Telegram',
       }
     ]
   }
