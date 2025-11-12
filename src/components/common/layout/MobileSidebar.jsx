@@ -73,6 +73,55 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
     };
   }, []);
 
+  const scrollLockRef = useRef({ top: 0 });
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    const body = document.body;
+    const html = document.documentElement;
+    if (!body) {
+      return;
+    }
+
+    if (isOpen || isClosing) {
+      if (scrollLockRef.current.top === 0) {
+        scrollLockRef.current.top = window.scrollY || window.pageYOffset || 0;
+      }
+      const scrollTop = scrollLockRef.current.top;
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollTop}px`;
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      body.style.touchAction = 'none';
+      if (html) {
+        html.style.overflow = 'hidden';
+      }
+      return undefined;
+    }
+
+    const previousTop = body.style.top;
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    body.style.width = '';
+    body.style.overflow = '';
+    body.style.touchAction = '';
+    if (html) {
+      html.style.overflow = '';
+    }
+    const restorePosition = previousTop ? Number.parseInt(previousTop, 10) || 0 : 0;
+    const nextScrollTop = Math.abs(restorePosition);
+    window.scrollTo(0, nextScrollTop);
+    scrollLockRef.current.top = 0;
+
+    return undefined;
+  }, [isOpen, isClosing]);
+
   // Don't render if not open and not closing (but keep mounted during closing animation)
   if (!isOpen && !isClosing) {
     isMountedRef.current = false;

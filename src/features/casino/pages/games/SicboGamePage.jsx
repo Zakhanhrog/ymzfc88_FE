@@ -11,6 +11,7 @@ import {
 import pointService from '../../../../services/pointService';
 import { API_BASE_URL } from '../../../../utils/constants';
 import sicboQuickBetService from '../../services/sicboQuickBetService';
+import sicboResultHistoryService from '../../services/sicboResultHistoryService';
 import sicboBetService from '../../services/sicboBetService';
 import SicboHeader from './components/SicboHeader';
 import SicboLiveStream from './components/SicboLiveStream';
@@ -19,6 +20,9 @@ import SicboHistoryDrawer from './components/SicboHistoryDrawer';
 import SicboChipSelector from './components/SicboChipSelector';
 import SicboCustomChipModal from './components/SicboCustomChipModal';
 import SicboBetActionBar from './components/SicboBetActionBar';
+import SicboStatsBoard from './components/SicboStatsBoard';
+import LogoutConfirmModal from '../../../../components/common/LogoutConfirmModal';
+import SicboResultSequenceBoard from './components/SicboResultSequenceBoard';
 import { formatChipDisplayValue } from './sicboUtils';
 import useSicboSession from '../../hooks/useSicboSession';
 
@@ -30,6 +34,125 @@ const cloneQuickBetSelection = (selection = {}) =>
     acc[code] = { ...bet };
     return acc;
   }, {});
+
+const SICBO_STATS_ROWS = 6;
+const SICBO_STATS_MAIN_COLUMNS = 16;
+const SICBO_STATS_SECONDARY_COLUMNS = 4;
+const SICBO_STATS_TOTAL_COLUMNS = SICBO_STATS_MAIN_COLUMNS + SICBO_STATS_SECONDARY_COLUMNS;
+const SICBO_STATS_CAPACITY = SICBO_STATS_ROWS * SICBO_STATS_TOTAL_COLUMNS;
+const SICBO_DETAIL_COLUMNS = 4;
+const SICBO_STATS_STORAGE_PREFIX = 'sicbo_stats_table_';
+
+const getStatsStorageKey = (tableNumber) => `${SICBO_STATS_STORAGE_PREFIX}${tableNumber}`;
+
+const createEmptyStatsGrid = () =>
+  Array.from({ length: SICBO_STATS_ROWS }, () => Array(SICBO_STATS_TOTAL_COLUMNS).fill(null));
+
+const createEmptyStatsColumns = () =>
+  Array.from({ length: SICBO_STATS_TOTAL_COLUMNS }, () => Array(SICBO_STATS_ROWS).fill(null));
+
+const createEmptyDetailGrid = () =>
+  Array.from({ length: SICBO_STATS_ROWS }, () => Array(SICBO_DETAIL_COLUMNS).fill(null));
+
+const convertColumnsToGrid = (columns) => {
+  const grid = createEmptyStatsGrid();
+  columns.forEach((column, columnIndex) => {
+    column.forEach((cell, rowIndex) => {
+      grid[rowIndex][columnIndex] = cell;
+    });
+  });
+  return grid;
+};
+
+const shiftColumnsLeft = (columns) => {
+  for (let index = 0; index < SICBO_STATS_TOTAL_COLUMNS - 1; index += 1) {
+    columns[index] = columns[index + 1].map((cell) => (cell ? { ...cell } : null));
+  }
+  columns[SICBO_STATS_TOTAL_COLUMNS - 1] = Array(SICBO_STATS_ROWS).fill(null);
+};
+
+const pushEntryToColumns = (columns, cursor, entry) => {
+  let { column, row, lastCategory } = cursor;
+
+  if (lastCategory && entry.category === lastCategory) {
+    row += 1;
+    if (row >= SICBO_STATS_ROWS) {
+      column += 1;
+      row = 0;
+    }
+  } else {
+    column = lastCategory === null ? 0 : column + 1;
+    row = 0;
+  }
+
+  if (column >= SICBO_STATS_TOTAL_COLUMNS) {
+    shiftColumnsLeft(columns);
+    column = SICBO_STATS_TOTAL_COLUMNS - 1;
+  }
+
+  columns[column][row] = entry;
+  return { column, row, lastCategory: entry.category };
+};
+
+const convertDetailRowsToGrid = (rows) => {
+  const grid = createEmptyDetailGrid();
+  rows.forEach((row, rowIndex) => {
+    row.forEach((cell, cellIndex) => {
+      grid[rowIndex][cellIndex] = cell;
+    });
+  });
+  return grid;
+};
+
+const buildDetailRow = (faces = [], sum) => {
+  if (!Array.isArray(faces) || faces.length !== 3) {
+    return null;
+  }
+  const computedSum = faces.reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0);
+  const total = Number.isFinite(sum) ? sum : computedSum;
+  let label;
+  if (total === 3 || total === 18) {
+    label = String(total);
+  } else if (total >= 11) {
+    label = 'T';
+  } else {
+    label = 'X';
+  }
+  return [
+    { value: faces[0], type: 'face' },
+    { value: faces[1], type: 'face' },
+    { value: faces[2], type: 'face' },
+    { value: label, type: 'label' },
+  ];
+};
+
+const parseResultFaces = (code) => {
+  if (!code || typeof code !== 'string') {
+    return [];
+  }
+  const parts = code.split(/[^0-9]+/);
+  const faces = [];
+  parts.forEach((part) => {
+    if (!part) {
+      return;
+    }
+    const value = Number.parseInt(part, 10);
+    if (Number.isInteger(value) && value >= 1 && value <= 6) {
+      faces.push(value);
+    }
+  });
+  return faces;
+};
+
+const resolveCategoryFromSum = (sum) => {
+  if (sum === 3 || sum === 18) {
+    return 'TRIPLE';
+  }
+  if (sum >= 11) {
+    return 'BIG';
+  }
+  return 'SMALL';
+};
 
 const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   const navigate = useNavigate();
@@ -55,6 +178,9 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   const [quickBetConfigs, setQuickBetConfigs] = useState(() => buildSicboQuickBetMap());
   const [isLoadingQuickBets, setIsLoadingQuickBets] = useState(false);
   const [quickBetError, setQuickBetError] = useState(null);
+  const [sicboStatsGrid, setSicboStatsGrid] = useState(createEmptyStatsGrid());
+  const [sicboDetailGrid, setSicboDetailGrid] = useState(createEmptyDetailGrid());
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const {
     sessionStatus,
     sessionId,
@@ -69,6 +195,13 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   const isBettingLocked = !isSessionRunning || SICBO_BETTING_LOCKED_PHASES.includes(phaseKey);
   const submissionStateRef = useRef({ sessionId: null, signature: '' });
   const [loadingPoints, setLoadingPoints] = useState(false);
+  const sicboColumnsRef = useRef(createEmptyStatsColumns());
+  const sicboCursorRef = useRef({ column: 0, row: -1, lastCategory: null });
+  const sicboHistoryEntriesRef = useRef([]);
+  const sicboDetailRowsRef = useRef([]);
+  const latestStatsSignatureRef = useRef('');
+  const pendingStatsRefreshRef = useRef(null);
+  const isMountedRef = useRef(true);
 
   const updateStoredUserData = useCallback((partialData = {}) => {
     try {
@@ -93,6 +226,78 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
       // ignore parse error
     }
     return null;
+  }, []);
+
+  const loadStatsFromStorage = useCallback((tableNumber) => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    try {
+      const raw = window.localStorage.getItem(getStatsStorageKey(tableNumber));
+      if (!raw) {
+        return [];
+      }
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed
+        .map((item) => {
+          if (!item || typeof item !== 'object') {
+            return null;
+          }
+          const sum = Number(item.sum);
+          const category =
+            typeof item.category === 'string' ? item.category.trim().toUpperCase() : undefined;
+          const faces = Array.isArray(item.faces)
+            ? item.faces.map((value) => Number(value)).filter((value) => Number.isFinite(value))
+            : [];
+          if (!Number.isFinite(sum) || !category || faces.length !== 3) {
+            return null;
+          }
+          return { sum, category, faces };
+        })
+        .filter(Boolean);
+    } catch (error) {
+      return [];
+    }
+  }, []);
+
+  const saveStatsToStorage = useCallback((tableNumber, entries) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (!entries || entries.length === 0) {
+      window.localStorage.removeItem(getStatsStorageKey(tableNumber));
+      return;
+    }
+    const sanitized = entries
+      .map((item) => {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+        const sum = Number(item.sum);
+        const category =
+          typeof item.category === 'string' ? item.category.trim().toUpperCase() : undefined;
+        const faces = Array.isArray(item.faces)
+          ? item.faces.map((value) => Number(value)).filter((value) => Number.isFinite(value))
+          : [];
+        if (!Number.isFinite(sum) || !category || faces.length !== 3) {
+          return null;
+        }
+        return { sum, category, faces };
+      })
+      .filter(Boolean)
+      .slice(-SICBO_STATS_CAPACITY);
+    if (sanitized.length === 0) {
+      window.localStorage.removeItem(getStatsStorageKey(tableNumber));
+      return;
+    }
+    try {
+      window.localStorage.setItem(getStatsStorageKey(tableNumber), JSON.stringify(sanitized));
+    } catch (error) {
+      // ignore quota/storage errors
+    }
   }, []);
 
   const updateUserStateFromData = useCallback(
@@ -209,6 +414,182 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
       isMounted = false;
     };
   }, []);
+
+  const normalizeHistoryItem = useCallback((item) => {
+    if (!item) {
+      return null;
+    }
+    const faces = parseResultFaces(item.resultCode ?? item.code ?? item.result_code);
+    const providedSum = Number(item.resultSum ?? item.sum);
+    const computedSum =
+      faces.length === 3
+        ? faces.reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0)
+        : null;
+    const sum = Number.isFinite(providedSum) ? providedSum : computedSum;
+    if (!Number.isFinite(sum)) {
+      return null;
+    }
+
+    if (faces.length !== 3) {
+      return null;
+    }
+
+    let category =
+      typeof item.category === 'string' ? item.category.trim().toUpperCase() : undefined;
+    if (category !== 'SMALL' && category !== 'BIG' && category !== 'TRIPLE') {
+      category = resolveCategoryFromSum(sum);
+    }
+    return { sum, category, faces, resultCode: item.resultCode ?? null };
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (pendingStatsRefreshRef.current) {
+        window.clearTimeout(pendingStatsRefreshRef.current);
+        pendingStatsRefreshRef.current = null;
+      }
+    };
+  }, []);
+
+  const rebuildStatsFromHistory = useCallback(
+    (items) => {
+      const columns = createEmptyStatsColumns();
+      let cursor = { column: 0, row: -1, lastCategory: null };
+      const normalizedEntries = [];
+      items.forEach((item) => {
+        const normalized = normalizeHistoryItem(item);
+        if (!normalized) {
+          return;
+        }
+        cursor = pushEntryToColumns(columns, cursor, normalized);
+        normalizedEntries.push(normalized);
+      });
+      const snapshot = columns.map((column) => column.map((cell) => (cell ? { ...cell } : null)));
+      sicboColumnsRef.current = snapshot;
+      sicboCursorRef.current = cursor;
+      sicboHistoryEntriesRef.current = normalizedEntries;
+      setSicboStatsGrid(convertColumnsToGrid(snapshot));
+
+      const detailRows = normalizedEntries
+        .map((entry) => buildDetailRow(entry.faces, entry.sum))
+        .filter(Boolean);
+      const limitedDetailRows =
+        detailRows.length > SICBO_STATS_ROWS
+          ? detailRows.slice(detailRows.length - SICBO_STATS_ROWS)
+          : detailRows;
+      sicboDetailRowsRef.current = limitedDetailRows;
+      setSicboDetailGrid(convertDetailRowsToGrid(limitedDetailRows));
+
+      return normalizedEntries;
+    },
+    [normalizeHistoryItem]
+  );
+
+  const appendStatsEntry = useCallback(
+    (entry) => {
+      const columnsClone = sicboColumnsRef.current.map((column) =>
+        column.map((cell) => (cell ? { ...cell } : null))
+      );
+      const updatedCursor = pushEntryToColumns(columnsClone, { ...sicboCursorRef.current }, entry);
+      sicboColumnsRef.current = columnsClone;
+      sicboCursorRef.current = updatedCursor;
+      setSicboStatsGrid(convertColumnsToGrid(columnsClone));
+
+      const historyClone = [...sicboHistoryEntriesRef.current, { ...entry }];
+      if (historyClone.length > SICBO_STATS_CAPACITY) {
+        historyClone.splice(0, historyClone.length - SICBO_STATS_CAPACITY);
+      }
+      sicboHistoryEntriesRef.current = historyClone;
+      saveStatsToStorage(numericTableNumber, historyClone);
+      const detailRow = buildDetailRow(entry.faces, entry.sum);
+      if (detailRow) {
+        const nextRows = [...sicboDetailRowsRef.current, detailRow];
+        if (nextRows.length > SICBO_STATS_ROWS) {
+          nextRows.shift();
+        }
+        sicboDetailRowsRef.current = nextRows;
+        setSicboDetailGrid(convertDetailRowsToGrid(nextRows));
+      }
+    },
+    [numericTableNumber, saveStatsToStorage]
+  );
+
+  const buildStatsEntryFromResult = useCallback((code) => {
+    const faces = parseResultFaces(code);
+    if (faces.length !== 3) {
+      return null;
+    }
+    const sum = faces.reduce((total, value) => total + value, 0);
+    return { sum, category: resolveCategoryFromSum(sum), faces };
+  }, []);
+
+  const fetchStatsFromServer = useCallback(
+    async (fallbackToStorage = true) => {
+      const response = await sicboResultHistoryService.getRecent({
+        tableNumber: numericTableNumber,
+        limit: SICBO_STATS_CAPACITY,
+      });
+
+      if (!isMountedRef.current) {
+        return null;
+      }
+
+      if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+        const ordered = [...response.data].reverse();
+        const normalized = rebuildStatsFromHistory(ordered);
+        saveStatsToStorage(numericTableNumber, normalized ?? []);
+        const last = ordered[ordered.length - 1];
+        latestStatsSignatureRef.current = `${last.sessionId ?? ''}:${last.resultCode ?? ''}`;
+        return normalized;
+      }
+
+      if (!fallbackToStorage) {
+        return null;
+      }
+
+      const storedEntries = loadStatsFromStorage(numericTableNumber);
+      if (storedEntries.length > 0) {
+        rebuildStatsFromHistory(storedEntries);
+        latestStatsSignatureRef.current = '';
+      } else {
+        rebuildStatsFromHistory([]);
+        saveStatsToStorage(numericTableNumber, []);
+        latestStatsSignatureRef.current = '';
+      }
+      return storedEntries;
+    },
+    [loadStatsFromStorage, numericTableNumber, rebuildStatsFromHistory, saveStatsToStorage]
+  );
+
+  useEffect(() => {
+    fetchStatsFromServer();
+  }, [fetchStatsFromServer]);
+
+  useEffect(() => {
+    if (!sessionId || !sessionResultCode) {
+      return;
+    }
+    const signature = `${sessionId}:${sessionResultCode}`;
+    if (latestStatsSignatureRef.current === signature) {
+      return;
+    }
+    const entry = buildStatsEntryFromResult(sessionResultCode);
+    if (!entry) {
+      return;
+    }
+    latestStatsSignatureRef.current = signature;
+    appendStatsEntry(entry);
+    if (pendingStatsRefreshRef.current) {
+      window.clearTimeout(pendingStatsRefreshRef.current);
+      pendingStatsRefreshRef.current = null;
+    }
+    pendingStatsRefreshRef.current = window.setTimeout(() => {
+      pendingStatsRefreshRef.current = null;
+      fetchStatsFromServer(false);
+    }, 1200);
+  }, [appendStatsEntry, buildStatsEntryFromResult, sessionId, sessionResultCode]);
 
   const balanceDisplay = useMemo(() => {
     if (loadingPoints) {
@@ -510,6 +891,15 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     [selectedChipLabel, selectedChipValue]
   );
 
+  const handleBackRequest = useCallback(() => {
+    setShowExitConfirmModal(true);
+  }, []);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowExitConfirmModal(false);
+    navigate('/casino/live/sicbo');
+  }, [navigate]);
+
   const currentPhaseLabel = isSessionRunning ? phaseLabel || 'Đang xử lý' : 'Chờ phiên mới';
   const countdownCircleStyle = {
     background: `conic-gradient(#ef4444 ${countdownAngle}deg, #3b0f0f ${countdownAngle}deg)`,
@@ -523,6 +913,11 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
   useEffect(() => {
     setSelectedQuickBets({});
+  }, [numericTableNumber]);
+
+  useEffect(() => {
+    sicboDetailRowsRef.current = [];
+    setSicboDetailGrid(createEmptyDetailGrid());
   }, [numericTableNumber]);
 
   const handleOpenTableModal = () => {
@@ -810,7 +1205,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <SicboHeader
-        onBack={() => navigate('/casino/live/sicbo')}
+        onBack={handleBackRequest}
         gameName="Sicbo Bigwin"
         userName={userName}
         balanceDisplay={balanceDisplay}
@@ -859,33 +1254,12 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                 isBetConfirmed={isBetConfirmed}
                 canCancelConfirmed={canCancelConfirmed}
               />
-              <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-1.5 sm:gap-2">
-                <div className="rounded bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] p-1.5 text-white shadow-inner h-32">
-                  <div
-                    className="grid h-full w-full grid-rows-6 gap-[2px]"
-                    style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))' }}
-                  >
-                    {Array.from({ length: 90 }).map((_, index) => (
-                      <div
-                        key={`sicbo-grid-cell-${index}`}
-                        className="rounded-sm bg-white/15 shadow-inner"
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded bg-gradient-to-br from-[#0f4c2c] via-[#139257] to-[#17a76a] p-1.5 text-white shadow-inner h-32">
-                  <div
-                    className="grid h-full w-full grid-rows-6 gap-[2px]"
-                    style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr)) minmax(0, 1.5fr)' }}
-                  >
-                    {Array.from({ length: 30 }).map((_, index) => (
-                      <div
-                        key={`sicbo-grid-secondary-cell-${index}`}
-                        className="rounded-sm bg-white/15 shadow-inner"
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div className="grid grid-cols-[minmax(0,14fr)_minmax(0,4fr)] gap-1.5 sm:gap-2 items-stretch">
+                <SicboStatsBoard
+                  grid={sicboStatsGrid}
+                  columnCount={SICBO_STATS_MAIN_COLUMNS}
+                />
+                <SicboResultSequenceBoard grid={sicboDetailGrid} />
               </div>
             </div>
           </div>
@@ -932,10 +1306,9 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
               <button
                 type="button"
                 onClick={() => {
+                  setIsTableModalOpen(false);
                   if (pendingTable !== numericTableNumber) {
                     navigate(`/casino/live/sicbo?table=${pendingTable}`);
-                  } else {
-                    setIsTableModalOpen(false);
                   }
                 }}
                 className="rounded-xl border border-[#0f4c2c] px-4 py-2 text-sm font-semibold text-[#0f4c2c] transition hover:bg-[#0f4c2c]/5"
@@ -953,6 +1326,19 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
           </div>
         </div>
       ) : null}
+      <LogoutConfirmModal
+        isOpen={showExitConfirmModal}
+        onClose={() => setShowExitConfirmModal(false)}
+        onConfirm={handleConfirmExit}
+        title={`Thoát khỏi ${tableLabel}?`}
+        message={`Bạn sẽ rời khỏi ${tableLabel} hiện tại. Bạn có chắc chắn muốn thoát không?`}
+        icon="mdi:dice-3-outline"
+        confirmIcon="mdi:exit-to-app"
+        confirmLabel={`Thoát ${tableLabel}`}
+        confirmLoadingLabel="Đang thoát..."
+        iconContainerClass="bg-amber-100 text-amber-600"
+        confirmButtonClass="bg-amber-500 hover:bg-amber-600"
+      />
     </div>
   );
 };
