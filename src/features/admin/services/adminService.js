@@ -449,6 +449,33 @@ export const adminService = {
     }
   },
 
+  updateAdminProfile: async (profileData) => {
+    try {
+      const response = await adminAPI.put('/admin/profile', profileData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật thông tin admin');
+    }
+  },
+
+  updateAdminPassword: async (userId, newPassword) => {
+    try {
+      const response = await adminAPI.post(`/admin/users/${userId}/reset-password?newPassword=${encodeURIComponent(newPassword)}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật mật khẩu');
+    }
+  },
+
+  getSicboResultHistory: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/sicbo/result-history', { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử kết quả Sicbo');
+    }
+  },
+
   // ============ WITHDRAWAL LOCK MANAGEMENT ============
 
   // Khóa rút tiền cho người dùng

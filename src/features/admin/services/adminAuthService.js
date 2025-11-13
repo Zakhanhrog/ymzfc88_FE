@@ -127,6 +127,13 @@ export const adminAuthService = {
     return adminData ? JSON.parse(adminData) : null;
   },
 
+  updateCurrentAdmin: (partial = {}) => {
+    const adminData = adminAuthService.getCurrentAdmin();
+    if (!adminData) return;
+    const updated = { ...adminData, ...partial };
+    localStorage.setItem('adminData', JSON.stringify(updated));
+  },
+
   // Get admin token
   getToken: () => {
     return localStorage.getItem('adminToken');

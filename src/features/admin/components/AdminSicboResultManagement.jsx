@@ -3,7 +3,7 @@ import { message } from 'antd';
 import useSicboSession from '../../casino/hooks/useSicboSession';
 import sicboSessionService from '../../../services/sicboSessionService';
 
-const diceFaceIconMap = {
+export const diceFaceIconMap = {
   1: '/matxucxac/1cham.svg',
   2: '/matxucxac/2cham.svg',
   3: '/matxucxac/3cham.svg',
@@ -16,7 +16,7 @@ const diceFaces = [1, 2, 3, 4, 5, 6];
 
 const createEmptyFaces = () => [null, null, null];
 
-const AdminSicboTablePanel = ({ tableNumber }) => {
+export const SicboResultTablePanel = ({ tableNumber }) => {
   const [selectedFaces, setSelectedFaces] = useState(createEmptyFaces());
   const [startingSession, setStartingSession] = useState(false);
   const [savingResult, setSavingResult] = useState(false);
@@ -271,13 +271,21 @@ const AdminSicboTablePanel = ({ tableNumber }) => {
   );
 };
 
-const AdminSicboResultManagement = () => {
-  const [activeTable, setActiveTable] = useState(1);
+const AdminSicboResultManagement = ({
+  allowedTables = [1, 2],
+  initialTable,
+}) => {
+  const tables = allowedTables.length > 0 ? allowedTables : [1, 2];
+  const defaultTable = initialTable ?? tables[0];
+  const [activeTable, setActiveTable] = useState(defaultTable);
+
+  const hasMultipleTables = tables.length > 1;
 
   return (
     <div className="space-y-4">
+      {hasMultipleTables && (
       <div className="flex flex-wrap items-center justify-end gap-2">
-        {[1, 2].map((table) => (
+          {tables.map((table) => (
           <button
             key={`sicbo-admin-table-switch-${table}`}
             type="button"
@@ -292,8 +300,9 @@ const AdminSicboResultManagement = () => {
           </button>
         ))}
       </div>
+      )}
 
-      <AdminSicboTablePanel key={`sicbo-admin-active-table-${activeTable}`} tableNumber={activeTable} />
+      <SicboResultTablePanel key={`sicbo-admin-active-table-${activeTable}`} tableNumber={activeTable} />
     </div>
   );
 };

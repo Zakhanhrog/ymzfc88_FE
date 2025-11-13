@@ -1,14 +1,25 @@
 import { Layout, Button, Avatar } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import {
   UserOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import { LAYOUT } from '../../../utils/theme';
+import { getPortalPath } from '../../../utils/navigation';
+import { getPortalType } from '../../../utils/subdomain';
 
 const { Header } = Layout;
 
 const AdminHeader = ({ collapsed, onToggleCollapse }) => {
+  const navigate = useNavigate();
+  const portalType = getPortalType();
+
+  const handleProfileClick = () => {
+    const profilePath = getPortalPath(portalType, '/dashboard?tab=admin-profile');
+    navigate(profilePath);
+  };
+
   return (
     <Header 
       className="bg-white shadow-sm"
@@ -37,6 +48,8 @@ const AdminHeader = ({ collapsed, onToggleCollapse }) => {
           icon={<UserOutlined />} 
           className="bg-blue-600"
           size="large"
+          onClick={handleProfileClick}
+          style={{ cursor: 'pointer' }}
         />
       </div>
     </Header>

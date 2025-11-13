@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Table,
   Button,
@@ -41,11 +41,24 @@ import {
   UnlockOutlined
 } from '@ant-design/icons';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
+import { adminAuthService } from '../services/adminAuthService';
+import { getPortalType } from '../../../utils/subdomain';
 import { adminService } from '../services/adminService';
 
 const { Option } = Select;
 const { Search } = Input;
 const { Title, Text } = Typography;
+
+const ROLE_SELECTIONS = [
+  { value: 'USER', label: 'Người dùng' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'AGENT', label: 'Đại lý' },
+  { value: 'STAFF_MKT', label: 'Nhân viên MKT' },
+  { value: 'STAFF_XNK', label: 'Nhân viên XNK' },
+  { value: 'STAFF_TX1', label: 'Nhân viên bàn TX1' },
+  { value: 'STAFF_TX2', label: 'Nhân viên bàn TX2' },
+  { value: 'STAFF_XD', label: 'Nhân viên Xóc Đĩa' },
+];
 
 const AdminUserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -75,6 +88,25 @@ const AdminUserManagement = () => {
   const [editForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [lockForm] = Form.useForm();
+
+  const currentAdminSession = adminAuthService.getCurrentAdmin();
+  const currentPortal = useMemo(
+    () => currentAdminSession?.portal || getPortalType() || 'admin',
+    [currentAdminSession]
+  );
+  const isStaffPortal = currentPortal === 'staff';
+  const isStaffXnk = isStaffPortal && currentAdminSession?.staffRole === 'STAFF_XNK';
+  const isAdminPortal = currentPortal === 'admin' && currentAdminSession?.role === 'ADMIN';
+
+  const availableRoleOptions = useMemo(() => {
+    if (isStaffXnk) {
+      return ROLE_SELECTIONS.filter((option) => option.value === 'USER');
+    }
+    if (isAdminPortal) {
+      return ROLE_SELECTIONS;
+    }
+    return ROLE_SELECTIONS.filter((option) => option.value === 'USER');
+  }, [isAdminPortal, isStaffXnk]);
 
   // Load data
   useEffect(() => {
@@ -146,10 +178,46 @@ const AdminUserManagement = () => {
     }));
   };
 
+  const openCreateModal = () => {
+    createForm.resetFields();
+    createForm.setFieldsValue({
+      role: isStaffXnk ? 'USER' : 'USER'
+    });
+    setShowCreateModal(true);
+  };
+
   // Create user
+  const normalizeRolePayload = (selectedRole) => {
+    if (!selectedRole || selectedRole === 'USER') {
+      return { role: 'USER' };
+    }
+    if (selectedRole === 'ADMIN') {
+      return { role: 'ADMIN' };
+    }
+    return {
+      role: 'USER',
+      staffRole: selectedRole
+    };
+  };
+
   const handleCreateUser = async (values) => {
     try {
-      const response = await adminService.createUser(values);
+      const selectedRole = isStaffXnk ? 'USER' : values.role;
+      const payload = {
+        ...values,
+        ...normalizeRolePayload(selectedRole)
+      };
+
+      if (isStaffXnk) {
+        payload.role = 'USER';
+        delete payload.staffRole;
+      }
+
+      if (!payload.staffRole) {
+        delete payload.staffRole;
+      }
+
+      const response = await adminService.createUser(payload);
       if (response.success) {
         message.success('Tạo người dùng thành công!');
         setShowCreateModal(false);
@@ -165,7 +233,11 @@ const AdminUserManagement = () => {
   // Update user
   const handleUpdateUser = async (values) => {
     try {
-      const response = await adminService.updateUser(selectedUser.id, values);
+      const payload = { ...values };
+      if (isStaffXnk) {
+        delete payload.role;
+      }
+      const response = await adminService.updateUser(selectedUser.id, payload);
       if (response.success) {
         message.success('Cập nhật người dùng thành công!');
         setShowEditModal(false);
@@ -512,6 +584,7 @@ const AdminUserManagement = () => {
               prefix={<SearchOutlined />}
             />
           </Col>
+          {isAdminPortal && (
           <Col xs={12} sm={6} md={4} lg={3}>
             <Select
               placeholder="Vai trò"
@@ -524,6 +597,7 @@ const AdminUserManagement = () => {
               <Option value="ADMIN">Admin</Option>
             </Select>
           </Col>
+          )}
           <Col xs={12} sm={6} md={4} lg={3}>
             <Select
               placeholder="Trạng thái"
@@ -543,7 +617,7 @@ const AdminUserManagement = () => {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={() => setShowCreateModal(true)}
+                onClick={openCreateModal}
               >
                 Thêm người dùng
               </Button>
@@ -639,9 +713,15 @@ const AdminUserManagement = () => {
                 label="Vai trò"
                 rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
               >
-                <Select>
-                  <Option value="USER">Người dùng</Option>
-                  <Option value="ADMIN">Admin</Option>
+                <Select
+                  disabled={isStaffXnk}
+                  placeholder="Chọn vai trò"
+                >
+                  {availableRoleOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
@@ -729,7 +809,7 @@ const AdminUserManagement = () => {
                 name="role"
                 label="Vai trò"
               >
-                <Select>
+                <Select disabled={isStaffXnk}>
                   <Option value="USER">Người dùng</Option>
                   <Option value="ADMIN">Admin</Option>
                 </Select>

@@ -30,7 +30,6 @@ import AdminNotificationManagement from './AdminNotificationManagement';
 import AdminBetManagement from './AdminBetManagement';
 import AdminLotteryResultManagement from './AdminLotteryResultManagement';
 import AdminXocDiaResultManagement from './AdminXocDiaResultManagement';
-import AdminSicboResultManagement from './AdminSicboResultManagement';
 import AdminGameHistory from './AdminGameHistory';
 import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
@@ -38,6 +37,11 @@ import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManage
 import AdminBannerManagement from './AdminBannerManagement';
 import TelegramSettings from '../pages/TelegramSettings';
 import { getPortalType } from '../../../utils/subdomain';
+import AdminProfile from './AdminProfile';
+import StaffSicboResultManagement from './StaffSicboResultManagement';
+import StaffSicboHistory from './StaffSicboHistory';
+import StaffXocDiaHistory from './StaffXocDiaHistory';
+import StaffXocDiaResultManagement from './StaffXocDiaResultManagement';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const portalType = getPortalType();
@@ -161,6 +165,9 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'agent-report':
         return <AdminAgentReport />;
 
+      case 'admin-profile':
+        return <AdminProfile />;
+
       case 'staff-mkt-users':
         return <StaffMktUserOverview />;
 
@@ -212,47 +219,23 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
           </div>
         );
 
-      case 'staff-tx1-overview':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Nhân viên bàn TX1"
-              description="Trang làm việc dành cho nhân viên phụ trách bàn Tài Xỉu 1"
-            />
-            <PlaceholderContent
-              icon={TeamOutlined}
-              message="Nội dung riêng cho nhân viên bàn TX1 sẽ được cập nhật."
-            />
-          </div>
-        );
+      case 'staff-tx1-history':
+        return <StaffSicboHistory tableNumber={1} />;
 
-      case 'staff-tx2-overview':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Nhân viên bàn TX2"
-              description="Trang làm việc dành cho nhân viên phụ trách bàn Tài Xỉu 2"
-            />
-            <PlaceholderContent
-              icon={TeamOutlined}
-              message="Nội dung riêng cho nhân viên bàn TX2 sẽ được cập nhật."
-            />
-          </div>
-        );
+      case 'staff-tx1-sicbo-results':
+        return <StaffSicboResultManagement tableNumber={1} />;
 
-      case 'staff-xd-overview':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Nhân viên Xóc Đĩa"
-              description="Trang làm việc dành cho nhân viên phụ trách bàn Xóc Đĩa"
-            />
-            <PlaceholderContent 
-              icon={TeamOutlined}
-              message="Nội dung riêng cho nhân viên Xóc Đĩa đang được phát triển."
-            />
-          </div>
-        );
+      case 'staff-tx2-history':
+        return <StaffSicboHistory tableNumber={2} />;
+
+      case 'staff-tx2-sicbo-results':
+        return <StaffSicboResultManagement tableNumber={2} />;
+
+      case 'staff-xd-history':
+        return <StaffXocDiaHistory />;
+
+      case 'staff-xd-results':
+        return <StaffXocDiaResultManagement />;
 
       case 'user-activities':
         return (
@@ -355,13 +338,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         return (
           <div className="space-y-6">
             <AdminXocDiaResultManagement />
-          </div>
-        );
-
-      case 'sicbo-results':
-        return (
-          <div className="space-y-6">
-            <AdminSicboResultManagement />
           </div>
         );
 

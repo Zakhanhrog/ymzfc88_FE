@@ -69,6 +69,28 @@ const xocDiaSessionService = {
     }
   },
 
+  submitResultForStaff: async (resultCode) => {
+    try {
+      const response = await authService.makeAuthenticatedRequest(
+        `${API_BASE_URL}/admin/xoc-dia/session/result`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ resultCode }),
+        }
+      );
+      return parseResponse(response);
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Không thể lưu kết quả phiên',
+        data: null,
+      };
+    }
+  },
+
   getAdminCurrentSession: async () => {
     try {
       const response = await authService.makeAuthenticatedRequest(

@@ -177,11 +177,6 @@ export const adminMenuItems = [
         label: 'Kết quả Xóc Đĩa',
       },
       {
-        key: 'sicbo-results',
-        icon: ICONS.sicboResults,
-        label: 'Kết quả Tài xỉu',
-      },
-      {
         key: 'xoc-dia-quick-bets',
         icon: ICONS.xocdiaOdds,
         label: 'Tỷ lệ cược Xóc Đĩa',
@@ -275,9 +270,14 @@ export const adminMenuItems = [
         label: 'Nhân viên bàn TX1',
         children: [
           {
-            key: 'staff-tx1-overview',
+            key: 'staff-tx1-history',
             icon: ICONS.staffTx1,
-            label: 'Tổng quan bàn TX1',
+            label: 'Lịch sử kết quả TX1',
+          },
+          {
+            key: 'staff-tx1-sicbo-results',
+            icon: ICONS.sicboResults,
+            label: 'Kết quả bàn TX1',
           }
         ]
       },
@@ -287,9 +287,14 @@ export const adminMenuItems = [
         label: 'Nhân viên bàn TX2',
         children: [
           {
-            key: 'staff-tx2-overview',
+            key: 'staff-tx2-history',
             icon: ICONS.staffTx2,
-            label: 'Tổng quan bàn TX2',
+            label: 'Lịch sử kết quả TX2',
+          },
+          {
+            key: 'staff-tx2-sicbo-results',
+            icon: ICONS.sicboResults,
+            label: 'Kết quả bàn TX2',
           }
         ]
       },
@@ -299,9 +304,14 @@ export const adminMenuItems = [
         label: 'Nhân viên Xóc Đĩa',
         children: [
           {
-            key: 'staff-xd-overview',
+            key: 'staff-xd-history',
             icon: ICONS.staffXd,
-            label: 'Tổng quan bàn Xóc Đĩa',
+            label: 'Lịch sử kết quả Xóc Đĩa',
+          },
+          {
+            key: 'staff-xd-results',
+            icon: ICONS.xocdiaResults,
+            label: 'Kết quả bàn Xóc Đĩa',
           }
         ]
       }

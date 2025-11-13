@@ -56,17 +56,20 @@ const STAFF_ROLE_ALLOWED_KEYS = {
   STAFF_TX1: new Set([
     'staff-portal',
     'staff-tx1',
-    'staff-tx1-overview'
+    'staff-tx1-history',
+    'staff-tx1-sicbo-results'
   ]),
   STAFF_TX2: new Set([
     'staff-portal',
     'staff-tx2',
-    'staff-tx2-overview'
+    'staff-tx2-history',
+    'staff-tx2-sicbo-results'
   ]),
   STAFF_XD: new Set([
     'staff-portal',
     'staff-xd',
-    'staff-xd-overview'
+    'staff-xd-history',
+    'staff-xd-results'
   ])
 };
 
@@ -111,8 +114,7 @@ const getMenuForPortal = (portalType, session) => {
       ]);
       const excludedGameKeys = new Set([
         'game-results',
-        'xoc-dia-results',
-        'sicbo-results'
+        'xoc-dia-results'
       ]);
       const excludedChildKeys = new Set([
         'user-roles',
@@ -321,15 +323,18 @@ const AdminSidebar = ({ collapsed }) => {
       'staff-xnk-users': () => goTo('/dashboard?tab=staff-xnk-users'),
       'staff-xnk-finance': () => goTo('/dashboard?tab=staff-xnk-finance'),
       'staff-xnk-games': () => goTo('/dashboard?tab=staff-xnk-games'),
-      'staff-tx1-overview': () => goTo('/dashboard?tab=staff-tx1-overview'),
-      'staff-tx2-overview': () => goTo('/dashboard?tab=staff-tx2-overview'),
-      'staff-xd-overview': () => goTo('/dashboard?tab=staff-xd-overview'),
+      'staff-tx1-history': () => goTo('/dashboard?tab=staff-tx1-history'),
+      'staff-tx2-history': () => goTo('/dashboard?tab=staff-tx2-history'),
+      'staff-xd-history': () => goTo('/dashboard?tab=staff-xd-history'),
+      'staff-tx1-sicbo-results': () => goTo('/dashboard?tab=staff-tx1-sicbo-results'),
+      'staff-tx2-sicbo-results': () => goTo('/dashboard?tab=staff-tx2-sicbo-results'),
+      'staff-xd-results': () => goTo('/dashboard?tab=staff-xd-results'),
+      'admin-profile': () => goTo('/dashboard?tab=admin-profile'),
       games: () => goTo('/dashboard?tab=games'),
       'bet-management': () => goTo('/dashboard?tab=bet-management'),
       'game-history': () => goTo('/dashboard?tab=game-history'),
       'game-results': () => goTo('/dashboard?tab=game-results'),
       'xoc-dia-results': () => goTo('/dashboard?tab=xoc-dia-results'),
-      'sicbo-results': () => goTo('/dashboard?tab=sicbo-results'),
       'game-settings': () => goTo('/dashboard?tab=game-settings'),
       'betting-odds': () => goTo('/betting-odds'),
       'xoc-dia-quick-bets': () => goTo('/xoc-dia/quick-bets'),
