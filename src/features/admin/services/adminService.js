@@ -670,6 +670,35 @@ export const adminService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi tải biểu đồ hoa hồng');
     }
+  },
+
+  getAgentCommissionReport: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/report', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải báo cáo đại lý');
+    }
+  },
+
+  payoutAgentCommission: async (agentId, payload) => {
+    try {
+      const response = await adminAPI.post(`/admin/agent/report/${agentId}/payout`, payload);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi chia hoa hồng');
+    }
+  },
+
+  getGameHistory: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/game-history', { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử game');
+    }
   }
 };
 

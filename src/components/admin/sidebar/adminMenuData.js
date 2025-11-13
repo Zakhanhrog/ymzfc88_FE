@@ -42,6 +42,7 @@ const ICONS = {
   agentCustomerDetail: '/iconacc/imgi_75_icon-home.avif',
   agentInvite: '/iconacc/imgi_30_promotion.avif',
   agentCommission: '/images/icons/icon-deposit.png',
+  agentReport: '/images/icons/sm-wheel.png',
   staffPortal: '/icondieuhuongmb/imgi_21_sport.avif',
   staffMkt: '/iconacc/imgi_30_promotion.avif',
   staffXnk: '/iconacc/imgi_27_bank.avif',
@@ -57,7 +58,7 @@ export const adminMenuItems = [
   {
     key: 'dashboard',
     icon: ICONS.dashboard,
-    label: 'Dashboard',
+    label: 'DASHBOARD',
     children: [
       {
         key: 'overview',
@@ -74,7 +75,7 @@ export const adminMenuItems = [
   {
     key: 'user-management',
     icon: ICONS.userManagement,
-    label: 'Quản lý người dùng',
+    label: 'QUẢN LÝ NGƯỜI DÙNG',
     children: [
       {
         key: 'users',
@@ -100,13 +101,18 @@ export const adminMenuItems = [
         key: 'agent-management',
         icon: ICONS.agent,
         label: 'Quản lý đại lý',
+      },
+      {
+        key: 'agent-report',
+        icon: ICONS.agentReport,
+        label: 'Báo cáo đại lý',
       }
     ]
   },
   {
     key: 'financial-management',
     icon: ICONS.financialManagement,
-    label: 'Quản lý tài chính',
+    label: 'QUẢN LÝ TÀI CHÍNH',
     children: [
       {
         key: 'deposits',
@@ -133,7 +139,7 @@ export const adminMenuItems = [
   {
     key: 'game-management',
     icon: ICONS.gameManagement,
-    label: 'Quản lý game',
+    label: 'QUẢN LÝ GAME',
     children: [
       {
         key: 'games',
@@ -154,6 +160,11 @@ export const adminMenuItems = [
         key: 'bet-management',
         icon: ICONS.betManagement,
         label: 'Quản lý lệnh cược xổ số',
+      },
+      {
+        key: 'game-history',
+        icon: ICONS.betManagement,
+        label: 'Lịch sử game',
       },
       {
         key: 'game-results',
@@ -185,7 +196,7 @@ export const adminMenuItems = [
   {
     key: 'agent-portal',
     icon: ICONS.agentPortal,
-    label: 'Đại lý',
+    label: 'ĐẠI LÝ',
     children: [
       {
         key: 'agent-dashboard',
@@ -212,7 +223,7 @@ export const adminMenuItems = [
   {
     key: 'staff-portal',
     icon: ICONS.staffPortal,
-    label: 'Nhân viên',
+    label: 'NHÂN VIÊN',
     children: [
       {
         key: 'staff-mkt',
@@ -299,7 +310,7 @@ export const adminMenuItems = [
   {
     key: 'content-management',
     icon: ICONS.contentManagement,
-    label: 'Quản lý nội dung',
+    label: 'QUẢN LÝ NỘI DUNG',
     children: [
       {
         key: 'banners',
@@ -326,7 +337,7 @@ export const adminMenuItems = [
   {
     key: 'system-management',
     icon: ICONS.systemManagement,
-    label: 'Quản lý hệ thống',
+    label: 'QUẢN LÝ HỆ THỐNG',
     children: [
       {
         key: 'settings',

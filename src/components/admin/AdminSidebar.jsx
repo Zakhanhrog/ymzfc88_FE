@@ -8,39 +8,10 @@ import LogoutConfirmModal from '../common/LogoutConfirmModal';
 import { getPortalLoginPath, getPortalPath } from '../../utils/navigation';
 import { getPortalType } from '../../utils/subdomain';
 
-// Helper function to convert icon name string to component
-const getIconComponent = (iconValue) => {
-  if (!iconValue) {
-    return null;
-  }
-
-  if (typeof iconValue === 'string') {
-    const isImagePath = iconValue.startsWith('/') || iconValue.startsWith('http');
-    if (isImagePath) {
-      return (
-        <img
-          src={iconValue}
-          alt=""
-          style={{
-            width: 18,
-            height: 18,
-            objectFit: 'contain',
-          }}
-        />
-      );
-    }
-
-    return null;
-  }
-
-  return iconValue;
-};
-
-// Convert menu data to include rendered icons
 const convertMenuItems = (items) => {
   return items.map(item => ({
     ...item,
-    icon: getIconComponent(item.icon),
+    icon: undefined,
     children: item.children ? convertMenuItems(item.children) : undefined
   }));
 };
@@ -69,8 +40,6 @@ const AGENT_ALLOWED_KEYS = new Set([
 
 const STAFF_ROLE_ALLOWED_KEYS = {
   STAFF_MKT: new Set([
-    'dashboard',
-    'overview',
     'staff-portal',
     'staff-mkt',
     'staff-mkt-users',
@@ -78,8 +47,6 @@ const STAFF_ROLE_ALLOWED_KEYS = {
     'staff-mkt-games'
   ]),
   STAFF_XNK: new Set([
-    'dashboard',
-    'overview',
     'staff-portal',
     'staff-xnk',
     'staff-xnk-users',
@@ -87,22 +54,16 @@ const STAFF_ROLE_ALLOWED_KEYS = {
     'staff-xnk-games'
   ]),
   STAFF_TX1: new Set([
-    'dashboard',
-    'overview',
     'staff-portal',
     'staff-tx1',
     'staff-tx1-overview'
   ]),
   STAFF_TX2: new Set([
-    'dashboard',
-    'overview',
     'staff-portal',
     'staff-tx2',
     'staff-tx2-overview'
   ]),
   STAFF_XD: new Set([
-    'dashboard',
-    'overview',
     'staff-portal',
     'staff-xd',
     'staff-xd-overview'
@@ -141,9 +102,53 @@ const getMenuForPortal = (portalType, session) => {
 
   if (portalType === 'staff') {
     const staffRole = session?.staffRole;
+
+    if (staffRole === 'STAFF_XNK') {
+      const allowedTopKeys = new Set([
+        'user-management',
+        'financial-management',
+        'game-management'
+      ]);
+      const excludedGameKeys = new Set([
+        'game-results',
+        'xoc-dia-results',
+        'sicbo-results'
+      ]);
+      const excludedChildKeys = new Set([
+        'user-roles',
+        'staff-management',
+        'agent-management',
+        'agent-report',
+        'payment-methods'
+      ]);
+
+      return adminMenuItems
+        .filter((item) => allowedTopKeys.has(item.key))
+        .map((item) => {
+          const clonedChildren = item.children
+            ? item.children
+                .filter((child) =>
+                  !excludedChildKeys.has(child.key) &&
+                  (item.key === 'game-management'
+                    ? !excludedGameKeys.has(child.key)
+                    : true)
+                )
+                .map((child) => ({ ...child }))
+            : undefined;
+
+          return {
+            ...item,
+            children: clonedChildren
+          };
+        })
+        .filter((item) => !item.children || item.children.length > 0);
+    }
+
     const allowedKeys = staffRole ? STAFF_ROLE_ALLOWED_KEYS[staffRole] : null;
     if (allowedKeys) {
-      return filterMenuByKeys(adminMenuItems, allowedKeys);
+      const filtered = filterMenuByKeys(adminMenuItems, allowedKeys);
+      const staffSection = filtered.find((item) => item.key === 'staff-portal');
+      return staffSection?.children ?? [];
     }
     // No allowed menu -> return empty array
     return [];
@@ -243,6 +248,7 @@ const AdminSidebar = ({ collapsed }) => {
     [menuData, activeKey]
   );
   const [openGroups, setOpenGroups] = useState(initialParents);
+  const [closedGroups, setClosedGroups] = useState([]);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const prevActiveKeyRef = useRef(activeKey);
@@ -254,6 +260,7 @@ const AdminSidebar = ({ collapsed }) => {
 
     if (hasActiveChanged || hasParentsChanged) {
       setOpenGroups(initialParents);
+      setClosedGroups([]);
     }
 
     if (hasActiveChanged) {
@@ -268,6 +275,7 @@ const AdminSidebar = ({ collapsed }) => {
   useEffect(() => {
     if (collapsed) {
       setOpenGroups([]);
+      setClosedGroups([]);
     }
   }, [collapsed]);
 
@@ -288,12 +296,6 @@ const AdminSidebar = ({ collapsed }) => {
     }
   };
 
-  const toggleGroup = useCallback((key) => {
-    setOpenGroups((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
-    );
-  }, []);
-
   const menuActions = useMemo(
     () => ({
       overview: () => goTo('/dashboard'),
@@ -312,6 +314,7 @@ const AdminSidebar = ({ collapsed }) => {
       'agent-dashboard': () => goTo('/dashboard?tab=agent-dashboard'),
       'agent-invite-codes': () => goTo('/dashboard?tab=agent-invite-codes'),
       'agent-commission': () => goTo('/dashboard?tab=agent-commission'),
+      'agent-report': () => goTo('/dashboard?tab=agent-report'),
       'staff-mkt-users': () => goTo('/dashboard?tab=staff-mkt-users'),
       'staff-mkt-finance': () => goTo('/dashboard?tab=staff-mkt-finance'),
       'staff-mkt-games': () => goTo('/dashboard?tab=staff-mkt-games'),
@@ -323,6 +326,7 @@ const AdminSidebar = ({ collapsed }) => {
       'staff-xd-overview': () => goTo('/dashboard?tab=staff-xd-overview'),
       games: () => goTo('/dashboard?tab=games'),
       'bet-management': () => goTo('/dashboard?tab=bet-management'),
+      'game-history': () => goTo('/dashboard?tab=game-history'),
       'game-results': () => goTo('/dashboard?tab=game-results'),
       'xoc-dia-results': () => goTo('/dashboard?tab=xoc-dia-results'),
       'sicbo-results': () => goTo('/dashboard?tab=sicbo-results'),
@@ -355,10 +359,12 @@ const AdminSidebar = ({ collapsed }) => {
   const renderMenuNode = useCallback(
     (item, depth = 0) => {
       const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-      const isOpen = openGroups.includes(item.key);
-      const isSelfActive = activeKey === item.key;
+      const isTopLevel = depth === 0;
       const isDescendantActive =
         hasChildren && item.children.some((child) => isKeyInTree(child, activeKey));
+      const isForcedClosed = closedGroups.includes(item.key);
+      const isOpen = !isForcedClosed && (openGroups.includes(item.key) || isDescendantActive);
+      const isSelfActive = activeKey === item.key;
       const isActive = isSelfActive || isDescendantActive;
 
       const baseClasses = collapsed
@@ -374,13 +380,14 @@ const AdminSidebar = ({ collapsed }) => {
 
       const content = (
         <>
-          {item.icon && (
-            <span className={collapsed ? 'text-lg' : 'text-base'}>
-              {item.icon}
+          {collapsed ? (
+            <span className="text-xs font-semibold uppercase">
+              {item.label ? item.label.charAt(0) : ''}
             </span>
-          )}
-          {!collapsed && (
-            <span className="flex-1 text-left text-sm font-medium">
+          ) : (
+            <span
+              className={`flex-1 text-left text-sm ${isTopLevel ? 'font-semibold uppercase tracking-wide' : 'font-medium'}`}
+            >
               {item.label}
             </span>
           )}
@@ -394,7 +401,18 @@ const AdminSidebar = ({ collapsed }) => {
 
       const handleClick = () => {
         if (hasChildren) {
-          toggleGroup(item.key);
+          const currentlyOpen = !isForcedClosed && (openGroups.includes(item.key) || isDescendantActive);
+          if (currentlyOpen) {
+            setClosedGroups((prev) =>
+              prev.includes(item.key) ? prev : [...prev, item.key]
+            );
+            setOpenGroups((prev) => prev.filter((groupKey) => groupKey !== item.key));
+          } else {
+            setClosedGroups((prev) => prev.filter((groupKey) => groupKey !== item.key));
+            setOpenGroups((prev) =>
+              prev.includes(item.key) ? prev : [...prev, item.key]
+            );
+          }
         } else {
           handleNavigate(item.key);
         }
@@ -418,7 +436,7 @@ const AdminSidebar = ({ collapsed }) => {
         </div>
       );
     },
-    [collapsed, openGroups, activeKey, toggleGroup, handleNavigate]
+    [collapsed, openGroups, activeKey, handleNavigate, closedGroups]
   );
 
   const sidebarWidth = useMemo(
@@ -450,8 +468,8 @@ const AdminSidebar = ({ collapsed }) => {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col">
-        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1 custom-scrollbar">
           {menuItems.length > 0 ? (
             menuItems.map((item) => renderMenuNode(item))
           ) : (

@@ -16,6 +16,10 @@ import AgentCustomerList from './AgentCustomerList';
 import AgentInviteCodes from './AgentInviteCodes';
 import AgentCommissionManagement from './AgentCommissionManagement';
 import AgentDashboard from './AgentDashboard';
+import StaffMktUserOverview from './StaffMktUserOverview';
+import StaffMktFinanceOverview from './StaffMktFinanceOverview';
+import StaffMktGameOverview from './StaffMktGameOverview';
+import AdminAgentReport from './AdminAgentReport';
 import AdminUserManagement from './AdminUserManagement';
 import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
@@ -27,6 +31,7 @@ import AdminBetManagement from './AdminBetManagement';
 import AdminLotteryResultManagement from './AdminLotteryResultManagement';
 import AdminXocDiaResultManagement from './AdminXocDiaResultManagement';
 import AdminSicboResultManagement from './AdminSicboResultManagement';
+import AdminGameHistory from './AdminGameHistory';
 import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
@@ -153,47 +158,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'agent-dashboard':
         return <AgentDashboard />;
 
+      case 'agent-report':
+        return <AdminAgentReport />;
+
       case 'staff-mkt-users':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Nhân viên MKT - Quản lý người dùng"
-              description="Hỗ trợ đại lý trong việc chăm sóc và quản lý người chơi"
-            />
-            <PlaceholderContent
-              icon={UserOutlined}
-              message="Trang làm việc của nhân viên MKT đang được phát triển."
-            />
-          </div>
-        );
+        return <StaffMktUserOverview />;
 
       case 'staff-mkt-finance':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Nhân viên MKT - Quản lý tài chính"
-              description="Theo dõi các chương trình khuyến mại và đối soát giao dịch"
-            />
-            <PlaceholderContent
-              icon={ShoppingOutlined}
-              message="Chức năng quản lý tài chính cho nhân viên MKT sẽ sớm ra mắt."
-            />
-          </div>
-        );
+        return <StaffMktFinanceOverview />;
 
       case 'staff-mkt-games':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Nhân viên MKT - Quản lý game"
-              description="Quản lý nội dung marketing liên quan tới trò chơi"
-            />
-            <PlaceholderContent
-              icon={TrophyOutlined}
-              message="Chức năng quản lý game dành cho nhân viên MKT đang được hoàn thiện."
-            />
-          </div>
-        );
+        return <StaffMktGameOverview />;
 
       case 'staff-xnk-users':
         return (
@@ -361,6 +336,9 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
             <AdminBetManagement />
           </div>
         );
+
+      case 'game-history':
+        return <AdminGameHistory />;
 
       case 'game-results':
         return (
