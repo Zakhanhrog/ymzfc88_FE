@@ -44,6 +44,12 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
       section: 'Thông Tin'
     },
     {
+      key: 'settings',
+      label: 'Tài khoản',
+      icon: '/iconacc/imgi_24_overview.avif',
+      section: 'Thông Tin'
+    },
+    {
       key: 'promotions',
       label: 'Khuyến Mãi',
       icon: '/iconacc/imgi_30_promotion.avif',
@@ -75,6 +81,8 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
     } else if (key === 'account') {
       // For account tab, use onTabChange to set the tab
       onTabChange('account');
+    } else if (key === 'settings') {
+      onTabChange('settings');
     } else {
       onTabChange(key);
     }

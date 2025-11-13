@@ -31,11 +31,29 @@ const AgentInviteCodes = () => {
 
   const inviteLink = useMemo(() => {
     if (!inviteInfo?.referralCode) return '';
-    const baseUrl = window?.origin || '';
-    const path = customLanding
-      ? `/${customLanding.replace(/^\//, '')}`
-      : '/';
-    const url = new URL(path, baseUrl);
+    const baseUrl = 'https://tathiet168.com';
+    const landingInput = (customLanding || '').trim();
+
+    let url;
+    try {
+      if (landingInput.startsWith('http://') || landingInput.startsWith('https://')) {
+        const landingUrl = new URL(landingInput);
+        const normalizedPath = landingUrl.pathname || '/';
+        url = new URL(normalizedPath, baseUrl);
+        if (landingUrl.search) {
+          const searchParams = new URLSearchParams(landingUrl.search);
+          searchParams.forEach((value, key) => {
+            url.searchParams.set(key, value);
+          });
+        }
+      } else {
+        const normalizedPath = landingInput ? `/${landingInput.replace(/^\/+/, '')}` : '/';
+        url = new URL(normalizedPath, baseUrl);
+      }
+    } catch (error) {
+      url = new URL('/', baseUrl);
+    }
+
     url.searchParams.set('inviteCode', inviteInfo.referralCode);
     url.searchParams.set('register', '1');
     return url.toString();

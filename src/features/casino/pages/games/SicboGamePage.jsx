@@ -23,6 +23,7 @@ import SicboBetActionBar from './components/SicboBetActionBar';
 import SicboStatsBoard from './components/SicboStatsBoard';
 import LogoutConfirmModal from '../../../../components/common/LogoutConfirmModal';
 import SicboResultSequenceBoard from './components/SicboResultSequenceBoard';
+import SicboHelpDrawer from './components/SicboHelpDrawer';
 import { formatChipDisplayValue } from './sicboUtils';
 import useSicboSession from '../../hooks/useSicboSession';
 
@@ -161,6 +162,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   const tableNumber = initialTableNumber || tableFromQuery || '1';
   const numericTableNumber = Number(tableNumber) || 1;
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const [userPoints, setUserPoints] = useState(0);
   const [chipOptions, setChipOptions] = useState(defaultSicboChipOptions);
@@ -176,9 +178,22 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     () => new Set(defaultSicboChipLabels)
   );
   const [quickBetConfigs, setQuickBetConfigs] = useState(() => buildSicboQuickBetMap());
+  const quickBetOptionLookup = useMemo(() => {
+    const map = new Map();
+    if (!quickBetConfigs) {
+      return map;
+    }
+    Object.entries(quickBetConfigs).forEach(([code, config]) => {
+      if (!code) return;
+      map.set(code, config);
+      map.set(code.toLowerCase(), config);
+    });
+    return map;
+  }, [quickBetConfigs]);
   const [isLoadingQuickBets, setIsLoadingQuickBets] = useState(false);
   const [quickBetError, setQuickBetError] = useState(null);
   const [sicboStatsGrid, setSicboStatsGrid] = useState(createEmptyStatsGrid());
+  const [sicboStatsStartColumn, setSicboStatsStartColumn] = useState(0);
   const [sicboDetailGrid, setSicboDetailGrid] = useState(createEmptyDetailGrid());
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const {
@@ -471,6 +486,8 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
       sicboCursorRef.current = cursor;
       sicboHistoryEntriesRef.current = normalizedEntries;
       setSicboStatsGrid(convertColumnsToGrid(snapshot));
+      const nextStart = Math.max(0, cursor.column - SICBO_STATS_MAIN_COLUMNS + 1);
+      setSicboStatsStartColumn(nextStart);
 
       const detailRows = normalizedEntries
         .map((entry) => buildDetailRow(entry.faces, entry.sum))
@@ -496,6 +513,8 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
       sicboColumnsRef.current = columnsClone;
       sicboCursorRef.current = updatedCursor;
       setSicboStatsGrid(convertColumnsToGrid(columnsClone));
+      const nextStart = Math.max(0, updatedCursor.column - SICBO_STATS_MAIN_COLUMNS + 1);
+      setSicboStatsStartColumn(nextStart);
 
       const historyClone = [...sicboHistoryEntriesRef.current, { ...entry }];
       if (historyClone.length > SICBO_STATS_CAPACITY) {
@@ -918,6 +937,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   useEffect(() => {
     sicboDetailRowsRef.current = [];
     setSicboDetailGrid(createEmptyDetailGrid());
+    setSicboStatsStartColumn(0);
   }, [numericTableNumber]);
 
   const handleOpenTableModal = () => {
@@ -1019,7 +1039,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     () =>
       placeableBets.map(([code, bet]) => {
         const amount = bet?.totalValue ?? bet?.value ?? 0;
-        const config = quickBetConfigs?.[code] ?? {};
+        const config = quickBetOptionLookup?.[code] ?? {};
         return {
           code,
           amount,
@@ -1027,7 +1047,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
           payoutMultiplier: config?.payoutMultiplier,
         };
       }),
-    [placeableBets, quickBetConfigs]
+    [placeableBets, quickBetOptionLookup]
   );
 
   const canPlaceBet =
@@ -1211,6 +1231,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         balanceDisplay={balanceDisplay}
         isLoadingBalance={loadingPoints}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        onOpenHelp={() => setIsHelpOpen(true)}
       />
 
       <main className="px-3 sm:px-3 md:px-5 lg:px-8 pt-2 md:pt-4 pb-4 md:pb-6">
@@ -1258,6 +1279,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                 <SicboStatsBoard
                   grid={sicboStatsGrid}
                   columnCount={SICBO_STATS_MAIN_COLUMNS}
+                  startColumn={sicboStatsStartColumn}
                 />
                 <SicboResultSequenceBoard grid={sicboDetailGrid} />
               </div>
@@ -1266,7 +1288,12 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         </div>
       </main>
 
-      <SicboHistoryDrawer isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
+      <SicboHistoryDrawer
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        optionLookup={quickBetOptionLookup}
+      />
+      <SicboHelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <SicboCustomChipModal
         isOpen={isCustomChipModalOpen}
         customChipValue={customChipValue}

@@ -32,6 +32,7 @@ import XocDiaStatsPanel from './components/XocDiaStatsPanel';
 import XocDiaCustomChipModal from './components/XocDiaCustomChipModal';
 import XocDiaBetHistoryDrawer from '../../../../components/common/layout/XocDiaBetHistoryDrawer';
 import LogoutConfirmModal from '../../../../components/common/LogoutConfirmModal';
+import XocDiaHelpDrawer from './components/XocDiaHelpDrawer';
 
 const STATS_ROWS = 6;
 const STATS_COLUMNS = 17;
@@ -140,6 +141,7 @@ const XocDiaGamePage = () => {
   const [chanLeHistory, setChanLeHistory] = useState([]);
   const [taiXiuHistory, setTaiXiuHistory] = useState([]);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
+  const [isHelpDrawerOpen, setIsHelpDrawerOpen] = useState(false);
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const quickBetOptionLookup = useMemo(() => {
     const map = new Map();
@@ -1419,6 +1421,7 @@ const XocDiaGamePage = () => {
         balanceDisplay={balanceDisplay}
         isLoadingBalance={loadingPoints}
         onOpenBetHistory={() => setIsHistoryDrawerOpen(true)}
+        onOpenHelp={() => setIsHelpDrawerOpen(true)}
       />
 
       <main className="px-3 sm:px-3 md:px-5 lg:px-8 pt-2 md:pt-4 pb-4 md:pb-6">
@@ -1494,6 +1497,7 @@ const XocDiaGamePage = () => {
           onClose={() => setIsHistoryDrawerOpen(false)}
           optionLookup={quickBetOptionLookup}
         />
+      <XocDiaHelpDrawer isOpen={isHelpDrawerOpen} onClose={() => setIsHelpDrawerOpen(false)} />
       <LogoutConfirmModal
         isOpen={showExitConfirmModal}
         onClose={() => setShowExitConfirmModal(false)}

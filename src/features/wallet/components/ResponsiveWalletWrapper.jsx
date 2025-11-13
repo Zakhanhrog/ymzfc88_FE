@@ -18,6 +18,7 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
     email: '',
     phone: '',
     fullName: '',
+    referralCode: '',
     idNumber: ''
   });
   const [kycVerified, setKycVerified] = useState(false);
@@ -53,6 +54,7 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
           email: userData.email || '',
           phone: userData.phoneNumber || userData.phone || '',
           fullName: userData.fullName || '',
+          referralCode: userData.referralCode || userData.inviteCode || '',
           idNumber: ''
         });
       } catch (error) {
@@ -140,6 +142,17 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
     }
   };
 
+  const handleProfileUpdate = (data) => {
+    setUserInfo(prev => ({
+      ...prev,
+      username: data.username ?? prev.username,
+      email: data.email ?? prev.email,
+      phone: data.phoneNumber ?? prev.phone,
+      fullName: data.fullName ?? prev.fullName,
+      referralCode: data.referralCode ?? prev.referralCode,
+    }));
+  };
+
   // Return mobile version
   if (isMobile) {
     // If on promotions route, show PromotionMobileWrapper
@@ -165,7 +178,11 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-6 pb-6">
-            <WalletContent activeTab={activeTab} onTabChange={handleTabChange} />
+            <WalletContent
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              onProfileUpdate={handleProfileUpdate}
+            />
           </div>
         </div>
       </div>

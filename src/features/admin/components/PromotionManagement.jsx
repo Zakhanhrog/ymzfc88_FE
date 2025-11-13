@@ -58,9 +58,7 @@ const PromotionManagement = () => {
   const handleFileUpload = async (file) => {
     try {
       setUploading(true);
-      console.log('Uploading file:', file.name);
       const imageUrl = await promotionService.uploadPromotionImage(file);
-      console.log('Upload successful, imageUrl:', imageUrl);
       form.setFieldsValue({ imageUrl: imageUrl });
       setUploadedImageUrl(imageUrl);
       message.success('Upload ảnh thành công');
@@ -89,8 +87,6 @@ const PromotionManagement = () => {
         ...values,
         imageUrl: imageUrl
       };
-      
-      console.log('Submitting promotion data:', formData);
       
       if (editingPromotion) {
         await promotionService.updatePromotion(editingPromotion.id, formData);

@@ -80,26 +80,13 @@ export const contactService = {
    */
   async updateContactLink(linkType, linkUrl) {
     try {
-      console.log(`Updating contact link: ${linkType} = ${linkUrl}`);
-      
-      // Debug token
-      const adminToken = localStorage.getItem('adminToken');
-      const userToken = localStorage.getItem('token');
-      console.log('Admin token exists:', !!adminToken);
-      console.log('User token exists:', !!userToken);
       
       const response = await apiClient.post(`/admin/system-settings/contact-links/${linkType}`, {
         linkUrl: linkUrl
       });
-      console.log('Contact link updated successfully:', response);
       return response.data;
     } catch (error) {
       console.error('Error updating contact link:', error);
-      console.error('Error details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
-      });
       throw error;
     }
   },

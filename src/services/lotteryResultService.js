@@ -19,11 +19,6 @@ class LotteryResultService {
       const params = province ? `?province=${encodeURIComponent(province)}` : '';
       const url = `/public/lottery-results/${region}/latest${params}`;
       
-      // Debug logging
-      console.log('lotteryResultService.getLatestPublishedResult - region:', region);
-      console.log('lotteryResultService.getLatestPublishedResult - province:', province);
-      console.log('lotteryResultService.getLatestPublishedResult - url:', url);
-      
       const response = await publicApi.get(url);
       
       if (response.data.success && response.data.data) {

@@ -7,6 +7,7 @@ import MobileTransactionHistory from '../components/MobileTransactionHistory';
 import DepositWithdraw from '../components/DepositWithdraw';
 import WithdrawForm from '../components/WithdrawForm';
 import KycVerification from '../components/KycVerification';
+import MobileAccountSettings from '../components/MobileAccountSettings';
 import kycService from '../services/kycService';
 
 const MobileWalletPage = () => {
@@ -72,16 +73,14 @@ const MobileWalletPage = () => {
     }
   }, [searchParams]);
 
-  const getTabTitle = () => {
-    switch (activeTab) {
-      case 'balance': return 'Số dư ví';
-      case 'deposit-withdraw': return 'Nạp tiền';
-      case 'withdraw': return 'Rút tiền';
-      case 'transaction-history': return 'Lịch sử giao dịch';
-      case 'kyc-verification':
-      case 'account': return 'Xác thực tài khoản';
-      default: return 'Ví tiền';
-    }
+  const handleProfileUpdate = (data) => {
+    setUserInfo(prev => ({
+      ...prev,
+      username: data.username ?? prev.username,
+      email: data.email ?? prev.email,
+      phone: data.phoneNumber ?? prev.phone,
+      fullName: data.fullName ?? prev.fullName,
+    }));
   };
 
   const renderTabContent = () => {
@@ -95,8 +94,16 @@ const MobileWalletPage = () => {
       case 'transaction-history':
         return <MobileTransactionHistory />;
       case 'kyc-verification':
-      case 'account':
         return <KycVerification />;
+      case 'account':
+        return (
+          <MobileAccountSettings
+            onBack={() => {
+              navigate('/account');
+            }}
+            onProfileUpdate={handleProfileUpdate}
+          />
+        );
       default:
         return <MobileWalletBalance onTabChange={setActiveTab} />;
     }

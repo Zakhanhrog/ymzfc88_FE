@@ -133,13 +133,6 @@ const MobileAccountPage = () => {
       action: () => navigate('/wallet?tab=withdraw')
     },
     {
-      key: 'bank-account',
-      label: 'Tài Khoản Ngân Hàng',
-      icon: '/iconacc/imgi_27_bank.avif',
-      section: 'Giao Dịch',
-      action: () => navigate('/wallet?tab=bank-account')
-    },
-    {
       key: 'transaction-history',
       label: 'Lịch Sử Cược/Giao Dịch',
       icon: '/iconacc/imgi_28_history.avif',
@@ -147,9 +140,16 @@ const MobileAccountPage = () => {
       action: () => navigate('/wallet?tab=transaction-history')
     },
     {
-      key: 'account',
+      key: 'kyc-verification',
       label: 'Xác thực tài khoản (KYC)',
       icon: '/iconacc/imgi_29_account.avif',
+      section: 'Thông Tin',
+      action: () => navigate('/wallet?tab=kyc-verification')
+    },
+    {
+      key: 'account',
+      label: 'Tài khoản',
+      icon: '/iconacc/imgi_24_overview.avif',
       section: 'Thông Tin',
       action: () => navigate('/wallet?tab=account')
     },

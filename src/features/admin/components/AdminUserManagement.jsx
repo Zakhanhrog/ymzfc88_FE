@@ -38,7 +38,8 @@ import {
   UserSwitchOutlined,
   UserDeleteOutlined,
   LockOutlined,
-  UnlockOutlined
+  UnlockOutlined,
+  SafetyOutlined
 } from '@ant-design/icons';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import { adminAuthService } from '../services/adminAuthService';
@@ -81,12 +82,14 @@ const AdminUserManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showC2Modal, setShowC2Modal] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [lockAction, setLockAction] = useState(null); // 'lock' or 'unlock'
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
+  const [c2Form] = Form.useForm();
   const [lockForm] = Form.useForm();
 
   const currentAdminSession = adminAuthService.getCurrentAdmin();
@@ -186,6 +189,8 @@ const AdminUserManagement = () => {
     setShowCreateModal(true);
   };
 
+  const canManageC2 = (user) => !!user && (user.role === 'ADMIN' || Boolean(user.staffRole));
+
   // Create user
   const normalizeRolePayload = (selectedRole) => {
     if (!selectedRole || selectedRole === 'USER') {
@@ -215,6 +220,10 @@ const AdminUserManagement = () => {
 
       if (!payload.staffRole) {
         delete payload.staffRole;
+      }
+
+      if (!payload.c2Password) {
+        delete payload.c2Password;
       }
 
       const response = await adminService.createUser(payload);
@@ -292,6 +301,21 @@ const AdminUserManagement = () => {
     }
   };
 
+  const handleResetC2Password = async (values) => {
+    try {
+      const response = await adminService.updateUserC2Password(selectedUser.id, values.newC2Password);
+      if (response.success) {
+        message.success('Cập nhật mật khẩu bảo vệ thành công!');
+        setShowC2Modal(false);
+        c2Form.resetFields();
+        setSelectedUser(null);
+        loadUsers();
+      }
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
 
   // Show modals
   const showEditUserModal = (user) => {
@@ -308,6 +332,36 @@ const AdminUserManagement = () => {
   const showPasswordResetModal = (user) => {
     setSelectedUser(user);
     setShowPasswordModal(true);
+  };
+
+  const showC2ResetModal = (user) => {
+    setSelectedUser(user);
+    setShowC2Modal(true);
+  };
+
+  const handleViewC2Info = (user) => {
+    Modal.info({
+      title: 'Thông tin mật khẩu bảo vệ (C2)',
+      content: (
+        <div className="space-y-2">
+          {user.hasC2Password ? (
+            <span>
+              Mật khẩu bảo vệ được lưu trữ dưới dạng bảo mật nên không thể hiển thị. Vui lòng sử dụng chức năng
+              "Thay đổi" để đặt mật khẩu mới cho tài khoản này.
+            </span>
+          ) : (
+            <span>Tài khoản chưa thiết lập mật khẩu bảo vệ C2.</span>
+          )}
+          {user.c2PasswordUpdatedAt && (
+            <div>
+              <Text strong>Thời gian cập nhật gần nhất:</Text>{' '}
+              {new Date(user.c2PasswordUpdatedAt).toLocaleString('vi-VN')}
+            </div>
+          )}
+        </div>
+      ),
+      okText: 'Đã hiểu',
+    });
   };
 
 
@@ -448,6 +502,32 @@ const AdminUserManagement = () => {
             currency: 'VND'
           }).format(balance || 0)}
         </Text>
+      ),
+    },
+    {
+      title: 'Mật khẩu C2',
+      key: 'c2Password',
+      width: 220,
+      render: (_, record) => (
+        <Space size="small">
+          <span>{record.hasC2Password ? '••••••' : 'Chưa có'}</span>
+          <Tooltip title="Xem thông tin C2">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewC2Info(record)}
+            />
+          </Tooltip>
+          {canManageC2(record) && (
+            <Tooltip title={record.hasC2Password ? 'Đổi mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}>
+              <Button
+                type="text"
+                icon={<SafetyOutlined />}
+                onClick={() => showC2ResetModal(record)}
+              />
+            </Tooltip>
+          )}
+        </Space>
       ),
     },
     {
@@ -734,6 +814,32 @@ const AdminUserManagement = () => {
             <Input />
           </Form.Item>
           <Form.Item
+            noStyle
+            shouldUpdate={(prev, curr) => prev.role !== curr.role}
+          >
+            {({ getFieldValue }) => {
+              const selectedRole = getFieldValue('role');
+              const isAdminOrStaffRole =
+                selectedRole === 'ADMIN' ||
+                (selectedRole && selectedRole.startsWith('STAFF_'));
+              if (!isAdminOrStaffRole) {
+                return null;
+              }
+              return (
+                <Form.Item
+                  name="c2Password"
+                  label="Mật khẩu bảo vệ (C2)"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập mật khẩu bảo vệ' },
+                    { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+              );
+            }}
+          </Form.Item>
+          <Form.Item
             name="phoneNumber"
             label="Số điện thoại"
           >
@@ -949,6 +1055,21 @@ const AdminUserManagement = () => {
                   )}
                 </div>
               )}
+              {canManageC2(selectedUser) && (
+                <div>
+                  <Text strong>Mật khẩu bảo vệ:</Text>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Tag color={selectedUser.hasC2Password ? 'green' : 'default'}>
+                      {selectedUser.hasC2Password ? 'Đã thiết lập' : 'Chưa thiết lập'}
+                    </Tag>
+                    {selectedUser.c2PasswordUpdatedAt && (
+                      <Text type="secondary">
+                        Cập nhật {new Date(selectedUser.c2PasswordUpdatedAt).toLocaleString('vi-VN')}
+                      </Text>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <Divider />
@@ -974,6 +1095,18 @@ const AdminUserManagement = () => {
               >
                 Reset mật khẩu
               </Button>
+              {canManageC2(selectedUser) && (
+                <Button
+                  block
+                  icon={<SafetyOutlined />}
+                  onClick={() => {
+                    setShowUserDetail(false);
+                    showC2ResetModal(selectedUser);
+                  }}
+                >
+                  {selectedUser.hasC2Password ? 'Đổi mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
+                </Button>
+              )}
               {selectedUser.status === 'ACTIVE' && (
                 <Button 
                   block 
@@ -1043,6 +1176,56 @@ const AdminUserManagement = () => {
         </Form>
       </Modal>
 
+      {/* Update C2 Password Modal */}
+      <Modal
+        title={selectedUser?.hasC2Password ? 'Đổi mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
+        open={showC2Modal}
+        onCancel={() => {
+          setShowC2Modal(false);
+          c2Form.resetFields();
+          setSelectedUser(null);
+        }}
+        footer={null}
+      >
+        <Form
+          form={c2Form}
+          layout="vertical"
+          onFinish={handleResetC2Password}
+        >
+          <div className="mb-4">
+            <Text>
+              {selectedUser?.hasC2Password
+                ? 'Đổi mật khẩu bảo vệ cho người dùng: '
+                : 'Thiết lập mật khẩu bảo vệ cho người dùng: '}
+              <Text strong>{selectedUser?.fullName}</Text>
+            </Text>
+          </div>
+          <Form.Item
+            name="newC2Password"
+            label="Mật khẩu bảo vệ mới"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu bảo vệ mới' },
+              { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item className="mb-0">
+            <Space className="w-full justify-end">
+              <Button onClick={() => {
+                setShowC2Modal(false);
+                c2Form.resetFields();
+                setSelectedUser(null);
+              }}>
+                Hủy
+              </Button>
+              <Button type="primary" htmlType="submit">
+                {selectedUser?.hasC2Password ? 'Cập nhật mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {/* Lock Withdrawal Modal */}
       <Modal

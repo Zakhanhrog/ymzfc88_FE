@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, SafetyOutlined } from '@ant-design/icons';
 import { adminAuthService } from '../services/adminAuthService';
 
 const PORTAL_LABELS = {
@@ -24,6 +24,8 @@ const AdminLoginForm = ({ onLogin, portalType = 'admin' }) => {
   const portalLabel = useMemo(() => {
     return PORTAL_LABELS[portalType] || PORTAL_LABELS.admin;
   }, [portalType]);
+
+  const requiresC2 = portalType === 'admin' || portalType === 'staff';
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -101,6 +103,25 @@ const AdminLoginForm = ({ onLogin, portalType = 'admin' }) => {
               className="rounded-lg"
             />
           </Form.Item>
+
+          {requiresC2 && (
+            <Form.Item
+              name="c2Password"
+              rules={[
+                {
+                  required: true,
+                  message: 'Vui lòng nhập mật khẩu bảo vệ (C2)!'
+                }
+              ]}
+            >
+              <Input.Password
+                prefix={<SafetyOutlined className="text-gray-400" />}
+                placeholder="Mật khẩu bảo vệ (C2)"
+                size="large"
+                className="rounded-lg"
+              />
+            </Form.Item>
+          )}
 
           <Form.Item>
             <Button

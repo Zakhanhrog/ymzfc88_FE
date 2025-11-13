@@ -697,8 +697,8 @@ const DepositWithdraw = () => {
   };
 
   return (
-    <div className="space-y-4 px-0 md:px-4">
-      {/* Content Card */}
+    <div className="bg-gray-50">
+      <div className="pb-6">
       <Card 
         className="shadow-sm md:shadow-md"
         style={{ borderRadius: '12px' }}
@@ -711,6 +711,7 @@ const DepositWithdraw = () => {
           </>
         ) : currentStep < 2 ? renderSteps() : renderTransactionInfo()}
       </Card>
+      </div>
     </div>
   );
 };

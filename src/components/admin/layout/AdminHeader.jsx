@@ -1,4 +1,5 @@
-import { Layout, Button, Avatar } from 'antd';
+import { useMemo } from 'react';
+import { Layout, Button, Avatar, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
   UserOutlined,
@@ -8,6 +9,7 @@ import {
 import { LAYOUT } from '../../../utils/theme';
 import { getPortalPath } from '../../../utils/navigation';
 import { getPortalType } from '../../../utils/subdomain';
+import { adminAuthService } from '../../../features/admin/services/adminAuthService';
 
 const { Header } = Layout;
 
@@ -15,7 +17,11 @@ const AdminHeader = ({ collapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
   const portalType = getPortalType();
 
+  const session = useMemo(() => adminAuthService.getCurrentAdmin(), []);
+  const isAdmin = session?.role === 'ADMIN';
+
   const handleProfileClick = () => {
+    if (!isAdmin) return;
     const profilePath = getPortalPath(portalType, '/dashboard?tab=admin-profile');
     navigate(profilePath);
   };
@@ -44,13 +50,15 @@ const AdminHeader = ({ collapsed, onToggleCollapse }) => {
       />
       
       <div className="flex items-center space-x-4">
-        <Avatar 
-          icon={<UserOutlined />} 
-          className="bg-blue-600"
-          size="large"
-          onClick={handleProfileClick}
-          style={{ cursor: 'pointer' }}
-        />
+        <Tooltip title={isAdmin ? 'Xem thông tin tài khoản' : undefined}>
+          <Avatar 
+            icon={<UserOutlined />} 
+            className="bg-blue-600"
+            size="large"
+            onClick={handleProfileClick}
+            style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+          />
+        </Tooltip>
       </div>
     </Header>
   );

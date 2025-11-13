@@ -53,7 +53,8 @@ export const adminAuthService = {
       const payload = {
         usernameOrEmail: credentials.username,
         password: credentials.password,
-        portal: portalType?.toUpperCase?.() || 'ADMIN'
+        portal: portalType?.toUpperCase?.() || 'ADMIN',
+        c2Password: credentials.c2Password
       };
 
       const response = await adminAPI.post('/admin/login', {
@@ -73,6 +74,8 @@ export const adminAuthService = {
         fullName: data.user.fullName,
         role: data.user.role,
         staffRole: data.user.staffRole,
+        hasC2Password: data.user.hasC2Password,
+        c2PasswordUpdatedAt: data.user.c2PasswordUpdatedAt,
         portal: portalType,
         token: data.accessToken
       };

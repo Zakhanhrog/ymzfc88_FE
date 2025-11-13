@@ -216,10 +216,19 @@ export const adminService = {
   // Reset mật khẩu người dùng
   resetUserPassword: async (userId, newPassword) => {
     try {
-      const response = await adminAPI.post(`/admin/users/${userId}/reset-password?newPassword=${newPassword}`);
+      const response = await adminAPI.post(`/admin/users/${userId}/reset-password?newPassword=${encodeURIComponent(newPassword)}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi reset mật khẩu');
+    }
+  },
+
+  updateUserC2Password: async (userId, newPassword) => {
+    try {
+      const response = await adminAPI.post(`/admin/users/${userId}/c2-password`, { newPassword });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật mật khẩu bảo vệ');
     }
   },
 
@@ -464,6 +473,15 @@ export const adminService = {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật mật khẩu');
+    }
+  },
+
+  updateAdminC2Password: async (newPassword) => {
+    try {
+      const response = await adminAPI.post('/admin/profile/c2-password', { newPassword });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật mật khẩu bảo vệ');
     }
   },
 

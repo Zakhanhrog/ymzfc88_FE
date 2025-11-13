@@ -7,6 +7,7 @@ const XocDiaHeader = ({
   balanceDisplay,
   isLoadingBalance,
   onOpenBetHistory,
+  onOpenHelp,
 }) => (
   <header className="bg-white border-b border-gray-200 px-3 md:px-5 py-2.5 md:py-3 flex items-center justify-between sticky top-0 z-30">
     <div className="flex items-center gap-2 text-gray-600">
@@ -17,6 +18,17 @@ const XocDiaHeader = ({
     </div>
 
     <div className="flex items-center gap-2">
+      {typeof onOpenHelp === 'function' ? (
+        <button
+          type="button"
+          onClick={onOpenHelp}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-colors"
+          title="Hướng dẫn Xóc Đĩa"
+        >
+          <Icon icon="mdi:help-circle-outline" className="w-5 h-5" />
+        </button>
+      ) : null}
+
       {typeof onOpenBetHistory === 'function' ? (
         <button
           type="button"

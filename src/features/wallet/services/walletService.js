@@ -80,6 +80,47 @@ class WalletService {
     }
   }
 
+  async getUserProfile() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  }
+
+  async updateUserProfile(profileData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(profileData),
+      });
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+
+  async changeUserPassword(passwordData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/profile/change-password`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(passwordData),
+      });
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Error changing user password:', error);
+      throw error;
+    }
+  }
+
   // Lấy danh sách phương thức thanh toán
   async getPaymentMethods() {
     try {

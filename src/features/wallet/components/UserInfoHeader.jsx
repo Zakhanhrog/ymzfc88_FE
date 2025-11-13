@@ -45,6 +45,13 @@ const UserInfoHeader = ({ userInfo, kycVerified }) => {
                 <span className="font-medium">Email:</span>
                 <span>{userInfo.email || 'Chưa cập nhật'}</span>
               </div>
+              {userInfo.referralCode && (
+                <div className="flex items-center gap-2">
+                  <Icon icon="mdi:ticket-account" className="w-4 h-4 text-white/70" />
+                  <span className="font-medium">Mã mời:</span>
+                  <span>{userInfo.referralCode}</span>
+                </div>
+              )}
               {userInfo.phone && (
                 <div className="flex items-center gap-2">
                   <Icon icon="mdi:phone" className="w-4 h-4 text-white/70" />

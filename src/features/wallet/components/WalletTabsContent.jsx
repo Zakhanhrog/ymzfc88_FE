@@ -6,8 +6,9 @@ import DepositWithdraw from './DepositWithdraw';
 import WithdrawForm from './WithdrawForm';
 import KycVerification from './KycVerification';
 import UserPointsPage from './UserPointsPage';
+import AccountSettings from './AccountSettings';
 
-const WalletTabsContent = ({ activeTab, onTabChange }) => {
+const WalletTabsContent = ({ activeTab, onTabChange, onProfileUpdate }) => {
   const tabItems = [
     {
       key: 'balance',
@@ -47,14 +48,9 @@ const WalletTabsContent = ({ activeTab, onTabChange }) => {
     },
     {
       key: 'settings',
-      label: 'Cài đặt tài khoản',
-      icon: <Icon icon="mdi:cog" />,
-      children: (
-        <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Cài đặt tài khoản</h3>
-          <p className="text-gray-600">Trang cài đặt tài khoản đang được phát triển...</p>
-        </div>
-      )
+      label: 'Tài khoản',
+      icon: <Icon icon="mdi:account-cog" />,
+      children: <AccountSettings onProfileUpdate={onProfileUpdate} />
     }
   ];
 

@@ -132,10 +132,11 @@ const PromotionContent = () => {
   const otherPromotions = promotions.filter(p => !activePromotions.some(ap => ap.id === p.id));
 
   return (
-    <div className="p-6">
+    <div className="bg-gray-50">
+      <div className="space-y-8 pb-6">
       {/* Section 1: Khuyến Mãi Đang Sử Dụng */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
           <img 
             src="/iconacc/imgi_30_promotion.avif" 
             alt="Promotion" 
@@ -209,8 +210,8 @@ const PromotionContent = () => {
       </div>
 
       {/* Section 2: Các Khuyến Mãi Khác */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img 
               src="/iconacc/imgi_30_promotion.avif" 
@@ -355,6 +356,7 @@ const PromotionContent = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

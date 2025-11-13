@@ -735,7 +735,8 @@ const WithdrawForm = () => {
   ];
 
   return (
-    <div className="space-y-4 px-0 md:px-4">
+    <div className="bg-gray-50">
+      <div className="pb-6">
       {/* Withdrawal Locked Alert */}
       {!checkingLockStatus && withdrawalLocked && (
         <Alert
@@ -903,6 +904,7 @@ const WithdrawForm = () => {
           </Form.Item>
         </Form>
       </Modal>
+      </div>
 
       <style dangerouslySetInnerHTML={{
         __html: `

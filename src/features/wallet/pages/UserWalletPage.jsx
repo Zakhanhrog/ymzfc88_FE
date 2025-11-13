@@ -14,6 +14,7 @@ const UserWalletPage = () => {
     email: '',
     phone: '',
     fullName: '',
+    referralCode: '',
     idNumber: ''
   });
   const [kycVerified, setKycVerified] = useState(false);
@@ -29,6 +30,7 @@ const UserWalletPage = () => {
           email: userData.email || '',
           phone: userData.phoneNumber || userData.phone || '',
           fullName: userData.fullName || '',
+          referralCode: userData.referralCode || userData.inviteCode || '',
           idNumber: ''
         });
       } catch (error) {
@@ -77,7 +79,20 @@ const UserWalletPage = () => {
           <UserInfoHeader userInfo={userInfo} kycVerified={kycVerified} />
 
           {/* Tabs chính */}
-          <WalletTabsContent activeTab={activeTab} onTabChange={setActiveTab} />
+          <WalletTabsContent
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onProfileUpdate={(data) =>
+              setUserInfo((prev) => ({
+                ...prev,
+                username: data.username ?? prev.username,
+                email: data.email ?? prev.email,
+                phone: data.phoneNumber ?? prev.phone,
+                fullName: data.fullName ?? prev.fullName,
+                referralCode: data.referralCode ?? prev.referralCode,
+              }))
+            }
+          />
         </div>
       </div>
 
