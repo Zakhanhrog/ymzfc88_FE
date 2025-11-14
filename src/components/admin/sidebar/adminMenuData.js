@@ -135,6 +135,11 @@ export const adminMenuItems = [
         label: 'Phương thức thanh toán',
       },
       {
+        key: 'deposit-gateway-configs',
+        icon: ICONS.agentCommission,
+        label: 'Cấu hình cổng nạp tự động',
+      },
+      {
         key: 'points-management',
         icon: ICONS.points,
         label: 'Quản lý điểm',

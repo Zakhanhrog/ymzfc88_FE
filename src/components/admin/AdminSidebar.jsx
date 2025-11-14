@@ -355,6 +355,7 @@ const AdminSidebar = ({ collapsed }) => {
       deposits: () => goTo('/dashboard?tab=deposits'),
       withdraws: () => goTo('/dashboard?tab=withdraws'),
       'payment-methods': () => goTo('/dashboard?tab=payment-methods'),
+      'deposit-gateway-configs': () => goTo('/dashboard?tab=deposit-gateway-configs'),
       'points-management': () => goTo('/points'),
       'agent-customer-list': () => goTo('/dashboard?tab=agent-customer-list'),
       'agent-dashboard': () => goTo('/dashboard?tab=agent-dashboard'),

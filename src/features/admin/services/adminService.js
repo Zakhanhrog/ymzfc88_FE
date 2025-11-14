@@ -134,6 +134,85 @@ export const adminService = {
     }
   },
 
+  // ============ DEPOSIT GATEWAY CONFIG ============
+
+  getDepositGatewayConfigs: async (params = {}) => {
+    try {
+      const query = new URLSearchParams();
+      const {
+        page = 0,
+        size = 10,
+        keyword,
+        active,
+        sortBy = 'updatedAt',
+        sortDirection = 'DESC'
+      } = params;
+
+      query.append('page', page);
+      query.append('size', size);
+      query.append('sortBy', sortBy);
+      query.append('sortDirection', sortDirection);
+
+      if (keyword) {
+        query.append('keyword', keyword);
+      }
+
+      if (active !== undefined && active !== null) {
+        query.append('active', active);
+      }
+
+      const response = await adminAPI.get(`/admin/deposit-gateway-configs?${query.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy cấu hình cổng nạp');
+    }
+  },
+
+  getDepositGatewayConfigById: async (id) => {
+    try {
+      const response = await adminAPI.get(`/admin/deposit-gateway-configs/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy chi tiết cấu hình');
+    }
+  },
+
+  createDepositGatewayConfig: async (payload) => {
+    try {
+      const response = await adminAPI.post('/admin/deposit-gateway-configs', payload);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi thêm cấu hình cổng nạp');
+    }
+  },
+
+  updateDepositGatewayConfig: async (id, payload) => {
+    try {
+      const response = await adminAPI.put(`/admin/deposit-gateway-configs/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật cấu hình cổng nạp');
+    }
+  },
+
+  deleteDepositGatewayConfig: async (id) => {
+    try {
+      const response = await adminAPI.delete(`/admin/deposit-gateway-configs/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi xóa cấu hình cổng nạp');
+    }
+  },
+
+  toggleDepositGatewayConfigStatus: async (id) => {
+    try {
+      const response = await adminAPI.put(`/admin/deposit-gateway-configs/${id}/toggle-status`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật trạng thái cấu hình cổng nạp');
+    }
+  },
+
   // ============ USER MANAGEMENT ============
 
   // Lấy danh sách users

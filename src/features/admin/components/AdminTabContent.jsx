@@ -24,6 +24,7 @@ import AdminUserManagement from './AdminUserManagement';
 import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
 import AdminPaymentMethodManagement from './AdminPaymentMethodManagement';
+import AdminDepositGatewayConfig from './AdminDepositGatewayConfig';
 import AdminKycVerification from './AdminKycVerification';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminSystemSettings from './AdminSystemSettings';
@@ -308,6 +309,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Quản lý các phương thức thanh toán để người dùng nạp tiền" 
             />
             <AdminPaymentMethodManagement />
+          </div>
+        );
+
+      case 'deposit-gateway-configs':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader 
+              title="Cấu hình cổng nạp tự động" 
+              description="Khai báo mã ngân hàng, merchant, API key cho cổng nạp tự động" 
+            />
+            <AdminDepositGatewayConfig />
           </div>
         );
 
