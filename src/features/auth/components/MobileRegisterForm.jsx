@@ -128,7 +128,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
       <div className="bg-white px-4 py-2 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/logo.webp" 
+            src="/logo.svg" 
             alt="LOTO79 Logo" 
             className="h-6 w-auto"
           />

@@ -79,13 +79,15 @@ const NotificationDropdown = () => {
   };
 
   const getNotificationIcon = (type) => {
+    const normalized = (type || '').toUpperCase();
     const icons = {
       INFO: <InfoCircleOutlined style={{ color: '#1890ff' }} />,
+      TRANSACTION: <InfoCircleOutlined style={{ color: '#52c41a' }} />,
       SUCCESS: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
       WARNING: <ExclamationCircleOutlined style={{ color: '#faad14' }} />,
       ERROR: <CloseCircleOutlined style={{ color: '#ff4d4f' }} />,
     };
-    return icons[type] || <BellOutlined style={{ color: '#666' }} />;
+    return icons[normalized] || <BellOutlined style={{ color: '#666' }} />;
   };
 
   const notificationContent = (
@@ -114,9 +116,14 @@ const NotificationDropdown = () => {
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 hover:bg-gray-50 transition-colors ${
+              className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
                 !notification.isRead ? 'bg-blue-50' : ''
               }`}
+              onClick={() => {
+                if (!notification.isRead) {
+                  handleMarkAsRead(notification.id);
+                }
+              }}
             >
               <div className="flex items-start gap-3">
                 {getNotificationIcon(notification.type)}
@@ -129,6 +136,11 @@ const NotificationDropdown = () => {
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
                     )}
                   </div>
+                  {notification.message && (
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                      {notification.message}
+                    </p>
+                  )}
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-gray-400">
                       {moment(notification.createdAt).fromNow()}
@@ -137,7 +149,8 @@ const NotificationDropdown = () => {
                       type="primary" 
                       size="small"
                       icon={<EyeOutlined />}
-                      onClick={() => {
+                      onClick={(event) => {
+                        event.stopPropagation();
                         if (!notification.isRead) {
                           handleMarkAsRead(notification.id);
                         }

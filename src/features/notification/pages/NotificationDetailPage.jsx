@@ -21,7 +21,6 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import notificationService from '../services/notificationService';
 import Layout from '../../../components/common/Layout';
-import NotificationMobileWrapper from '../components/NotificationMobileWrapper';
 import moment from 'moment';
 import 'moment/locale/vi';
 
@@ -130,98 +129,120 @@ const NotificationDetailPage = () => {
   }
 
   return (
-    <>
-      {/* Mobile Wrapper - Only render on mobile */}
-      <div className="md:hidden">
-        <NotificationMobileWrapper />
-      </div>
-      
-      {/* Desktop Layout */}
-      <div className="hidden md:block">
-        <Layout>
-          <div className="min-h-screen bg-gray-50">
-            <div className="p-4 md:p-8">
-              {/* Header */}
-              <div className="mb-6">
-                <Button 
-                  icon={<ArrowLeftOutlined />}
-                  onClick={() => navigate('/')}
-                  className="mb-4"
-                >
-                  Quay lại
-                </Button>
-                <Title level={2} className="text-xl md:text-3xl font-bold text-gray-800 mb-4">
-                  <BellOutlined className="mr-3 text-blue-600" />
-                  Chi tiết thông báo
-                </Title>
+    <Layout>
+        <div className="min-h-screen bg-gray-50">
+        {/* Mobile detail */}
+        <div className="md:hidden pt-3 pb-26 max-w-[640px] w-full mx-auto">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
+            <div className="flex items-center gap-3 text-gray-500 text-sm">
+              <span className="flex items-center gap-1">
+                <CalendarOutlined />
+                {moment(notification.createdAt).format('DD/MM/YYYY HH:mm')}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {notification.title && (
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {notification.title}
+                </h2>
+              )}
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                {notification.message || 'Không có nội dung hiển thị'}
+              </p>
+            </div>
+            {notification.data && (
+              <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-600 whitespace-pre-wrap">
+                {typeof notification.data === 'string'
+                  ? notification.data
+                  : JSON.stringify(notification.data, null, 2)}
               </div>
+            )}
+          </div>
+        </div>
 
-              {/* Notification Detail */}
-              <div className="max-w-4xl mx-auto">
-                <Card className="shadow-lg">
-                  {/* Header with icon and type */}
-                  <div className="flex items-start gap-4 mb-6">
-                    {getNotificationIcon(notification.type)}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Title level={2} className="text-gray-800 mb-0">
-                          {notification.title}
-                        </Title>
-                        <Tag color={getNotificationTypeColor(notification.type)}>
-                          {getNotificationTypeText(notification.type)}
-                        </Tag>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span className="flex items-center">
-                          <CalendarOutlined className="mr-1" />
-                          {moment(notification.createdAt).format('DD/MM/YYYY HH:mm')}
-                        </span>
-                        <span className="flex items-center">
-                          {moment(notification.createdAt).fromNow()}
-                        </span>
-                      </div>
+        {/* Desktop detail */}
+        <div className="hidden md:block">
+          <div className="p-4 md:p-8">
+            {/* Header */}
+            <div className="mb-6">
+              <Button 
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate('/')}
+                className="mb-4"
+              >
+                Quay lại
+              </Button>
+              <Title level={2} className="text-xl md:text-3xl font-bold text-gray-800 mb-4">
+                <BellOutlined className="mr-3 text-blue-600" />
+                Chi tiết thông báo
+              </Title>
+            </div>
+
+            {/* Notification Detail */}
+            <div className="max-w-4xl mx-auto">
+              <Card className="shadow-lg">
+                {/* Header with icon and type */}
+                <div className="flex items-start gap-4 mb-6">
+                  {getNotificationIcon(notification.type)}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Title level={2} className="text-gray-800 mb-0">
+                        {notification.title}
+                      </Title>
+                      <Tag color={getNotificationTypeColor(notification.type)}>
+                        {getNotificationTypeText(notification.type)}
+                      </Tag>
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <span className="flex items-center">
+                        <CalendarOutlined className="mr-1" />
+                        {moment(notification.createdAt).format('DD/MM/YYYY HH:mm')}
+                      </span>
+                      <span className="flex items-center">
+                        {moment(notification.createdAt).fromNow()}
+                      </span>
                     </div>
                   </div>
+                </div>
 
-                  <Divider />
+                <Divider />
 
-                  {/* Content */}
-                  <div className="space-y-6">
-                    {/* Message */}
+                {/* Content */}
+                <div className="space-y-6">
+                  {/* Message */}
+                  <div>
+                    <Title level={4} className="text-gray-800 mb-3">Nội dung thông báo</Title>
+                    <Paragraph className="text-gray-600 text-lg leading-relaxed">
+                      {notification.message}
+                    </Paragraph>
+                  </div>
+
+                  {/* Additional Info */}
+                  {notification.data && (
                     <div>
-                      <Title level={4} className="text-gray-800 mb-3">Nội dung thông báo</Title>
-                      <Paragraph className="text-gray-600 text-lg leading-relaxed">
-                        {notification.message}
-                      </Paragraph>
-                    </div>
-
-                    {/* Additional Info */}
-                    {notification.data && (
-                      <div>
-                        <Title level={4} className="text-gray-800 mb-3">Thông tin bổ sung</Title>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                            {JSON.stringify(notification.data, null, 2)}
-                          </pre>
-                        </div>
+                      <Title level={4} className="text-gray-800 mb-3">Thông tin bổ sung</Title>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {JSON.stringify(notification.data, null, 2)}
+                        </pre>
                       </div>
-                    )}
-
-                    {/* Status */}
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <Title level={5} className="text-blue-800 mb-2">Trạng thái</Title>
-                      <Text className="text-blue-700">
-                        {notification.isRead ? 'Đã đọc' : 'Chưa đọc'}
-                      </Text>
                     </div>
+                  )}
+
+                  {/* Status */}
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <Title level={5} className="text-blue-800 mb-2">Trạng thái</Title>
+                    <Text className="text-blue-700">
+                      {notification.isRead ? 'Đã đọc' : 'Chưa đọc'}
+                    </Text>
                   </div>
-                </Card>
-              </div>
+                </div>
+              </Card>
             </div>
           </div>
-        </Layout>
+        </div>
       </div>
-    </>
+    </Layout>
   );
 };
 

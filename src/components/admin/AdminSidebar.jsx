@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DashboardOutlined, LogoutOutlined, DownOutlined } from '@ant-design/icons';
+import { DashboardOutlined, LogoutOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 import { adminMenuItems } from './sidebar/adminMenuData';
 import { LAYOUT } from '../../utils/theme';
@@ -11,7 +11,6 @@ import { getPortalType } from '../../utils/subdomain';
 const convertMenuItems = (items) => {
   return items.map(item => ({
     ...item,
-    icon: undefined,
     children: item.children ? convertMenuItems(item.children) : undefined
   }));
 };
@@ -269,6 +268,27 @@ const collectParentKeys = (items, targetKey, trail = []) => {
   return [];
 };
 
+const filterMenuTree = (items, term) => {
+  if (!term) {
+    return items;
+  }
+  const normalizedTerm = term.toLowerCase();
+  return items
+    .map((item) => {
+      const children = item.children ? filterMenuTree(item.children, term) : undefined;
+      const labelMatch = item.label?.toLowerCase().includes(normalizedTerm);
+      const hasChildrenMatch = children && children.length > 0;
+      if (labelMatch || hasChildrenMatch) {
+        return {
+          ...item,
+          children
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+};
+
 const AdminSidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -296,6 +316,7 @@ const AdminSidebar = ({ collapsed }) => {
   const [closedGroups, setClosedGroups] = useState([]);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const prevActiveKeyRef = useRef(activeKey);
   const prevInitialParentsRef = useRef(initialParents);
 
@@ -397,6 +418,13 @@ const AdminSidebar = ({ collapsed }) => {
     [goTo]
   );
 
+  const filteredMenuItems = useMemo(
+    () => filterMenuTree(menuItems, searchTerm.trim()),
+    [menuItems, searchTerm]
+  );
+
+  const isFilterMode = Boolean(searchTerm.trim());
+
   const handleNavigate = useCallback(
     (key) => {
       const action = menuActions[key];
@@ -414,7 +442,9 @@ const AdminSidebar = ({ collapsed }) => {
       const isDescendantActive =
         hasChildren && item.children.some((child) => isKeyInTree(child, activeKey));
       const isForcedClosed = closedGroups.includes(item.key);
-      const isOpen = !isForcedClosed && (openGroups.includes(item.key) || isDescendantActive);
+      const isOpen =
+        (isFilterMode && hasChildren) ||
+        (!isForcedClosed && (openGroups.includes(item.key) || isDescendantActive));
       const isSelfActive = activeKey === item.key;
       const isActive = isSelfActive || isDescendantActive;
 
@@ -429,6 +459,19 @@ const AdminSidebar = ({ collapsed }) => {
         ? undefined
         : { paddingLeft: 12 + depth * 12 };
 
+      const IconComponent = item.icon;
+      const iconNode =
+        !collapsed && IconComponent ? (
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5 text-base text-emerald-300">
+            <IconComponent />
+          </span>
+        ) : null;
+
+      const badgeDot =
+        isFilterMode && !hasChildren
+          ? 'after:ml-2 after:inline-block after:h-1.5 after:w-1.5 after:rounded-full after:bg-emerald-300'
+          : '';
+
       const content = (
         <>
           {collapsed ? (
@@ -437,7 +480,7 @@ const AdminSidebar = ({ collapsed }) => {
             </span>
           ) : (
             <span
-              className={`flex-1 text-left text-sm ${isTopLevel ? 'font-semibold uppercase tracking-wide' : 'font-medium'}`}
+              className={`flex-1 text-left text-sm ${isTopLevel ? 'font-semibold uppercase tracking-wide' : 'font-medium'} ${badgeDot}`}
             >
               {item.label}
             </span>
@@ -477,6 +520,7 @@ const AdminSidebar = ({ collapsed }) => {
             className={`${baseClasses} ${stateClasses}`}
             style={paddingStyle}
           >
+            {!collapsed && iconNode}
             {content}
           </button>
           {hasChildren && isOpen && (
@@ -487,7 +531,7 @@ const AdminSidebar = ({ collapsed }) => {
         </div>
       );
     },
-    [collapsed, openGroups, activeKey, handleNavigate, closedGroups]
+    [collapsed, openGroups, activeKey, handleNavigate, closedGroups, isFilterMode]
   );
 
   const sidebarWidth = useMemo(
@@ -520,12 +564,32 @@ const AdminSidebar = ({ collapsed }) => {
       </div>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1 custom-scrollbar">
-          {menuItems.length > 0 ? (
-            menuItems.map((item) => renderMenuNode(item))
+        <div className="px-3 pt-4">
+          <div className="relative">
+            <SearchOutlined className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm kiếm menu..."
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-9 py-2 text-sm text-slate-200 placeholder-slate-400 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/30"
+            />
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-3 custom-scrollbar">
+          {filteredMenuItems.length > 0 ? (
+            filteredMenuItems.map((item) => (
+              <div
+                key={item.key}
+                className="rounded-2xl border border-white/5 bg-white/5 p-2 shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+              >
+                {renderMenuNode(item)}
+              </div>
+            ))
           ) : (
             <div className="flex h-full items-center justify-center px-3 text-center text-sm text-slate-400">
-              Không có menu khả dụng cho tài khoản này.
+              Không tìm thấy mục phù hợp.
             </div>
           )}
         </nav>

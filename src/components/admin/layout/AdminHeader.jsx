@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Layout, Button, Avatar, Tooltip } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,6 +19,14 @@ const AdminHeader = ({ collapsed, onToggleCollapse }) => {
 
   const session = useMemo(() => adminAuthService.getCurrentAdmin(), []);
   const isAdmin = session?.role === 'ADMIN';
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleProfileClick = () => {
     if (!isAdmin) return;
@@ -50,6 +58,14 @@ const AdminHeader = ({ collapsed, onToggleCollapse }) => {
       />
       
       <div className="flex items-center space-x-4">
+        <div className="text-right leading-tight hidden md:block">
+          <div className="text-sm font-semibold text-gray-700">
+            {currentTime.toLocaleTimeString('vi-VN')}
+          </div>
+          <div className="text-xs text-gray-500">
+            {currentTime.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
+          </div>
+        </div>
         <Tooltip title={isAdmin ? 'Xem thông tin tài khoản' : undefined}>
           <Avatar 
             icon={<UserOutlined />} 

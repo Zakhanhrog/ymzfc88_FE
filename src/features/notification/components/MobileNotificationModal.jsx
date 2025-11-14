@@ -53,14 +53,17 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
   };
 
   const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'success':
+    const normalized = (type || '').toUpperCase();
+    switch (normalized) {
+      case 'SUCCESS':
         return <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />;
-      case 'error':
-        return <Icon icon="mdi:close-circle" className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />;
-      case 'warning':
+      case 'ERROR':
+        return <Icon icon="mdi:close-circle" className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />;
+      case 'WARNING':
         return <Icon icon="mdi:alert-circle" className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />;
-      case 'info':
+      case 'TRANSACTION':
+        return <Icon icon="mdi:cash-refund" className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />;
+      case 'INFO':
       default:
         return <Icon icon="mdi:information" className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />;
     }
@@ -78,18 +81,22 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200 sticky top-0">
-        <h2 className="text-lg font-bold text-gray-800">Thông báo</h2>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
-        >
-          <Icon icon="mdi:close" className="text-gray-600 text-lg" />
-        </button>
-      </div>
+        <div className="bg-white border-b border-gray-200 sticky top-0">
+          <div className="px-2" style={{ width: '80%', maxWidth: '640px', margin: '0 auto' }}>
+            <div className="py-3 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-800">Thông báo</h2>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+            >
+              <Icon icon="mdi:close" className="text-gray-600 text-lg" />
+            </button>
+          </div>
+        </div>
+        </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="py-4 px-2" style={{ width: '80%', maxWidth: '640px', margin: '0 auto' }}>
         {loading ? (
           <Loading />
         ) : notifications.length === 0 ? (
@@ -98,7 +105,7 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
             <p className="text-gray-500">Chưa có thông báo nào</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-[640px] mx-auto">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
@@ -117,6 +124,11 @@ const MobileNotificationModal = ({ isOpen, onClose }) => {
                         <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
                       )}
                     </div>
+                    {notification.message && (
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-3">
+                        {notification.message}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-gray-400">
                         {moment(notification.createdAt).fromNow()}

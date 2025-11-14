@@ -161,7 +161,7 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
           >
             <Icon icon="mdi:close" className="w-5 h-5 text-gray-700" />
           </button>
-          <img src="/images/logos/logo.webp" alt="Logo" className="h-6" />
+          <img src="/images/logos/logo.svg" alt="Logo" className="h-6" />
         </div>
 
         {/* Menu List - Content only, white background */}

@@ -512,7 +512,10 @@ const Layout = ({ children }) => {
 
   // Hide header on mobile notification page only
   const isNotificationPage = location.pathname === '/notifications';
-  const shouldHideHeader = isNotificationPage;
+  const isNotificationDetailPage = location.pathname.startsWith('/notifications/') && location.pathname !== '/notifications';
+  const isMobileNotificationPage = isNotificationPage && isMobile;
+  const isMobileNotificationDetailPage = isNotificationDetailPage && isMobile;
+  const shouldHideHeader = isNotificationPage || isNotificationDetailPage;
 
   // Check if on mobile deposit/withdraw page
   const isWalletPage = location.pathname === '/wallet';
@@ -542,6 +545,23 @@ const Layout = ({ children }) => {
   // Check if on mobile contact/support page
   const isContactPage = location.pathname === '/contact';
   const isMobileContactPage = isMobile && isContactPage;
+
+  const hasMobileSpecialHeader =
+    isMobileDepositPage ||
+    isMobilePromotionsPage ||
+    isMobileTransactionHistoryPage ||
+    isMobileKycVerificationPage ||
+    isMobileKycPage ||
+    isMobileBettingHistoryPage ||
+    isMobileContactPage ||
+    isMobileNotificationPage ||
+    isMobileNotificationDetailPage;
+
+  const mainPaddingClass = shouldHideHeader
+    ? (isMobileNotificationPage || isMobileNotificationDetailPage ? 'pt-[56px]' : 'pt-0')
+    : hasMobileSpecialHeader
+      ? 'pt-[56px]'
+      : 'pt-[56px] md:pt-[70px]';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -578,6 +598,16 @@ const Layout = ({ children }) => {
       {/* Mobile Contact/Support Header */}
       {isMobileContactPage && (
         <MobileDepositHeader title="Hỗ trợ" />
+      )}
+
+      {/* Mobile Notification Header */}
+      {isMobileNotificationPage && (
+        <MobileDepositHeader title="Thông báo" />
+      )}
+
+      {/* Mobile Notification Detail Header */}
+      {isMobileNotificationDetailPage && (
+        <MobileDepositHeader title="Chi tiết thông báo" backPath="/notifications" />
       )}
 
       {/* Header - Hidden on mobile notification page and mobile special pages */}
@@ -619,9 +649,7 @@ const Layout = ({ children }) => {
 
       {/* Main Content */}
       <main 
-        className={`flex-1 ml-0 w-full md:transition-all md:duration-300 md:ease-in-out ${
-          shouldHideHeader ? 'pt-0' : (isMobileDepositPage || isMobilePromotionsPage || isMobileTransactionHistoryPage || isMobileKycVerificationPage || isMobileKycPage || isMobileBettingHistoryPage || isMobileContactPage) ? 'pt-[56px]' : 'pt-[56px] md:pt-[70px]'
-        }`}
+        className={`flex-1 ml-0 w-full md:transition-all md:duration-300 md:ease-in-out ${mainPaddingClass}`}
         style={{ 
           marginLeft: '0px',
           width: '100%',

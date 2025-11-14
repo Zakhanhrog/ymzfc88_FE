@@ -30,7 +30,7 @@ const Header = ({
   const navigate = useNavigate();
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const { unreadCount } = useNotificationCount(isLoggedIn);
+  const { unreadCount, refreshUnreadCount } = useNotificationCount(isLoggedIn);
   const [loginFormData, setLoginFormData] = useState({
     usernameOrEmail: '',
     password: ''
@@ -127,6 +127,7 @@ const Header = ({
       setNotifications(prev =>
         prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
+      refreshUnreadCount();
     } catch (error) {
     }
   };
@@ -159,8 +160,6 @@ const Header = ({
                 if (!notification.isRead) {
                   handleMarkAsRead(notification.id);
                 }
-                navigate(`/notifications/${notification.id}`);
-                setNotificationDropdownOpen(false);
               }}
             >
               <div className="flex items-start gap-3">
@@ -174,6 +173,11 @@ const Header = ({
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
                     )}
                   </div>
+                  {notification.message && (
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                      {notification.message}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-400">
                     {moment(notification.createdAt).fromNow()}
                   </p>
@@ -203,10 +207,10 @@ const Header = ({
           
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img 
-              src="/images/logos/logo.webp" 
+              src="/images/logos/logo.svg" 
               alt="Logo" 
-              className="h-7 md:h-12 w-auto object-contain transition-transform duration-300 hover:scale-110"
-              style={{ maxHeight: '32px' }}
+              className="h-7 md:h-16 w-auto object-contain transition-transform duration-300 hover:scale-110"
+              style={{ maxHeight: '48px' }}
             />
           </div>
         </div>
@@ -228,7 +232,7 @@ const Header = ({
                   <button className="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 hover:border-gray-400 rounded-lg transition-colors relative">
                     <Icon icon="mdi:bell" className="w-5 h-5 text-gray-700" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}
@@ -285,7 +289,7 @@ const Header = ({
                   </button>
                   {/* Notification badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
