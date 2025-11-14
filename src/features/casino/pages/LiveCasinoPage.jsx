@@ -108,7 +108,7 @@ const LiveCasinoPage = () => {
             </div>
             <button
               type="button"
-              onClick={() => navigate('/contact')}
+              onClick={() => window.dispatchEvent(new CustomEvent('openContactDrawer'))}
               className="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
             >
               Cần hỗ trợ?

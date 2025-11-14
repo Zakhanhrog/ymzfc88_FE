@@ -38,11 +38,12 @@ const MainNavigationBar = () => {
       mobileIcon: null // Trang chủ không có trong danh sách icon
     },
     { 
-      id: 'the-thao', 
-      label: 'Thể Thao', 
+      id: 'lo-de', 
+      label: 'Lô Đề', 
       hasBadge: false,
       hasFireIcon: false,
-      mobileIcon: '/icondieuhuongmb/imgi_21_sport.avif'
+      mobileIcon: '/icondieuhuongmb/imgi_29_lode.avif',
+      path: '/lottery'
     },
     { 
       id: 'song-bai', 
@@ -82,12 +83,11 @@ const MainNavigationBar = () => {
       mobileIcon: '/icondieuhuongmb/imgi_28_keno.avif'
     },
     { 
-      id: 'lo-de', 
-      label: 'Lô Đề', 
+      id: 'the-thao', 
+      label: 'Thể Thao', 
       hasBadge: false,
       hasFireIcon: false,
-      mobileIcon: '/icondieuhuongmb/imgi_29_lode.avif',
-      path: '/lottery'
+      mobileIcon: '/icondieuhuongmb/imgi_21_sport.avif'
     },
     { 
       id: 'da-ga', 

@@ -182,7 +182,20 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [error, setError] = useState('');
+  const [totals, setTotals] = useState({
+    totalWinAmount: 0,
+    totalLossAmount: 0,
+  });
   const loadingRef = useRef(false);
+
+  const formattedTotalWinAmount = useMemo(
+    () => Number(totals.totalWinAmount ?? 0).toLocaleString('vi-VN'),
+    [totals.totalWinAmount]
+  );
+  const formattedTotalLossAmount = useMemo(
+    () => Number(totals.totalLossAmount ?? 0).toLocaleString('vi-VN'),
+    [totals.totalLossAmount]
+  );
 
   const loadHistory = useCallback(
     async (pageToLoad = 0) => {
@@ -206,6 +219,13 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
       const data = response.data || {};
       const fetchedItems = Array.isArray(data.items) ? data.items : [];
 
+      const rawTotalWin = Number(data.totalWinAmount ?? 0);
+      const rawTotalLoss = Number(data.totalLossAmount ?? 0);
+      setTotals({
+        totalWinAmount: Number.isNaN(rawTotalWin) ? 0 : rawTotalWin,
+        totalLossAmount: Number.isNaN(rawTotalLoss) ? 0 : rawTotalLoss,
+      });
+
       setItems((prev) => (pageToLoad === 0 ? fetchedItems : [...prev, ...fetchedItems]));
       setPage(data.page ?? pageToLoad);
       setHasMore(Boolean(data.hasMore));
@@ -223,6 +243,10 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
       setError('');
       setLoading(false);
       loadingRef.current = false;
+      setTotals({
+        totalWinAmount: 0,
+        totalLossAmount: 0,
+      });
       return;
     }
 
@@ -302,6 +326,28 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
       </header>
 
         <div className="h-[calc(100%-64px)] overflow-y-auto px-6 py-5 space-y-4">
+          {!initialLoading && !error ? (
+            <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
+              <div className="flex items-stretch justify-between gap-3 text-sm">
+                <div className="flex-1 min-w-0 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-center">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    Tổng thắng cược
+                  </span>
+                  <span className="block text-base font-bold text-emerald-600 whitespace-nowrap">
+                    {formattedTotalWinAmount}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-center">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    Tổng thua cược
+                  </span>
+                  <span className="block text-base font-bold text-red-600 whitespace-nowrap">
+                    {formattedTotalLossAmount}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : null}
           {initialLoading ? (
             <div className="flex flex-col items-center justify-center py-10 text-gray-500">
               <Icon icon="mdi:loading" className="w-6 h-6 animate-spin mb-2" />

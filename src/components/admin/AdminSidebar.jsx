@@ -16,6 +16,13 @@ const convertMenuItems = (items) => {
   }));
 };
 
+const deepCloneMenuItems = (items) => {
+  return items.map((item) => ({
+    ...item,
+    children: item.children ? deepCloneMenuItems(item.children) : undefined
+  }));
+};
+
 const arraysEqual = (a = [], b = []) => {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i += 1) {
@@ -157,9 +164,45 @@ const getMenuForPortal = (portalType, session) => {
   }
 
   if (portalType === 'admin') {
-    return adminMenuItems.filter(
-      (item) => item.key !== 'agent-portal' && item.key !== 'staff-portal'
+    const baseItems = deepCloneMenuItems(
+      adminMenuItems.filter(
+        (item) => item.key !== 'agent-portal' && item.key !== 'staff-portal'
+      )
     );
+
+    const gameManagementItem = baseItems.find((item) => item.key === 'game-management');
+    if (gameManagementItem) {
+      const staffPortal = adminMenuItems.find((item) => item.key === 'staff-portal');
+      const staffResultItems = [];
+
+      if (staffPortal?.children) {
+        staffPortal.children.forEach((section) => {
+          if (section.key === 'staff-tx1' || section.key === 'staff-tx2') {
+            section.children?.forEach((child) => {
+              if (
+                child.key === 'staff-tx1-sicbo-results' ||
+                child.key === 'staff-tx2-sicbo-results'
+              ) {
+                staffResultItems.push({ ...child });
+              }
+            });
+          }
+        });
+      }
+
+      if (staffResultItems.length > 0) {
+        const existingKeys = new Set(
+          (gameManagementItem.children || []).map((child) => child.key)
+        );
+        const mergedChildren = [
+          ...(gameManagementItem.children || []),
+          ...staffResultItems.filter((item) => !existingKeys.has(item.key))
+        ];
+        gameManagementItem.children = mergedChildren;
+      }
+    }
+
+    return baseItems;
   }
 
   return adminMenuItems;

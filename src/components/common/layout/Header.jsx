@@ -201,18 +201,6 @@ const Header = ({
             </button>
           )}
           
-          {/* Desktop Menu Toggle */}
-          <button
-            onClick={onSidebarToggle}
-            className="hidden md:flex w-11 h-11 items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors ml-[-8px]"
-          >
-            <img 
-              src="/images/icons/imgi_3_nav-menu.png" 
-              alt="Menu" 
-              className={`w-6 h-6 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-0' : 'rotate-180'}`}
-            />
-          </button>
-          
           <div className="cursor-pointer" onClick={() => navigate('/')}>
             <img 
               src="/images/logos/logo.webp" 

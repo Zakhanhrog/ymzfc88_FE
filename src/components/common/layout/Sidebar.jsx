@@ -37,7 +37,7 @@ const Sidebar = ({
 
   const handleMenuClick = (key) => {
     const menuActions = {
-      'contact': () => navigate('/contact'),
+      'contact': () => window.dispatchEvent(new CustomEvent('openContactDrawer')),
       'promotions': () => navigate('/promotions', { replace: false }),
     };
 

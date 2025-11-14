@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Header from './layout/Header';
@@ -11,6 +11,41 @@ import Footer from './layout/Footer';
 import MobileFooter from './layout/MobileFooter';
 import MobileBottomNav from './layout/MobileBottomNav';
 import pointService from '../../services/pointService';
+import contactService from '../../services/contactService';
+import { message } from 'antd';
+
+const CONTACT_CARDS = [
+  {
+    id: 1,
+    key: 'livechat',
+    title: 'Livechat 24/24',
+    icon: '/iconhotro/imgi_138_livechat.svg',
+  },
+  {
+    id: 2,
+    key: 'facebook',
+    title: 'Kênh Facebook',
+    icon: '/iconhotro/imgi_139_facebook.svg',
+  },
+  {
+    id: 3,
+    key: 'messenger',
+    title: 'Messenger Facebook',
+    icon: '/iconhotro/imgi_140_messenger.svg',
+  },
+  {
+    id: 4,
+    key: 'telegram',
+    title: 'Telegram',
+    icon: '/iconhotro/imgi_141_telegram_chanel.svg',
+  },
+  {
+    id: 5,
+    key: 'hotline',
+    title: 'Hotline',
+    icon: '/iconhotro/imgi_138_livechat.svg',
+  },
+];
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -46,6 +81,14 @@ const Layout = ({ children }) => {
   const [userPoints, setUserPoints] = useState(0);
   const [userName, setUserName] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
+  const [contactLinks, setContactLinks] = useState({});
+  const [contactLoading, setContactLoading] = useState(false);
+  const hasLoadedContactLinks = useRef(false);
+  const contactPanelRef = useRef(null);
+  const [contactButtonVisible, setContactButtonVisible] = useState(true);
+  const contactButtonTimeoutRef = useRef(null);
+  const hasInitialContactEffectRun = useRef(false);
 
   // Check if mobile
   useEffect(() => {
@@ -207,6 +250,48 @@ const Layout = ({ children }) => {
     }
   };
 
+  const loadContactLinks = useCallback(async () => {
+    try {
+      setContactLoading(true);
+      const links = await contactService.getContactLinks();
+      setContactLinks(links || {});
+      hasLoadedContactLinks.current = true;
+    } catch (error) {
+      message.error('Không thể tải danh sách liên hệ');
+    } finally {
+      setContactLoading(false);
+    }
+  }, []);
+
+  const openContactDrawer = useCallback(() => {
+     if (isMobile) {
+       navigate('/contact', { replace: false });
+       return;
+     }
+    setIsContactDrawerOpen((prev) => !prev);
+  }, [isMobile, navigate]);
+
+  const closeContactDrawer = useCallback(() => {
+    setIsContactDrawerOpen(false);
+  }, []);
+ 
+  const handleContactCardClick = useCallback(
+    (card) => {
+      const link = contactLinks?.[card.key];
+      if (link && link !== '#') {
+        if (link.startsWith('tel:')) {
+          window.location.href = link;
+        } else {
+          window.open(link, '_blank', 'noopener');
+        }
+        closeContactDrawer();
+      } else {
+        message.info('Kênh này chưa được cấu hình');
+      }
+    },
+    [contactLinks, closeContactDrawer]
+  );
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     
@@ -293,6 +378,62 @@ const Layout = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleOpenContactDrawer = () => setIsContactDrawerOpen(true);
+    window.addEventListener('openContactDrawer', handleOpenContactDrawer);
+    return () => {
+      window.removeEventListener('openContactDrawer', handleOpenContactDrawer);
+    };
+  }, []);
+ 
+  useEffect(() => {
+    if (isContactDrawerOpen && !hasLoadedContactLinks.current) {
+      loadContactLinks();
+    }
+
+    if (!isContactDrawerOpen) {
+      return undefined;
+    }
+
+    const handleClickOutside = (event) => {
+      if (contactPanelRef.current && !contactPanelRef.current.contains(event.target)) {
+        setIsContactDrawerOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isContactDrawerOpen, loadContactLinks]);
+
+  useEffect(() => {
+    if (!hasInitialContactEffectRun.current) {
+      hasInitialContactEffectRun.current = true;
+      return;
+    }
+
+    if (contactButtonTimeoutRef.current) {
+      clearTimeout(contactButtonTimeoutRef.current);
+      contactButtonTimeoutRef.current = null;
+    }
+
+    if (isContactDrawerOpen) {
+      setContactButtonVisible(false);
+    } else {
+      setContactButtonVisible(false);
+      contactButtonTimeoutRef.current = setTimeout(() => {
+        setContactButtonVisible(true);
+      }, 300);
+    }
+  }, [isContactDrawerOpen]);
+
+  useEffect(() => () => {
+    if (contactButtonTimeoutRef.current) {
+      clearTimeout(contactButtonTimeoutRef.current);
+    }
+  }, []);
+
   const handleLogout = () => {
     setShowLogoutModal(true);
   };
@@ -366,6 +507,8 @@ const Layout = ({ children }) => {
   };
 
   const sidebarWidth = sidebarCollapsed ? '80px' : '280px';
+  const shouldShowSidebar = false; // Toggle to true when sidebar needs to reappear
+  const effectiveSidebarWidth = shouldShowSidebar ? sidebarWidth : '0px';
 
   // Hide header on mobile notification page only
   const isNotificationPage = location.pathname === '/notifications';
@@ -463,6 +606,7 @@ const Layout = ({ children }) => {
       />
 
       {/* Sidebar - Hidden on mobile */}
+      {shouldShowSidebar && (
       <div className="hidden md:block">
         <Sidebar
           collapsed={sidebarCollapsed}
@@ -471,6 +615,7 @@ const Layout = ({ children }) => {
           onGameSelect={handleGameSelect}
         />
       </div>
+      )}
 
       {/* Main Content */}
       <main 
@@ -483,7 +628,7 @@ const Layout = ({ children }) => {
         }}
       >
         {/* Desktop spacing */}
-        <div className="hidden md:block" style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth})` }}>
+        <div className="hidden md:block" style={{ marginLeft: effectiveSidebarWidth, width: `calc(100% - ${effectiveSidebarWidth})` }}>
           <div className="p-5 min-h-full w-full">
             {children}
           </div>
@@ -498,7 +643,7 @@ const Layout = ({ children }) => {
       {/* Footer */}
       <div className="ml-0 w-full md:transition-all md:duration-300 md:ease-in-out">
         {/* Desktop spacing */}
-        <div className="hidden md:block" style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth})` }}>
+        <div className="hidden md:block" style={{ marginLeft: effectiveSidebarWidth, width: `calc(100% - ${effectiveSidebarWidth})` }}>
           <Footer />
         </div>
         
@@ -545,44 +690,63 @@ const Layout = ({ children }) => {
       {/* Contact Button - Fixed position on right edge */}
       {/* Mobile: Small icon button at bottom - sát cạnh, bo 2 góc bên trái */}
       <button
-        onClick={() => navigate('/contact')}
+        onClick={openContactDrawer}
         className="md:hidden fixed right-0 bottom-24 z-50 bg-green-400 hover:bg-green-500 text-black rounded-tl-lg rounded-bl-lg p-1.5 w-8 h-8 flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-xl"
+        aria-label="Liên hệ"
       >
-        <div className="relative">
-          <Icon icon="mdi:headset" className="w-3.5 h-3.5 text-black" />
-          <div className="absolute -top-0.5 -right-0.5 bg-black rounded-full p-0.5 flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-            </div>
-          </div>
-        </div>
+        <img src="/iconhotro/lienhe.svg" alt="Liên hệ" className="w-4 h-4" />
       </button>
 
-      {/* Desktop: Full button with text */}
+      {/* Desktop Contact Button */}
       <button
-        onClick={() => navigate('/contact')}
-        className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-green-400 hover:bg-green-500 text-black rounded-l-xl px-2.5 py-8 flex-col items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-xl"
+        onClick={openContactDrawer}
+        className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-green-400 hover:bg-green-500 text-black rounded-l-lg px-1 py-2 flex-col items-center justify-center gap-1 shadow-md transition-transform transition-opacity duration-200 hover:shadow-lg"
+        style={{
+          transform: `translateY(-50%) translateX(${isContactDrawerOpen || !contactButtonVisible ? '120%' : '0'})`,
+          opacity: isContactDrawerOpen || !contactButtonVisible ? 0 : 1,
+          pointerEvents: isContactDrawerOpen || !contactButtonVisible ? 'none' : 'auto',
+        }}
       >
-        <div className="relative">
-          <Icon icon="mdi:headset" className="w-5 h-5 text-black" />
-          <div className="absolute -top-0.5 -right-0.5 bg-black rounded-full p-0.5 flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-              <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-            </div>
-          </div>
-        </div>
+          <img src="/iconhotro/lienhe.svg" alt="Liên hệ" className="w-5 h-5" />
         <span 
-          className="text-xs font-bold uppercase tracking-wider"
-          style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+          className="text-[10px] font-semibold tracking-wide"
+          style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', transform: 'rotate(180deg)' }}
         >
-          LIÊN HỆ
+          Liên hệ
         </span>
       </button>
 
+      {/* Contact Drawer */}
+      <div
+         ref={contactPanelRef}
+        className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 z-50"
+      >
+        <div
+          className={`overflow-hidden transition-all duration-200 ease-out ${
+            isContactDrawerOpen ? 'max-w-[240px] opacity-100 ml-2 pointer-events-auto' : 'max-w-0 opacity-0 ml-0 pointer-events-none'
+          }`}
+        >
+          <div className="w-60 rounded-2xl bg-white text-gray-900 shadow-md p-2 space-y-1">
+            {contactLoading ? (
+              <div className="flex justify-center py-4 text-sm text-gray-600">Đang tải...</div>
+            ) : (
+              CONTACT_CARDS.map((card) => (
+                <button
+                  type="button"
+                  key={card.id}
+                  onClick={() => handleContactCardClick(card)}
+                  className="w-full flex items-center gap-2 px-2 py-2 rounded-xl bg-white hover:bg-gray-100 transition-colors text-left"
+                >
+                  <img src={card.icon} alt={card.title} className="w-6 h-6" />
+                  <span className="flex-1 text-sm font-semibold text-gray-900 truncate">{card.title}</span>
+                  <Icon icon="mdi:chevron-right" className="w-4 h-4 text-gray-400" />
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+ 
     </div>
   );
 };

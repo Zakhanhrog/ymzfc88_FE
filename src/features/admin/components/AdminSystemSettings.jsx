@@ -35,6 +35,7 @@ const AdminSystemSettings = () => {
   const [settings, setSettings] = useState({});
   const [form] = Form.useForm();
   const [commissionForm] = Form.useForm();
+  const [gameRefundForm] = Form.useForm();
   const currentCommissionValue =
     settings.agent_commission_percentage !== undefined &&
     settings.agent_commission_percentage !== null &&
@@ -67,12 +68,26 @@ const AdminSystemSettings = () => {
               ? parseFloat(commissionValueRaw)
               : undefined
         });
+        gameRefundForm.setFieldsValue({
+          sicbo_refund_win_percentage: parsePercentage(settingsMap.sicbo_refund_win_percentage),
+          sicbo_refund_loss_percentage: parsePercentage(settingsMap.sicbo_refund_loss_percentage),
+          xocdia_refund_win_percentage: parsePercentage(settingsMap.xocdia_refund_win_percentage),
+          xocdia_refund_loss_percentage: parsePercentage(settingsMap.xocdia_refund_loss_percentage)
+        });
       }
     } catch (error) {
       message.error('Lỗi khi tải cài đặt: ' + error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const parsePercentage = (value) => {
+    if (value === undefined || value === null || value === '') {
+      return 0;
+    }
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
   };
 
   const handleSaveSetting = async (settingKey, settingValue, description, category) => {
@@ -108,6 +123,58 @@ const AdminSystemSettings = () => {
       'Tỷ lệ hoa hồng mặc định cho đại lý (đơn vị %)',
       'COMMISSION'
     );
+  };
+
+  const handleSaveGameRefundSettings = async (values) => {
+    const entries = [
+      {
+        key: 'sicbo_refund_win_percentage',
+        value: values.sicbo_refund_win_percentage,
+        description: 'Tỷ lệ hoàn trả (%) cho lệnh thắng Sicbo',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'sicbo_refund_loss_percentage',
+        value: values.sicbo_refund_loss_percentage,
+        description: 'Tỷ lệ hoàn trả (%) cho lệnh thua Sicbo',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'xocdia_refund_win_percentage',
+        value: values.xocdia_refund_win_percentage,
+        description: 'Tỷ lệ hoàn trả (%) cho lệnh thắng Xóc Đĩa',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'xocdia_refund_loss_percentage',
+        value: values.xocdia_refund_loss_percentage,
+        description: 'Tỷ lệ hoàn trả (%) cho lệnh thua Xóc Đĩa',
+        category: 'GAME_REFUND'
+      }
+    ];
+
+    try {
+      setLoading(true);
+      await Promise.all(
+        entries.map(entry =>
+          adminService.createOrUpdateSystemSetting({
+            settingKey: entry.key,
+            settingValue:
+              entry.value === undefined || entry.value === null
+                ? '0'
+                : String(entry.value),
+            description: entry.description,
+            category: entry.category
+          })
+        )
+      );
+      message.success('Cập nhật tỷ lệ hoàn trả trò chơi thành công!');
+      await loadSettings();
+    } catch (error) {
+      message.error('Lỗi: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveWithdrawalSettings = (values) => {
@@ -435,6 +502,214 @@ const AdminSystemSettings = () => {
                             onClick={() =>
                               commissionForm.setFieldsValue({
                                 agent_commission_percentage: currentCommissionValue
+                              })
+                            }
+                            disabled={loading}
+                          >
+                            Đặt lại
+                          </Button>
+                        </Space>
+                      </Form.Item>
+                    </Form>
+                  </Space>
+                </Card>
+              )
+            },
+            {
+              key: 'game-refund',
+              label: (
+                <span>
+                  <PercentageOutlined />
+                  Hoàn trả trò chơi
+                </span>
+              ),
+              children: (
+                <Card>
+                  <Space direction="vertical" size="large" className="w-full">
+                    <Alert
+                      type="info"
+                      showIcon
+                      message="Thiết lập tỷ lệ hoàn trả theo từng trò chơi"
+                      description="Tỷ lệ hoàn trả được tính dựa trên số tiền cược (stake) của mỗi lệnh cược Sicbo và Xóc Đĩa. Hệ thống sẽ cộng thêm điểm hoàn trả tương ứng sau khi lệnh được xử lý."
+                    />
+
+                    <Form
+                      form={gameRefundForm}
+                      layout="vertical"
+                      onFinish={handleSaveGameRefundSettings}
+                    >
+                      <Divider orientation="left">Sicbo</Divider>
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="sicbo_refund_win_percentage"
+                            label="Hoàn trả lệnh thắng (%)"
+                            rules={[
+                              { required: true, message: 'Vui lòng nhập tỷ lệ hoàn trả lệnh thắng' },
+                              {
+                                validator: (_, value) => {
+                                  if (value === undefined || value === null) {
+                                    return Promise.resolve();
+                                  }
+                                  if (value < 0 || value > 100) {
+                                    return Promise.reject(
+                                      new Error('Tỷ lệ phải nằm trong khoảng 0 - 100%')
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                }
+                              }
+                            ]}
+                          >
+                            <InputNumber
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                value === undefined || value === null ? '' : `${value}%`
+                              }
+                              parser={(value) =>
+                                value ? value.replace(/\s?%/g, '').replace(',', '.') : ''
+                              }
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="sicbo_refund_loss_percentage"
+                            label="Hoàn trả lệnh thua (%)"
+                            rules={[
+                              { required: true, message: 'Vui lòng nhập tỷ lệ hoàn trả lệnh thua' },
+                              {
+                                validator: (_, value) => {
+                                  if (value === undefined || value === null) {
+                                    return Promise.resolve();
+                                  }
+                                  if (value < 0 || value > 100) {
+                                    return Promise.reject(
+                                      new Error('Tỷ lệ phải nằm trong khoảng 0 - 100%')
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                }
+                              }
+                            ]}
+                          >
+                            <InputNumber
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                value === undefined || value === null ? '' : `${value}%`
+                              }
+                              parser={(value) =>
+                                value ? value.replace(/\s?%/g, '').replace(',', '.') : ''
+                              }
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Divider orientation="left">Xóc Đĩa</Divider>
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="xocdia_refund_win_percentage"
+                            label="Hoàn trả lệnh thắng (%)"
+                            rules={[
+                              { required: true, message: 'Vui lòng nhập tỷ lệ hoàn trả lệnh thắng' },
+                              {
+                                validator: (_, value) => {
+                                  if (value === undefined || value === null) {
+                                    return Promise.resolve();
+                                  }
+                                  if (value < 0 || value > 100) {
+                                    return Promise.reject(
+                                      new Error('Tỷ lệ phải nằm trong khoảng 0 - 100%')
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                }
+                              }
+                            ]}
+                          >
+                            <InputNumber
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                value === undefined || value === null ? '' : `${value}%`
+                              }
+                              parser={(value) =>
+                                value ? value.replace(/\s?%/g, '').replace(',', '.') : ''
+                              }
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="xocdia_refund_loss_percentage"
+                            label="Hoàn trả lệnh thua (%)"
+                            rules={[
+                              { required: true, message: 'Vui lòng nhập tỷ lệ hoàn trả lệnh thua' },
+                              {
+                                validator: (_, value) => {
+                                  if (value === undefined || value === null) {
+                                    return Promise.resolve();
+                                  }
+                                  if (value < 0 || value > 100) {
+                                    return Promise.reject(
+                                      new Error('Tỷ lệ phải nằm trong khoảng 0 - 100%')
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                }
+                              }
+                            ]}
+                          >
+                            <InputNumber
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              style={{ width: '100%' }}
+                              formatter={(value) =>
+                                value === undefined || value === null ? '' : `${value}%`
+                              }
+                              parser={(value) =>
+                                value ? value.replace(/\s?%/g, '').replace(',', '.') : ''
+                              }
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Alert
+                        type="warning"
+                        showIcon
+                        message="Lưu ý"
+                        description="Tỷ lệ hoàn trả được tính trên tiền cược ban đầu và được cộng thêm vào tài khoản sau khi hệ thống xử lý lệnh."
+                      />
+
+                      <Form.Item className="mt-4">
+                        <Space>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            icon={<SaveOutlined />}
+                            loading={loading}
+                          >
+                            Lưu cài đặt hoàn trả
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              gameRefundForm.setFieldsValue({
+                                sicbo_refund_win_percentage: parsePercentage(settings.sicbo_refund_win_percentage),
+                                sicbo_refund_loss_percentage: parsePercentage(settings.sicbo_refund_loss_percentage),
+                                xocdia_refund_win_percentage: parsePercentage(settings.xocdia_refund_win_percentage),
+                                xocdia_refund_loss_percentage: parsePercentage(settings.xocdia_refund_loss_percentage)
                               })
                             }
                             disabled={loading}
