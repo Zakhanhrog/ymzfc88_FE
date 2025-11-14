@@ -25,6 +25,7 @@ import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
 import AdminPaymentMethodManagement from './AdminPaymentMethodManagement';
 import AdminKycVerification from './AdminKycVerification';
+import AdminLoginHistory from './AdminLoginHistory';
 import AdminSystemSettings from './AdminSystemSettings';
 import AdminNotificationManagement from './AdminNotificationManagement';
 import AdminBetManagement from './AdminBetManagement';
@@ -110,6 +111,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Quản lý toàn bộ người dùng trong hệ thống" 
             />
             <AdminUserManagement />
+          </div>
+        );
+
+      case 'login-history':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Lịch sử đăng nhập"
+              description="Theo dõi lịch sử đăng nhập và địa chỉ IP của người dùng trong hệ thống"
+            />
+            <AdminLoginHistory />
           </div>
         );
 

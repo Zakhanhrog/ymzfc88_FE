@@ -351,6 +351,7 @@ const AdminSidebar = ({ collapsed }) => {
       'user-roles': () => goTo('/dashboard?tab=user-roles'),
       'staff-management': () => goTo('/dashboard?tab=staff-management'),
       'agent-management': () => goTo('/dashboard?tab=agent-management'),
+      'login-history': () => goTo('/dashboard?tab=login-history'),
       deposits: () => goTo('/dashboard?tab=deposits'),
       withdraws: () => goTo('/dashboard?tab=withdraws'),
       'payment-methods': () => goTo('/dashboard?tab=payment-methods'),

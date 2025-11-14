@@ -106,6 +106,11 @@ export const adminMenuItems = [
         key: 'agent-report',
         icon: ICONS.agentReport,
         label: 'Báo cáo đại lý',
+      },
+      {
+        key: 'login-history',
+        icon: ICONS.notifications,
+        label: 'Lịch sử đăng nhập',
       }
     ]
   },

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://api.tathiet168.com/api';
 
 const adminAPI = axios.create({
   baseURL: API_BASE_URL,
@@ -242,6 +242,23 @@ export const adminService = {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi lấy thống kê người dùng');
+    }
+  },
+
+  getLoginHistory: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, value);
+        }
+      });
+      const query = params.toString();
+      const url = query ? `/admin/login-history?${query}` : '/admin/login-history';
+      const response = await adminAPI.get(url);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy lịch sử đăng nhập');
     }
   },
 
