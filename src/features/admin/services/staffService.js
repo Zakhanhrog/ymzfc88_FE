@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.tathiet168.com/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const staffAPI = axios.create({
   baseURL: API_BASE_URL,

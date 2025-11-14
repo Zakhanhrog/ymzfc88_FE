@@ -23,7 +23,7 @@ const MobileAccountPage = () => {
       setLoading(true);
       
       // Gọi API /auth/me để lấy thông tin user mới nhất
-      const response = await fetch('https://api.tathiet168.com/api/auth/me', {
+      const response = await fetch('http://localhost:8080/api/auth/me', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -70,7 +70,7 @@ const MobileAccountPage = () => {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          await fetch('https://api.tathiet168.com/api/auth/logout', {
+          await fetch('http://localhost:8080/api/auth/logout', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

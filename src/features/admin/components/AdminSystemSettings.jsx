@@ -13,7 +13,8 @@ import {
   Alert,
   Divider,
   Row,
-  Col
+  Col,
+  TimePicker
 } from 'antd';
 import {
   SettingOutlined,
@@ -26,9 +27,15 @@ import {
   PercentageOutlined
 } from '@ant-design/icons';
 import { adminService } from '../services/adminService';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+const REFUND_TIME_FORMAT = 'HH:mm';
+const DEFAULT_REFUND_TIME = '12:00';
 
 const AdminSystemSettings = () => {
   const [loading, setLoading] = useState(false);
@@ -72,7 +79,9 @@ const AdminSystemSettings = () => {
           sicbo_refund_win_percentage: parsePercentage(settingsMap.sicbo_refund_win_percentage),
           sicbo_refund_loss_percentage: parsePercentage(settingsMap.sicbo_refund_loss_percentage),
           xocdia_refund_win_percentage: parsePercentage(settingsMap.xocdia_refund_win_percentage),
-          xocdia_refund_loss_percentage: parsePercentage(settingsMap.xocdia_refund_loss_percentage)
+          xocdia_refund_loss_percentage: parsePercentage(settingsMap.xocdia_refund_loss_percentage),
+          sicbo_refund_payout_time: parseTimeSetting(settingsMap.sicbo_refund_payout_time),
+          xocdia_refund_payout_time: parseTimeSetting(settingsMap.xocdia_refund_payout_time)
         });
       }
     } catch (error) {
@@ -88,6 +97,21 @@ const AdminSystemSettings = () => {
     }
     const parsed = Number.parseFloat(value);
     return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const parseTimeSetting = (value) => {
+    if (!value || typeof value !== 'string') {
+      return dayjs(DEFAULT_REFUND_TIME, REFUND_TIME_FORMAT);
+    }
+    const parsed = dayjs(value, REFUND_TIME_FORMAT, true);
+    return parsed.isValid() ? parsed : dayjs(DEFAULT_REFUND_TIME, REFUND_TIME_FORMAT);
+  };
+
+  const formatTimeValue = (timeValue) => {
+    if (!timeValue) {
+      return DEFAULT_REFUND_TIME;
+    }
+    return dayjs(timeValue).format(REFUND_TIME_FORMAT);
   };
 
   const handleSaveSetting = async (settingKey, settingValue, description, category) => {
@@ -149,6 +173,18 @@ const AdminSystemSettings = () => {
         key: 'xocdia_refund_loss_percentage',
         value: values.xocdia_refund_loss_percentage,
         description: 'Tỷ lệ hoàn trả (%) cho lệnh thua Xóc Đĩa',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'sicbo_refund_payout_time',
+        value: formatTimeValue(values.sicbo_refund_payout_time),
+        description: 'Thời gian chạy hoàn trả Sicbo hằng ngày (HH:mm)',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'xocdia_refund_payout_time',
+        value: formatTimeValue(values.xocdia_refund_payout_time),
+        description: 'Thời gian chạy hoàn trả Xóc Đĩa hằng ngày (HH:mm)',
         category: 'GAME_REFUND'
       }
     ];
@@ -611,6 +647,21 @@ const AdminSystemSettings = () => {
                           </Form.Item>
                         </Col>
                       </Row>
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="sicbo_refund_payout_time"
+                            label="Thời gian hoàn trả hằng ngày"
+                            rules={[{ required: true, message: 'Vui lòng chọn thời gian hoàn trả' }]}
+                          >
+                            <TimePicker
+                              className="w-full"
+                              format={REFUND_TIME_FORMAT}
+                              minuteStep={5}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
 
                       <Divider orientation="left">Xóc Đĩa</Divider>
                       <Row gutter={16}>
@@ -685,12 +736,27 @@ const AdminSystemSettings = () => {
                           </Form.Item>
                         </Col>
                       </Row>
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="xocdia_refund_payout_time"
+                            label="Thời gian hoàn trả hằng ngày"
+                            rules={[{ required: true, message: 'Vui lòng chọn thời gian hoàn trả' }]}
+                          >
+                            <TimePicker
+                              className="w-full"
+                              format={REFUND_TIME_FORMAT}
+                              minuteStep={5}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
 
                       <Alert
                         type="warning"
                         showIcon
                         message="Lưu ý"
-                        description="Tỷ lệ hoàn trả được tính trên tiền cược ban đầu và được cộng thêm vào tài khoản sau khi hệ thống xử lý lệnh."
+                        description="Tỷ lệ hoàn trả được tính trên tiền cược ban đầu và sẽ được cộng vào tài khoản vào đúng thời gian đã cấu hình hằng ngày."
                       />
 
                       <Form.Item className="mt-4">
@@ -709,7 +775,9 @@ const AdminSystemSettings = () => {
                                 sicbo_refund_win_percentage: parsePercentage(settings.sicbo_refund_win_percentage),
                                 sicbo_refund_loss_percentage: parsePercentage(settings.sicbo_refund_loss_percentage),
                                 xocdia_refund_win_percentage: parsePercentage(settings.xocdia_refund_win_percentage),
-                                xocdia_refund_loss_percentage: parsePercentage(settings.xocdia_refund_loss_percentage)
+                                xocdia_refund_loss_percentage: parsePercentage(settings.xocdia_refund_loss_percentage),
+                                sicbo_refund_payout_time: parseTimeSetting(settings.sicbo_refund_payout_time),
+                                xocdia_refund_payout_time: parseTimeSetting(settings.xocdia_refund_payout_time)
                               })
                             }
                             disabled={loading}

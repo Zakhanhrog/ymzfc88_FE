@@ -32,6 +32,7 @@ import AdminBetManagement from './AdminBetManagement';
 import AdminLotteryResultManagement from './AdminLotteryResultManagement';
 import AdminXocDiaResultManagement from './AdminXocDiaResultManagement';
 import AdminGameHistory from './AdminGameHistory';
+import AdminUserBetHistory from './AdminUserBetHistory';
 import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
@@ -334,6 +335,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
 
       case 'game-history':
         return <AdminGameHistory />;
+
+      case 'user-game-bets':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader
+              title="Lịch sử cược người dùng"
+              description="Thống kê tổng cược, lãi/lỗ và lịch sử lệnh của từng người dùng"
+            />
+            <AdminUserBetHistory />
+          </div>
+        );
 
       case 'game-results':
         return (

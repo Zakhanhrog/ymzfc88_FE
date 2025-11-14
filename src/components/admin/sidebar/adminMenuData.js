@@ -172,6 +172,11 @@ export const adminMenuItems = [
         label: 'Lịch sử game',
       },
       {
+        key: 'user-game-bets',
+        icon: ICONS.points,
+        label: 'Lịch sử cược người dùng',
+      },
+      {
         key: 'game-results',
         icon: ICONS.gameResults,
         label: 'Kết quả xổ số',

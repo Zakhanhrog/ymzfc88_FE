@@ -377,6 +377,7 @@ const AdminSidebar = ({ collapsed }) => {
       games: () => goTo('/dashboard?tab=games'),
       'bet-management': () => goTo('/dashboard?tab=bet-management'),
       'game-history': () => goTo('/dashboard?tab=game-history'),
+      'user-game-bets': () => goTo('/dashboard?tab=user-game-bets'),
       'game-results': () => goTo('/dashboard?tab=game-results'),
       'xoc-dia-results': () => goTo('/dashboard?tab=xoc-dia-results'),
       'game-settings': () => goTo('/dashboard?tab=game-settings'),

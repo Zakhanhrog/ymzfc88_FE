@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.tathiet168.com/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const adminAPI = axios.create({
   baseURL: API_BASE_URL,
@@ -760,6 +760,42 @@ export const adminService = {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử game');
+    }
+  },
+
+  getUserBetSummary: async ({ search, page = 0, size = 20 } = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString()
+      });
+      if (search) {
+        params.append('search', search);
+      }
+      const response = await adminAPI.get(`/admin/game-history/user-summary?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải thống kê cược người dùng');
+    }
+  },
+
+  getUserBetDetail: async ({ userId, gameType, page = 0, size = 20 }) => {
+    try {
+      if (!userId) {
+        throw new Error('Thiếu thông tin người dùng');
+      }
+      const params = new URLSearchParams({
+        userId: userId.toString(),
+        page: page.toString(),
+        size: size.toString()
+      });
+      if (gameType && gameType !== 'all') {
+        params.append('gameType', gameType);
+      }
+      const response = await adminAPI.get(`/admin/game-history/user-detail?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải chi tiết cược người dùng');
     }
   }
 };

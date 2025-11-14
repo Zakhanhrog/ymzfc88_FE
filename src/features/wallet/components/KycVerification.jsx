@@ -183,7 +183,7 @@ const KycVerification = () => {
                       <p className="text-sm text-gray-500 mb-2">Mặt trước</p>
                       <div className="border rounded-lg overflow-hidden" style={{ height: '180px', width: '300px' }}>
                         <Image
-                          src={`https://api.tathiet168.com/api/files/kyc/${kycStatus.frontImageUrl}`}
+                          src={`http://localhost:8080/api/files/kyc/${kycStatus.frontImageUrl}`}
                           alt="Mặt trước"
                           width={300}
                           height={180}
@@ -196,7 +196,7 @@ const KycVerification = () => {
                       <p className="text-sm text-gray-500 mb-2">Mặt sau</p>
                       <div className="border rounded-lg overflow-hidden" style={{ height: '180px', width: '300px' }}>
                         <Image
-                          src={`https://api.tathiet168.com/api/files/kyc/${kycStatus.backImageUrl}`}
+                          src={`http://localhost:8080/api/files/kyc/${kycStatus.backImageUrl}`}
                           alt="Mặt sau"
                           width={300}
                           height={180}

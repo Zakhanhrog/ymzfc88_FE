@@ -185,7 +185,7 @@ const PromotionContent = () => {
                     className="relative h-48 rounded-lg overflow-hidden mb-4"
                     style={{
                       backgroundImage: promotion.imageUrl 
-                        ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.tathiet168.com/api${promotion.imageUrl}`})`
+                        ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`})`
                         : 'linear-gradient(135deg, #1e3a8a 0%, #065f46 100%)',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center'
@@ -294,7 +294,7 @@ const PromotionContent = () => {
                         className="absolute inset-0"
                         style={{
                           backgroundImage: promotion.imageUrl 
-                            ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.tathiet168.com/api${promotion.imageUrl}`})`
+                            ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`})`
                             : 'linear-gradient(135deg, #1e3a8a 0%, #065f46 100%)',
                           backgroundSize: 'cover',
                           backgroundPosition: 'right center',
