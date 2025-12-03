@@ -1241,6 +1241,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
               countdownDisplay={countdownDisplay}
               resultOverlay={resultOverlay}
               tableLabel={tableLabel}
+              tableNumber={numericTableNumber}
             />
 
             <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">

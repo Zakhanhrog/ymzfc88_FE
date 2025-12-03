@@ -84,3 +84,31 @@ export const redirectToDomain = (path) => {
   }
 };
 
+/**
+ * Build stream URL from stream key
+ * @param {string} streamKey - Stream key (e.g., 'xocdia', 'sicbo')
+ * @returns {string} Full HLS stream URL
+ */
+export const buildStreamUrlFromKey = (streamKey) => {
+  if (!streamKey || typeof window === 'undefined') {
+    console.warn('[buildStreamUrlFromKey] Missing streamKey or window undefined');
+    return '';
+  }
+  
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  
+  // For localhost development, use production domain for stream (stream server runs on production server)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Stream server is on production server, not localhost
+    const url = `https://tathiet168.com/live/${streamKey}/index.m3u8`;
+    return url;
+  }
+  
+  // For production, use main domain
+  // Remove any subdomain (admin, agent, etc.) to get main domain
+  const mainDomain = hostname.replace(/^(admin|agent|staff|api)\./, '');
+  const url = `${protocol}//${mainDomain}/live/${streamKey}/index.m3u8`;
+  return url;
+};
+

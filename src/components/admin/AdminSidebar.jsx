@@ -410,6 +410,7 @@ const AdminSidebar = ({ collapsed }) => {
       news: () => goTo('/dashboard?tab=news'),
       notifications: () => goTo('/dashboard?tab=notifications'),
       'marquee-notifications': () => goTo('/dashboard?tab=marquee-notifications'),
+      'stream-configs': () => goTo('/dashboard?tab=stream-configs'),
       settings: () => goTo('/dashboard?tab=settings'),
       'contact-links': () => goTo('/dashboard?tab=contact-links'),
       promotions: () => goTo('/dashboard?tab=promotions'),

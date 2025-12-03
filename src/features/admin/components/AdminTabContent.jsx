@@ -38,6 +38,7 @@ import ContactLinksManagement from './ContactLinksManagement';
 import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
 import AdminBannerManagement from './AdminBannerManagement';
+import AdminStreamConfigManagement from './AdminStreamConfigManagement';
 import TelegramSettings from '../pages/TelegramSettings';
 import { getPortalType } from '../../../utils/subdomain';
 import AdminProfile from './AdminProfile';
@@ -408,6 +409,17 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
               description="Quản lý các banner quảng cáo trên trang chủ" 
             />
             <AdminBannerManagement />
+          </div>
+        );
+
+      case 'stream-configs':
+        return (
+          <div className="space-y-6">
+            <TabPageHeader 
+              title="Quản lý Stream Config" 
+              description="Quản lý stream keys cho livestream games (Xóc Đĩa, Sicbo)" 
+            />
+            <AdminStreamConfigManagement />
           </div>
         );
 

@@ -68,6 +68,7 @@ const ICONS = {
   sicboOdds: LineChartOutlined,
   contentManagement: NotificationOutlined,
   banners: PictureOutlined,
+  streamConfigs: ThunderboltOutlined,
   news: ReadOutlined,
   notifications: BellOutlined,
   marquee: SoundOutlined,
@@ -382,6 +383,11 @@ export const adminMenuItems = [
         key: 'banners',
         icon: ICONS.banners,
         label: 'Banner quảng cáo',
+      },
+      {
+        key: 'stream-configs',
+        icon: ICONS.streamConfigs,
+        label: 'Stream Config',
       },
       {
         key: 'news',
