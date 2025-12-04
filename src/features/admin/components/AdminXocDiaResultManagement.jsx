@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { message } from 'antd';
 import useXocDiaSession from '../../casino/hooks/useXocDiaSession';
 import xocDiaSessionService from '../../../services/xocDiaSessionService';
+import XocDiaLiveStream from '../../casino/pages/games/components/XocDiaLiveStream';
 
 const defaultQuickBetConfigs = [
   {
@@ -224,16 +225,11 @@ const AdminXocDiaResultManagement = () => {
             </div>
           </div>
         </header>
-        <div className="mt-4 aspect-[3/2] w-full overflow-hidden rounded-xl border border-white/10 bg-slate-950/60">
-          <div className="flex h-full min-h-[280px] items-center justify-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/40 bg-white/5 text-white/80">
-              ▶
-            </div>
-            <p className="max-w-xs text-center text-sm text-white/70">
-              Luồng trực tiếp Xóc Đĩa sẽ hiển thị ở đây. Vui lòng kiểm tra kết nối camera hoặc tải lại trang nếu luồng
-              chưa hiển thị.
-            </p>
-          </div>
+        <div className="mt-4">
+          <XocDiaLiveStream
+            countdownDisplay={renderSessionTimer}
+            resultOverlay={null}
+          />
         </div>
       </section>
 

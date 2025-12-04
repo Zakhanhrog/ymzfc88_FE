@@ -268,4 +268,3 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay }) => {
 };
 
 export default XocDiaLiveStream;
-
