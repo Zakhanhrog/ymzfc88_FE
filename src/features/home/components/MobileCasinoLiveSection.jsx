@@ -6,19 +6,24 @@ const MobileCasinoLiveSection = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Tự động chuyển thẻ sau 15 giây
+  // Tự động chuyển thẻ sau 8 giây
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % liveCasinoGames.length);
-    }, 15000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
 
   const handleGameClick = (gameId) => {
-    // Handle game click - có thể navigate hoặc mở game
-    console.log('Game clicked:', gameId);
-    // navigate(`/casino/${gameId}`);
+    if (gameId === 'xocdia') {
+      navigate('/casino/live/xocdia');
+    } else if (gameId === 'sicbo') {
+      // Navigate đến trang chọn bàn Sicbo
+      navigate('/casino/live/sicbo');
+    } else {
+      navigate(`/casino/live/${gameId}`);
+    }
   };
 
   return (
@@ -55,9 +60,9 @@ const MobileCasinoLiveSection = () => {
             {liveCasinoGames.map((game, index) => (
               <button
                 key={game.id}
-                onClick={() => handleGameClick(game.id)}
-                className={`w-full transition-opacity duration-500 ${
-                  index === currentIndex ? 'opacity-100 z-10 block' : 'opacity-0 z-0 hidden'
+                onClick={() => navigate('/casino/live')}
+                className={`w-full transition-all duration-700 transform ${
+                  index === currentIndex ? 'opacity-100 scale-100 z-10 block' : 'opacity-0 scale-95 z-0 hidden'
                 }`}
               >
                 {/* Game Image - hiển thị ảnh tự nhiên không bị cắt */}

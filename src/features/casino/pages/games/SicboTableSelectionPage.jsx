@@ -38,7 +38,7 @@ const SicboTableSelectionPage = () => {
     <div className="min-h-screen bg-gray-50">
       <SicboHeader
         onBack={() => navigate('/casino/live')}
-        gameName="Chọn bàn Sicbo"
+        gameName="Chọn bàn Tài xỉu tà thiết"
         userName={userName}
         balanceDisplay={balanceDisplay}
         isLoadingBalance={false}
@@ -58,7 +58,7 @@ const SicboTableSelectionPage = () => {
                 <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 text-white/80 text-xs uppercase tracking-wide">
                   <span className="text-white/60">Live Stream</span>
                   <span className="inline-flex items-center rounded-full border border-white/20 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                    Bàn số {table.number}
+                    Bàn {table.number}
                   </span>
                   <span className="flex items-center gap-2 text-[11px] text-red-300">
                     <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
@@ -70,8 +70,9 @@ const SicboTableSelectionPage = () => {
                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/30">
                       🎲
                     </div>
-                    <div className="font-semibold text-white">Dealer: {table.dealerName}</div>
-                    <div className="text-xs text-white/70">Người chơi đang xem: {table.playerCount}</div>
+                    <div className="font-semibold text-sm text-white">
+                      Bàn {table.number} ({table.number === 1 ? 'Tài xỉu thu phế' : 'Tài xỉu thu bão'})
+                    </div>
                     <div className="text-[11px] text-white/50">
                       Nhấn để vào bàn {table.number} và bắt đầu đặt cược
                     </div>

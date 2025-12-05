@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { Modal } from 'antd';
 
 const MobileCategoryGameSection = ({ title, gameImages }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showDevModal, setShowDevModal] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const itemsPerView = 3; // Show 3 items at a time on mobile
@@ -53,6 +55,10 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
     }
   }, []);
 
+  const handleGameClick = () => {
+    setShowDevModal(true);
+  };
+
   return (
     <div className="w-full pt-0.5 pb-0 mb-0.5">
       <div className="w-full px-0 pb-2">
@@ -85,7 +91,10 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
           </div>
 
           {/* View Details Button */}
-          <button className="text-green-600 hover:text-green-700 text-xs font-medium transition-colors px-0">
+          <button 
+            onClick={handleGameClick}
+            className="text-green-600 hover:text-green-700 text-xs font-medium transition-colors px-0"
+          >
             Xem chi tiết
           </button>
         </div>
@@ -101,6 +110,7 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
             {gameImages.map((image, index) => (
               <div
                 key={index}
+                onClick={handleGameClick}
                 className="flex-shrink-0 w-[calc((100%-16px)/3)] aspect-square rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group relative"
               >
                 <img
@@ -111,13 +121,9 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
                 {/* Hover overlay with play icon and text */}
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition-all duration-300 flex flex-col items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center">
-                    {/* Dark overlay for play button */}
-                    <div className="bg-gray-900 bg-opacity-95 rounded-lg p-2 mb-1">
-                      <img 
-                        src="/images/icons/playicon.jpeg" 
-                        alt="Play" 
-                        className="w-6 h-6 rounded-full"
-                      />
+                    {/* Icon play từ iconify */}
+                    <div className="bg-white bg-opacity-20 rounded-full p-3 mb-1 backdrop-blur-sm">
+                      <Icon icon="mdi:play-circle" className="w-8 h-8 text-white" />
                     </div>
                     {/* Play text */}
                     <span className="text-white font-medium text-xs">
@@ -130,6 +136,33 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
           </div>
         </div>
       </div>
+
+      {/* Modal thông báo game đang phát triển */}
+      <Modal
+        open={showDevModal}
+        onCancel={() => setShowDevModal(false)}
+        footer={null}
+        centered
+        width={340}
+        closeIcon={<Icon icon="mdi:close" className="text-gray-500" />}
+      >
+        <div className="text-center py-4">
+          <div className="mb-3">
+            <Icon icon="mdi:hammer-wrench" className="text-5xl text-blue-500" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">Game đang phát triển</h3>
+          <p className="text-sm text-gray-600 mb-5">
+            Trò chơi này đang được phát triển.<br />
+            Vui lòng quay lại sau!
+          </p>
+          <button
+            onClick={() => setShowDevModal(false)}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+          >
+            Đã hiểu
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

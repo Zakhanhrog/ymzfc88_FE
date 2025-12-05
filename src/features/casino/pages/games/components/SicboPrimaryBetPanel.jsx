@@ -87,6 +87,30 @@ const singleFaceBets = [
   { id: 'single-6', code: 'sicbo_single_6', face: 6, defaultMultiplier: 0.97 },
 ];
 
+// Dice pair bets - 15 combinations of 2 dice (horizontal layout)
+// First row: 7 pairs
+const dicePairBetsRow1 = [
+  { id: 'pair-1-2', code: 'sicbo_pair_1_2', faces: [1, 2], defaultMultiplier: 5 },
+  { id: 'pair-1-3', code: 'sicbo_pair_1_3', faces: [1, 3], defaultMultiplier: 5 },
+  { id: 'pair-1-4', code: 'sicbo_pair_1_4', faces: [1, 4], defaultMultiplier: 5 },
+  { id: 'pair-1-5', code: 'sicbo_pair_1_5', faces: [1, 5], defaultMultiplier: 5 },
+  { id: 'pair-1-6', code: 'sicbo_pair_1_6', faces: [1, 6], defaultMultiplier: 5 },
+  { id: 'pair-2-3', code: 'sicbo_pair_2_3', faces: [2, 3], defaultMultiplier: 5 },
+  { id: 'pair-2-4', code: 'sicbo_pair_2_4', faces: [2, 4], defaultMultiplier: 5 },
+];
+
+// Second row: 8 pairs
+const dicePairBetsRow2 = [
+  { id: 'pair-2-5', code: 'sicbo_pair_2_5', faces: [2, 5], defaultMultiplier: 5 },
+  { id: 'pair-2-6', code: 'sicbo_pair_2_6', faces: [2, 6], defaultMultiplier: 5 },
+  { id: 'pair-3-4', code: 'sicbo_pair_3_4', faces: [3, 4], defaultMultiplier: 5 },
+  { id: 'pair-3-5', code: 'sicbo_pair_3_5', faces: [3, 5], defaultMultiplier: 5 },
+  { id: 'pair-3-6', code: 'sicbo_pair_3_6', faces: [3, 6], defaultMultiplier: 5 },
+  { id: 'pair-4-5', code: 'sicbo_pair_4_5', faces: [4, 5], defaultMultiplier: 5 },
+  { id: 'pair-4-6', code: 'sicbo_pair_4_6', faces: [4, 6], defaultMultiplier: 5 },
+  { id: 'pair-5-6', code: 'sicbo_pair_5_6', faces: [5, 6], defaultMultiplier: 5 },
+];
+
 const formatRatio = (value) => {
   if (value === undefined || value === null) {
     return '1 : ?';
@@ -304,6 +328,50 @@ const renderSingleFaceButton = (bet, quickBetConfigs, selectedBet, onSelect) => 
   );
 };
 
+const renderDicePairButton = (bet, quickBetConfigs, selectedBet, onSelect) => {
+  const displayLabel = getDisplayLabel(selectedBet);
+  const ratioText = formatRatio(resolveMultiplier(quickBetConfigs, bet.code, bet.defaultMultiplier));
+  return (
+    <button
+      key={bet.id}
+      type="button"
+      onClick={() => onSelect(bet)}
+      aria-pressed={Boolean(selectedBet)}
+      className={`${baseButtonClass} h-full rounded-md border px-0.5 py-0.5 sm:px-1 sm:py-1 lg:px-1 lg:py-1 text-center ${
+        selectedBet ? selectedButtonClass : defaultButtonClass
+      }`}
+    >
+      <span className="sr-only">Cược cặp {bet.faces.join(' - ')}</span>
+      <div className="flex flex-row items-center justify-center gap-0.5 sm:gap-0.5 lg:gap-0.5">
+        <img
+          src={diceFaceIconMap[bet.faces[0]]}
+          alt={`Mặt ${bet.faces[0]}`}
+          className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-4 lg:w-4 xl:h-5 xl:w-5 select-none object-contain flex-shrink-0"
+          draggable={false}
+        />
+        <img
+          src={diceFaceIconMap[bet.faces[1]]}
+          alt={`Mặt ${bet.faces[1]}`}
+          className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-4 lg:w-4 xl:h-5 xl:w-5 select-none object-contain flex-shrink-0"
+          draggable={false}
+        />
+      </div>
+      <span
+        className="relative mt-0.5 font-semibold uppercase tracking-[0.06em] leading-tight text-[#0f4c2c]"
+        style={{ fontSize: '10px' }}
+      >
+        <span className={displayLabel ? 'opacity-0' : ''}>{ratioText}</span>
+        {displayLabel ? (
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[4px] bg-[#f5c453] px-[4px] py-[1px] text-[10px] leading-tight text-[#0f4c2c] shadow-sm whitespace-nowrap font-semibold">
+            {displayLabel}
+          </span>
+        ) : null}
+      </span>
+    </button>
+  );
+};
+
+
 const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, onSelectBet }) => {
   const resolveSelected = (code) => selectedQuickBets?.[code] ?? null;
 
@@ -346,10 +414,27 @@ const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, on
           {singleFaceBets.map((bet) =>
             renderSingleFaceButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
           )}
+        </div>
       </div>
-    </div>
-  </section>
-);
+
+      {/* Dice Pair Rows - 2 rows: 7 + 8 pairs, horizontal layout */}
+      <div className="mt-2 space-y-1 sm:space-y-1.5">
+        {/* First row: 7 pairs */}
+        <div className="grid w-full grid-cols-7 gap-0.5 sm:gap-1 lg:gap-1">
+          {dicePairBetsRow1.map((bet) =>
+            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+          )}
+        </div>
+        
+        {/* Second row: 8 pairs */}
+        <div className="grid w-full grid-cols-8 gap-0.5 sm:gap-1 lg:gap-1">
+          {dicePairBetsRow2.map((bet) =>
+            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+          )}
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default SicboPrimaryBetPanel;

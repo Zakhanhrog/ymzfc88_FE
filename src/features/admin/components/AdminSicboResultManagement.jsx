@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { message } from 'antd';
+import { Icon } from '@iconify/react';
 import useSicboSession from '../../casino/hooks/useSicboSession';
 import sicboSessionService from '../../../services/sicboSessionService';
+import streamConfigService from '../../../services/streamConfigService';
 import SicboLiveStream from '../../casino/pages/games/components/SicboLiveStream';
 
 export const diceFaceIconMap = {
@@ -21,6 +23,12 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
   const [selectedFaces, setSelectedFaces] = useState(createEmptyFaces());
   const [startingSession, setStartingSession] = useState(false);
   const [savingResult, setSavingResult] = useState(false);
+  const [refundingBets, setRefundingBets] = useState(false);
+  const [showRefundConfirmModal, setShowRefundConfirmModal] = useState(false);
+  const [isLivePaused, setIsLivePaused] = useState(false);
+  const [togglingLivePause, setTogglingLivePause] = useState(false);
+  const [isLiveEnded, setIsLiveEnded] = useState(false);
+  const [togglingLiveEnded, setTogglingLiveEnded] = useState(false);
   const { sessionStatus, timer, refreshSession } = useSicboSession({
     pollIntervalMs: 3000,
     tableNumber,
@@ -36,6 +44,7 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
   const allFacesSelected = selectedFaces.every((face) => typeof face === 'number');
   const selectedResultLabel = allFacesSelected ? selectedFaces.join(' - ') : 'Chưa chọn';
   const canSaveResult = allFacesSelected && timer.phaseKey === 'show-result';
+  const canRefundBets = timer.phaseKey === 'show-result';
 
   const renderSessionTimer = isCountdownPhase ? (
     <div className="flex items-center">
@@ -85,6 +94,59 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
     setSelectedFaces(createEmptyFaces());
   };
 
+  useEffect(() => {
+    const loadStreamConfig = async () => {
+      try {
+        const response = await streamConfigService.getStreamConfigByGame('SICBO', tableNumber);
+        if (response?.success && response.data) {
+          setIsLivePaused(response.data.isLivePaused || false);
+          setIsLiveEnded(response.data.isLiveEnded || false);
+        }
+      } catch (error) {
+        // Ignore error, use default value
+      }
+    };
+    loadStreamConfig();
+  }, [tableNumber]);
+
+  const handleToggleLivePause = async () => {
+    if (togglingLivePause) return;
+    
+    setTogglingLivePause(true);
+    try {
+      const response = await streamConfigService.toggleLivePause('SICBO', tableNumber);
+      if (response?.success) {
+        setIsLivePaused(response.data.isLivePaused || false);
+        message.success(response.message || (response.data.isLivePaused ? 'Đã tạm dừng live' : 'Đã tiếp tục live'));
+      } else {
+        message.error(response?.message || 'Không thể toggle live pause');
+      }
+    } catch (error) {
+      message.error(error?.message || 'Không thể toggle live pause');
+    } finally {
+      setTogglingLivePause(false);
+    }
+  };
+
+  const handleToggleLiveEnded = async () => {
+    if (togglingLiveEnded) return;
+    
+    setTogglingLiveEnded(true);
+    try {
+      const response = await streamConfigService.toggleLiveEnded('SICBO', tableNumber);
+      if (response?.success) {
+        setIsLiveEnded(response.data.isLiveEnded || false);
+        message.success(response.message || (response.data.isLiveEnded ? 'Đã đánh dấu live kết thúc' : 'Đã mở lại live'));
+      } else {
+        message.error(response?.message || 'Không thể toggle live ended');
+      }
+    } catch (error) {
+      message.error(error?.message || 'Không thể toggle live ended');
+    } finally {
+      setTogglingLiveEnded(false);
+    }
+  };
+
   const handleSaveResult = async () => {
     if (!allFacesSelected || savingResult) {
       if (!allFacesSelected) {
@@ -107,6 +169,48 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
       message.error(error?.message || 'Không thể lưu kết quả Sicbo');
     } finally {
       setSavingResult(false);
+      refreshSession();
+    }
+  };
+
+  const handleOpenRefundConfirmModal = () => {
+    if (!canRefundBets || refundingBets) {
+      return;
+    }
+    setShowRefundConfirmModal(true);
+  };
+
+  const handleCloseRefundConfirmModal = () => {
+    if (refundingBets) {
+      return;
+    }
+    setShowRefundConfirmModal(false);
+  };
+
+  const handleRefundBetsForUndeterminedResult = async () => {
+    if (refundingBets) {
+      return;
+    }
+
+    setRefundingBets(true);
+    try {
+      const response = await sicboSessionService.refundBetsForUndeterminedResult(tableNumber);
+      if (response?.success) {
+        message.success(response.message || 'Đã hoàn tiền cược cho tất cả người chơi');
+        handleClearSelection();
+        setShowRefundConfirmModal(false);
+        
+        // Dispatch event để refresh balance cho tất cả user đã được hoàn tiền
+        window.dispatchEvent(new CustomEvent('transactionCreated', {
+          detail: { type: 'REFUND', game: 'SICBO', tableNumber }
+        }));
+      } else {
+        message.error(response?.message || 'Không thể hoàn tiền cược');
+      }
+    } catch (error) {
+      message.error(error?.message || 'Không thể hoàn tiền cược');
+    } finally {
+      setRefundingBets(false);
       refreshSession();
     }
   };
@@ -203,15 +307,27 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center rounded-lg border border-white/30 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
+                onClick={handleToggleLivePause}
+                disabled={togglingLivePause}
+                className={`flex items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition ${
+                  isLivePaused
+                    ? 'border-amber-400 bg-amber-500/20 hover:bg-amber-500/30'
+                    : 'border-white/30 hover:bg-white/10'
+                } ${togglingLivePause ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Dừng live
+                {togglingLivePause ? 'Đang xử lý...' : isLivePaused ? 'Tiếp tục live' : 'Dừng live'}
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center rounded-lg bg-[#ef4444] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#dc2626]"
+                onClick={handleToggleLiveEnded}
+                disabled={togglingLiveEnded}
+                className={`flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition ${
+                  isLiveEnded
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-red-500 hover:bg-red-600'
+                } ${togglingLiveEnded ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Kết thúc phiên
+                {togglingLiveEnded ? 'Đang xử lý...' : isLiveEnded ? 'Mở lại live' : 'Kết thúc live'}
               </button>
             </div>
           </div>
@@ -222,6 +338,7 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
             tableLabel={`Bàn số ${tableNumber}`}
             countdownDisplay={renderSessionTimer}
             resultOverlay={null}
+            isAdmin={true}
           />
         </div>
       </section>
@@ -257,6 +374,14 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
             </button>
             <button
               type="button"
+              onClick={handleOpenRefundConfirmModal}
+              disabled={!canRefundBets || refundingBets}
+              className="flex h-11 w-full items-center justify-center rounded-xl bg-amber-500 px-4 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:bg-gray-300 sm:flex-1"
+            >
+              Hột kê
+            </button>
+            <button
+              type="button"
               onClick={handleStartNewSession}
               disabled={startingSession}
               className="flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-emerald-400 px-4 text-sm font-semibold uppercase tracking-wide text-emerald-600 transition hover:border-emerald-500 hover:text-emerald-700 sm:flex-1"
@@ -266,6 +391,69 @@ export const SicboResultTablePanel = ({ tableNumber }) => {
           </div>
         </footer>
       </section>
+
+      {/* Refund Confirm Modal */}
+      {showRefundConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in"
+            onClick={handleCloseRefundConfirmModal}
+          />
+          
+          {/* Modal Content */}
+          <div 
+            className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-center p-6 pb-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-amber-100 text-amber-600">
+                <Icon icon="mdi:alert-circle-outline" className="w-8 h-8" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-6 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Xác nhận hột kê
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Bạn có chắc chắn muốn đánh dấu kết quả bàn <strong>{tableNumber}</strong> là <strong>"Hột kê"</strong> và hoàn tiền cho tất cả người chơi?<br />
+                <span className="text-amber-600 font-medium">Hành động này không thể hoàn tác.</span>
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCloseRefundConfirmModal}
+                  disabled={refundingBets}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleRefundBetsForUndeterminedResult}
+                  disabled={refundingBets}
+                  className="flex-1 py-2.5 px-4 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {refundingBets ? (
+                    <>
+                      <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+                      <span>Đang xử lý...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="mdi:check-circle" className="w-4 h-4" />
+                      <span>Xác nhận</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

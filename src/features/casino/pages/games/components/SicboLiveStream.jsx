@@ -7,10 +7,9 @@ import streamConfigService from '../../../../../services/streamConfigService';
 const SicboLiveStream = ({
   countdownDisplay,
   resultOverlay,
-  dealerName = 'Anna',
-  playerCount = 96,
   tableLabel = 'Bàn số 1',
   tableNumber = 1,
+  isAdmin = false,
 }) => {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
@@ -18,6 +17,8 @@ const SicboLiveStream = ({
   const [hasError, setHasError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [streamUrl, setStreamUrl] = useState('');
+  const [isLivePaused, setIsLivePaused] = useState(false);
+  const [isLiveEnded, setIsLiveEnded] = useState(false);
 
   // Load stream URL from API
   useEffect(() => {
@@ -34,6 +35,14 @@ const SicboLiveStream = ({
         if (result.success && result.data && result.data.streamKey) {
           streamKey = result.data.streamKey;
           console.log('[Sicbo] Using stream key from API:', streamKey);
+          // Check if live is paused or ended (only for non-admin users)
+          if (!isAdmin) {
+            setIsLivePaused(result.data.isLivePaused || false);
+            setIsLiveEnded(result.data.isLiveEnded || false);
+          } else {
+            setIsLivePaused(false);
+            setIsLiveEnded(false);
+          }
         } else {
           console.warn('[Sicbo] API did not return stream key, using default:', streamKey);
         }
@@ -50,7 +59,23 @@ const SicboLiveStream = ({
       }
     };
     loadStreamUrl();
-  }, [tableNumber]);
+    
+    // Poll for live pause/ended status changes (only for non-admin users)
+    if (!isAdmin) {
+      const interval = setInterval(() => {
+        streamConfigService.getStreamConfigByGame('SICBO', tableNumber).then((result) => {
+          if (result?.success && result.data) {
+            setIsLivePaused(result.data.isLivePaused || false);
+            setIsLiveEnded(result.data.isLiveEnded || false);
+          }
+        }).catch(() => {
+          // Ignore errors
+        });
+      }, 3000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [tableNumber, isAdmin]);
 
   useEffect(() => {
     if (!videoRef.current || !streamUrl) return;
@@ -154,17 +179,6 @@ const SicboLiveStream = ({
               {tableLabel}
             </span>
 
-            <div className="hidden md:flex items-center gap-4 text-xs md:text-sm text-white/70">
-              <span className="flex items-center gap-2">
-                <Icon icon="mdi:account" className="w-4 h-4" />
-                Dealer: {dealerName}
-              </span>
-              <span className="flex items-center gap-2">
-                <Icon icon="mdi:account-group" className="w-4 h-4" />
-                Người chơi: {playerCount}
-              </span>
-            </div>
-
             <span className="flex items-center gap-2 text-sm text-red-400">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
               Đang phát
@@ -173,7 +187,31 @@ const SicboLiveStream = ({
         </div>
 
         <div className="flex-1 relative bg-black">
-          {isLoading && (
+          {!isAdmin && isLiveEnded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-30">
+              <div className="flex flex-col items-center gap-3 text-white/90">
+                <Icon icon="mdi:stop-circle" className="w-16 h-16 text-red-400" />
+                <p className="text-lg font-semibold text-center">Phiên live đã kết thúc</p>
+                <p className="text-sm text-center text-white/70 max-w-xs px-4">
+                  Vui lòng chờ phiên live mới. Cảm ơn bạn đã tham gia!
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isAdmin && isLivePaused && !isLiveEnded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20">
+              <div className="flex flex-col items-center gap-3 text-white/90">
+                <Icon icon="mdi:pause-circle" className="w-16 h-16 text-amber-400" />
+                <p className="text-lg font-semibold text-center">Phiên live đang được tạm dừng</p>
+                <p className="text-sm text-center text-white/70 max-w-xs px-4">
+                  Vui lòng chờ admin tiếp tục phát sóng live.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {isLoading && !isLivePaused && !isLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
               <div className="flex flex-col items-center gap-2 text-white/70">
                 <div className="w-16 h-16 border-4 border-white/20 border-t-white/60 rounded-full animate-spin" />
@@ -182,7 +220,7 @@ const SicboLiveStream = ({
             </div>
           )}
 
-          {hasError && (
+          {hasError && !isLivePaused && !isLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
               <div className="flex flex-col items-center gap-2 text-white/70">
                 <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-400" />
@@ -199,7 +237,7 @@ const SicboLiveStream = ({
             playsInline
             muted
             controls={false}
-            style={{ display: isPlaying ? 'block' : 'none' }}
+            style={{ display: isPlaying && ((!isLivePaused && !isLiveEnded) || isAdmin) ? 'block' : 'none' }}
           />
         </div>
       </div>

@@ -55,6 +55,7 @@ const AdminXocDiaQuickBetManagement = () => {
           ...item,
           layoutGroup: (item.layoutGroup || 'TOP').toUpperCase(),
           payoutMultiplier: Number(item.payoutMultiplier),
+          feeRate: item.feeRate != null ? Number(item.feeRate) : null,
           pattern: item.pattern || '',
         }));
         setQuickBets(data);
@@ -104,6 +105,7 @@ const AdminXocDiaQuickBetManagement = () => {
         name: item.name.trim(),
         description: item.description?.trim() || '',
         payoutMultiplier: Number(item.payoutMultiplier),
+        feeRate: item.feeRate != null && item.feeRate !== '' ? Number(item.feeRate) : null,
         pattern: item.pattern?.trim() || '',
         layoutGroup: (item.layoutGroup || 'TOP').toUpperCase(),
         displayOrder: Number(item.displayOrder ?? 0),
@@ -247,6 +249,9 @@ const AdminXocDiaQuickBetManagement = () => {
                     Tỷ lệ (1 ăn)
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Tỷ lệ phế
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                     Nhóm hiển thị
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -308,6 +313,27 @@ const AdminXocDiaQuickBetManagement = () => {
                           />
                         ) : (
                           <span className="font-semibold text-emerald-700">{formatRatio(item.payoutMultiplier)}</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {editMode ? (
+                          <input
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.0001"
+                            value={editing.feeRate != null ? editing.feeRate : ''}
+                            onChange={(e) => handleFieldChange(item.id, 'feeRate', e.target.value === '' ? null : e.target.value)}
+                            placeholder="0.03 = 3%"
+                            className="w-28 rounded border border-gray-300 px-2 py-1 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                        ) : (
+                          <span className="font-semibold text-gray-700">
+                            {item.feeRate != null && item.feeRate > 0
+                              ? `${(item.feeRate * 100).toFixed(2)}%`
+                              : '—'}
+                          </span>
                         )}
                       </td>
 

@@ -207,11 +207,46 @@ const AdminAnalyticsDashboard = () => {
       ellipsis: true,
     },
     {
+      title: 'Bàn',
+      dataIndex: 'tableNumber',
+      width: 80,
+      align: 'center',
+      render: (value) => value != null ? `Bàn ${value}` : '—',
+    },
+    {
       title: 'Tiền cược',
       dataIndex: 'stake',
       width: 140,
       align: 'right',
       render: (value) => currencyFormatter.format(Number(value ?? 0)),
+    },
+    {
+      title: 'Phế',
+      dataIndex: 'feeAmount',
+      width: 110,
+      align: 'right',
+      render: (value) => {
+        const fee = Number(value ?? 0);
+        return fee > 0 ? (
+          <span style={{ color: '#9333ea' }}>
+            {currencyFormatter.format(fee)}
+          </span>
+        ) : '—';
+      },
+    },
+    {
+      title: 'Bão',
+      dataIndex: 'baoAmount',
+      width: 110,
+      align: 'right',
+      render: (value) => {
+        const bao = Number(value ?? 0);
+        return bao > 0 ? (
+          <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
+            {currencyFormatter.format(bao)}
+          </span>
+        ) : '—';
+      },
     },
     {
       title: 'Thắng',
@@ -400,7 +435,7 @@ const AdminAnalyticsDashboard = () => {
       </Card>
 
       <Row gutter={16}>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={4} md={8}>
           <Card>
             <Statistic
               title="Tổng tiền cược"
@@ -408,7 +443,7 @@ const AdminAnalyticsDashboard = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={4} md={8}>
           <Card>
             <Statistic
               title="Tổng tiền thắng"
@@ -417,12 +452,46 @@ const AdminAnalyticsDashboard = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={4} md={8}>
           <Card>
             <Statistic
-              title="Doanh thu (cược thua)"
-              value={currencyFormatter.format(Number(betSummary.totalLostAmount ?? 0))}
+              title="Doanh thu"
+              value={currencyFormatter.format(
+                Number(betSummary.totalLostAmount ?? 0) + 
+                Number(betSummary.totalFee ?? 0)
+              )}
               valueStyle={{ color: '#f97316' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={4} md={8}>
+          <Card>
+            <Statistic
+              title={filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}
+              value={currencyFormatter.format(Number(betSummary.totalFee ?? 0))}
+              valueStyle={{ color: '#9333ea' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={4} md={8}>
+          <Card>
+            <Statistic
+              title="Tài Xỉu Thu Bão"
+              value={currencyFormatter.format(Number(betSummary.totalBao ?? 0))}
+              valueStyle={{ color: '#dc2626' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={4} md={8}>
+          <Card>
+            <Statistic
+              title="Tổng lợi nhuận"
+              value={currencyFormatter.format(
+                Number(betSummary.totalLostAmount ?? 0) + 
+                Number(betSummary.totalFee ?? 0) - 
+                Number(betSummary.totalWinAmount ?? 0)
+              )}
+              valueStyle={{ color: '#059669' }}
             />
           </Card>
         </Col>

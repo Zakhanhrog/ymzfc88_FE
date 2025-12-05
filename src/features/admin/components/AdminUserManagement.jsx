@@ -52,7 +52,6 @@ const { Title, Text } = Typography;
 
 const ROLE_SELECTIONS = [
   { value: 'USER', label: 'Người dùng' },
-  { value: 'ADMIN', label: 'Admin' },
   { value: 'AGENT', label: 'Đại lý' },
   { value: 'STAFF_MKT', label: 'Nhân viên MKT' },
   { value: 'STAFF_XNK', label: 'Nhân viên XNK' },
@@ -189,16 +188,14 @@ const AdminUserManagement = () => {
     setShowCreateModal(true);
   };
 
-  const canManageC2 = (user) => !!user && (user.role === 'ADMIN' || Boolean(user.staffRole));
+  const canManageC2 = (user) => !!user && Boolean(user.staffRole);
 
   // Create user
   const normalizeRolePayload = (selectedRole) => {
     if (!selectedRole || selectedRole === 'USER') {
       return { role: 'USER' };
     }
-    if (selectedRole === 'ADMIN') {
-      return { role: 'ADMIN' };
-    }
+    // AGENT và các staff role khác
     return {
       role: 'USER',
       staffRole: selectedRole
@@ -242,10 +239,21 @@ const AdminUserManagement = () => {
   // Update user
   const handleUpdateUser = async (values) => {
     try {
-      const payload = { ...values };
+      const selectedRole = isStaffXnk ? 'USER' : values.role;
+      const payload = {
+        ...values,
+        ...normalizeRolePayload(selectedRole)
+      };
+      
       if (isStaffXnk) {
         delete payload.role;
+        delete payload.staffRole;
       }
+      
+      if (!payload.staffRole) {
+        delete payload.staffRole;
+      }
+      
       const response = await adminService.updateUser(selectedUser.id, payload);
       if (response.success) {
         message.success('Cập nhật người dùng thành công!');
@@ -320,7 +328,12 @@ const AdminUserManagement = () => {
   // Show modals
   const showEditUserModal = (user) => {
     setSelectedUser(user);
-    editForm.setFieldsValue(user);
+    // Nếu user có staffRole, hiển thị staffRole trong dropdown, không phải role
+    const formValues = {
+      ...user,
+      role: user.staffRole || user.role
+    };
+    editForm.setFieldsValue(formValues);
     setShowEditModal(true);
   };
 
@@ -412,15 +425,18 @@ const AdminUserManagement = () => {
       dataIndex: 'avatar',
       key: 'avatar',
       width: 60,
-      render: (_, record) => (
-        <Avatar 
-          size="large" 
-          icon={<UserOutlined />}
-          style={{ backgroundColor: record.role === 'ADMIN' ? '#f56a00' : '#1890ff' }}
-        >
-          {record.fullName?.charAt(0)?.toUpperCase()}
-        </Avatar>
-      ),
+      render: (_, record) => {
+        const isAgent = record.staffRole === 'AGENT';
+        return (
+          <Avatar 
+            size="large" 
+            icon={<UserOutlined />}
+            style={{ backgroundColor: isAgent ? '#52c41a' : '#1890ff' }}
+          >
+            {record.fullName?.charAt(0)?.toUpperCase()}
+          </Avatar>
+        );
+      },
     },
     {
       title: 'Thông tin',
@@ -459,14 +475,17 @@ const AdminUserManagement = () => {
       key: 'role',
       width: 100,
       filters: [
-        { text: 'Admin', value: 'ADMIN' },
-        { text: 'User', value: 'USER' }
+        { text: 'Người dùng', value: 'USER' },
+        { text: 'Đại lý', value: 'AGENT' }
       ],
-      render: (role) => (
-        <Tag color={role === 'ADMIN' ? 'red' : 'blue'}>
-          {role === 'ADMIN' ? 'Admin' : 'Người dùng'}
-        </Tag>
-      ),
+      render: (role, record) => {
+        const isAgent = record.staffRole === 'AGENT';
+        return (
+          <Tag color={isAgent ? 'green' : 'blue'}>
+            {isAgent ? 'Đại lý' : 'Người dùng'}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Trạng thái',
@@ -622,10 +641,10 @@ const AdminUserManagement = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Quản trị viên"
-              value={userStats.usersByRole?.ADMIN || 0}
+              title="Đại lý"
+              value={userStats.usersByStaffRole?.AGENT || 0}
               prefix={<UserSwitchOutlined className="text-green-600" />}
-              valueStyle={{ color: '#ff4d4f' }}
+              valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>
@@ -674,7 +693,7 @@ const AdminUserManagement = () => {
               style={{ width: '100%' }}
             >
               <Option value="USER">Người dùng</Option>
-              <Option value="ADMIN">Admin</Option>
+              <Option value="AGENT">Đại lý</Option>
             </Select>
           </Col>
           )}
@@ -819,10 +838,10 @@ const AdminUserManagement = () => {
           >
             {({ getFieldValue }) => {
               const selectedRole = getFieldValue('role');
-              const isAdminOrStaffRole =
-                selectedRole === 'ADMIN' ||
+              const isAgentOrStaffRole =
+                selectedRole === 'AGENT' ||
                 (selectedRole && selectedRole.startsWith('STAFF_'));
-              if (!isAdminOrStaffRole) {
+              if (!isAgentOrStaffRole) {
                 return null;
               }
               return (
@@ -917,7 +936,7 @@ const AdminUserManagement = () => {
               >
                 <Select disabled={isStaffXnk}>
                   <Option value="USER">Người dùng</Option>
-                  <Option value="ADMIN">Admin</Option>
+                  <Option value="AGENT">Đại lý</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -967,7 +986,7 @@ const AdminUserManagement = () => {
               <Avatar 
                 size={80} 
                 icon={<UserOutlined />}
-                style={{ backgroundColor: selectedUser.role === 'ADMIN' ? '#f56a00' : '#1890ff' }}
+                style={{ backgroundColor: selectedUser.staffRole === 'AGENT' ? '#52c41a' : '#1890ff' }}
               >
                 {selectedUser.fullName?.charAt(0)?.toUpperCase()}
               </Avatar>
@@ -991,8 +1010,8 @@ const AdminUserManagement = () => {
               <div>
                 <Text strong>Vai trò:</Text>
                 <div>
-                  <Tag color={selectedUser.role === 'ADMIN' ? 'red' : 'blue'}>
-                    {selectedUser.role === 'ADMIN' ? 'Admin' : 'Người dùng'}
+                  <Tag color={selectedUser.staffRole === 'AGENT' ? 'green' : 'blue'}>
+                    {selectedUser.staffRole === 'AGENT' ? 'Đại lý' : 'Người dùng'}
                   </Tag>
                 </div>
               </div>

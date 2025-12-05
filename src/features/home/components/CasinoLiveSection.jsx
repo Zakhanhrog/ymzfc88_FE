@@ -1,12 +1,59 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import liveCasinoGames from '../../casino/data/liveCasinoGames';
 
 const CasinoLiveSection = () => {
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleGameClick = (gameId) => {
-    // Handle game click - có thể navigate hoặc mở game
-    console.log('Game clicked:', gameId);
+  useEffect(() => {
+    const syncLoginState = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    const handleLoginSuccess = (event) => {
+      setIsLoggedIn(true);
+      if (event?.detail?.user) {
+        try {
+          localStorage.setItem('user', JSON.stringify(event.detail.user));
+        } catch (e) {
+          // ignore storage errors
+        }
+      }
+    };
+
+    syncLoginState();
+
+    window.addEventListener('userLoginSuccess', handleLoginSuccess);
+    window.addEventListener('storage', syncLoginState);
+
+    return () => {
+      window.removeEventListener('userLoginSuccess', handleLoginSuccess);
+      window.removeEventListener('storage', syncLoginState);
+    };
+  }, []);
+
+  const handleGameClick = (game) => {
+    const gameId = game.redirectTo || game.id;
+    
+    if (!isLoggedIn) {
+      const redirectPath = `/casino/live?game=${gameId}`;
+      window.dispatchEvent(
+        new CustomEvent('showLoginModal', {
+          detail: { redirectAfterLogin: redirectPath }
+        })
+      );
+      return;
+    }
+
+    if (gameId === 'xocdia') {
+      navigate('/casino/live/xocdia');
+    } else if (gameId === 'sicbo') {
+      navigate('/casino/live/sicbo');
+    } else {
+      navigate(`/casino/live/${gameId}`);
+    }
   };
 
   const handleViewAll = () => {
@@ -50,21 +97,28 @@ const CasinoLiveSection = () => {
           }}
         >
           {/* Games Grid - 3 cards - To hơn một chút */}
-          <div className="grid grid-cols-3 gap-4 max-w-6xl">
+          <div className="grid grid-cols-3 gap-4 max-w-5xl">
             {liveCasinoGames.map((game) => (
-              <div
+              <button
                 key={game.id}
-                onClick={() => handleGameClick(game.id)}
-                className="rounded-lg overflow-hidden cursor-pointer"
+                type="button"
+                onClick={handleViewAll}
+                className="group relative overflow-hidden cursor-pointer bg-transparent block"
               >
-                <div className="aspect-[4/3] rounded-lg overflow-hidden bg-transparent">
-                  <img
-                    src={game.image}
-                    alt={game.name}
-                    className="w-full h-full object-contain"
-                  />
+                <img
+                  src={game.image}
+                  alt={game.name}
+                  className="w-full h-auto block"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-white/70 backdrop-blur px-3 py-1.5 flex items-center justify-between text-left transition-all duration-200 ease-out translate-y-full group-hover:translate-y-0">
+                  <h2 className="text-xs font-semibold text-gray-800">{game.name}</h2>
+                  <span className={`text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shadow-sm transition-colors duration-150 ${
+                    isLoggedIn ? 'bg-yellow-400 text-gray-900' : 'bg-green-500 text-white'
+                  }`}>
+                    {isLoggedIn ? 'Chơi ngay' : 'Đăng nhập để chơi'}
+                  </span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>

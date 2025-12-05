@@ -60,13 +60,19 @@ const XocDiaQuickBetButton = ({
       {option.pattern.length === 0 ? (
         <>
           <div
-            className={`font-black uppercase tracking-wide ${
-              styledPlainCodes.has(option.code)
+            className={`font-black tracking-wide ${
+              styledPlainCodes.has(option.code) ? 'font-pacifico' : 'uppercase'
+            } ${
+              option.code === 'tai' ? 'text-[#dc2626]' 
+              : option.code === 'xiu' ? 'text-[#0f4c2c]'
+              : option.code === 'chan' ? 'text-[#dc2626]'
+              : option.code === 'le' ? 'text-[#10b981]'
+              : styledPlainCodes.has(option.code)
                 ? 'text-[#111827]'
                 : isSelected
                 ? 'text-[#0f4c2c]'
                 : 'text-[#0f4c2c]'
-            } ${styledPlainCodes.has(option.code) ? 'text-lg' : 'text-sm'}`}
+            } ${styledPlainCodes.has(option.code) ? 'text-xl' : 'text-sm'}`}
           >
             {option.label}
           </div>

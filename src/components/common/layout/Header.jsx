@@ -205,12 +205,12 @@ const Header = ({
             </button>
           )}
           
-          <div className="cursor-pointer" onClick={() => navigate('/')}>
+          <div className="cursor-pointer flex items-center" onClick={() => navigate('/')}>
             <img 
               src="/images/logos/logo.svg" 
               alt="Logo" 
-              className="h-7 md:h-16 w-auto object-contain transition-transform duration-300 hover:scale-110"
-              style={{ maxHeight: '48px' }}
+              className="h-11 md:h-16 w-auto object-contain transition-transform duration-300 hover:scale-110"
+              style={{ maxHeight: '56px' }}
             />
           </div>
         </div>

@@ -28,7 +28,7 @@ const SicboHeader = ({
           type="button"
           onClick={onOpenHelp}
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-colors"
-          title="Hướng dẫn Sicbo"
+          title="Hướng dẫn Tài xỉu tà thiết"
         >
           <Icon icon="mdi:help-circle-outline" className="w-5 h-5" />
         </button>
@@ -66,7 +66,7 @@ const SicboHeader = ({
           type="button"
           onClick={onOpenHistory}
           className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-colors"
-          title="Lịch sử cược Sicbo"
+          title="Lịch sử cược Tài xỉu tà thiết"
         >
           <Icon icon="mdi:history" className="w-5 h-5" />
         </button>

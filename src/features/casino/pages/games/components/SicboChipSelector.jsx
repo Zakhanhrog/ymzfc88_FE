@@ -163,33 +163,60 @@ const SicboChipSelector = ({
     const isSelected = selectedChipValue === chip.value;
     const iconSrc = getChipIconSrc(chip.label);
     return (
-      <button
-        key={chip.value}
-        type="button"
-        onClick={() => safeOnSelectChip(chip.value)}
-        className={`relative flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full transition bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 ${
-          isSelected ? 'opacity-100 shadow-lg shadow-emerald-600/20' : 'opacity-60 hover:opacity-95 hover:shadow-md'
-        }`}
-        aria-pressed={isSelected}
-      >
-        {iconSrc ? (
-          <>
-            <img
-              src={iconSrc}
-              alt={chip.label}
-              className="absolute inset-0 h-full w-full object-contain transition"
-              draggable={false}
-            />
-            <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
+      <div className="relative flex items-center justify-center">
+        {/* Viền phát sáng đỏ sát chip khi được chọn */}
+        {isSelected && (
+          <div 
+            className="absolute rounded-full blur-sm"
+            style={{
+              background: 'radial-gradient(circle at center, rgba(255, 82, 82, 1) 70%, rgba(239, 68, 68, 1) 85%, transparent 100%)',
+              width: '52px',
+              height: '52px',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: -1
+            }}
+          />
+        )}
+        <button
+          key={chip.value}
+          type="button"
+          onClick={() => safeOnSelectChip(chip.value)}
+          className={`relative flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full transition-all duration-200 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 ${
+            isSelected 
+              ? 'opacity-100 border-3 border-red-500' 
+              : 'opacity-100 hover:shadow-md border-2 border-transparent'
+          }`}
+          aria-pressed={isSelected}
+          style={isSelected ? {
+            borderWidth: '3px',
+            borderColor: '#EF4444',
+            boxShadow: '0 0 4px rgba(255, 82, 82, 1), 0 0 6px rgba(239, 68, 68, 1), 0 0 8px rgba(220, 38, 38, 0.8)'
+          } : {}}
+        >
+          {iconSrc ? (
+            <>
+              <img
+                src={iconSrc}
+                alt={chip.label}
+                className={`absolute inset-0 h-full w-full object-contain transition ${
+                  isSelected ? 'animate-spin' : ''
+                }`}
+                style={isSelected ? { animationDuration: '8s' } : {}}
+                draggable={false}
+              />
+              <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
+                {formatChipLabel(chip.label)}
+              </span>
+            </>
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900">
               {formatChipLabel(chip.label)}
             </span>
-          </>
-        ) : (
-          <span className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900">
-            {formatChipLabel(chip.label)}
-          </span>
-        )}
-      </button>
+          )}
+        </button>
+      </div>
     );
   };
 
@@ -236,21 +263,45 @@ const SicboChipSelector = ({
       <div className="flex items-center justify-center pb-0.5">
         <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center">
           {customChip.value != null ? (
-            <button
-              type="button"
-              onClick={() => safeOnSelectChip(customChip.value)}
-              className={`relative h-full w-full rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 ${
-                selectedChipValue === customChip.value
-                  ? 'opacity-100 shadow-lg shadow-emerald-600/20'
-                  : 'opacity-60 hover:opacity-95 hover:shadow-md'
-              }`}
-              aria-label="Chọn phỉnh tùy chỉnh"
-              aria-pressed={selectedChipValue === customChip.value}
-            >
+            <>
+              {/* Viền phát sáng đỏ sát chip khi được chọn */}
+              {selectedChipValue === customChip.value && (
+                <div 
+                  className="absolute rounded-full blur-sm"
+                  style={{
+                    background: 'radial-gradient(circle at center, rgba(255, 82, 82, 1) 70%, rgba(239, 68, 68, 1) 85%, transparent 100%)',
+                    width: '48px',
+                    height: '48px',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: -1
+                  }}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => safeOnSelectChip(customChip.value)}
+                className={`relative h-full w-full rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 ${
+                  selectedChipValue === customChip.value
+                    ? 'opacity-100 border-3 border-red-500'
+                    : 'opacity-100 hover:shadow-md border-2 border-transparent'
+                }`}
+                aria-label="Chọn phỉnh tùy chỉnh"
+                aria-pressed={selectedChipValue === customChip.value}
+                style={selectedChipValue === customChip.value ? {
+                  borderWidth: '3px',
+                  borderColor: '#EF4444',
+                  boxShadow: '0 0 4px rgba(255, 82, 82, 1), 0 0 6px rgba(239, 68, 68, 1), 0 0 8px rgba(220, 38, 38, 0.8)'
+                } : {}}
+              >
               <img
                 src="/pokerchip/tuychinh.svg"
                 alt="Phỉnh tùy chỉnh"
-                className="absolute inset-0 h-full w-full object-contain transition"
+                className={`absolute inset-0 h-full w-full object-contain transition ${
+                  selectedChipValue === customChip.value ? 'animate-spin' : ''
+                }`}
+                style={selectedChipValue === customChip.value ? { animationDuration: '8s' } : {}}
                 draggable={false}
               />
               <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
@@ -286,6 +337,7 @@ const SicboChipSelector = ({
                 ×
               </span>
             </button>
+            </>
           ) : (
             <button
               type="button"

@@ -108,6 +108,27 @@ const xocDiaSessionService = {
       };
     }
   },
+
+  refundBetsForUndeterminedResult: async () => {
+    try {
+      const response = await authService.makeAuthenticatedRequest(
+        `${API_BASE_URL}/admin/xoc-dia/session/result/refund`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      return parseResponse(response);
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Không thể hoàn tiền cược',
+        data: null,
+      };
+    }
+  },
 };
 
 export default xocDiaSessionService;

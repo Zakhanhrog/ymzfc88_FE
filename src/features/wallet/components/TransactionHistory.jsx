@@ -27,11 +27,13 @@ import {
 import dayjs from 'dayjs';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import walletService from '../services/walletService';
+import BettingHistory from './BettingHistory';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-const TransactionHistory = () => {
+// Component hiển thị lịch sử giao dịch
+const TransactionHistoryTab = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
@@ -410,6 +412,45 @@ const TransactionHistory = () => {
           </Descriptions>
         )}
       </Modal>
+    </div>
+  );
+};
+
+// Main component với Custom Tabs
+const TransactionHistory = () => {
+  const [activeTabKey, setActiveTabKey] = useState('transactions');
+
+  return (
+    <div className="space-y-4">
+      {/* Custom Tabs */}
+      <div className="flex gap-2 border-b-2 border-gray-200 pb-0">
+        <button
+          onClick={() => setActiveTabKey('transactions')}
+          className={`px-6 py-3 text-sm font-semibold transition-all rounded-t-lg ${
+            activeTabKey === 'transactions'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Lịch sử giao dịch
+        </button>
+        <button
+          onClick={() => setActiveTabKey('betting')}
+          className={`px-6 py-3 text-sm font-semibold transition-all rounded-t-lg ${
+            activeTabKey === 'betting'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Lịch sử cược
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className="pt-2">
+        {activeTabKey === 'transactions' && <TransactionHistoryTab />}
+        {activeTabKey === 'betting' && <BettingHistory />}
+      </div>
     </div>
   );
 };

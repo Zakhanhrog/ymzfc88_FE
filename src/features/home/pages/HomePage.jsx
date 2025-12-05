@@ -552,14 +552,14 @@ const HomePage = () => {
         </div>
 
         {/* Desktop Components */}
-        {/* Popular Games Carousel */}
-        <div className="hidden md:block">
-          <PopularGamesCarousel />
-        </div>
-
         {/* Casino Live Section */}
         <div className="hidden md:block">
           <CasinoLiveSection />
+        </div>
+
+        {/* Popular Games Carousel */}
+        <div className="hidden md:block">
+          <PopularGamesCarousel />
         </div>
 
         {/* Category Games Grid */}

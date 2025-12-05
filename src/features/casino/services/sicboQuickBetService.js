@@ -4,9 +4,10 @@ import { API_BASE_URL } from '../../../utils/constants';
 const API_URL = `${API_BASE_URL}/sicbo/quick-bets`;
 
 const sicboQuickBetService = {
-  getActiveQuickBets: async () => {
+  getActiveQuickBets: async (tableNumber = null) => {
     try {
-      const response = await axios.get(API_URL);
+      const params = tableNumber ? { table: tableNumber } : {};
+      const response = await axios.get(API_URL, { params });
       return {
         success: true,
         data: response.data?.data || [],

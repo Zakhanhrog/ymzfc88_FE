@@ -1,13 +1,15 @@
+import { versionAsset } from '../../../utils/assetVersion';
+
 const liveCasinoGames = [
   {
     id: 'xocdia',
-    name: 'Xóc Đĩa Jackpot',
-    image: '/images/casinolive/xocdia.png'
+    name: 'Xóc đĩa thu phế',
+    image: versionAsset('/images/casinolive/xocdia.png')
   },
   {
     id: 'sicbo',
-    name: 'Sicbo Bigwin',
-    image: '/images/casinolive/taixiu.png'
+    name: 'Tài xỉu tà thiết',
+    image: versionAsset('/images/casinolive/taixiu.png')
   }
 ];
 

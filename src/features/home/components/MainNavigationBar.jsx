@@ -47,7 +47,7 @@ const MainNavigationBar = () => {
     },
     { 
       id: 'song-bai', 
-      label: 'Sòng Bài', 
+      label: 'Live Casino', 
       hasBadge: true,
       badgeText: 'Live',
       hasFireIcon: false,

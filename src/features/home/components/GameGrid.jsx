@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { Icon } from '@iconify/react';
+import { Modal } from 'antd';
 import { HEADING_STYLES, BUTTON_TEXT_STYLES } from '../../../utils/typography';
 
 const GameGrid = () => {
+  const [showDevModal, setShowDevModal] = useState(false);
+  
   const games = [
     {
       id: 1,
@@ -42,6 +46,7 @@ const GameGrid = () => {
   ];
 
   const handleGameClick = (gameName) => {
+    setShowDevModal(true);
   };
 
   return (
@@ -81,6 +86,33 @@ const GameGrid = () => {
           </div>
         ))}
       </div>
+
+      {/* Modal thông báo game đang phát triển */}
+      <Modal
+        open={showDevModal}
+        onCancel={() => setShowDevModal(false)}
+        footer={null}
+        centered
+        width={400}
+        closeIcon={<Icon icon="mdi:close" className="text-gray-500" />}
+      >
+        <div className="text-center py-6">
+          <div className="mb-4">
+            <Icon icon="mdi:hammer-wrench" className="text-6xl text-blue-500" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Game đang phát triển</h3>
+          <p className="text-gray-600 mb-6">
+            Trò chơi này đang được phát triển.<br />
+            Vui lòng quay lại sau!
+          </p>
+          <button
+            onClick={() => setShowDevModal(false)}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+          >
+            Đã hiểu
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

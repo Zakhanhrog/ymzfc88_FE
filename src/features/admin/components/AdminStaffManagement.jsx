@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Table, Select, Space, Tag, message, Typography, Button } from 'antd';
+import { Card, Table, Select, Space, Tag, message, Typography, Button, Modal, Form, Input, Row, Col } from 'antd';
+import { PlusOutlined, ReloadOutlined, UserAddOutlined } from '@ant-design/icons';
 import adminService from '../services/adminService';
 
 const { Text } = Typography;
@@ -35,6 +36,8 @@ const AdminStaffManagement = ({
     pageSize: DEFAULT_PAGE_SIZE,
     total: 0,
   });
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm] = Form.useForm();
 
   const filterOptions = useMemo(() => {
     if (!allowRoleFilter) {
@@ -122,6 +125,26 @@ const AdminStaffManagement = ({
     }
   }, [fetchStaff]);
 
+  const handleCreateStaff = async (values) => {
+    try {
+      const payload = {
+        ...values,
+        role: 'USER',
+        staffRole: values.staffRole,
+      };
+      
+      const response = await adminService.createUser(payload);
+      if (response.success) {
+        message.success('Tạo tài khoản nhân viên thành công!');
+        setShowCreateModal(false);
+        createForm.resetFields();
+        fetchStaff();
+      }
+    } catch (error) {
+      message.error(error.message || 'Không thể tạo tài khoản nhân viên');
+    }
+  };
+
   const columns = useMemo(() => {
     const baseColumns = [
       {
@@ -201,6 +224,15 @@ const AdminStaffManagement = ({
             {description ? <Text type="secondary">{description}</Text> : null}
           </Space>
           <Space>
+            {!readOnly && (
+              <Button 
+                type="primary" 
+                icon={<UserAddOutlined />}
+                onClick={() => setShowCreateModal(true)}
+              >
+                Tạo tài khoản nhân viên
+              </Button>
+            )}
             {allowRoleFilter && filterOptions.length > 0 ? (
               <Select
                 value={roleFilter}
@@ -210,7 +242,7 @@ const AdminStaffManagement = ({
                 allowClear={!readOnly}
               />
             ) : null}
-            <Button onClick={fetchStaff}>Làm mới</Button>
+            <Button icon={<ReloadOutlined />} onClick={fetchStaff}>Làm mới</Button>
           </Space>
         </Space>
       </Card>
@@ -233,6 +265,122 @@ const AdminStaffManagement = ({
           scroll={{ x: 900 }}
         />
       </Card>
+
+      {/* Modal tạo tài khoản nhân viên */}
+      <Modal
+        title="Tạo tài khoản nhân viên"
+        open={showCreateModal}
+        onCancel={() => {
+          setShowCreateModal(false);
+          createForm.resetFields();
+        }}
+        footer={null}
+        width={700}
+      >
+        <Form
+          form={createForm}
+          layout="vertical"
+          onFinish={handleCreateStaff}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="username"
+                label="Tên đăng nhập"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập tên đăng nhập' },
+                  { min: 3, message: 'Tên đăng nhập tối thiểu 3 ký tự' }
+                ]}
+              >
+                <Input placeholder="username" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập email' },
+                  { type: 'email', message: 'Email không hợp lệ' }
+                ]}
+              >
+                <Input placeholder="email@example.com" />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="password"
+                label="Mật khẩu"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập mật khẩu' },
+                  { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+                ]}
+              >
+                <Input.Password placeholder="Mật khẩu" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="staffRole"
+                label="Vai trò nhân viên"
+                rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+              >
+                <Select
+                  placeholder="Chọn vai trò"
+                  options={STAFF_ROLE_OPTIONS}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="fullName"
+                label="Họ và tên"
+                rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
+              >
+                <Input placeholder="Nguyễn Văn A" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="phoneNumber"
+                label="Số điện thoại"
+              >
+                <Input placeholder="0987654321" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="c2Password"
+            label="Mật khẩu bảo vệ (C2)"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu bảo vệ' },
+              { min: 6, message: 'Mật khẩu bảo vệ tối thiểu 6 ký tự' }
+            ]}
+            tooltip="Mật khẩu bảo vệ được dùng để đăng nhập vào portal nhân viên/đại lý"
+          >
+            <Input.Password placeholder="Mật khẩu bảo vệ C2" />
+          </Form.Item>
+
+          <Space className="w-full justify-end">
+            <Button onClick={() => {
+              setShowCreateModal(false);
+              createForm.resetFields();
+            }}>
+              Hủy
+            </Button>
+            <Button type="primary" htmlType="submit">
+              Tạo tài khoản
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
     </Space>
   );
 };

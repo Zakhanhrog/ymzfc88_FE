@@ -65,7 +65,17 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
         }
       }, 500);
     } catch (error) {
-      message.error(error.message || 'Đăng nhập thất bại!');
+      const errorMessage = error.message || 'Đăng nhập thất bại!';
+      
+      // Kiểm tra nếu là lỗi về quyền truy cập
+      if (errorMessage.includes('không được đăng nhập') || 
+          errorMessage.includes('không có quyền') ||
+          errorMessage.includes('nhân viên')) {
+        // Hiển thị alert rõ ràng
+        alert('⛔ KHÔNG CÓ QUYỀN TRUY CẬP\n\n' + errorMessage);
+      } else {
+        message.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

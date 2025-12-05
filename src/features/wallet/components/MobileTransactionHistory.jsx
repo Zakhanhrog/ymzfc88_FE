@@ -22,11 +22,13 @@ import {
 import dayjs from 'dayjs';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import walletService from '../services/walletService';
+import MobileBettingHistory from './MobileBettingHistory';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-const MobileTransactionHistory = () => {
+// Component hiển thị lịch sử giao dịch (mobile)
+const MobileTransactionHistoryTab = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
@@ -221,10 +223,10 @@ const MobileTransactionHistory = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-500 font-mono">{transaction.transactionCode}</span>
                 <span className={`text-sm font-bold ${
-                  transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? 'text-green-600' : 'text-green-600'
+                  transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? '+' : '-'}
-                  {transaction.amount?.toLocaleString()} VNĐ
+                  {transaction.amount?.toLocaleString()} điểm
                 </span>
               </div>
               
@@ -286,10 +288,10 @@ const MobileTransactionHistory = () => {
               <div>
                 <span className="text-gray-500">Số tiền:</span>
                 <div className={`font-bold ${
-                  selectedTransaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-green-600'
+                  selectedTransaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
-                  {selectedTransaction.amount?.toLocaleString()} VNĐ
+                  {selectedTransaction.amount?.toLocaleString()} điểm
                 </div>
               </div>
               <div>
@@ -313,6 +315,45 @@ const MobileTransactionHistory = () => {
           </div>
         )}
       </Modal>
+    </div>
+  );
+};
+
+// Main component với Custom Tabs
+const MobileTransactionHistory = () => {
+  const [activeTabKey, setActiveTabKey] = useState('transactions');
+
+  return (
+    <div className="space-y-4">
+      {/* Custom Tabs - Mobile */}
+      <div className="flex gap-2 border-b-2 border-gray-200 pb-0">
+        <button
+          onClick={() => setActiveTabKey('transactions')}
+          className={`flex-1 px-4 py-3 text-sm font-semibold transition-all rounded-t-lg ${
+            activeTabKey === 'transactions'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Lịch sử giao dịch
+        </button>
+        <button
+          onClick={() => setActiveTabKey('betting')}
+          className={`flex-1 px-4 py-3 text-sm font-semibold transition-all rounded-t-lg ${
+            activeTabKey === 'betting'
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Lịch sử cược
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className="pt-2">
+        {activeTabKey === 'transactions' && <MobileTransactionHistoryTab />}
+        {activeTabKey === 'betting' && <MobileBettingHistory />}
+      </div>
     </div>
   );
 };

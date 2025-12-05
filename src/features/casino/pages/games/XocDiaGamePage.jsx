@@ -1427,7 +1427,7 @@ const XocDiaGamePage = () => {
       <main className="px-3 sm:px-3 md:px-5 lg:px-8 pt-2 md:pt-4 pb-4 md:pb-6">
         <div className="max-w-screen-2xl mx-auto space-y-4 md:space-y-6">
           <div className="grid gap-2 sm:gap-3 lg:gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
-            <XocDiaLiveStream resultOverlay={resultOverlay} countdownDisplay={countdownDisplay} />
+            <XocDiaLiveStream resultOverlay={resultOverlay} countdownDisplay={countdownDisplay} isAdmin={false} />
 
             <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">
               <section className="space-y-1 sm:space-y-1.5">

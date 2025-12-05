@@ -90,6 +90,27 @@ const sicboSessionService = {
       };
     }
   },
+
+  refundBetsForUndeterminedResult: async (tableNumber = 1) => {
+    try {
+      const response = await authService.makeAuthenticatedRequest(
+        `${API_BASE_URL}/admin/sicbo/session/result/refund?table=${tableNumber}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      return parseResponse(response);
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Không thể hoàn tiền cược',
+        data: null,
+      };
+    }
+  },
 };
 
 export default sicboSessionService;

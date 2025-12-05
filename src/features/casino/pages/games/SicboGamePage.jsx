@@ -410,7 +410,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
     const fetchQuickBets = async () => {
       setIsLoadingQuickBets(true);
-      const response = await sicboQuickBetService.getActiveQuickBets();
+      const response = await sicboQuickBetService.getActiveQuickBets(numericTableNumber);
       if (!isMounted) {
         return;
       }
@@ -428,7 +428,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [numericTableNumber]);
 
   const normalizeHistoryItem = useCallback((item) => {
     if (!item) {
@@ -924,7 +924,9 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     background: `conic-gradient(#ef4444 ${countdownAngle}deg, #3b0f0f ${countdownAngle}deg)`,
   };
 
-  const tableLabel = useMemo(() => `Bàn số ${numericTableNumber}`, [numericTableNumber]);
+  const tableLabel = useMemo(() => {
+    return `Bàn ${numericTableNumber}`;
+  }, [numericTableNumber]);
 
   useEffect(() => {
     setPendingTable(numericTableNumber);
@@ -1226,7 +1228,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     <div className="min-h-screen bg-gray-50">
       <SicboHeader
         onBack={handleBackRequest}
-        gameName="Sicbo Bigwin"
+        gameName={tableLabel}
         userName={userName}
         balanceDisplay={balanceDisplay}
         isLoadingBalance={loadingPoints}
@@ -1242,6 +1244,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
               resultOverlay={resultOverlay}
               tableLabel={tableLabel}
               tableNumber={numericTableNumber}
+              isAdmin={false}
             />
 
             <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">
@@ -1294,7 +1297,11 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         onClose={() => setIsHistoryOpen(false)}
         optionLookup={quickBetOptionLookup}
       />
-      <SicboHelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <SicboHelpDrawer 
+        isOpen={isHelpOpen} 
+        onClose={() => setIsHelpOpen(false)} 
+        tableType={numericTableNumber === 1 ? 'table1' : 'table2'}
+      />
       <SicboCustomChipModal
         isOpen={isCustomChipModalOpen}
         customChipValue={customChipValue}
@@ -1311,7 +1318,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Đổi bàn Sicbo</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Đổi bàn Tài xỉu tà thiết</h3>
               <p className="text-sm text-gray-600 mt-1">Bạn đang chơi tại {tableLabel}. Chọn bàn muốn chuyển tới.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
