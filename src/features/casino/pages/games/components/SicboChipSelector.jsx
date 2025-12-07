@@ -163,7 +163,7 @@ const SicboChipSelector = ({
     const isSelected = selectedChipValue === chip.value;
     const iconSrc = getChipIconSrc(chip.label);
     return (
-      <div className="relative flex items-center justify-center">
+      <div className="relative flex items-center justify-center p-1.5">
         {/* Viền phát sáng đỏ sát chip khi được chọn */}
         {isSelected && (
           <div 
@@ -200,10 +200,7 @@ const SicboChipSelector = ({
               <img
                 src={iconSrc}
                 alt={chip.label}
-                className={`absolute inset-0 h-full w-full object-contain transition ${
-                  isSelected ? 'animate-spin' : ''
-                }`}
-                style={isSelected ? { animationDuration: '8s' } : {}}
+                className="absolute inset-0 h-full w-full object-contain transition"
                 draggable={false}
               />
               <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">
@@ -239,7 +236,7 @@ const SicboChipSelector = ({
 
         <div
           ref={chipScrollRef}
-          className="flex w-full gap-1.5 overflow-x-auto py-0 pr-0.5"
+          className="flex w-full gap-0 overflow-x-auto py-1 pl-1 pr-0.5"
           style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none' }}
         >
           {availableChips
@@ -298,10 +295,7 @@ const SicboChipSelector = ({
               <img
                 src="/pokerchip/tuychinh.svg"
                 alt="Phỉnh tùy chỉnh"
-                className={`absolute inset-0 h-full w-full object-contain transition ${
-                  selectedChipValue === customChip.value ? 'animate-spin' : ''
-                }`}
-                style={selectedChipValue === customChip.value ? { animationDuration: '8s' } : {}}
+                className="absolute inset-0 h-full w-full object-contain transition"
                 draggable={false}
               />
               <span className="relative flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wide text-gray-900 drop-shadow-sm">

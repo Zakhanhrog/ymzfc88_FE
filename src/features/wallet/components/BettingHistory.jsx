@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Card,
+  Card as AntCard,
   Table,
   Tag,
   Space,
@@ -14,15 +14,9 @@ import {
 } from 'antd';
 import {
   EyeOutlined,
-  ReloadOutlined,
-  TrophyOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  DollarOutlined,
-  RiseOutlined,
-  FallOutlined,
-  GiftOutlined
+  ReloadOutlined
 } from '@ant-design/icons';
+import { Card, CardContent } from '../../../components/ui/Card';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -32,14 +26,15 @@ import isBetween from 'dayjs/plugin/isBetween';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import Loading from '../../../components/common/Loading';
 import axios from 'axios';
-import { calculateBetStatisticsByPeriod, getPeriodLabel } from '../../../utils/betStatisticsCalculator';
 
 dayjs.extend(isBetween);
 
 const BettingHistory = () => {
   const [bets, setBets] = useState([]);
-  const [allBets, setAllBets] = useState([]); // Lưu tất cả bets để filter
+  const [originalBets, setOriginalBets] = useState([]); // Lưu tất cả bets đã load để filter
+  const [allBets, setAllBets] = useState([]); // Lưu tất cả bets để tính stats
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [gameFilter, setGameFilter] = useState('ALL');
   const [dateRange, setDateRange] = useState(null);
   const [pagination, setPagination] = useState({
@@ -53,47 +48,50 @@ const BettingHistory = () => {
     totalBets: 0,
     totalWagered: 0,
     totalWon: 0,
-    totalLost: 0
+    totalLost: 0,
+    totalRefund: 0
   });
-  const [periodStats, setPeriodStats] = useState(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('TODAY');
+  const [hasMore, setHasMore] = useState(true);
+  const [sicboPage, setSicboPage] = useState(0);
+  const [xocDiaPage, setXocDiaPage] = useState(0);
 
-  // Load betting history - chỉ load 1 lần khi mount
+  // Load betting history - load 20 items đầu tiên cho hiển thị
   useEffect(() => {
-    loadBettingHistory();
+    loadBettingHistory(true);
+    // Load tất cả cho thống kê (chạy song song, không block UI)
+    loadAllBetsForStatistics();
   }, []); // Load 1 lần duy nhất
+  
+  // Tính stats khi allBets thay đổi
+  useEffect(() => {
+    if (allBets.length > 0) {
+      calculateStats(allBets);
+    }
+  }, [allBets]);
   
   // Filter bets khi gameFilter hoặc dateRange thay đổi
   useEffect(() => {
     filterBets();
-  }, [gameFilter, dateRange, allBets]);
+  }, [gameFilter, dateRange, originalBets]);
   
-  // Tính period statistics khi allBets hoặc selectedPeriod thay đổi
-  useEffect(() => {
-    if (allBets.length > 0) {
-      const periodStatsData = calculateBetStatisticsByPeriod(allBets, selectedPeriod);
-      setPeriodStats(periodStatsData);
-    }
-  }, [allBets, selectedPeriod]);
 
-  const loadBettingHistory = async () => {
+  // Load tất cả bets cho thống kê (chạy song song)
+  const loadAllBetsForStatistics = async () => {
     try {
-      setLoading(true);
       const token = localStorage.getItem('token');
+      let allBetsForStats = [];
       
-      let allBets = [];
-      
-      // Fetch Sicbo betting history - Load 20 items mỗi lần
+      // Fetch tất cả Sicbo bets cho thống kê
       try {
         let sicboAllBets = [];
         let sicboPage = 0;
         let sicboHasMore = true;
         
-        while (sicboHasMore && sicboAllBets.length < 1000) {
+        while (sicboHasMore && sicboAllBets.length < 10000) { // Giới hạn 10000 để tránh quá tải
           const sicboResponse = await axios.get(`http://localhost:8080/api/sicbo/bets/history`, {
             params: {
               page: sicboPage,
-              size: 20
+              size: 100 // Load 100 items mỗi lần để tối ưu
             },
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -108,10 +106,10 @@ const BettingHistory = () => {
               betType: bet.betCode || 'N/A',
               completedAt: bet.settledAt,
               lostAmount: (bet.status === 'LOST' || bet.status === 'LOSE') ? (bet.stake || 0) : 0,
-              // Refund info đã có sẵn từ backend
               refundAmount: bet.refundAmount || 0,
               refundType: bet.refundType || null,
-              refundPercentage: bet.refundPercentage || null
+              refundPercentage: bet.refundPercentage || null,
+              isRefundPaid: bet.isRefundPaid || false
             }));
             sicboAllBets = [...sicboAllBets, ...sicboBets];
             sicboHasMore = sicboResponse.data.data.hasMore || false;
@@ -121,22 +119,22 @@ const BettingHistory = () => {
           }
         }
         
-        allBets = [...allBets, ...sicboAllBets];
+        allBetsForStats = [...allBetsForStats, ...sicboAllBets];
       } catch (error) {
-        console.warn('Không thể tải lịch sử Sicbo:', error.message);
+        console.warn('Không thể tải lịch sử Sicbo cho thống kê:', error.message);
       }
 
-      // Fetch Xoc Dia betting history - Load 20 items mỗi lần
+      // Fetch tất cả Xoc Dia bets cho thống kê
       try {
         let xocDiaAllBets = [];
         let xocDiaPage = 0;
         let xocDiaHasMore = true;
         
-        while (xocDiaHasMore && xocDiaAllBets.length < 1000) {
+        while (xocDiaHasMore && xocDiaAllBets.length < 10000) {
           const xocDiaResponse = await axios.get(`http://localhost:8080/api/xoc-dia/bets/history`, {
             params: {
               page: xocDiaPage,
-              size: 20
+              size: 100
             },
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -151,10 +149,10 @@ const BettingHistory = () => {
               betType: bet.betCode || 'N/A',
               completedAt: bet.settledAt,
               lostAmount: (bet.status === 'LOST' || bet.status === 'LOSE') ? (bet.stake || 0) : 0,
-              // Refund info đã có sẵn từ backend
               refundAmount: bet.refundAmount || 0,
               refundType: bet.refundType || null,
-              refundPercentage: bet.refundPercentage || null
+              refundPercentage: bet.refundPercentage || null,
+              isRefundPaid: bet.isRefundPaid || false
             }));
             xocDiaAllBets = [...xocDiaAllBets, ...xocDiaBets];
             xocDiaHasMore = xocDiaResponse.data.data.hasMore || false;
@@ -164,22 +162,140 @@ const BettingHistory = () => {
           }
         }
         
-        allBets = [...allBets, ...xocDiaAllBets];
+        allBetsForStats = [...allBetsForStats, ...xocDiaAllBets];
+      } catch (error) {
+        console.warn('Không thể tải lịch sử Xóc Đĩa cho thống kê:', error.message);
+      }
+
+      // Sort by createdAt DESC
+      allBetsForStats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Lưu tất cả bets cho thống kê
+      setAllBets(allBetsForStats);
+    } catch (error) {
+      console.error('Lỗi khi tải lịch sử cược cho thống kê:', error);
+    }
+  };
+
+  // Load betting history - reset hoặc load thêm
+  const loadBettingHistory = async (reset = true) => {
+    try {
+      if (reset) {
+        setLoading(true);
+        setSicboPage(0);
+        setXocDiaPage(0);
+        setHasMore(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
+      const token = localStorage.getItem('token');
+      let newBets = [];
+      let sicboHasMore = false;
+      let xocDiaHasMore = false;
+      
+      // Fetch Sicbo betting history
+      try {
+        const sicboResponse = await axios.get(`http://localhost:8080/api/sicbo/bets/history`, {
+          params: {
+            page: reset ? 0 : sicboPage,
+            size: 10
+          },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (sicboResponse.data.success && sicboResponse.data.data && sicboResponse.data.data.items) {
+          const sicboBets = sicboResponse.data.data.items.map(bet => ({
+            ...bet,
+            gameType: 'SICBO',
+            gameTypeName: 'Tài xỉu',
+            betAmount: bet.stake || 0,
+            sessionCode: bet.sessionId ? `Session #${bet.sessionId}` : 'N/A',
+            betType: bet.betCode || 'N/A',
+            completedAt: bet.settledAt,
+            lostAmount: (bet.status === 'LOST' || bet.status === 'LOSE') ? (bet.stake || 0) : 0,
+            refundAmount: bet.refundAmount || 0,
+            refundType: bet.refundType || null,
+            refundPercentage: bet.refundPercentage || null
+          }));
+          newBets = [...newBets, ...sicboBets];
+          sicboHasMore = sicboResponse.data.data.hasMore || false;
+          if (!reset) {
+            setSicboPage(prev => prev + 1);
+          }
+        }
+      } catch (error) {
+        console.warn('Không thể tải lịch sử Sicbo:', error.message);
+      }
+
+      // Fetch Xoc Dia betting history
+      try {
+        const xocDiaResponse = await axios.get(`http://localhost:8080/api/xoc-dia/bets/history`, {
+          params: {
+            page: reset ? 0 : xocDiaPage,
+            size: 10
+          },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (xocDiaResponse.data.success && xocDiaResponse.data.data && xocDiaResponse.data.data.items) {
+          const xocDiaBets = xocDiaResponse.data.data.items.map(bet => ({
+            ...bet,
+            gameType: 'XOCDIA',
+            gameTypeName: 'Xóc đĩa',
+            betAmount: bet.stake || 0,
+            sessionCode: bet.sessionId ? `Session #${bet.sessionId}` : 'N/A',
+            betType: bet.betCode || 'N/A',
+            completedAt: bet.settledAt,
+            lostAmount: (bet.status === 'LOST' || bet.status === 'LOSE') ? (bet.stake || 0) : 0,
+            refundAmount: bet.refundAmount || 0,
+            refundType: bet.refundType || null,
+            refundPercentage: bet.refundPercentage || null
+          }));
+          newBets = [...newBets, ...xocDiaBets];
+          xocDiaHasMore = xocDiaResponse.data.data.hasMore || false;
+          if (!reset) {
+            setXocDiaPage(prev => prev + 1);
+          }
+        }
       } catch (error) {
         console.warn('Không thể tải lịch sử Xóc Đĩa:', error.message);
       }
 
       // Sort by createdAt DESC
-      allBets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      newBets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      // Lưu tất cả bets vào state
-      setAllBets(allBets);
+      // Merge với bets đã có (nếu load thêm) hoặc thay thế (nếu reset)
+      const mergedBets = reset ? newBets : [...originalBets, ...newBets];
+      mergedBets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // Cập nhật hasMore
+      setHasMore(sicboHasMore || xocDiaHasMore);
+
+      // Lưu bets gốc để filter
+      setOriginalBets(mergedBets);
+      // Lưu bets để hiển thị (sẽ được filter trong filterBets)
+      setBets(mergedBets);
+      
+      // Cập nhật pagination
+      setPagination(prev => ({
+        ...prev,
+        current: 1,
+        total: mergedBets.length,
+        pageSize: 20
+      }));
       
       // Show success message
-      if (allBets.length > 0) {
-        message.success(`Đã tải ${allBets.length} cược`);
+      if (reset) {
+        if (mergedBets.length > 0) {
+          message.success(`Đã tải ${mergedBets.length} cược gần nhất`);
+        } else {
+          message.info('Chưa có lịch sử cược nào');
+        }
       } else {
-        message.info('Chưa có lịch sử cược nào');
+        if (newBets.length > 0) {
+          message.success(`Đã tải thêm ${newBets.length} cược`);
+        }
       }
 
     } catch (error) {
@@ -187,11 +303,19 @@ const BettingHistory = () => {
       message.error('Lỗi khi tải lịch sử cược: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
+  // Load thêm 20 items
+  const loadMoreBets = async () => {
+    if (!hasMore || loadingMore) return;
+    await loadBettingHistory(false);
+  };
+
   const filterBets = () => {
-    let filteredBets = [...allBets];
+    // Filter trên originalBets (20 items gốc) để hiển thị
+    let filteredBets = [...originalBets];
 
     // Filter by game type
     if (gameFilter !== 'ALL') {
@@ -213,24 +337,98 @@ const BettingHistory = () => {
       current: 1,
       total: filteredBets.length
     }));
-    calculateStats(filteredBets);
+    
+    // Tính stats từ allBets (tất cả) đã filter theo gameFilter và dateRange
+    let filteredAllBets = [...allBets];
+    if (gameFilter !== 'ALL') {
+      filteredAllBets = filteredAllBets.filter(bet => bet.gameType === gameFilter);
+    }
+    if (dateRange && dateRange.length === 2) {
+      const [startDate, endDate] = dateRange;
+      filteredAllBets = filteredAllBets.filter(bet => {
+        const betDate = dayjs(bet.createdAt);
+        return betDate.isBetween(startDate, endDate, 'day', '[]');
+      });
+    }
+    calculateStats(filteredAllBets);
+  };
+
+  // Thống kê theo ngày hiện tại
+  const filterByToday = () => {
+    const today = dayjs();
+    const startOfToday = today.startOf('day');
+    const endOfToday = today.endOf('day');
+    
+    // Set date range cho ngày hiện tại
+    setDateRange([startOfToday, endOfToday]);
+    
+    // Filter bets hiển thị
+    let filteredBets = [...originalBets];
+    
+    // Filter by game type
+    if (gameFilter !== 'ALL') {
+      filteredBets = filteredBets.filter(bet => bet.gameType === gameFilter);
+    }
+    
+    // Filter by today
+    filteredBets = filteredBets.filter(bet => {
+      const betDate = dayjs(bet.createdAt);
+      return betDate.isBetween(startOfToday, endOfToday, 'day', '[]');
+    });
+    
+    setBets(filteredBets);
+    setPagination(prev => ({
+      ...prev,
+      current: 1,
+      total: filteredBets.length
+    }));
+    
+    // Tính stats từ allBets (tất cả) đã filter theo gameFilter và ngày hiện tại
+    let filteredAllBets = [...allBets];
+    if (gameFilter !== 'ALL') {
+      filteredAllBets = filteredAllBets.filter(bet => bet.gameType === gameFilter);
+    }
+    filteredAllBets = filteredAllBets.filter(bet => {
+      const betDate = dayjs(bet.createdAt);
+      return betDate.isBetween(startOfToday, endOfToday, 'day', '[]');
+    });
+    calculateStats(filteredAllBets);
+    
+    message.success(`Đã lọc thống kê theo ngày ${today.format('DD/MM/YYYY')}`);
   };
 
   const calculateStats = (betsData) => {
+    if (!betsData || betsData.length === 0) {
+      setStats({
+        totalBets: 0,
+        totalWagered: 0,
+        totalWon: 0,
+        totalLost: 0,
+        totalRefund: 0
+      });
+      return;
+    }
+    
     const totalBets = betsData.length;
-    const totalWagered = betsData.reduce((sum, bet) => sum + (bet.betAmount || 0), 0);
+    const totalWagered = betsData.reduce((sum, bet) => sum + (Number(bet.betAmount) || 0), 0);
     const totalWon = betsData
       .filter(bet => bet.status === 'WON' || bet.status === 'COMPLETED')
-      .reduce((sum, bet) => sum + (bet.winAmount || 0), 0);
+      .reduce((sum, bet) => sum + (Number(bet.winAmount) || 0), 0);
     const totalLost = betsData
       .filter(bet => bet.status === 'LOST' || bet.status === 'LOSE')
-      .reduce((sum, bet) => sum + (bet.betAmount || 0), 0);
+      .reduce((sum, bet) => sum + (Number(bet.betAmount) || 0), 0);
+    // Tính tổng tiền cược đã được hoàn (refundAmount > 0, refundType = LOSS_PERCENT, và isRefundPaid = true)
+    // Đây là số tiền đã thực sự được hoàn về cho người chơi
+    const totalRefund = betsData
+      .filter(bet => bet.refundType === 'LOSS_PERCENT' && (bet.status === 'LOST' || bet.status === 'LOSE') && (Number(bet.refundAmount) || 0) > 0 && bet.isRefundPaid === true)
+      .reduce((sum, bet) => sum + (Number(bet.refundAmount) || 0), 0);
 
     setStats({
       totalBets,
       totalWagered,
       totalWon,
-      totalLost
+      totalLost,
+      totalRefund
     });
   };
 
@@ -337,6 +535,37 @@ const BettingHistory = () => {
       dataIndex: 'refundAmount',
       key: 'refundAmount',
       render: (refundAmount, record) => {
+        // Kiểm tra nếu là LOSS_PERCENT (hoàn cược khi thua)
+        const isLossRefund = record.refundType === 'LOSS_PERCENT' && (record.status === 'LOST' || record.status === 'LOSE');
+        
+        if (isLossRefund) {
+          // Nếu đã hoàn cược (isRefundPaid = true và refundAmount > 0)
+          if (record.isRefundPaid === true && refundAmount && refundAmount > 0) {
+            return (
+              <div className="flex flex-col">
+                <span style={{
+                  fontSize: FONT_SIZE.md,
+                  fontWeight: FONT_WEIGHT.bold,
+                  color: '#52c41a'
+                }}>
+                  +{refundAmount?.toLocaleString()} điểm
+                </span>
+                <Tag color="green" style={{ fontSize: FONT_SIZE.xs, marginTop: '4px', width: 'fit-content' }}>
+                  Đã hoàn cược
+                </Tag>
+              </div>
+            );
+          } else {
+            // Chưa hoàn cược
+            return (
+              <Tag color="orange" style={{ fontSize: FONT_SIZE.sm }}>
+                Chưa hoàn cược
+              </Tag>
+            );
+          }
+        }
+        
+        // Các trường hợp khác (FULL_REFUND, WIN_PERCENT)
         if (!refundAmount || refundAmount === 0) {
           return <span style={{ fontSize: FONT_SIZE.sm, color: '#999' }}>-</span>;
         }
@@ -346,8 +575,6 @@ const BettingHistory = () => {
           refundLabel = ' (100%)';
         } else if (record.refundType === 'WIN_PERCENT') {
           refundLabel = ` (${record.refundPercentage}% thắng)`;
-        } else if (record.refundType === 'LOSS_PERCENT') {
-          refundLabel = ` (${record.refundPercentage}% thua)`;
         }
         
         return (
@@ -398,120 +625,56 @@ const BettingHistory = () => {
 
   return (
     <div className="space-y-4">
-      {/* Period Statistics Card */}
-      {periodStats && (
-        <Card className="shadow-sm" style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span style={{ ...HEADING_STYLES.h5, marginBottom: 0, color: 'white' }}>
-              📊 Thống kê theo kỳ
-            </span>
-            <Select
-              value={selectedPeriod}
-              onChange={setSelectedPeriod}
-              style={{ width: 180 }}
-            >
-              <Option value="TODAY">Hôm nay</Option>
-              <Option value="YESTERDAY">Hôm qua</Option>
-              <Option value="THIS_WEEK">Tuần này</Option>
-              <Option value="THIS_MONTH">Tháng này</Option>
-              <Option value="LAST_MONTH">Tháng trước</Option>
-            </Select>
-          </div>
-          
-          <div className="grid grid-cols-6 gap-4">
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 text-center">
-              <TrophyOutlined style={{ fontSize: '24px', color: '#ffd700' }} />
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.xs, marginTop: '8px' }}>Tổng cược</div>
-              <div style={{ color: 'white', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, marginTop: '4px' }}>
-                {periodStats.totalBets}
-              </div>
-            </div>
-            
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 text-center">
-              <DollarOutlined style={{ fontSize: '24px', color: '#ff9500' }} />
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.xs, marginTop: '8px' }}>Tiền cược</div>
-              <div style={{ color: 'white', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, marginTop: '4px' }}>
-                {periodStats.totalWagered.toLocaleString()}
-              </div>
-            </div>
-            
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 text-center">
-              <RiseOutlined style={{ fontSize: '24px', color: '#52c41a' }} />
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.xs, marginTop: '8px' }}>Tổng thắng</div>
-              <div style={{ color: '#52c41a', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, marginTop: '4px' }}>
-                {periodStats.totalWon.toLocaleString()}
-              </div>
-            </div>
-            
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 text-center">
-              <FallOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.xs, marginTop: '8px' }}>Tổng thua</div>
-              <div style={{ color: '#ff4d4f', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, marginTop: '4px' }}>
-                {periodStats.totalLost.toLocaleString()}
-              </div>
-            </div>
-            
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-3 text-center">
-              <GiftOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.xs, marginTop: '8px' }}>Hoàn tiền</div>
-              <div style={{ color: '#13c2c2', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, marginTop: '4px' }}>
-                {periodStats.totalRefund.toLocaleString()}
-              </div>
-            </div>
-            
-            <div className={`bg-white bg-opacity-30 backdrop-blur-sm rounded-lg p-3 text-center border-2 ${periodStats.netProfit >= 0 ? 'border-green-400' : 'border-red-400'}`}>
-              <div style={{ fontSize: '24px' }}>{periodStats.netProfit >= 0 ? '📈' : '📉'}</div>
-              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.xs, marginTop: '8px' }}>Lãi/Lỗ</div>
-              <div style={{ 
-                color: periodStats.netProfit >= 0 ? '#52c41a' : '#ff4d4f', 
-                fontSize: FONT_SIZE.lg, 
-                fontWeight: FONT_WEIGHT.bold,
-                marginTop: '4px'
-              }}>
-                {periodStats.netProfit >= 0 ? '+' : ''}{periodStats.netProfit.toLocaleString()}
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
-
       {/* Statistics Cards */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng số cược</div>
-          <div className="text-blue-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <TrophyOutlined style={{ fontSize: FONT_SIZE.sm }} />
-            {stats.totalBets}
-          </div>
+      <div className="grid grid-cols-5 gap-3 mb-4">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng số cược</div>
+              <div className="text-lg font-bold text-blue-600">{stats.totalBets}</div>
+            </div>
+          </CardContent>
         </Card>
 
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng tiền cược</div>
-          <div className="text-orange-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            💰
-            {stats.totalWagered.toLocaleString()}
-          </div>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng tiền cược</div>
+              <div className="text-lg font-bold text-orange-600">{stats.totalWagered.toLocaleString()}</div>
+            </div>
+          </CardContent>
         </Card>
 
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng thắng</div>
-          <div className="text-green-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <CheckCircleOutlined style={{ fontSize: FONT_SIZE.sm }} />
-            {stats.totalWon.toLocaleString()}
-          </div>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng thắng</div>
+              <div className="text-lg font-bold text-green-600">{stats.totalWon.toLocaleString()}</div>
+            </div>
+          </CardContent>
         </Card>
 
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng thua</div>
-          <div className="text-red-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <CloseCircleOutlined style={{ fontSize: FONT_SIZE.sm }} />
-            {stats.totalLost.toLocaleString()}
-          </div>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng thua</div>
+              <div className="text-lg font-bold text-red-600">{stats.totalLost.toLocaleString()}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng hoàn cược</div>
+              <div className="text-lg font-bold text-cyan-600">{stats.totalRefund.toLocaleString()}</div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+      <AntCard className="shadow-sm" style={{ borderRadius: '12px' }}>
         <div className="flex gap-3 items-center flex-wrap" style={{ marginBottom: 16 }}>
           <Select
             value={gameFilter}
@@ -534,7 +697,10 @@ const BettingHistory = () => {
             allowClear
           />
           <button 
-            onClick={loadBettingHistory}
+            onClick={() => {
+              loadBettingHistory(true);
+              loadAllBetsForStatistics();
+            }}
             className="flex items-center justify-center gap-2 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 font-semibold shadow-md rounded-lg cursor-pointer"
             style={{ 
               height: 40, 
@@ -545,11 +711,22 @@ const BettingHistory = () => {
             <ReloadOutlined style={{ fontSize: '16px' }} />
             Làm mới
           </button>
+          <button 
+            onClick={filterByToday}
+            className="flex items-center justify-center gap-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 font-semibold shadow-md rounded-lg cursor-pointer hover:from-blue-600 hover:to-blue-700 transition-colors"
+            style={{ 
+              height: 40, 
+              minWidth: 160,
+              background: 'linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235))'
+            }}
+          >
+            Thống kê theo ngày
+          </button>
         </div>
-      </Card>
+      </AntCard>
 
       {/* Table */}
-      <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+      <AntCard className="shadow-sm" style={{ borderRadius: '12px' }}>
         {loading ? (
           <Loading />
         ) : bets.length === 0 ? (
@@ -562,29 +739,39 @@ const BettingHistory = () => {
             </div>
           </div>
         ) : (
-          <Table
-            columns={columns}
-            dataSource={bets}
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) => (
-                <span style={{ fontSize: FONT_SIZE.sm }}>
-                  {`${range[0]}-${range[1]} của ${total} cược`}
-                </span>
-              ),
-            }}
-            rowKey="id"
-            onChange={(newPagination) => setPagination({
-              ...pagination,
-              current: newPagination.current,
-              pageSize: newPagination.pageSize
-            })}
-            scroll={{ x: 1200 }}
-          />
+          <>
+            <Table
+              columns={columns}
+              dataSource={bets}
+              pagination={false}
+              rowKey="id"
+              scroll={{ x: 1200 }}
+            />
+            {hasMore && (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <Button
+                  type="primary"
+                  loading={loadingMore}
+                  onClick={loadMoreBets}
+                  style={{
+                    background: 'linear-gradient(to right, rgb(34, 197, 94), rgb(5, 150, 105))',
+                    border: 'none',
+                    height: '40px',
+                    padding: '0 32px',
+                    fontSize: FONT_SIZE.base,
+                    fontWeight: FONT_WEIGHT.medium
+                  }}
+                >
+                  {loadingMore ? 'Đang tải...' : 'Xem thêm'}
+                </Button>
+              </div>
+            )}
+            <div style={{ textAlign: 'center', padding: '12px', fontSize: FONT_SIZE.sm, color: TEXT_COLORS.secondary }}>
+              Hiển thị {bets.length} cược. Thống kê được tính trên tất cả lịch sử cược.
+            </div>
+          </>
         )}
-      </Card>
+      </AntCard>
 
       {/* Detail Modal */}
       <Modal

@@ -1440,7 +1440,7 @@ const XocDiaGamePage = () => {
           <div className="grid gap-2 sm:gap-3 lg:gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
             <XocDiaLiveStream resultOverlay={resultOverlay} countdownDisplay={countdownDisplay} isAdmin={false} />
 
-            <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">
+            <div className="grid gap-0.5 sm:gap-1 content-start">
               <section className="space-y-1 sm:space-y-1.5">
                 {quickBetError && (
                   <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -1462,7 +1462,9 @@ const XocDiaGamePage = () => {
                   styledPlainCodes={styledPlainCodes}
                   onSelectQuickBet={handleQuickBetSelect}
                 />
+              </section>
 
+              <div className="-mt-1 sm:-mt-1.5">
                 <XocDiaChipSelector
                   chipOptions={chipOptions}
                   selectedChipValue={selectedChipValue}
@@ -1470,6 +1472,7 @@ const XocDiaGamePage = () => {
                   onOpenCustomChipModal={handleOpenCustomChipModal}
                   onClearCustomChip={handleClearCustomChip}
                 />
+              </div>
 
                 <XocDiaQuickActionBar
                   quickActionButtons={quickActionButtons}
@@ -1485,7 +1488,6 @@ const XocDiaGamePage = () => {
                   chanLeGrid={chanLeStatsGrid}
                   taiXiuGrid={taiXiuStatsGrid}
                 />
-              </section>
             </div>
           </div>
         </div>

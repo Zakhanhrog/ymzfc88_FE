@@ -34,7 +34,9 @@ const XocDiaQuickBetButton = ({
   const baseClass =
     'group relative flex h-full w-full flex-col items-center justify-center rounded-xl border px-3 pt-3 pb-1.5 sm:pt-[13px] sm:pb-[8px] text-center shadow-sm transition';
   const variantClass = isDisabled
-    ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+    ? isBettingLocked
+      ? 'border-green-500 bg-white cursor-not-allowed'
+      : 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
     : isSelected
     ? 'border-[#63c892] bg-gradient-to-b from-[#d7f6e6] via-[#adebc8] to-[#82dfa9] text-[#0f4c2c]'
     : 'border-[#3abf86] bg-white text-[#0f4c2c] shadow hover:border-[#f5c453] hover:shadow-md';

@@ -175,7 +175,7 @@ const renderPrimaryButton = (bet, quickBetConfigs, selectedBet, onSelect, isLock
     disabled={isLocked}
     className={`${baseButtonClass} rounded-lg border px-3 py-[6px] text-center ${
       isLocked 
-        ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+        ? 'cursor-not-allowed border-green-500'
         : selectedBet ? selectedButtonClass : defaultButtonClass
     }`}
   >
@@ -213,7 +213,7 @@ const renderTotalBetButton = (bet, variant, quickBetConfigs, selectedBet, onSele
       disabled={isLocked}
       className={`${baseButtonClass} h-full rounded border px-1.5 py-2 text-center ${
         isLocked
-          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          ? 'cursor-not-allowed border-green-500'
           : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
@@ -251,7 +251,7 @@ const renderParityButton = (parity, quickBetConfigs, selectedBet, onSelect, isLo
       disabled={isLocked}
       className={`${baseButtonClass} h-full rounded border px-2.5 py-1.5 text-center ${
         isLocked
-          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          ? 'cursor-not-allowed border-green-500'
           : selectedBet ? `${selectedButtonClass} ${parity.borderClass}` : `${defaultButtonClass} ${parity.borderClass}`
       }`}
     >
@@ -285,7 +285,7 @@ const renderCombinationButton = (bet, quickBetConfigs, selectedBet, onSelect, is
       disabled={isLocked}
       className={`${baseButtonClass} h-full rounded-md border px-2 py-[2px] text-center ${
         isLocked
-          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          ? 'cursor-not-allowed border-green-500'
           : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
@@ -328,7 +328,7 @@ const renderSingleFaceButton = (bet, quickBetConfigs, selectedBet, onSelect, isL
       disabled={isLocked}
       className={`${baseButtonClass} h-full rounded-md border px-2 py-2 text-center ${
         isLocked
-          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          ? 'cursor-not-allowed border-green-500'
           : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
@@ -365,7 +365,7 @@ const renderDicePairButton = (bet, quickBetConfigs, selectedBet, onSelect, isLoc
       disabled={isLocked}
       className={`${baseButtonClass} h-full rounded-md border px-0.5 py-0.5 sm:px-1 sm:py-1 lg:px-1 lg:py-1 text-center ${
         isLocked
-          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          ? 'cursor-not-allowed border-green-500'
           : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
@@ -446,27 +446,47 @@ const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, on
         </div>
       </div>
 
-      {/* Dice Pair Rows - 3 rows: 7 + 8 + 6 pairs, horizontal layout */}
-      <div className="mt-2 space-y-1 sm:space-y-1.5">
-        {/* First row: 7 pairs */}
-        <div className="grid w-full grid-cols-7 gap-0.5 sm:gap-1 lg:gap-1">
-          {dicePairBetsRow1.map((bet) =>
+      {/* Dice Pair Layout - 2 tables side by side */}
+      <div className="mt-2 grid grid-cols-[5fr_auto_2fr] gap-2 sm:gap-3">
+        {/* Left table: 15 pairs (from row1 + row2), 3 rows x 5 cards */}
+        <div className="space-y-1 sm:space-y-1.5">
+          {(() => {
+            // Combine row1 and row2 into one array of 15 pairs
+            const allPairs = [...dicePairBetsRow1, ...dicePairBetsRow2];
+            // Split into 3 rows of 5 cards each
+            const rows = [];
+            for (let i = 0; i < 3; i++) {
+              rows.push(allPairs.slice(i * 5, (i + 1) * 5));
+            }
+            return rows.map((row, rowIndex) => (
+              <div key={`left-row-${rowIndex}`} className="grid grid-cols-5 gap-0.5 sm:gap-1 lg:gap-1">
+                {row.map((bet) =>
             renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
           )}
+              </div>
+            ));
+          })()}
         </div>
         
-        {/* Second row: 8 pairs */}
-        <div className="grid w-full grid-cols-8 gap-0.5 sm:gap-1 lg:gap-1">
-          {dicePairBetsRow2.map((bet) =>
+        {/* Vertical divider between tables */}
+        <div className="w-px bg-[#3abf86] self-stretch"></div>
+
+        {/* Right table: 6 double pairs (11-66), 3 rows x 2 cards */}
+        <div className="space-y-1 sm:space-y-1.5 flex flex-col items-end">
+          {(() => {
+            // Split row3 (6 double pairs) into 3 rows of 2 cards each
+            const rows = [];
+            for (let i = 0; i < 3; i++) {
+              rows.push(dicePairBetsRow3.slice(i * 2, (i + 1) * 2));
+            }
+            return rows.map((row, rowIndex) => (
+              <div key={`right-row-${rowIndex}`} className="grid grid-cols-2 gap-0.5 sm:gap-1 lg:gap-1 w-full">
+                {row.map((bet) =>
             renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
           )}
-        </div>
-        
-        {/* Third row: 6 double pairs (11, 22, 33, 44, 55, 66) */}
-        <div className="grid w-full grid-cols-6 gap-0.5 sm:gap-1 lg:gap-1">
-          {dicePairBetsRow3.map((bet) =>
-            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
-          )}
+              </div>
+            ));
+          })()}
         </div>
       </div>
     </section>

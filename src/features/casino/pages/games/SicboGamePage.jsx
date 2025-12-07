@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Icon } from '@iconify/react';
 import { message } from '../../../../utils/notification';
 import {
   defaultChipOptions as defaultSicboChipOptions,
@@ -203,6 +204,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     resultCode: sessionResultCode,
   } = useSicboSession({ pollIntervalMs: 1000, tableNumber: numericTableNumber });
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [lastPlacedBets, setLastPlacedBets] = useState(null);
   const isSessionRunning = sessionStatus === 'RUNNING';
   const isCountdownPhase = isSessionRunning && phaseKey === 'countdown';
   const autoSubmitStateRef = useRef({ sessionId: null, triggered: false, signature: '' });
@@ -788,6 +790,66 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     setSelectedQuickBets({});
   }, []);
 
+  const quickActionButtons = useMemo(
+    () => [
+      {
+        action: 'clear-all',
+        label: 'Huỷ hết',
+        style: 'bg-[#0f4c2c] text-white shadow-lg shadow-[#0f4c2c]/25',
+        icon: 'mdi:close-thick',
+      },
+      {
+        action: 'clear',
+        label: 'Huỷ',
+        style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
+        icon: 'mdi:undo-variant',
+      },
+      {
+        action: 'repeat',
+        label: 'Lặp lại',
+        style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
+        icon: 'mdi:autorenew',
+      },
+    ],
+    []
+  );
+
+  const handleQuickAction = useCallback(
+    (action) => {
+      switch (action) {
+        case 'clear-all':
+          setSelectedQuickBets({});
+          break;
+        case 'clear':
+          setSelectedQuickBets((prev) => {
+            const entries = Object.entries(prev);
+            if (entries.length === 0) {
+              return prev;
+            }
+            const next = { ...prev };
+            const lastKey = entries[entries.length - 1][0];
+            delete next[lastKey];
+            return next;
+          });
+          break;
+        case 'repeat':
+          if (!lastPlacedBets || Object.keys(lastPlacedBets).length === 0) {
+            message.info('Chưa có lịch sử cược gần nhất để lặp lại');
+            return;
+          }
+          if (isBettingLocked) {
+            message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
+            return;
+          }
+          setSelectedQuickBets(cloneQuickBetSelection(lastPlacedBets));
+          break;
+        default:
+          break;
+      }
+    },
+    [isBettingLocked, lastPlacedBets]
+  );
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -1161,6 +1223,8 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         
         if (response.success) {
           message.success(response.message || 'Đặt cược thành công!');
+          // Lưu lịch sử cược để dùng cho chức năng "Lặp lại"
+          setLastPlacedBets(cloneQuickBetSelection(selectedQuickBets));
           setSelectedQuickBets({});
           autoSubmitStateRef.current = {
             sessionId,
@@ -1287,7 +1351,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
               isAdmin={false}
             />
 
-            <div className="grid gap-1 sm:gap-2 lg:gap-3.5 content-start">
+            <div className="grid gap-0.5 sm:gap-1 content-start">
               <div className="space-y-1">
               <SicboPrimaryBetPanel
                 quickBetConfigs={quickBetConfigs}
@@ -1303,6 +1367,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                   </p>
                 ) : null}
               </div>
+              <div className="-mt-1 sm:-mt-1.5">
               <SicboChipSelector
                 chipOptions={chipOptions}
                 selectedChipValue={selectedChipValue}
@@ -1310,10 +1375,14 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                 onOpenCustomChipModal={handleOpenCustomChipModal}
                 onClearCustomChip={handleClearCustomChip}
               />
+              </div>
               <SicboBetActionBar
                 onClearBet={handleClearQuickBets}
                 onChangeTable={handleOpenTableModal}
                 isPlacingBet={isPlacingBet}
+                quickActionButtons={quickActionButtons}
+                onQuickAction={handleQuickAction}
+                isBettingLocked={isBettingLocked}
               />
               <div className="grid grid-cols-[minmax(0,14fr)_minmax(0,4fr)] gap-1.5 sm:gap-2 items-stretch">
                 <SicboStatsBoard
@@ -1358,18 +1427,21 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
               <p className="text-sm text-gray-600 mt-1">Bạn đang chơi tại {tableLabel}. Chọn bàn muốn chuyển tới.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {[1, 2].map((table) => (
+              {[
+                { number: 1, name: 'Tài Xỉu Thu Phế' },
+                { number: 2, name: 'Tài Xỉu Thu Bão' },
+              ].map((table) => (
                 <button
-                  key={`sicbo-table-switch-${table}`}
+                  key={`sicbo-table-switch-${table.number}`}
                   type="button"
-                  onClick={() => setPendingTable(table)}
-                  className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold uppercase tracking-wide transition ${
-                    pendingTable === table
+                  onClick={() => setPendingTable(table.number)}
+                  className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold tracking-wide transition ${
+                    pendingTable === table.number
                       ? 'border-[#f5c453] bg-[#fff8e6] text-[#0b1f15]'
                       : 'border-[#0f4c2c] text-[#0f4c2c] hover:bg-[#0f4c2c]/5'
                   }`}
                 >
-                  <span>Bàn {table}</span>
+                  <span className="text-center leading-tight">{table.name}</span>
                 </button>
               ))}
             </div>
@@ -1379,6 +1451,12 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                 onClick={() => {
                   setIsTableModalOpen(false);
                   if (pendingTable !== numericTableNumber) {
+                    const tableNames = {
+                      1: 'Tài Xỉu Thu Phế',
+                      2: 'Tài Xỉu Thu Bão',
+                    };
+                    const tableName = tableNames[pendingTable] || `Bàn ${pendingTable}`;
+                    message.success(`Đổi bàn thành công! Đã chuyển sang ${tableName}`);
                     navigate(`/casino/live/sicbo?table=${pendingTable}`);
                   }
                 }}
