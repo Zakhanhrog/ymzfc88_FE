@@ -48,38 +48,38 @@ const SicboTableSelectionPage = () => {
         <div className="max-w-screen-2xl mx-auto space-y-4 md:space-y-6">
           <h2 className="text-base md:text-lg font-semibold text-gray-800">Chọn bàn để tham gia</h2>
           <div className="grid gap-3 md:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tables.map((table) => (
-              <button
-                key={`sicbo-table-${table.number}`}
-                type="button"
-                onClick={() => navigate(`/casino/live/sicbo?table=${table.number}`)}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-left shadow-lg transition hover:border-[#f5c453] hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f5c453]/70"
-              >
-                <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 text-white/80 text-xs uppercase tracking-wide">
-                  <span className="text-white/60">Live Stream</span>
-                  <span className="inline-flex items-center rounded-full border border-white/20 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                    Bàn {table.number}
-                  </span>
-                  <span className="flex items-center gap-2 text-[11px] text-red-300">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                    Đang phát
-                  </span>
-                </div>
-                <div className="flex-1 flex items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent)] px-4 py-6 text-sm text-white/70">
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/30">
-                      🎲
-                    </div>
-                    <div className="font-semibold text-sm text-white">
-                      Bàn {table.number} ({table.number === 1 ? 'Tài xỉu thu phế' : 'Tài xỉu thu bão'})
-                    </div>
-                    <div className="text-[11px] text-white/50">
-                      Nhấn để vào bàn {table.number} và bắt đầu đặt cược
-                    </div>
+            {tables.map((table) => {
+              const backgroundImage = table.number === 1 
+                ? '/images/casinolive/taixiuthuphe.jpg'
+                : '/images/casinolive/taixiuthubao.jpg';
+              
+              return (
+                <button
+                  key={`sicbo-table-${table.number}`}
+                  type="button"
+                  onClick={() => navigate(`/casino/live/sicbo?table=${table.number}`)}
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 text-left shadow-lg transition hover:border-[#f5c453] hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f5c453]/70 aspect-[4/3] min-h-[280px]"
+                  style={{
+                    backgroundImage: `url(${backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                >
+                  {/* Header */}
+                  <div className="relative z-10 flex items-center justify-between px-4 py-2 border-b border-white/20 text-white/90 text-xs uppercase tracking-wide backdrop-blur-sm bg-black/20">
+                    <span className="text-white/80">Live Stream</span>
+                    <span className="inline-flex items-center rounded-full border border-white/30 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white bg-black/30 backdrop-blur-sm">
+                      Bàn {table.number}
+                    </span>
+                    <span className="flex items-center gap-2 text-[11px] text-red-300">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                      Đang phát
+                    </span>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </main>

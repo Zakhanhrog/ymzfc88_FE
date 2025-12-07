@@ -9,6 +9,7 @@ const layoutGroupOptions = [
   { value: 'TOTAL_BOTTOM', label: 'Tổng (hàng dưới)' },
   { value: 'SINGLE', label: 'Một mặt' },
   { value: 'DICE_PAIR', label: 'Cặp xúc xắc' },
+  { value: 'DICE_PAIR_DOUBLE', label: 'Cặp đôi' },
 ];
 
 const formatRatio = (value) => {

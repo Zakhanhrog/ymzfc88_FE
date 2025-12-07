@@ -111,6 +111,16 @@ const dicePairBetsRow2 = [
   { id: 'pair-5-6', code: 'sicbo_pair_5_6', faces: [5, 6], defaultMultiplier: 5 },
 ];
 
+// Third row: 6 double pairs (11, 22, 33, 44, 55, 66)
+const dicePairBetsRow3 = [
+  { id: 'pair-double-1', code: 'sicbo_pair_double_1', faces: [1, 1], defaultMultiplier: 8 },
+  { id: 'pair-double-2', code: 'sicbo_pair_double_2', faces: [2, 2], defaultMultiplier: 8 },
+  { id: 'pair-double-3', code: 'sicbo_pair_double_3', faces: [3, 3], defaultMultiplier: 8 },
+  { id: 'pair-double-4', code: 'sicbo_pair_double_4', faces: [4, 4], defaultMultiplier: 8 },
+  { id: 'pair-double-5', code: 'sicbo_pair_double_5', faces: [5, 5], defaultMultiplier: 8 },
+  { id: 'pair-double-6', code: 'sicbo_pair_double_6', faces: [6, 6], defaultMultiplier: 8 },
+];
+
 const formatRatio = (value) => {
   if (value === undefined || value === null) {
     return '1 : ?';
@@ -156,14 +166,17 @@ const getDisplayLabel = (selectedBet) => {
   return null;
 };
 
-const renderPrimaryButton = (bet, quickBetConfigs, selectedBet, onSelect) => (
+const renderPrimaryButton = (bet, quickBetConfigs, selectedBet, onSelect, isLocked = false) => (
   <button
     key={bet.id}
     type="button"
     onClick={() => onSelect(bet)}
     aria-pressed={Boolean(selectedBet)}
+    disabled={isLocked}
     className={`${baseButtonClass} rounded-lg border px-3 py-[6px] text-center ${
-      selectedBet ? selectedButtonClass : defaultButtonClass
+      isLocked 
+        ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+        : selectedBet ? selectedButtonClass : defaultButtonClass
     }`}
   >
     {getDisplayLabel(selectedBet) ? (
@@ -187,7 +200,7 @@ const renderPrimaryButton = (bet, quickBetConfigs, selectedBet, onSelect) => (
   </button>
 );
 
-const renderTotalBetButton = (bet, variant, quickBetConfigs, selectedBet, onSelect) => {
+const renderTotalBetButton = (bet, variant, quickBetConfigs, selectedBet, onSelect, isLocked = false) => {
   const isBottom = variant === 'bottom';
   const displayLabel = getDisplayLabel(selectedBet);
   const ratioText = formatRatio(resolveMultiplier(quickBetConfigs, bet.code, bet.defaultMultiplier));
@@ -197,8 +210,11 @@ const renderTotalBetButton = (bet, variant, quickBetConfigs, selectedBet, onSele
       type="button"
       onClick={() => onSelect(bet)}
       aria-pressed={Boolean(selectedBet)}
+      disabled={isLocked}
       className={`${baseButtonClass} h-full rounded border px-1.5 py-2 text-center ${
-        selectedBet ? selectedButtonClass : defaultButtonClass
+        isLocked
+          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
       <span
@@ -223,7 +239,7 @@ const renderTotalBetButton = (bet, variant, quickBetConfigs, selectedBet, onSele
   );
 };
 
-const renderParityButton = (parity, quickBetConfigs, selectedBet, onSelect) => {
+const renderParityButton = (parity, quickBetConfigs, selectedBet, onSelect, isLocked = false) => {
   const displayLabel = getDisplayLabel(selectedBet);
   const ratioText = formatRatio(resolveMultiplier(quickBetConfigs, parity.code, parity.defaultMultiplier));
   return (
@@ -232,8 +248,11 @@ const renderParityButton = (parity, quickBetConfigs, selectedBet, onSelect) => {
     type="button"
       onClick={() => onSelect(parity)}
       aria-pressed={Boolean(selectedBet)}
+      disabled={isLocked}
       className={`${baseButtonClass} h-full rounded border px-2.5 py-1.5 text-center ${
-        selectedBet ? `${selectedButtonClass} ${parity.borderClass}` : `${defaultButtonClass} ${parity.borderClass}`
+        isLocked
+          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          : selectedBet ? `${selectedButtonClass} ${parity.borderClass}` : `${defaultButtonClass} ${parity.borderClass}`
       }`}
     >
     <span className={`text-base font-black uppercase tracking-wide leading-tight ${parity.textClass}`}>
@@ -254,7 +273,7 @@ const renderParityButton = (parity, quickBetConfigs, selectedBet, onSelect) => {
 );
 };
 
-const renderCombinationButton = (bet, quickBetConfigs, selectedBet, onSelect) => {
+const renderCombinationButton = (bet, quickBetConfigs, selectedBet, onSelect, isLocked = false) => {
   const displayLabel = getDisplayLabel(selectedBet);
   const ratioText = formatRatio(resolveMultiplier(quickBetConfigs, bet.code, bet.defaultMultiplier));
   return (
@@ -263,8 +282,11 @@ const renderCombinationButton = (bet, quickBetConfigs, selectedBet, onSelect) =>
             type="button"
       onClick={() => onSelect(bet)}
       aria-pressed={Boolean(selectedBet)}
+      disabled={isLocked}
       className={`${baseButtonClass} h-full rounded-md border px-2 py-[2px] text-center ${
-        selectedBet ? selectedButtonClass : defaultButtonClass
+        isLocked
+          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
             <span className="sr-only">Cược tổ hợp {bet.faces.join(' - ')}</span>
@@ -294,7 +316,7 @@ const renderCombinationButton = (bet, quickBetConfigs, selectedBet, onSelect) =>
   );
 };
 
-const renderSingleFaceButton = (bet, quickBetConfigs, selectedBet, onSelect) => {
+const renderSingleFaceButton = (bet, quickBetConfigs, selectedBet, onSelect, isLocked = false) => {
   const displayLabel = getDisplayLabel(selectedBet);
   const ratioText = formatRatio(resolveMultiplier(quickBetConfigs, bet.code, bet.defaultMultiplier));
   return (
@@ -303,8 +325,11 @@ const renderSingleFaceButton = (bet, quickBetConfigs, selectedBet, onSelect) => 
             type="button"
       onClick={() => onSelect(bet)}
       aria-pressed={Boolean(selectedBet)}
+      disabled={isLocked}
       className={`${baseButtonClass} h-full rounded-md border px-2 py-2 text-center ${
-        selectedBet ? selectedButtonClass : defaultButtonClass
+        isLocked
+          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
             <img
@@ -328,7 +353,7 @@ const renderSingleFaceButton = (bet, quickBetConfigs, selectedBet, onSelect) => 
   );
 };
 
-const renderDicePairButton = (bet, quickBetConfigs, selectedBet, onSelect) => {
+const renderDicePairButton = (bet, quickBetConfigs, selectedBet, onSelect, isLocked = false) => {
   const displayLabel = getDisplayLabel(selectedBet);
   const ratioText = formatRatio(resolveMultiplier(quickBetConfigs, bet.code, bet.defaultMultiplier));
   return (
@@ -337,8 +362,11 @@ const renderDicePairButton = (bet, quickBetConfigs, selectedBet, onSelect) => {
       type="button"
       onClick={() => onSelect(bet)}
       aria-pressed={Boolean(selectedBet)}
+      disabled={isLocked}
       className={`${baseButtonClass} h-full rounded-md border px-0.5 py-0.5 sm:px-1 sm:py-1 lg:px-1 lg:py-1 text-center ${
-        selectedBet ? selectedButtonClass : defaultButtonClass
+        isLocked
+          ? 'border-[#dbeafe] bg-white text-gray-400 cursor-not-allowed opacity-60'
+          : selectedBet ? selectedButtonClass : defaultButtonClass
       }`}
     >
       <span className="sr-only">Cược cặp {bet.faces.join(' - ')}</span>
@@ -372,10 +400,11 @@ const renderDicePairButton = (bet, quickBetConfigs, selectedBet, onSelect) => {
 };
 
 
-const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, onSelectBet }) => {
+const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, onSelectBet, isBettingLocked = false }) => {
   const resolveSelected = (code) => selectedQuickBets?.[code] ?? null;
 
   const handleSelectBet = (bet) => {
+    if (isBettingLocked) return;
     if (typeof onSelectBet === 'function') {
       onSelectBet(bet);
     }
@@ -385,24 +414,24 @@ const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, on
     <section className="w-full">
       <h2 className="sr-only">Tùy chọn cược Sicbo</h2>
       <div className="grid w-full grid-cols-[minmax(0,0.85fr)_minmax(0,1.2fr)_minmax(0,0.85fr)] items-stretch gap-1 sm:gap-1.5 lg:gap-2 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)_minmax(0,0.9fr)]">
-        {renderPrimaryButton(primaryBets[0], quickBetConfigs, resolveSelected(primaryBets[0].code), handleSelectBet)}
+        {renderPrimaryButton(primaryBets[0], quickBetConfigs, resolveSelected(primaryBets[0].code), handleSelectBet, isBettingLocked)}
 
         <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
           {combinationBets.map((bet) =>
-            renderCombinationButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+            renderCombinationButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
           )}
         </div>
 
-        {renderPrimaryButton(primaryBets[1], quickBetConfigs, resolveSelected(primaryBets[1].code), handleSelectBet)}
+        {renderPrimaryButton(primaryBets[1], quickBetConfigs, resolveSelected(primaryBets[1].code), handleSelectBet, isBettingLocked)}
       </div>
 
       <div className="mt-2 space-y-1">
         {totalBetRows.map((row) => (
           <div key={row.id} className="w-full">
             <div className="grid w-full grid-cols-[minmax(0,1.5fr)_repeat(7,minmax(0,1fr))] gap-1 sm:gap-1.5 lg:gap-2">
-              {renderParityButton(row.parity, quickBetConfigs, resolveSelected(row.parity.code), handleSelectBet)}
+              {renderParityButton(row.parity, quickBetConfigs, resolveSelected(row.parity.code), handleSelectBet, isBettingLocked)}
               {row.totals.map((bet) =>
-                renderTotalBetButton(bet, row.variant, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+                renderTotalBetButton(bet, row.variant, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
               )}
             </div>
           </div>
@@ -412,24 +441,31 @@ const SicboPrimaryBetPanel = ({ quickBetConfigs = {}, selectedQuickBets = {}, on
       <div className="mt-0.5 sm:mt-0.5 lg:mt-0.5">
         <div className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-1 sm:gap-1.5 lg:gap-2">
           {singleFaceBets.map((bet) =>
-            renderSingleFaceButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+            renderSingleFaceButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
           )}
         </div>
       </div>
 
-      {/* Dice Pair Rows - 2 rows: 7 + 8 pairs, horizontal layout */}
+      {/* Dice Pair Rows - 3 rows: 7 + 8 + 6 pairs, horizontal layout */}
       <div className="mt-2 space-y-1 sm:space-y-1.5">
         {/* First row: 7 pairs */}
         <div className="grid w-full grid-cols-7 gap-0.5 sm:gap-1 lg:gap-1">
           {dicePairBetsRow1.map((bet) =>
-            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
           )}
         </div>
         
         {/* Second row: 8 pairs */}
         <div className="grid w-full grid-cols-8 gap-0.5 sm:gap-1 lg:gap-1">
           {dicePairBetsRow2.map((bet) =>
-            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet)
+            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
+          )}
+        </div>
+        
+        {/* Third row: 6 double pairs (11, 22, 33, 44, 55, 66) */}
+        <div className="grid w-full grid-cols-6 gap-0.5 sm:gap-1 lg:gap-1">
+          {dicePairBetsRow3.map((bet) =>
+            renderDicePairButton(bet, quickBetConfigs, resolveSelected(bet.code), handleSelectBet, isBettingLocked)
           )}
         </div>
       </div>

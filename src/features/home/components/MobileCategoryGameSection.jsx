@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
-import { Modal } from 'antd';
+import { message } from '../../../utils/notification';
 
 const MobileCategoryGameSection = ({ title, gameImages }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showDevModal, setShowDevModal] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const itemsPerView = 3; // Show 3 items at a time on mobile
@@ -56,7 +55,7 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
   }, []);
 
   const handleGameClick = () => {
-    setShowDevModal(true);
+    message.info('Trò chơi này đang được phát triển. Vui lòng quay lại sau!');
   };
 
   return (
@@ -136,33 +135,6 @@ const MobileCategoryGameSection = ({ title, gameImages }) => {
           </div>
         </div>
       </div>
-
-      {/* Modal thông báo game đang phát triển */}
-      <Modal
-        open={showDevModal}
-        onCancel={() => setShowDevModal(false)}
-        footer={null}
-        centered
-        width={340}
-        closeIcon={<Icon icon="mdi:close" className="text-gray-500" />}
-      >
-        <div className="text-center py-4">
-          <div className="mb-3">
-            <Icon icon="mdi:hammer-wrench" className="text-5xl text-blue-500" />
-          </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Game đang phát triển</h3>
-          <p className="text-sm text-gray-600 mb-5">
-            Trò chơi này đang được phát triển.<br />
-            Vui lòng quay lại sau!
-          </p>
-          <button
-            onClick={() => setShowDevModal(false)}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
-          >
-            Đã hiểu
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 };

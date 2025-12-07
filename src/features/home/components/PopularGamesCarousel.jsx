@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { message } from '../../../utils/notification';
 
 const PopularGamesCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -68,6 +69,10 @@ const PopularGamesCarousel = () => {
     }
   }, []);
 
+  const handleGameClick = () => {
+    message.info('Trò chơi này đang được phát triển. Vui lòng quay lại sau!');
+  };
+
   return (
     <div className="w-full bg-gray-100 py-6">
       <div className="w-full px-6">
@@ -100,7 +105,11 @@ const PopularGamesCarousel = () => {
           </div>
 
           {/* View Details Button */}
-          <button className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <button 
+            onClick={handleGameClick}
+            className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors" 
+            style={{ fontFamily: 'Arial, sans-serif' }}
+          >
             Xem chi tiết
           </button>
         </div>
@@ -116,6 +125,7 @@ const PopularGamesCarousel = () => {
             {gameImages.map((image, index) => (
               <div
                 key={index}
+                onClick={handleGameClick}
                 className="flex-shrink-0 w-[calc((100%-40px)/6)] h-[calc((100%-40px)/6)] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group"
               >
                 <img

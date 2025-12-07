@@ -390,11 +390,6 @@ export const adminMenuItems = [
         label: 'Stream Config',
       },
       {
-        key: 'news',
-        icon: ICONS.news,
-        label: 'Tin tức',
-      },
-      {
         key: 'notifications',
         icon: ICONS.notifications,
         label: 'Thông báo',

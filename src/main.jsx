@@ -1,3 +1,6 @@
+// CRITICAL: Import patch FIRST before anything else
+import './utils/react-dom-patch.js'
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

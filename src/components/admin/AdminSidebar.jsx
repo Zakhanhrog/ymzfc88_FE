@@ -407,7 +407,6 @@ const AdminSidebar = ({ collapsed }) => {
       'xoc-dia-quick-bets': () => goTo('/xoc-dia/quick-bets'),
       'sicbo-quick-bets': () => goTo('/sicbo/quick-bets'),
       banners: () => goTo('/dashboard?tab=banners'),
-      news: () => goTo('/dashboard?tab=news'),
       notifications: () => goTo('/dashboard?tab=notifications'),
       'marquee-notifications': () => goTo('/dashboard?tab=marquee-notifications'),
       'stream-configs': () => goTo('/dashboard?tab=stream-configs'),

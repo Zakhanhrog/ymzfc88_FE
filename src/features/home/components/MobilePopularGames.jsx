@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { message } from '../../../utils/notification';
 
 const MobilePopularGames = () => {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ const MobilePopularGames = () => {
     if (gameId === 'game-12') {
       navigate('/lottery');
     } else {
-      navigate(`/games/${gameId}`);
+      message.info('Trò chơi này đang được phát triển. Vui lòng quay lại sau!');
     }
   };
 

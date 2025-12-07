@@ -186,7 +186,17 @@ const SicboLiveStream = ({
           </div>
         </div>
 
-        <div className="flex-1 relative bg-black">
+        <div 
+          className="flex-1 relative bg-black"
+          style={{
+            backgroundImage: (isLoading || hasError) && !isLivePaused && !isLiveEnded
+              ? `url(${tableNumber === 1 ? '/images/casinolive/taixiuthuphe.jpg' : '/images/casinolive/taixiuthubao.jpg'})`
+              : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
           {!isAdmin && isLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-30">
               <div className="flex flex-col items-center gap-3 text-white/90">
@@ -212,20 +222,20 @@ const SicboLiveStream = ({
           )}
 
           {isLoading && !isLivePaused && !isLiveEnded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
-              <div className="flex flex-col items-center gap-2 text-white/70">
-                <div className="w-16 h-16 border-4 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                <p className="text-sm text-center">Đang tải stream...</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
+              <div className="flex flex-col items-center gap-2 text-white/90 drop-shadow-lg">
+                <div className="w-16 h-16 border-4 border-white/30 border-t-white/80 rounded-full animate-spin" />
+                <p className="text-sm text-center font-semibold">Đang tải stream...</p>
               </div>
             </div>
           )}
 
           {hasError && !isLivePaused && !isLiveEnded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
-              <div className="flex flex-col items-center gap-2 text-white/70">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
+              <div className="flex flex-col items-center gap-2 text-white/90 drop-shadow-lg">
                 <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-400" />
-                <p className="text-sm text-center">Không thể tải stream</p>
-                <p className="text-xs text-center text-white/50">Vui lòng thử lại sau</p>
+                <p className="text-sm text-center font-semibold">Không thể tải stream</p>
+                <p className="text-xs text-center text-white/80">Vui lòng thử lại sau</p>
               </div>
             </div>
           )}

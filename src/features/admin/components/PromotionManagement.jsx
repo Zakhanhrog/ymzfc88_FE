@@ -28,9 +28,9 @@ import {
   UploadOutlined
 } from '@ant-design/icons';
 import promotionService from '../../../services/promotionService';
+import RichTextEditor from '../../../components/admin/RichTextEditor';
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 const PromotionManagement = () => {
   const [promotions, setPromotions] = useState([]);
@@ -143,6 +143,7 @@ const PromotionManagement = () => {
     form.setFieldsValue({
       title: promotion.title,
       description: promotion.description,
+      details: promotion.details || '',
       isActive: promotion.isActive,
       displayOrder: promotion.displayOrder
     });
@@ -272,10 +273,40 @@ const PromotionManagement = () => {
                 }
                 description={
                   <div>
-                    <Text className="text-gray-600 block mb-2" ellipsis={{ rows: 2 }}>
-                      {promotion.description}
-                    </Text>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    {promotion.description && (
+                      <div 
+                        className="text-gray-600 block mb-2"
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          maxHeight: '4.5em',
+                          lineHeight: '1.5em',
+                        }}
+                      >
+                        {promotion.description}
+                      </div>
+                    )}
+                    {promotion.details && (
+                      <div 
+                        className="text-gray-600 block mb-2"
+                        dangerouslySetInnerHTML={{ 
+                          __html: promotion.details || '' 
+                        }}
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          maxHeight: '4.5em',
+                          lineHeight: '1.5em',
+                        }}
+                      />
+                    )}
+                    <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
                       <span>Thứ tự: {promotion.displayOrder}</span>
                       <span>{new Date(promotion.createdAt).toLocaleDateString()}</span>
                     </div>
@@ -334,12 +365,28 @@ const PromotionManagement = () => {
             name="description"
             label="Mô tả"
             rules={[
-              { max: 2000, message: 'Mô tả không được vượt quá 2000 ký tự' }
+              { max: 10000, message: 'Mô tả không được vượt quá 10000 ký tự' }
             ]}
           >
-            <TextArea 
-              rows={4} 
+            <Input.TextArea 
+              rows={4}
               placeholder="Nhập mô tả khuyến mãi"
+              showCount
+              maxLength={10000}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="details"
+            label="Chi tiết"
+            rules={[
+              { max: 10000, message: 'Chi tiết không được vượt quá 10000 ký tự' }
+            ]}
+            getValueFromEvent={(value) => value}
+            getValueProps={(value) => ({ value: value || '' })}
+          >
+            <RichTextEditor 
+              placeholder="Nhập chi tiết khuyến mãi (có thể format văn bản và chèn ảnh)"
             />
           </Form.Item>
 

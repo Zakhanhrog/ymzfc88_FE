@@ -967,3 +967,66 @@ body::-webkit-scrollbar {
   color: #374151 !important;
 }
 
+/* Rich Text Editor Styles */
+.rich-text-editor-wrapper .ql-container {
+  min-height: 200px;
+  font-size: 14px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.rich-text-editor-wrapper .ql-editor {
+  min-height: 200px;
+}
+
+.rich-text-editor-wrapper .ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #bfbfbf;
+}
+
+.rich-text-editor-wrapper .ql-toolbar {
+  border-top: 1px solid #d9d9d9;
+  border-left: 1px solid #d9d9d9;
+  border-right: 1px solid #d9d9d9;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: #fafafa;
+}
+
+.rich-text-editor-wrapper .ql-container {
+  border-bottom: 1px solid #d9d9d9;
+  border-left: 1px solid #d9d9d9;
+  border-right: 1px solid #d9d9d9;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.rich-text-editor-wrapper .ql-toolbar .ql-stroke {
+  stroke: #595959;
+}
+
+.rich-text-editor-wrapper .ql-toolbar .ql-fill {
+  fill: #595959;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover,
+.rich-text-editor-wrapper .ql-toolbar button.ql-active {
+  color: #1890ff;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover .ql-stroke,
+.rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #1890ff;
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover .ql-fill,
+.rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-fill {
+  fill: #1890ff;
+}
+
+.rich-text-editor-wrapper .ql-editor img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+}
+

@@ -225,17 +225,6 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
             <span className="text-xs uppercase tracking-wide text-white/60">Live Stream</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-4 text-xs md:text-sm text-white/70">
-            <span className="flex items-center gap-2">
-              <Icon icon="mdi:account" className="w-4 h-4" />
-              Dealer: Ngọc Anh
-            </span>
-            <span className="flex items-center gap-2">
-              <Icon icon="mdi:account-group" className="w-4 h-4" />
-              Người chơi: 128
-            </span>
-          </div>
-
           <span className="flex items-center gap-2 text-sm text-red-400">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
             Đang phát

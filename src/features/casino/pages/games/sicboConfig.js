@@ -66,6 +66,14 @@ export const defaultSicboQuickBetConfigs = [
   { code: 'sicbo_pair_4_5', name: 'Cặp 4-5', payoutMultiplier: 5, layoutGroup: 'DICE_PAIR', displayOrder: 12 },
   { code: 'sicbo_pair_4_6', name: 'Cặp 4-6', payoutMultiplier: 5, layoutGroup: 'DICE_PAIR', displayOrder: 13 },
   { code: 'sicbo_pair_5_6', name: 'Cặp 5-6', payoutMultiplier: 5, layoutGroup: 'DICE_PAIR', displayOrder: 14 },
+  
+  // Cặp đôi - 6 combinations
+  { code: 'sicbo_pair_double_1', name: 'Cặp đôi 1-1', payoutMultiplier: 8, layoutGroup: 'DICE_PAIR_DOUBLE', displayOrder: 0 },
+  { code: 'sicbo_pair_double_2', name: 'Cặp đôi 2-2', payoutMultiplier: 8, layoutGroup: 'DICE_PAIR_DOUBLE', displayOrder: 1 },
+  { code: 'sicbo_pair_double_3', name: 'Cặp đôi 3-3', payoutMultiplier: 8, layoutGroup: 'DICE_PAIR_DOUBLE', displayOrder: 2 },
+  { code: 'sicbo_pair_double_4', name: 'Cặp đôi 4-4', payoutMultiplier: 8, layoutGroup: 'DICE_PAIR_DOUBLE', displayOrder: 3 },
+  { code: 'sicbo_pair_double_5', name: 'Cặp đôi 5-5', payoutMultiplier: 8, layoutGroup: 'DICE_PAIR_DOUBLE', displayOrder: 4 },
+  { code: 'sicbo_pair_double_6', name: 'Cặp đôi 6-6', payoutMultiplier: 8, layoutGroup: 'DICE_PAIR_DOUBLE', displayOrder: 5 },
 ];
 
 export const buildSicboQuickBetMap = (configs = []) => {

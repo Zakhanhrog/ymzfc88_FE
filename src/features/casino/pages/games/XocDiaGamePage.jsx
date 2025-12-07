@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import { message } from '../../../../utils/notification';
 import pointService from '../../../../services/pointService';
 import xocDiaQuickBetService from '../../../../services/xocDiaQuickBetService';
 import useXocDiaSession from '../../hooks/useXocDiaSession';
@@ -633,23 +633,36 @@ const XocDiaGamePage = () => {
         return;
       }
 
-      setSelectedQuickBets((prev) => {
-        const existing = prev[option.code];
-        const previousTotal = existing?.value ?? existing?.totalValue ?? 0;
-        const newTotal = previousTotal + selectedChipValue;
-        const chipLabel = selectedChipLabel ?? findChipLabelByValue(selectedChipValue);
+      // Tính tổng tiền hiện tại đã chọn (tính trước khi setState)
+      const currentTotal = Object.values(selectedQuickBets).reduce((sum, b) => {
+        const amount = b?.totalValue ?? b?.value ?? 0;
+        return sum + amount;
+      }, 0);
 
-        return {
-          ...prev,
-          [option.code]: {
-            value: newTotal,
-            totalValue: newTotal,
-            label: formatChipDisplayValue(newTotal),
-            lastChipValue: selectedChipValue,
-            lastChipLabel: chipLabel,
-          },
-        };
-      });
+      // Tính tổng tiền sau khi thêm cược mới
+      const existing = selectedQuickBets[option.code];
+      const previousTotal = existing?.value ?? existing?.totalValue ?? 0;
+      const newTotal = previousTotal + selectedChipValue;
+      const totalAfterAdd = currentTotal - previousTotal + newTotal;
+
+      // Kiểm tra số dư TRƯỚC KHI setState để tránh gọi nhiều lần
+      if (totalAfterAdd > userPoints) {
+        message.error(`Số dư không đủ! Bạn còn ${Number(userPoints || 0).toLocaleString('vi-VN')} điểm, nhưng đang đặt ${Number(totalAfterAdd).toLocaleString('vi-VN')} điểm.`);
+        return; // Không thay đổi state
+      }
+
+      const chipLabel = selectedChipLabel ?? findChipLabelByValue(selectedChipValue);
+
+      setSelectedQuickBets((prev) => ({
+        ...prev,
+        [option.code]: {
+          value: newTotal,
+          totalValue: newTotal,
+          label: formatChipDisplayValue(newTotal),
+          lastChipValue: selectedChipValue,
+          lastChipLabel: chipLabel,
+        },
+      }));
     },
     [
       allowedPatternBetCodes,
@@ -657,6 +670,8 @@ const XocDiaGamePage = () => {
       isBettingLocked,
       selectedChipLabel,
       selectedChipValue,
+      selectedQuickBets,
+      userPoints,
     ]
   );
 
@@ -1233,7 +1248,7 @@ const XocDiaGamePage = () => {
 
         const response = await xocDiaBetService.placeBets(payload);
         if (response.success) {
-          message.success(response.message || 'Đặt cược thành công');
+          message.success(response.message || 'Đặt cược thành công!');
           setLastPlacedBets(
             placeableBetDetails.reduce((acc, item) => {
               acc[item.code] = selectedQuickBets[item.code];
@@ -1252,12 +1267,8 @@ const XocDiaGamePage = () => {
             await fetchAndUpdateUserPoints();
           }
         } else {
-          const errorMessage = response.message || 'Không thể đặt cược';
-          const normalized = errorMessage.toLowerCase();
+          const errorMessage = response.message || 'Đặt cược không thành công!';
           message.error(errorMessage);
-          if (normalized.includes('không đủ') || normalized.includes('insufficient')) {
-            message.info('Số dư không đủ, vui lòng nạp thêm để tiếp tục đặt cược.');
-          }
           autoSubmitStateRef.current = {
             sessionId,
             triggered: false,
@@ -1265,7 +1276,7 @@ const XocDiaGamePage = () => {
           };
         }
       } catch (error) {
-        const fallbackMessage = error?.message || 'Không thể đặt cược';
+        const fallbackMessage = error?.message || 'Đặt cược không thành công!';
         message.error(fallbackMessage);
         autoSubmitStateRef.current = {
           sessionId,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { message } from '../../../../utils/notification';
 import {
   defaultChipOptions as defaultSicboChipOptions,
   defaultChipLabels as defaultSicboChipLabels,
@@ -203,12 +203,10 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     resultCode: sessionResultCode,
   } = useSicboSession({ pollIntervalMs: 1000, tableNumber: numericTableNumber });
   const [isPlacingBet, setIsPlacingBet] = useState(false);
-  const [isBetConfirmed, setIsBetConfirmed] = useState(false);
-  const [confirmedBetSnapshot, setConfirmedBetSnapshot] = useState(null);
   const isSessionRunning = sessionStatus === 'RUNNING';
   const isCountdownPhase = isSessionRunning && phaseKey === 'countdown';
+  const autoSubmitStateRef = useRef({ sessionId: null, triggered: false, signature: '' });
   const isBettingLocked = !isSessionRunning || SICBO_BETTING_LOCKED_PHASES.includes(phaseKey);
-  const submissionStateRef = useRef({ sessionId: null, signature: '' });
   const [loadingPoints, setLoadingPoints] = useState(false);
   const sicboColumnsRef = useRef(createEmptyStatsColumns());
   const sicboCursorRef = useRef({ column: 0, row: -1, lastCategory: null });
@@ -217,6 +215,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   const latestStatsSignatureRef = useRef('');
   const pendingStatsRefreshRef = useRef(null);
   const isMountedRef = useRef(true);
+  const pendingResultRef = useRef({ sessionId: null, resultCode: null });
 
   const updateStoredUserData = useCallback((partialData = {}) => {
     try {
@@ -588,12 +587,16 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
   useEffect(() => {
     if (!sessionId || !sessionResultCode) {
+      pendingResultRef.current = { sessionId: null, resultCode: null };
       return;
     }
+
     const signature = `${sessionId}:${sessionResultCode}`;
     if (latestStatsSignatureRef.current === signature) {
       return;
     }
+
+    // Cập nhật stats
     const entry = buildStatsEntryFromResult(sessionResultCode);
     if (!entry) {
       return;
@@ -608,7 +611,72 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
       pendingStatsRefreshRef.current = null;
       fetchStatsFromServer(false);
     }, 1200);
-  }, [appendStatsEntry, buildStatsEntryFromResult, sessionId, sessionResultCode]);
+
+    // Cập nhật số dư khi có kết quả mới
+    const alreadyHandled =
+      pendingResultRef.current.sessionId === sessionId &&
+      pendingResultRef.current.resultCode === sessionResultCode;
+    if (alreadyHandled) {
+      return;
+    }
+
+    pendingResultRef.current = { sessionId, resultCode: sessionResultCode };
+
+    let cancelled = false;
+
+    // Cập nhật số dư sau khi có kết quả (settle bets đã xong)
+    const refreshBalance = async () => {
+      try {
+        const authToken =
+          localStorage.getItem('token') || localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+        if (authToken) {
+          try {
+            const walletResponse = await fetch(`${API_BASE_URL}/wallet/balance`, {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (walletResponse.ok) {
+              const walletData = await walletResponse.json();
+              if (walletData?.success) {
+                const points =
+                  walletData.data?.points ??
+                  walletData.data?.balance ??
+                  walletData.data?.totalPoints ??
+                  walletData.data?.totalBalance;
+                if (!cancelled && typeof points === 'number') {
+                  applyPointsUpdate(points);
+                }
+              }
+            }
+          } catch (walletError) {
+            // fallback below
+          }
+        }
+
+        const response = await pointService.getMyPoints();
+        if (!cancelled && response?.success) {
+          const points = response.data?.totalPoints ?? response.data?.points ?? 0;
+          applyPointsUpdate(points);
+        }
+      } catch (error) {
+        // ignore; balance will refresh on next poll
+      }
+    };
+
+    // Delay một chút để đảm bảo backend đã settle bets xong
+    const timer = setTimeout(() => {
+      refreshBalance();
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [appendStatsEntry, buildStatsEntryFromResult, sessionId, sessionResultCode, applyPointsUpdate]);
 
   const balanceDisplay = useMemo(() => {
     if (loadingPoints) {
@@ -674,10 +742,6 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
   const handleQuickBetSelect = useCallback(
     (bet) => {
-      if (isBetConfirmed) {
-        message.info('Bạn đã chốt cược. Huỷ đặt cược để chỉnh sửa.');
-        return;
-      }
       if (isBettingLocked) {
         message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
         return;
@@ -687,33 +751,42 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         return;
       }
 
-      setSelectedQuickBets((prev) => {
-        const existing = prev[bet.code];
-        const previousTotal = existing?.totalValue ?? existing?.value ?? 0;
-        const newTotal = previousTotal + selectedChipValue;
-        const chipLabel = selectedChipLabel ?? findChipLabelByValue(selectedChipValue);
+      // Tính tổng tiền hiện tại đã chọn (tính trước khi setState)
+      const currentTotal = Object.values(selectedQuickBets).reduce((sum, b) => {
+        const amount = b?.totalValue ?? b?.value ?? 0;
+        return sum + amount;
+      }, 0);
 
-        return {
-          ...prev,
-          [bet.code]: {
-            totalValue: newTotal,
-            label: formatChipDisplayValue(newTotal),
-            lastChipValue: selectedChipValue,
-            lastChipLabel: chipLabel,
-          },
-        };
-      });
+      // Tính tổng tiền sau khi thêm cược mới
+      const existing = selectedQuickBets[bet.code];
+      const previousTotal = existing?.totalValue ?? existing?.value ?? 0;
+      const newTotal = previousTotal + selectedChipValue;
+      const totalAfterAdd = currentTotal - previousTotal + newTotal;
+
+      // Kiểm tra số dư TRƯỚC KHI setState để tránh gọi nhiều lần
+      if (totalAfterAdd > userPoints) {
+        message.error(`Số dư không đủ! Bạn còn ${Number(userPoints || 0).toLocaleString('vi-VN')} điểm, nhưng đang đặt ${Number(totalAfterAdd).toLocaleString('vi-VN')} điểm.`);
+        return; // Không thay đổi state
+      }
+
+      const chipLabel = selectedChipLabel ?? findChipLabelByValue(selectedChipValue);
+
+      setSelectedQuickBets((prev) => ({
+        ...prev,
+        [bet.code]: {
+          totalValue: newTotal,
+          label: formatChipDisplayValue(newTotal),
+          lastChipValue: selectedChipValue,
+          lastChipLabel: chipLabel,
+        },
+      }));
     },
-    [findChipLabelByValue, isBetConfirmed, isBettingLocked, selectedChipLabel, selectedChipValue]
+    [findChipLabelByValue, isBettingLocked, selectedChipLabel, selectedChipValue, selectedQuickBets, userPoints]
   );
 
   const handleClearQuickBets = useCallback(() => {
-    if (isBetConfirmed) {
-      message.info('Huỷ đặt cược trước khi xoá lựa chọn.');
-      return;
-    }
     setSelectedQuickBets({});
-  }, [isBetConfirmed]);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -739,10 +812,6 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   }, []);
 
   const handleOpenCustomChipModal = () => {
-    if (isBetConfirmed) {
-      message.info('Huỷ đặt cược trước khi tuỳ chỉnh mệnh giá.');
-      return;
-    }
     setCustomChipValue('');
     setCustomChipError('');
     setCustomChipSelections(
@@ -1041,7 +1110,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     () =>
       placeableBets.map(([code, bet]) => {
         const amount = bet?.totalValue ?? bet?.value ?? 0;
-        const config = quickBetOptionLookup?.[code] ?? {};
+        const config = quickBetOptionLookup.get(code) || quickBetOptionLookup.get(code.toLowerCase()) || {};
         return {
           code,
           amount,
@@ -1052,132 +1121,94 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     [placeableBets, quickBetOptionLookup]
   );
 
-  const canPlaceBet =
-    placeableBetDetails.length > 0 && !isBettingLocked && Boolean(sessionId) && !isPlacingBet;
-  const canCancelConfirmed = !isBettingLocked && !isPlacingBet;
-
-  const handleConfirmBets = useCallback(() => {
-    if (isBetConfirmed) {
-      message.info('Bạn đã chốt cược. Huỷ đặt cược nếu muốn thay đổi.');
-      return;
-    }
-    if (isBettingLocked) {
-      message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
-      return;
-    }
-    if (!sessionId) {
-      message.warning('Phiên Sicbo chưa sẵn sàng, vui lòng chờ.');
-      return;
-    }
+  const betSignature = useMemo(() => {
     if (placeableBetDetails.length === 0) {
-      message.info('Bạn chưa chọn cược nào.');
-      return;
+      return '';
     }
-    const signature = placeableBetDetails
+    return placeableBetDetails
       .map((item) => `${item.code}:${item.amount}`)
       .sort()
       .join('|');
-    setConfirmedBetSnapshot({
-      sessionId,
-      details: placeableBetDetails.map((item) => ({ ...item })),
-      selection: cloneQuickBetSelection(selectedQuickBets),
-      signature,
-    });
-    setIsBetConfirmed(true);
-    submissionStateRef.current = { sessionId: null, signature: '' };
-    message.success('Đã chốt cược. Bạn có thể huỷ trước khi hết thời gian.');
-  }, [isBetConfirmed, isBettingLocked, placeableBetDetails, selectedQuickBets, sessionId]);
+  }, [placeableBetDetails]);
 
-  const handleCancelConfirmed = useCallback(() => {
-    if (!isBetConfirmed) {
-      return;
-    }
-    if (isBettingLocked) {
-      message.warning('Không thể huỷ khi phiên đã ngưng cược');
-      return;
-    }
-    if (confirmedBetSnapshot?.selection) {
-      setSelectedQuickBets(cloneQuickBetSelection(confirmedBetSnapshot.selection));
-    }
-    setIsBetConfirmed(false);
-    setConfirmedBetSnapshot(null);
-    submissionStateRef.current = { sessionId: null, signature: '' };
-    message.info('Đã huỷ đặt cược.');
-  }, [confirmedBetSnapshot, isBetConfirmed, isBettingLocked]);
-
-  const submitConfirmedBets = useCallback(
-    async (snapshot) => {
-      if (!snapshot || !Array.isArray(snapshot.details) || snapshot.details.length === 0) {
+  const submitBets = useCallback(
+    async ({ force = false, signatureOverride } = {}) => {
+      if (isPlacingBet) {
         return;
       }
-      if (!snapshot.sessionId || snapshot.sessionId !== sessionId) {
-        setIsBetConfirmed(false);
-        setConfirmedBetSnapshot(null);
+      if (placeableBetDetails.length === 0) {
         return;
       }
+      if (!force && isBettingLocked) {
+        message.warning('Phiên đã ngưng cược, vui lòng chờ phiên tiếp theo');
+        return;
+      }
+
       setIsPlacingBet(true);
       try {
         const payload = {
           tableNumber: numericTableNumber,
-          sessionId: snapshot.sessionId,
-          bets: snapshot.details.map((item) => ({
+          sessionId,
+          bets: placeableBetDetails.map((item) => ({
             code: item.code,
             amount: item.amount,
           })),
         };
+
+        console.log('[Sicbo submitBets] Payload:', payload);
         const response = await sicboBetService.placeBets(payload);
+        console.log('[Sicbo submitBets] Response:', response);
+        
         if (response.success) {
-          const balanceAfter = response.data?.balanceAfter;
-          if (typeof balanceAfter === 'number' && Number.isFinite(balanceAfter)) {
-            applyPointsUpdate(balanceAfter);
+          message.success(response.message || 'Đặt cược thành công!');
+          setSelectedQuickBets({});
+          autoSubmitStateRef.current = {
+            sessionId,
+            triggered: true,
+            signature: signatureOverride ?? betSignature,
+          };
+          if (response.data?.balanceAfter != null) {
+            console.log('[Sicbo submitBets] Cập nhật balance:', response.data.balanceAfter);
+            applyPointsUpdate(response.data.balanceAfter);
           } else {
+            console.log('[Sicbo submitBets] Fetch balance từ API');
             await fetchAndUpdateUserPoints();
           }
-          setSelectedQuickBets({});
-          setIsBetConfirmed(false);
-          setConfirmedBetSnapshot(null);
-          message.success(response.message || 'Đặt cược thành công');
         } else {
-          message.error(response.message || 'Không thể đặt cược');
-          setIsBetConfirmed(false);
-          setConfirmedBetSnapshot(null);
-          fetchAndUpdateUserPoints();
+          const errorMessage = response.message || 'Đặt cược không thành công!';
+          message.error(errorMessage);
+          autoSubmitStateRef.current = {
+            sessionId,
+            triggered: false,
+            signature: signatureOverride ?? betSignature,
+          };
         }
       } catch (error) {
-        message.error(error?.message || 'Không thể đặt cược');
-        setIsBetConfirmed(false);
-        setConfirmedBetSnapshot(null);
-        fetchAndUpdateUserPoints();
+        const fallbackMessage = error?.message || 'Đặt cược không thành công!';
+        message.error(fallbackMessage);
+        autoSubmitStateRef.current = {
+          sessionId,
+          triggered: false,
+          signature: signatureOverride ?? betSignature,
+        };
       } finally {
         setIsPlacingBet(false);
       }
     },
-    [applyPointsUpdate, fetchAndUpdateUserPoints, numericTableNumber, sessionId]
+    [
+      applyPointsUpdate,
+      betSignature,
+      fetchAndUpdateUserPoints,
+      isBettingLocked,
+      isPlacingBet,
+      numericTableNumber,
+      placeableBetDetails,
+      sessionId,
+    ]
   );
 
   useEffect(() => {
-    if (!isBetConfirmed || !confirmedBetSnapshot) {
-      return;
-    }
-    if (!isBettingLocked) {
-      return;
-    }
-    if (!confirmedBetSnapshot.signature) {
-      return;
-    }
-    const ref = submissionStateRef.current;
-    if (ref.sessionId === sessionId && ref.signature === confirmedBetSnapshot.signature) {
-      return;
-    }
-    submissionStateRef.current = {
-      sessionId,
-      signature: confirmedBetSnapshot.signature,
-    };
-    submitConfirmedBets(confirmedBetSnapshot);
-  }, [confirmedBetSnapshot, isBetConfirmed, isBettingLocked, sessionId, submitConfirmedBets]);
-
-  useEffect(() => {
-    if (!isBetConfirmed || !confirmedBetSnapshot) {
+    if (!sessionId) {
       return;
     }
     if (!isCountdownPhase) {
@@ -1186,33 +1217,42 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     if (countdownSeconds == null || countdownSeconds > 1) {
       return;
     }
+    if (placeableBetDetails.length === 0) {
+      console.log('[Sicbo Auto-Submit] Không có cược để đặt');
+      return;
+    }
     if (isPlacingBet) {
+      console.log('[Sicbo Auto-Submit] Đang đặt cược, bỏ qua');
       return;
     }
-    const ref = submissionStateRef.current;
-    if (ref.sessionId === sessionId && ref.signature === confirmedBetSnapshot.signature) {
+
+    const state = autoSubmitStateRef.current;
+    if (state.sessionId === sessionId && state.triggered && state.signature === betSignature) {
+      console.log('[Sicbo Auto-Submit] Đã submit rồi, bỏ qua');
       return;
     }
-    submissionStateRef.current = {
+
+    console.log('[Sicbo Auto-Submit] Tự động đặt cược:', {
       sessionId,
-      signature: confirmedBetSnapshot.signature,
-    };
-    submitConfirmedBets(confirmedBetSnapshot);
+      betCount: placeableBetDetails.length,
+      bets: placeableBetDetails,
+      signature: betSignature,
+    });
+    autoSubmitStateRef.current = { sessionId, triggered: true, signature: betSignature };
+    submitBets({ force: true, signatureOverride: betSignature });
   }, [
-    confirmedBetSnapshot,
+    betSignature,
     countdownSeconds,
-    isBetConfirmed,
     isCountdownPhase,
     isPlacingBet,
+    placeableBetDetails,
     sessionId,
-    submitConfirmedBets,
+    submitBets,
   ]);
 
   useEffect(() => {
-    setIsBetConfirmed(false);
-    setConfirmedBetSnapshot(null);
     setIsPlacingBet(false);
-    submissionStateRef.current = { sessionId: null, signature: '' };
+    autoSubmitStateRef.current = { sessionId: null, triggered: false, signature: '' };
   }, [sessionId]);
 
   useEffect(() => {
@@ -1253,6 +1293,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                 quickBetConfigs={quickBetConfigs}
                 selectedQuickBets={selectedQuickBets}
                 onSelectBet={handleQuickBetSelect}
+                isBettingLocked={isBettingLocked}
               />
                 {isLoadingQuickBets ? (
                   <p className="text-xs text-gray-500">Đang tải tỷ lệ cược...</p>
@@ -1270,14 +1311,9 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
                 onClearCustomChip={handleClearCustomChip}
               />
               <SicboBetActionBar
-                onPlaceBet={handleConfirmBets}
-                onCancelConfirmed={handleCancelConfirmed}
                 onClearBet={handleClearQuickBets}
                 onChangeTable={handleOpenTableModal}
                 isPlacingBet={isPlacingBet}
-                isDisabled={!canPlaceBet}
-                isBetConfirmed={isBetConfirmed}
-                canCancelConfirmed={canCancelConfirmed}
               />
               <div className="grid grid-cols-[minmax(0,14fr)_minmax(0,4fr)] gap-1.5 sm:gap-2 items-stretch">
                 <SicboStatsBoard
