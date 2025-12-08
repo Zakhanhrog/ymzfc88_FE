@@ -120,6 +120,7 @@ const XocDiaGamePage = () => {
     refreshSession,
   } = useXocDiaSession({ pollIntervalMs: 1000 });
   const [displayedResult, setDisplayedResult] = useState(null);
+  const displayedResultSessionIdRef = useRef(null);
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [lastPlacedBets, setLastPlacedBets] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
@@ -191,28 +192,27 @@ const XocDiaGamePage = () => {
     availableChipOptions.length > 0 && customChipSelections.size === availableChipOptions.length;
   const quickActionButtons = useMemo(
     () => [
-      {
-        action: 'clear-all',
-        label: 'Huỷ hết',
-        style: 'bg-[#0f4c2c] text-white shadow-lg shadow-[#0f4c2c]/25',
-        icon: 'mdi:close-thick',
-      },
-      {
-        action: 'clear',
-        label: 'Huỷ',
-        style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
-        icon: 'mdi:undo-variant',
-      },
-      {
-        action: 'repeat',
-        label: 'Lặp lại',
-        style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
-        icon: 'mdi:autorenew',
-      },
+        {
+          action: 'clear-all',
+          label: 'Huỷ hết',
+          style: 'bg-[#0f4c2c] text-white shadow-lg shadow-[#0f4c2c]/25',
+          icon: 'mdi:close-thick',
+        },
+        {
+          action: 'clear',
+          label: 'Huỷ',
+          style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
+          icon: 'mdi:undo-variant',
+        },
+        {
+          action: 'repeat',
+          label: 'Lặp lại',
+          style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
+          icon: 'mdi:autorenew',
+        },
     ],
     []
   );
-  const resultTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
   const lastHistorySignatureRef = useRef(null);
   const pendingHistoryRefreshRef = useRef(null);
@@ -907,41 +907,25 @@ const XocDiaGamePage = () => {
     );
   }, [sessionResultCode, quickBetOptions, defaultQuickBetOptionMap]);
 
-  const shouldShowResultOverlay =
-    isSessionRunning &&
-    activeResultOption &&
-    Array.isArray(activeResultOption.pattern) &&
-    activeResultOption.pattern.length > 0 &&
-    ['show-result', 'payout', 'invite-bet'].includes(phaseKey);
-
+  // Lưu kết quả khi có sessionResultCode và chỉ xóa khi sessionId thay đổi (bắt đầu phiên mới)
   useEffect(() => {
-    if (shouldShowResultOverlay && activeResultOption) {
-      if (resultTimeoutRef.current) {
-        clearTimeout(resultTimeoutRef.current);
-        resultTimeoutRef.current = null;
-      }
-      setDisplayedResult(activeResultOption);
-      return;
-    }
-
-    if (!shouldShowResultOverlay && displayedResult) {
-      if (resultTimeoutRef.current) {
-        clearTimeout(resultTimeoutRef.current);
-      }
-      resultTimeoutRef.current = setTimeout(() => {
+    if (sessionResultCode && activeResultOption && 
+        Array.isArray(activeResultOption.pattern) && 
+        activeResultOption.pattern.length > 0) {
+      // Nếu sessionId thay đổi, xóa kết quả cũ
+      if (displayedResultSessionIdRef.current !== null && displayedResultSessionIdRef.current !== sessionId) {
         setDisplayedResult(null);
-        resultTimeoutRef.current = null;
-      }, 500);
-    }
-  }, [shouldShowResultOverlay, activeResultOption, displayedResult]);
-
-  useEffect(() => {
-    return () => {
-      if (resultTimeoutRef.current) {
-        clearTimeout(resultTimeoutRef.current);
       }
-    };
-  }, []);
+      // Lưu kết quả mới
+      setDisplayedResult(activeResultOption);
+      displayedResultSessionIdRef.current = sessionId;
+    } else if (sessionId && displayedResultSessionIdRef.current !== null && displayedResultSessionIdRef.current !== sessionId) {
+      // Khi sessionId thay đổi (bắt đầu phiên mới), xóa kết quả
+        setDisplayedResult(null);
+      displayedResultSessionIdRef.current = null;
+    }
+  }, [sessionId, sessionResultCode, activeResultOption]);
+
 
 
 
@@ -965,8 +949,13 @@ const XocDiaGamePage = () => {
   };
 
   const handleCustomChipValueChange = (event) => {
-    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 4);
-    setCustomChipValue(digitsOnly);
+    const digitsOnly = event.target.value.replace(/\D/g, '');
+    // Giới hạn tối đa 1000
+    let value = digitsOnly;
+    if (digitsOnly && Number(digitsOnly) > 1000) {
+      value = '1000';
+    }
+    setCustomChipValue(value);
     if (customChipError) {
       setCustomChipError('');
     }
@@ -1048,14 +1037,19 @@ const XocDiaGamePage = () => {
     let value = null;
 
     if (trimmed) {
-      if (!/^\d{1,4}$/.test(trimmed)) {
-        setCustomChipError('Chỉ nhập tối đa 4 chữ số');
+      if (!/^\d+$/.test(trimmed)) {
+        setCustomChipError('Chỉ nhập số');
         return;
       }
 
       const numeric = Number(trimmed);
       if (numeric === 0) {
         setCustomChipError('Giá trị phải lớn hơn 0');
+        return;
+      }
+
+      if (numeric > 1000) {
+        setCustomChipError('Giá trị tối đa là 1000');
         return;
       }
 
@@ -1174,19 +1168,15 @@ const XocDiaGamePage = () => {
   );
 
   const resultOverlay = displayedResult ? (
-    <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-6 py-4 backdrop-blur-md shadow-[0_12px_35px_rgba(15,23,42,0.35)]">
-        <div className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Kết quả</div>
-        <div className="mt-2 text-lg font-bold uppercase tracking-[0.15em] text-white">
-          {displayedResult.label}
-        </div>
-        <div className="mt-3 flex flex-col items-center justify-center gap-1.5">
+    <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 z-30 pointer-events-none">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 backdrop-blur-md shadow-[0_4px_12px_rgba(15,23,42,0.35)]">
+        <div className="flex flex-col items-center justify-center gap-0.5">
               {chunkPattern(displayedResult.pattern).map((row, rowIndex) => (
-            <div key={`result-row-${rowIndex}`} className="flex items-center justify-center gap-2">
+            <div key={`result-row-${rowIndex}`} className="flex items-center justify-center gap-1">
               {row.map((chip, chipIndex) => (
                 <span
                   key={`result-chip-${rowIndex}-${chipIndex}`}
-                  className={`h-5 w-5 rounded-full border-2 shadow-lg ${
+                  className={`h-3 w-3 rounded-full border-2 shadow-sm ${
                     chip === 'white' ? 'border-white bg-white' : 'border-[#ef4444] bg-[#ef4444]'
                   }`}
                 />
@@ -1210,6 +1200,7 @@ const XocDiaGamePage = () => {
 
   useEffect(() => {
     if (!sessionId) {
+      setSelectedQuickBets({});
       autoSubmitStateRef.current = { sessionId: null, triggered: false, signature: '' };
       return;
     }
@@ -1290,11 +1281,11 @@ const XocDiaGamePage = () => {
     [
       applyPointsUpdate,
       betSignature,
+      selectedQuickBets,
       fetchAndUpdateUserPoints,
       isBettingLocked,
       isPlacingBet,
       placeableBetDetails,
-      selectedQuickBets,
       sessionId,
     ]
   );

@@ -12,7 +12,7 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(initialTab || 'balance');
+  const [activeTab, setActiveTab] = useState(initialTab || 'account');
   const [userInfo, setUserInfo] = useState({
     username: '',
     email: '',
@@ -121,11 +121,17 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
     
     const tab = searchParams.get('tab');
     if (tab) {
+      // Nếu tab là balance, redirect về /account
+      if (tab === 'balance') {
+        navigate('/account', { replace: true });
+        return;
+      } else {
       setActiveTab(tab);
+      }
     } else if (initialTab) {
       setActiveTab(initialTab);
     }
-  }, [searchParams, initialTab, location.pathname]);
+  }, [searchParams, initialTab, location.pathname, navigate]);
 
   // Handler để cập nhật tab và URL
   const handleTabChange = (tab) => {

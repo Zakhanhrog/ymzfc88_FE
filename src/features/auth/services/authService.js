@@ -60,7 +60,6 @@ export const authService = {
       // Sử dụng username do user nhập vào
       const response = await authAPI.post('/auth/register', {
         username: userData.username,
-        email: userData.email,
         password: userData.password,
         confirmPassword: userData.confirmPassword ?? userData.password,
         fullName: userData.name || userData.fullName,

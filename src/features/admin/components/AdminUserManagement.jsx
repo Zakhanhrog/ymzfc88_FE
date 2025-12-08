@@ -21,8 +21,13 @@ import {
   Typography,
   Tooltip,
   Badge,
-  Alert
+  Alert,
+  DatePicker,
+  Spin,
+  List,
+  Empty
 } from 'antd';
+import dayjs from 'dayjs';
 import {
   UserOutlined,
   EditOutlined,
@@ -39,12 +44,17 @@ import {
   UserDeleteOutlined,
   LockOutlined,
   UnlockOutlined,
-  SafetyOutlined
+  SafetyOutlined,
+  BankOutlined,
+  DollarOutlined,
+  PlusCircleOutlined,
+  MinusCircleOutlined
 } from '@ant-design/icons';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import { adminAuthService } from '../services/adminAuthService';
 import { getPortalType } from '../../../utils/subdomain';
 import { adminService } from '../services/adminService';
+import { formatPointsDisplay } from '../../../utils/helpers';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -73,7 +83,9 @@ const AdminUserManagement = () => {
     status: null,
     searchTerm: '',
     sortBy: 'createdAt',
-    sortDirection: 'desc'
+    sortDirection: 'desc',
+    startDate: null,
+    endDate: null
   });
   const [userStats, setUserStats] = useState({});
   const [selectedUser, setSelectedUser] = useState(null);
@@ -84,12 +96,19 @@ const AdminUserManagement = () => {
   const [showC2Modal, setShowC2Modal] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [lockAction, setLockAction] = useState(null); // 'lock' or 'unlock'
+  const [showBankModal, setShowBankModal] = useState(false);
+  const [showPointModal, setShowPointModal] = useState(false);
+  const [userPaymentMethods, setUserPaymentMethods] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [c2Form] = Form.useForm();
   const [lockForm] = Form.useForm();
+  const [bankForm] = Form.useForm();
+  const [pointForm] = Form.useForm();
 
   const currentAdminSession = adminAuthService.getCurrentAdmin();
   const currentPortal = useMemo(
@@ -110,6 +129,13 @@ const AdminUserManagement = () => {
     return ROLE_SELECTIONS.filter((option) => option.value === 'USER');
   }, [isAdminPortal, isStaffXnk]);
 
+  // Chỉ cho phép chọn USER và AGENT khi tạo người dùng mới
+  const createRoleOptions = useMemo(() => {
+    return ROLE_SELECTIONS.filter((option) => 
+      option.value === 'USER' || option.value === 'AGENT'
+    );
+  }, []);
+
   // Load data
   useEffect(() => {
     loadUsers();
@@ -124,6 +150,14 @@ const AdminUserManagement = () => {
         page: pagination.current - 1,
         size: pagination.pageSize
       };
+      
+      // Format dates for API
+      if (params.startDate) {
+        params.startDate = dayjs(params.startDate).format('YYYY-MM-DD');
+      }
+      if (params.endDate) {
+        params.endDate = dayjs(params.endDate).format('YYYY-MM-DD');
+      }
       
       const response = await adminService.getUsersWithFilters(params);
       
@@ -166,7 +200,9 @@ const AdminUserManagement = () => {
       status: null,
       searchTerm: '',
       sortBy: 'createdAt',
-      sortDirection: 'desc'
+      sortDirection: 'desc',
+      startDate: null,
+      endDate: null
     });
     setPagination(prev => ({ ...prev, current: 1 }));
   };
@@ -253,6 +289,11 @@ const AdminUserManagement = () => {
       if (!payload.staffRole) {
         delete payload.staffRole;
       }
+
+      // Normalize referralCode to uppercase
+      if (payload.referralCode) {
+        payload.referralCode = payload.referralCode.trim().toUpperCase();
+      }
       
       const response = await adminService.updateUser(selectedUser.id, payload);
       if (response.success) {
@@ -324,6 +365,67 @@ const AdminUserManagement = () => {
     }
   };
 
+  // Update bank info
+  const handleUpdateBank = async (values) => {
+    try {
+      const response = await adminService.updateUserPaymentMethod(
+        selectedUser.id,
+        selectedPaymentMethod.id,
+        values
+      );
+      if (response.success) {
+        message.success('Cập nhật thông tin ngân hàng thành công!');
+        setShowBankModal(false);
+        bankForm.resetFields();
+        setSelectedPaymentMethod(null);
+        await loadUserPaymentMethods(selectedUser.id);
+      }
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
+  // Adjust points
+  const handleAdjustPoints = async (values) => {
+    try {
+      const payload = {
+        points: parseInt(values.points),
+        type: values.type,
+        description: values.description
+      };
+      
+      // Chỉ gửi moneyType khi type = ADD
+      if (values.type === 'ADD' && values.moneyType) {
+        payload.moneyType = values.moneyType;
+      }
+      
+      const response = await adminService.adjustUserPoints(selectedUser.id, payload);
+      if (response.success) {
+        message.success(`${values.type === 'ADD' ? 'Cộng' : 'Trừ'} điểm thành công!`);
+        setShowPointModal(false);
+        pointForm.resetFields();
+        setSelectedUser(null);
+        loadUsers();
+      }
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
+
+  // Load user payment methods
+  const loadUserPaymentMethods = async (userId) => {
+    setLoadingPaymentMethods(true);
+    try {
+      const response = await adminService.getUserPaymentMethods(userId);
+      if (response.success) {
+        setUserPaymentMethods(response.data || []);
+      }
+    } catch (error) {
+      message.error(error.message || 'Không thể tải danh sách phương thức thanh toán');
+    } finally {
+      setLoadingPaymentMethods(false);
+    }
+  };
 
   // Show modals
   const showEditUserModal = (user) => {
@@ -331,10 +433,29 @@ const AdminUserManagement = () => {
     // Nếu user có staffRole, hiển thị staffRole trong dropdown, không phải role
     const formValues = {
       ...user,
-      role: user.staffRole || user.role
+      role: user.staffRole || user.role,
+      referralCode: user.referralCode || ''
     };
     editForm.setFieldsValue(formValues);
     setShowEditModal(true);
+  };
+
+  const showBankModalHandler = async (user) => {
+    setSelectedUser(user);
+    setSelectedPaymentMethod(null);
+    await loadUserPaymentMethods(user.id);
+    setShowBankModal(true);
+  };
+
+  const showPointModalHandler = (user) => {
+    setSelectedUser(user);
+    pointForm.setFieldsValue({
+      points: '',
+      type: 'ADD',
+      moneyType: 'MANUAL', // Mặc định là tiền thủ công
+      description: ''
+    });
+    setShowPointModal(true);
   };
 
   const showUserDetailDrawer = (user) => {
@@ -510,18 +631,22 @@ const AdminUserManagement = () => {
     },
     {
       title: 'Số dư',
-      dataIndex: 'balance',
+      dataIndex: 'points',
       key: 'balance',
       width: 120,
       sorter: true,
-      render: (balance) => (
-        <Text className={balance > 0 ? 'text-green-600' : 'text-gray-500'}>
-          {new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-          }).format(balance || 0)}
-        </Text>
-      ),
+      render: (points) => {
+        // points là số điểm, quy đổi sang VND: 1 điểm = 1000 VND
+        const balanceVND = (Number(points) || 0) * 1000;
+        return (
+          <Text className={balanceVND > 0 ? 'text-green-600' : 'text-gray-500'}>
+            {new Intl.NumberFormat('vi-VN', {
+              style: 'currency',
+              currency: 'VND'
+            }).format(balanceVND)}
+          </Text>
+        );
+      },
     },
     {
       title: 'Mật khẩu C2',
@@ -556,6 +681,29 @@ const AdminUserManagement = () => {
       width: 120,
       sorter: true,
       render: (date) => new Date(date).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'IP',
+      dataIndex: 'firstLoginIp',
+      key: 'firstLoginIp',
+      width: 150,
+      render: (value) => value || '-'
+    },
+    {
+      title: 'Hoàn trả',
+      dataIndex: 'totalRefund',
+      key: 'totalRefund',
+      width: 140,
+      align: 'right',
+      render: (value) => formatPointsDisplay(Number(value ?? 0))
+    },
+    {
+      title: 'Hoàn thua theo ngày',
+      dataIndex: 'totalDailyLossRefund',
+      key: 'totalDailyLossRefund',
+      width: 160,
+      align: 'right',
+      render: (value) => formatPointsDisplay(Number(value ?? 0))
     },
     {
       title: 'Thao tác',
@@ -711,8 +859,26 @@ const AdminUserManagement = () => {
               <Option value="BANNED">Bị cấm</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={12} md={8} lg={12}>
-            <Space>
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <DatePicker.RangePicker
+              placeholder={['Từ ngày', 'Đến ngày']}
+              value={filters.startDate && filters.endDate ? [dayjs(filters.startDate), dayjs(filters.endDate)] : null}
+              onChange={(dates) => {
+                if (dates && dates[0] && dates[1]) {
+                  handleFilterChange('startDate', dates[0].startOf('day'));
+                  handleFilterChange('endDate', dates[1].endOf('day'));
+                } else {
+                  handleFilterChange('startDate', null);
+                  handleFilterChange('endDate', null);
+                }
+              }}
+              format="DD/MM/YYYY"
+              style={{ width: '100%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={6}>
+            <Space wrap>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -816,7 +982,7 @@ const AdminUserManagement = () => {
                   disabled={isStaffXnk}
                   placeholder="Chọn vai trò"
                 >
-                  {availableRoleOptions.map((option) => (
+                  {createRoleOptions.map((option) => (
                     <Option key={option.value} value={option.value}>
                       {option.label}
                     </Option>
@@ -941,17 +1107,30 @@ const AdminUserManagement = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item
-            name="status"
-            label="Trạng thái"
-          >
-            <Select>
-              <Option value="ACTIVE">Hoạt động</Option>
-              <Option value="INACTIVE">Tạm khóa</Option>
-              <Option value="SUSPENDED">Tạm dừng</Option>
-              <Option value="BANNED">Bị cấm</Option>
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="Trạng thái"
+              >
+                <Select>
+                  <Option value="ACTIVE">Hoạt động</Option>
+                  <Option value="INACTIVE">Tạm khóa</Option>
+                  <Option value="SUSPENDED">Tạm dừng</Option>
+                  <Option value="BANNED">Bị cấm</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="referralCode"
+                label="Mã đại lý (Mã mời)"
+                tooltip="Mã đại lý cũng là mã mời của người dùng"
+              >
+                <Input placeholder="Nhập mã đại lý" maxLength={10} style={{ textTransform: 'uppercase' }} />
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item className="mb-0">
             <Space className="w-full justify-end">
               <Button onClick={() => {
@@ -1029,11 +1208,11 @@ const AdminUserManagement = () => {
               </div>
               <div>
                 <Text strong>Số dư:</Text>
-                <div className={selectedUser.balance > 0 ? 'text-green-600' : 'text-gray-500'}>
+                <div className={(selectedUser.points || 0) > 0 ? 'text-green-600' : 'text-gray-500'}>
                   {new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
                     currency: 'VND'
-                  }).format(selectedUser.balance || 0)}
+                  }).format((selectedUser.points || 0) * 1000)}
                 </div>
               </div>
               <div>
@@ -1144,6 +1323,26 @@ const AdminUserManagement = () => {
                   Mở khóa tài khoản
                 </Button>
               )}
+              <Button 
+                block 
+                icon={<BankOutlined />}
+                onClick={async () => {
+                  setShowUserDetail(false);
+                  await showBankModalHandler(selectedUser);
+                }}
+              >
+                Thay đổi thông tin ngân hàng
+              </Button>
+              <Button 
+                block 
+                icon={<DollarOutlined />}
+                onClick={() => {
+                  setShowUserDetail(false);
+                  showPointModalHandler(selectedUser);
+                }}
+              >
+                Cộng/Trừ điểm thủ công
+              </Button>
             </div>
           </div>
         )}
@@ -1305,6 +1504,302 @@ const AdminUserManagement = () => {
               </Button>
               <Button type="primary" htmlType="submit" danger>
                 Khóa rút tiền
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Bank Info Modal */}
+      <Modal
+        title="Thay đổi thông tin ngân hàng"
+        open={showBankModal}
+        onCancel={() => {
+          setShowBankModal(false);
+          bankForm.resetFields();
+          setSelectedPaymentMethod(null);
+          setSelectedUser(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        {loadingPaymentMethods ? (
+          <div className="text-center py-8">
+            <Spin size="large" />
+          </div>
+        ) : userPaymentMethods.length === 0 ? (
+          <Empty description="Người dùng chưa có phương thức thanh toán nào" />
+        ) : (
+          <>
+            <div className="mb-4">
+              <Text strong>Chọn phương thức thanh toán để chỉnh sửa:</Text>
+              <List
+                className="mt-2"
+                dataSource={userPaymentMethods}
+                renderItem={(method) => (
+                  <List.Item
+                    className={`cursor-pointer hover:bg-gray-50 p-3 rounded ${
+                      selectedPaymentMethod?.id === method.id ? 'bg-blue-50 border border-blue-300' : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedPaymentMethod(method);
+                      bankForm.setFieldsValue({
+                        name: method.name,
+                        type: method.type,
+                        accountNumber: method.accountNumber,
+                        accountName: method.accountName,
+                        bankCode: method.bankCode || undefined,
+                        note: method.note || ''
+                      });
+                    }}
+                  >
+                    <List.Item.Meta
+                      avatar={<BankOutlined className="text-2xl text-blue-600" />}
+                      title={method.name}
+                      description={
+                        <div>
+                          <div>{method.accountName} - {method.accountNumber}</div>
+                          {method.bankCode && <div className="text-xs text-gray-500">{method.bankCode}</div>}
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            </div>
+
+            {selectedPaymentMethod && (
+              <Form
+                form={bankForm}
+                layout="vertical"
+                onFinish={handleUpdateBank}
+              >
+                <Form.Item
+                  name="name"
+                  label="Tên phương thức"
+                  rules={[{ required: true, message: 'Vui lòng nhập tên phương thức' }]}
+                >
+                  <Input placeholder="Ví dụ: Tài khoản chính" />
+                </Form.Item>
+
+                <Form.Item
+                  name="type"
+                  label="Loại phương thức"
+                  rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
+                >
+                  <Select>
+                    <Option value="BANK">Ngân hàng</Option>
+                    <Option value="MOMO">Ví MoMo</Option>
+                    <Option value="ZALO_PAY">ZaloPay</Option>
+                    <Option value="VIET_QR">VietQR</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  noStyle
+                  shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
+                >
+                  {({ getFieldValue }) =>
+                    getFieldValue('type') === 'BANK' && (
+                      <Form.Item
+                        name="bankCode"
+                        label="Ngân hàng"
+                        rules={[{ required: true, message: 'Vui lòng chọn ngân hàng' }]}
+                      >
+                        <Select placeholder="Chọn ngân hàng" showSearch>
+                          <Option value="VCB">Vietcombank</Option>
+                          <Option value="TCB">Techcombank</Option>
+                          <Option value="ACB">ACB</Option>
+                          <Option value="MB">MBBank</Option>
+                          <Option value="VTB">Vietinbank</Option>
+                          <Option value="BIDV">BIDV</Option>
+                          <Option value="TPB">TPBank</Option>
+                          <Option value="STB">Sacombank</Option>
+                          <Option value="VPB">VPBank</Option>
+                        </Select>
+                      </Form.Item>
+                    )
+                  }
+                </Form.Item>
+
+                <Form.Item
+                  name="accountNumber"
+                  label="Số tài khoản"
+                  rules={[{ required: true, message: 'Vui lòng nhập số tài khoản' }]}
+                >
+                  <Input placeholder="Nhập số tài khoản" />
+                </Form.Item>
+
+                <Form.Item
+                  name="accountName"
+                  label="Tên chủ tài khoản"
+                  rules={[{ required: true, message: 'Vui lòng nhập tên chủ tài khoản' }]}
+                >
+                  <Input placeholder="Nhập tên chủ tài khoản" />
+                </Form.Item>
+
+                <Form.Item
+                  name="note"
+                  label="Ghi chú (tùy chọn)"
+                >
+                  <Input.TextArea rows={3} placeholder="Ghi chú thêm..." />
+                </Form.Item>
+
+                <Form.Item className="mb-0">
+                  <Space className="w-full justify-end">
+                    <Button onClick={() => {
+                      setShowBankModal(false);
+                      bankForm.resetFields();
+                      setSelectedPaymentMethod(null);
+                      setSelectedUser(null);
+                    }}>
+                      Hủy
+                    </Button>
+                    <Button type="primary" htmlType="submit">
+                      Cập nhật
+                    </Button>
+                  </Space>
+                </Form.Item>
+              </Form>
+            )}
+          </>
+        )}
+      </Modal>
+
+      {/* Point Adjustment Modal */}
+      <Modal
+        title="Cộng/Trừ điểm thủ công"
+        open={showPointModal}
+        onCancel={() => {
+          setShowPointModal(false);
+          pointForm.resetFields();
+          setSelectedUser(null);
+        }}
+        footer={null}
+        width={500}
+      >
+        {selectedUser && (
+          <div className="mb-4 p-3 bg-gray-50 rounded">
+            <Text strong>Người dùng: </Text>
+            <Text>{selectedUser.fullName} (@{selectedUser.username})</Text>
+            <div className="mt-2">
+              <Text strong>Số điểm hiện tại: </Text>
+              <Text className="text-blue-600 font-semibold">
+                {new Intl.NumberFormat('vi-VN').format(selectedUser.points || 0)} điểm
+              </Text>
+            </div>
+          </div>
+        )}
+
+        <Form
+          form={pointForm}
+          layout="vertical"
+          onFinish={handleAdjustPoints}
+        >
+          <Form.Item
+            name="type"
+            label="Loại thao tác"
+            rules={[{ required: true, message: 'Vui lòng chọn loại thao tác' }]}
+          >
+            <Select
+              onChange={(value) => {
+                // Reset moneyType khi đổi loại thao tác
+                if (value !== 'ADD') {
+                  pointForm.setFieldsValue({ moneyType: undefined });
+                }
+              }}
+            >
+              <Option value="ADD">
+                <Space>
+                  <PlusCircleOutlined className="text-green-600" />
+                  <span>Cộng điểm</span>
+                </Space>
+              </Option>
+              <Option value="SUBTRACT">
+                <Space>
+                  <MinusCircleOutlined className="text-red-600" />
+                  <span>Trừ điểm</span>
+                </Space>
+              </Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
+          >
+            {({ getFieldValue }) => {
+              const type = getFieldValue('type');
+              if (type === 'ADD') {
+                return (
+                  <Form.Item
+                    name="moneyType"
+                    label="Loại tiền"
+                    rules={[{ required: true, message: 'Vui lòng chọn loại tiền' }]}
+                  >
+                    <Select placeholder="Chọn loại tiền">
+                      <Option value="PROMOTIONAL">
+                        <Space>
+                          <span>Tiền khuyến mại</span>
+                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                            (Tiền này sẽ được tính vào bảng KM)
+                          </Text>
+                        </Space>
+                      </Option>
+                      <Option value="MANUAL">
+                        <Space>
+                          <span>Tiền thủ công</span>
+                        </Space>
+                      </Option>
+                    </Select>
+                  </Form.Item>
+                );
+              }
+              return null;
+            }}
+          </Form.Item>
+
+          <Form.Item
+            name="points"
+            label="Số điểm"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số điểm' },
+              { type: 'number', min: 1, message: 'Số điểm phải lớn hơn 0' }
+            ]}
+          >
+            <InputNumber
+              className="w-full"
+              placeholder="Nhập số điểm"
+              min={1}
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Lý do"
+            rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Nhập lý do cộng/trừ điểm..."
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0">
+            <Space className="w-full justify-end">
+              <Button onClick={() => {
+                setShowPointModal(false);
+                pointForm.resetFields();
+                setSelectedUser(null);
+              }}>
+                Hủy
+              </Button>
+              <Button type="primary" htmlType="submit">
+                Xác nhận
               </Button>
             </Space>
           </Form.Item>

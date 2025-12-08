@@ -17,6 +17,7 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 import NotFoundPage from '../components/common/NotFoundPage';
 import LiveCasinoPage from '../features/casino/pages/LiveCasinoPage';
 import LiveCasinoGamePage from '../features/casino/pages/LiveCasinoGamePage';
+import PromotionDetailWrapper from '../features/promotions/pages/PromotionDetailWrapper';
 
 /**
  * User Routes - Used when accessing tathiet168.com
@@ -116,6 +117,10 @@ const UserRoutes = () => {
             <ResponsiveWalletWrapper initialTab="promotions" />
           </ProtectedRoute>
         } 
+      />
+      <Route 
+        path="/promotions/:id" 
+        element={<PromotionDetailWrapper />} 
       />
       
       {/* Notifications */}

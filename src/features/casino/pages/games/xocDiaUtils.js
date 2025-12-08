@@ -50,11 +50,14 @@ export const extractUserName = (data) => {
 
 export const convertConfigToOption = (config) => {
   const payoutMultiplier = config.payoutMultiplier ?? config.multiplier ?? config.ratioMultiplier ?? 0;
+  const feeRate = config.feeRate ?? 0;
+  // Nếu có phế, payoutMultiplier đã được trừ phế rồi từ backend, nên hiển thị trực tiếp
   return {
     code: config.code ?? config.id,
     label: config.label ?? config.name ?? '',
     ratio: formatRatioLabel(payoutMultiplier),
     payoutMultiplier,
+    feeRate,
     pattern: parsePatternString(config.pattern),
     layoutGroup: (config.layoutGroup || 'TOP').toUpperCase(),
     displayOrder: config.displayOrder ?? 0,

@@ -8,12 +8,6 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
 
   const menuItems = [
     {
-      key: 'balance',
-      label: 'Tổng Quan',
-      icon: '/iconacc/imgi_24_overview.avif',
-      section: 'Giao Dịch'
-    },
-    {
       key: 'deposit-withdraw',
       label: 'Nạp Tiền',
       icon: '/iconacc/imgi_25_deposit.avif',
@@ -26,27 +20,21 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
       section: 'Giao Dịch'
     },
     {
-      key: 'bank-account',
-      label: 'Tài Khoản Ngân Hàng',
-      icon: '/iconacc/imgi_27_bank.avif',
-      section: 'Giao Dịch'
-    },
-    {
       key: 'transaction-history',
       label: 'Lịch Sử Cược/Giao Dịch',
       icon: '/iconacc/imgi_28_history.avif',
       section: 'Giao Dịch'
     },
     {
-      key: 'account',
-      label: 'Xác thực tài khoản (KYC)',
-      icon: '/iconacc/imgi_29_account.avif',
-      section: 'Thông Tin'
-    },
-    {
       key: 'settings',
       label: 'Tài khoản',
       icon: '/iconacc/imgi_24_overview.avif',
+      section: 'Thông Tin'
+    },
+    {
+      key: 'account',
+      label: 'Xác thực tài khoản (KYC)',
+      icon: '/iconacc/imgi_29_account.avif',
       section: 'Thông Tin'
     },
     {
@@ -57,7 +45,7 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
     }
   ];
 
-  const sections = ['Giao Dịch', 'Thông Tin'];
+  const sections = ['Thông Tin', 'Giao Dịch'];
 
   // Trigger shimmer animation when activeTab changes
   useEffect(() => {
@@ -72,10 +60,7 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
   }, [activeTab]);
 
   const handleItemClick = (key) => {
-    if (key === 'bank-account') {
-      // Navigate to bank account page or show bank account form
-      onTabChange('bank-account');
-    } else if (key === 'promotions') {
+    if (key === 'promotions') {
       // Use onTabChange to show promotions in wallet layout
       onTabChange('promotions');
     } else if (key === 'account') {

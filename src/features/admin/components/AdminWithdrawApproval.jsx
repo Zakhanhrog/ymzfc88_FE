@@ -250,6 +250,24 @@ const AdminWithdrawApproval = () => {
       ]
     },
     {
+      title: 'Người duyệt',
+      dataIndex: 'processedByUsername',
+      key: 'processedByUsername',
+      render: (username, record) => {
+        if (!username) {
+          return <span className="text-gray-400">-</span>;
+        }
+        return (
+          <div>
+            <div className="font-semibold">{username}</div>
+            {record.processedAt && (
+              <div className="text-gray-500 text-xs">{formatDate(record.processedAt)}</div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
       title: 'Hành động',
       key: 'actions',
       width: 200,

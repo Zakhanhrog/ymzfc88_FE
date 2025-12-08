@@ -6,6 +6,7 @@ const AdminRoleAssignment = () => (
     allowRoleFilter
     title="Phân quyền người dùng"
     description="Gán người dùng vào nhóm đại lý hoặc các đội nhân viên. Chọn phân quyền trong bảng để cập nhật."
+    useRoleAssignmentCreateOptions={true}
   />
 );
 

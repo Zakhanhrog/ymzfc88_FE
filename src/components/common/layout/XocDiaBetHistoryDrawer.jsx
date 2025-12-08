@@ -134,6 +134,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [error, setError] = useState('');
+  const [daysFilter, setDaysFilter] = useState(14); // Mặc định 14 ngày (tối đa cho phép)
   const [totals, setTotals] = useState({
     totalWinAmount: 0,
     totalLossAmount: 0,
@@ -160,7 +161,11 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
       setLoading(true);
       setError('');
 
-      const response = await xocDiaBetService.fetchBetHistory({ page: pageToLoad, size: 10 });
+      const response = await xocDiaBetService.fetchBetHistory({ 
+        page: pageToLoad, 
+        size: 10,
+        days: daysFilter 
+      });
 
       if (!response.success) {
         setError(response.message || 'Không thể tải lịch sử cược');
@@ -185,7 +190,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
       setLoading(false);
       loadingRef.current = false;
     },
-    []
+    [daysFilter]
   );
 
   useEffect(() => {
@@ -200,6 +205,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
         totalWinAmount: 0,
         totalLossAmount: 0,
       });
+      setDaysFilter(14);
       return;
     }
 
@@ -212,7 +218,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
     loadHistory(0).finally(() => {
       setInitialLoading(false);
     });
-  }, [isOpen, loadHistory]);
+  }, [isOpen, daysFilter, loadHistory]);
 
   useEffect(() => {
     return () => {
@@ -246,11 +252,24 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
               type="button"
               onClick={onClose}
               className="md:hidden flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              aria-label="Đóng lịch sử"
             >
               <Icon icon="mdi:arrow-left" className="w-5 h-5" />
             </button>
             <h2 className="text-lg font-semibold text-gray-900">Lịch sử cược Xóc Đĩa</h2>
           </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={daysFilter}
+              onChange={(e) => {
+                const value = parseInt(e.target.value, 10);
+                setDaysFilter(value);
+              }}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="7">7 ngày</option>
+              <option value="14">14 ngày</option>
+            </select>
           <button
             type="button"
             onClick={onClose}
@@ -258,6 +277,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
           >
             <Icon icon="mdi:close" className="w-5 h-5" />
           </button>
+          </div>
         </header>
 
         <div className="h-[calc(100%-64px)] overflow-y-auto px-6 py-5 space-y-4">

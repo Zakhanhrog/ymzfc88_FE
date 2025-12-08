@@ -1,6 +1,5 @@
 import { Card, CardContent, Tabs } from '../../../components/ui';
 import { Icon } from '@iconify/react';
-import WalletBalance from './WalletBalance';
 import TransactionHistory from './TransactionHistory';
 import DepositWithdraw from './DepositWithdraw';
 import WithdrawForm from './WithdrawForm';
@@ -10,12 +9,6 @@ import AccountSettings from './AccountSettings';
 
 const WalletTabsContent = ({ activeTab, onTabChange, onProfileUpdate }) => {
   const tabItems = [
-    {
-      key: 'balance',
-      label: 'Số dư ví',
-      icon: <Icon icon="mdi:wallet" />,
-      children: <WalletBalance onTabChange={onTabChange} />
-    },
     {
       key: 'deposit-withdraw',
       label: 'Nạp tiền',

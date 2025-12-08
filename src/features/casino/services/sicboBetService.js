@@ -38,11 +38,14 @@ const sicboBetService = {
     }
   },
 
-  fetchBetHistory: async ({ page = 0, size = 10 } = {}) => {
+  fetchBetHistory: async ({ page = 0, size = 10, days = null } = {}) => {
     const params = new URLSearchParams({
       page: String(page),
       size: String(size),
     });
+    if (days !== null && days !== undefined) {
+      params.append('days', String(days));
+    }
 
     try {
       const response = await authService.makeAuthenticatedRequest(

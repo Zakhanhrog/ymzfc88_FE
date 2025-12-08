@@ -369,9 +369,8 @@ const AdminSidebar = ({ collapsed }) => {
       analytics: () => goTo('/dashboard?tab=analytics'),
       users: () => goTo('/dashboard?tab=users'),
       'kyc-verification': () => goTo('/dashboard?tab=kyc-verification'),
-      'user-roles': () => goTo('/dashboard?tab=user-roles'),
       'staff-management': () => goTo('/dashboard?tab=staff-management'),
-      'agent-management': () => goTo('/dashboard?tab=agent-management'),
+      'user-roles': () => goTo('/dashboard?tab=staff-management'), // Redirect to staff-management
       'login-history': () => goTo('/dashboard?tab=login-history'),
       deposits: () => goTo('/dashboard?tab=deposits'),
       withdraws: () => goTo('/dashboard?tab=withdraws'),
@@ -613,6 +612,14 @@ const AdminSidebar = ({ collapsed }) => {
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}
         loading={isLoggingOut}
+        title="Xác nhận đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi Admin Panel không?"
+        icon="mdi:logout"
+        iconContainerClass="bg-red-100 text-red-600"
+        confirmLabel="Đăng xuất"
+        confirmLoadingLabel="Đang đăng xuất..."
+        confirmIcon="mdi:logout"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
     </aside>
   );

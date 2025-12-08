@@ -14,7 +14,8 @@ import {
   Divider,
   Row,
   Col,
-  TimePicker
+  TimePicker,
+  Switch
 } from 'antd';
 import {
   SettingOutlined,
@@ -43,6 +44,7 @@ const AdminSystemSettings = () => {
   const [form] = Form.useForm();
   const [commissionForm] = Form.useForm();
   const [gameRefundForm] = Form.useForm();
+  const [dailyLossRefundForm] = Form.useForm();
   const currentCommissionValue =
     settings.agent_commission_percentage !== undefined &&
     settings.agent_commission_percentage !== null &&
@@ -83,6 +85,11 @@ const AdminSystemSettings = () => {
           sicbo_refund_payout_time: parseTimeSetting(settingsMap.sicbo_refund_payout_time),
           xocdia_refund_payout_time: parseTimeSetting(settingsMap.xocdia_refund_payout_time)
         });
+        dailyLossRefundForm.setFieldsValue({
+          daily_loss_refund_enabled: settingsMap.daily_loss_refund_enabled === 'true' || settingsMap.daily_loss_refund_enabled === '1',
+          daily_loss_refund_percentage: parsePercentage(settingsMap.daily_loss_refund_percentage),
+          daily_loss_refund_payout_time: parseTimeSetting(settingsMap.daily_loss_refund_payout_time)
+        });
       }
     } catch (error) {
       message.error('Lỗi khi tải cài đặt: ' + error.message);
@@ -105,6 +112,69 @@ const AdminSystemSettings = () => {
     }
     const parsed = dayjs(value, REFUND_TIME_FORMAT, true);
     return parsed.isValid() ? parsed : dayjs(DEFAULT_REFUND_TIME, REFUND_TIME_FORMAT);
+  };
+
+  const handleSaveDailyLossRefundSettings = async (values) => {
+    try {
+      setLoading(true);
+      
+      const entries = [
+        {
+          key: 'daily_loss_refund_enabled',
+          value: values.daily_loss_refund_enabled ? 'true' : 'false',
+          description: 'Bật/tắt tính năng hoàn tổng thua theo ngày',
+          category: 'GAME_REFUND'
+        }
+      ];
+
+      // Chỉ lưu percentage và payout_time nếu tính năng được bật
+      if (values.daily_loss_refund_enabled) {
+        entries.push({
+          key: 'daily_loss_refund_percentage',
+          value: String(values.daily_loss_refund_percentage ?? 0),
+          description: 'Tỷ lệ hoàn trả (%) cho tổng thua theo ngày',
+          category: 'GAME_REFUND'
+        });
+        entries.push({
+          key: 'daily_loss_refund_payout_time',
+          value: formatTimeValue(values.daily_loss_refund_payout_time),
+          description: 'Thời gian hoàn trả tổng thua theo ngày hằng ngày (HH:mm)',
+          category: 'GAME_REFUND'
+        });
+      } else {
+        // Nếu tắt, vẫn lưu giá trị hiện tại (nếu có) để giữ lại cấu hình
+        entries.push({
+          key: 'daily_loss_refund_percentage',
+          value: String(values.daily_loss_refund_percentage ?? 0),
+          description: 'Tỷ lệ hoàn trả (%) cho tổng thua theo ngày',
+          category: 'GAME_REFUND'
+        });
+        entries.push({
+          key: 'daily_loss_refund_payout_time',
+          value: formatTimeValue(values.daily_loss_refund_payout_time) || DEFAULT_REFUND_TIME,
+          description: 'Thời gian hoàn trả tổng thua theo ngày hằng ngày (HH:mm)',
+          category: 'GAME_REFUND'
+        });
+      }
+
+      await Promise.all(
+        entries.map(entry =>
+          adminService.createOrUpdateSystemSetting({
+            settingKey: entry.key,
+            settingValue: entry.value,
+            description: entry.description,
+            category: entry.category
+          })
+        )
+      );
+      
+      message.success('Lưu cài đặt hoàn tổng thua theo ngày thành công!');
+      await loadSettings();
+    } catch (error) {
+      message.error('Lỗi khi lưu cài đặt: ' + (error.message || 'Có lỗi xảy ra'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatTimeValue = (timeValue) => {
@@ -154,13 +224,13 @@ const AdminSystemSettings = () => {
       {
         key: 'sicbo_refund_win_percentage',
         value: values.sicbo_refund_win_percentage,
-        description: 'Tỷ lệ hoàn trả (%) cho lệnh thắng Sicbo',
+        description: 'Tỷ lệ hoàn trả (%) cho lệnh thắng Tài xỉu',
         category: 'GAME_REFUND'
       },
       {
         key: 'sicbo_refund_loss_percentage',
         value: values.sicbo_refund_loss_percentage,
-        description: 'Tỷ lệ hoàn trả (%) cho lệnh thua Sicbo',
+        description: 'Tỷ lệ hoàn trả (%) cho lệnh thua Tài xỉu',
         category: 'GAME_REFUND'
       },
       {
@@ -178,7 +248,7 @@ const AdminSystemSettings = () => {
       {
         key: 'sicbo_refund_payout_time',
         value: formatTimeValue(values.sicbo_refund_payout_time),
-        description: 'Thời gian chạy hoàn trả Sicbo hằng ngày (HH:mm)',
+        description: 'Thời gian chạy hoàn trả Tài xỉu hằng ngày (HH:mm)',
         category: 'GAME_REFUND'
       },
       {
@@ -566,7 +636,7 @@ const AdminSystemSettings = () => {
                       type="info"
                       showIcon
                       message="Thiết lập tỷ lệ hoàn trả theo từng trò chơi"
-                      description="Tỷ lệ hoàn trả được tính dựa trên số tiền cược (stake) của mỗi lệnh cược Sicbo và Xóc Đĩa. Hệ thống sẽ cộng thêm điểm hoàn trả tương ứng sau khi lệnh được xử lý."
+                      description="Tỷ lệ hoàn trả được tính dựa trên số tiền cược (stake) của mỗi lệnh cược Tài xỉu và Xóc Đĩa. Hệ thống sẽ cộng thêm điểm hoàn trả tương ứng sau khi lệnh được xử lý."
                     />
 
                     <Form
@@ -574,7 +644,7 @@ const AdminSystemSettings = () => {
                       layout="vertical"
                       onFinish={handleSaveGameRefundSettings}
                     >
-                      <Divider orientation="left">Sicbo</Divider>
+                      <Divider orientation="left">Tài xỉu</Divider>
                       <Row gutter={16}>
                         <Col xs={24} md={12}>
                           <Form.Item
@@ -778,6 +848,152 @@ const AdminSystemSettings = () => {
                                 xocdia_refund_loss_percentage: parsePercentage(settings.xocdia_refund_loss_percentage),
                                 sicbo_refund_payout_time: parseTimeSetting(settings.sicbo_refund_payout_time),
                                 xocdia_refund_payout_time: parseTimeSetting(settings.xocdia_refund_payout_time)
+                              })
+                            }
+                            disabled={loading}
+                          >
+                            Đặt lại
+                          </Button>
+                        </Space>
+                      </Form.Item>
+                    </Form>
+
+                    <Divider orientation="left">Hoàn tổng thua theo ngày</Divider>
+                    
+                    <Form
+                      form={dailyLossRefundForm}
+                      layout="vertical"
+                      onFinish={handleSaveDailyLossRefundSettings}
+                    >
+                        <Row gutter={16}>
+                          <Col xs={24} md={12}>
+                            <Form.Item
+                              name="daily_loss_refund_enabled"
+                              label="Bật tính năng"
+                              valuePropName="checked"
+                            >
+                              <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} md={12}>
+                            <Form.Item
+                              noStyle
+                              shouldUpdate={(prevValues, currentValues) => 
+                                prevValues.daily_loss_refund_enabled !== currentValues.daily_loss_refund_enabled
+                              }
+                            >
+                              {({ getFieldValue }) => {
+                                const enabled = getFieldValue('daily_loss_refund_enabled');
+                                return (
+                                  <Form.Item
+                                    name="daily_loss_refund_percentage"
+                                    label="Tỷ lệ hoàn trả (%)"
+                                    rules={[
+                                      {
+                                        validator: (_, value) => {
+                                          if (enabled && (value === undefined || value === null || value === '')) {
+                                            return Promise.reject(new Error('Vui lòng nhập tỷ lệ hoàn trả'));
+                                          }
+                                          if (value !== undefined && value !== null && value !== '') {
+                                            if (value < 0 || value > 100) {
+                                              return Promise.reject(
+                                                new Error('Tỷ lệ phải nằm trong khoảng 0 - 100%')
+                                              );
+                                            }
+                                          }
+                                          return Promise.resolve();
+                                        }
+                                      }
+                                    ]}
+                                  >
+                                    <InputNumber
+                                      min={0}
+                                      max={100}
+                                      step={0.1}
+                                      style={{ width: '100%' }}
+                                      formatter={(value) =>
+                                        value === undefined || value === null ? '' : `${value}%`
+                                      }
+                                      parser={(value) =>
+                                        value ? value.replace(/\s?%/g, '').replace(',', '.') : ''
+                                      }
+                                      disabled={!enabled}
+                                    />
+                                  </Form.Item>
+                                );
+                              }}
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                        <Row gutter={16}>
+                          <Col xs={24} md={12}>
+                            <Form.Item
+                              noStyle
+                              shouldUpdate={(prevValues, currentValues) => 
+                                prevValues.daily_loss_refund_enabled !== currentValues.daily_loss_refund_enabled
+                              }
+                            >
+                              {({ getFieldValue }) => {
+                                const enabled = getFieldValue('daily_loss_refund_enabled');
+                                return (
+                                  <Form.Item
+                                    name="daily_loss_refund_payout_time"
+                                    label="Thời gian hoàn trả hằng ngày"
+                                    rules={[
+                                      {
+                                        validator: (_, value) => {
+                                          if (enabled && !value) {
+                                            return Promise.reject(new Error('Vui lòng chọn thời gian hoàn trả'));
+                                          }
+                                          return Promise.resolve();
+                                        }
+                                      }
+                                    ]}
+                                  >
+                                    <TimePicker
+                                      className="w-full"
+                                      format={REFUND_TIME_FORMAT}
+                                      minuteStep={5}
+                                      disabled={!enabled}
+                                    />
+                                  </Form.Item>
+                                );
+                              }}
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Alert
+                          type="info"
+                          showIcon
+                          message="Công thức tính hoàn tổng thua theo ngày"
+                          description={
+                            <div>
+                              <p><strong>Công thức:</strong> (Tổng thắng) - (Tổng thua) = Net Loss</p>
+                              <p>• Nếu Net Loss &lt; 0 (âm): Hoàn trả = |Net Loss| × Tỷ lệ %</p>
+                              <p>• Nếu Net Loss ≥ 0 (dương): Không hoàn trả</p>
+                              <p><strong>Ví dụ:</strong> Thắng 500đ, Thua 1000đ → Net Loss = -500đ → Hoàn trả = 500đ × Tỷ lệ %</p>
+                              <p><strong>Thời gian tính:</strong> Từ 00:00 đến 23:59 mỗi ngày. Hệ thống sẽ tính toán vào 00:01 ngày hôm sau.</p>
+                            </div>
+                          }
+                        />
+
+                        <Form.Item className="mt-4">
+                          <Space>
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              icon={<SaveOutlined />}
+                              loading={loading}
+                            >
+                              Lưu cài đặt hoàn tổng thua theo ngày
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                dailyLossRefundForm.setFieldsValue({
+                                  daily_loss_refund_enabled: settings.daily_loss_refund_enabled === 'true' || settings.daily_loss_refund_enabled === '1',
+                                  daily_loss_refund_percentage: parsePercentage(settings.daily_loss_refund_percentage),
+                                  daily_loss_refund_payout_time: parseTimeSetting(settings.daily_loss_refund_payout_time)
                               })
                             }
                             disabled={loading}

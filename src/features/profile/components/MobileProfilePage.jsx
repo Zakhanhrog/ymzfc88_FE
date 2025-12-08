@@ -54,7 +54,7 @@ const MobileProfilePage = ({ isOpen, onClose, userName, userBalance, onRefreshBa
       id: 'my-wallet',
       title: 'Ví tiền của tôi',
       icon: 'mdi:wallet',
-      onClick: () => navigate('/wallet?tab=balance')
+      onClick: () => navigate('/account')
     },
     {
       id: 'transaction-history',

@@ -161,14 +161,14 @@ const MobileSidebar = ({ isOpen, onClose, isLoggedIn, userName, userBalance }) =
           >
             <Icon icon="mdi:close" className="w-5 h-5 text-gray-700" />
           </button>
-          <img src="/images/logos/logo.svg" alt="Logo" className="h-6" />
+          <img src="/images/logos/logo.png" alt="Logo" className="h-6" />
         </div>
 
         {/* Menu List - Content only, white background */}
         <nav className="py-2">
           {[
             { label: 'Thể Thao', icon: '/icondieuhuongmb/imgi_21_sport.avif', path: '/' },
-            { label: 'Sòng Bài', icon: '/icondieuhuongmb/imgi_22_casino.avif', path: '/casino/live' , badge: 'LIVE' },
+            { label: 'Live Casino', icon: '/icondieuhuongmb/imgi_22_casino.avif', path: '/casino/live' , badge: 'LIVE' },
             { label: 'Nổ Hũ', icon: '/icondieuhuongmb/imgi_24_slots.avif', path: '/' },
             { label: 'Quay Số', icon: '/icondieuhuongmb/imgi_25_lottery.avif', path: '/' },
             { label: 'Game Bài', icon: '/icondieuhuongmb/imgi_27_game-cards.avif', path: '/' },

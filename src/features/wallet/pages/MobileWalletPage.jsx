@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import Layout from '../../../components/common/Layout';
-import MobileWalletBalance from '../components/MobileWalletBalance';
 import MobileTransactionHistory from '../components/MobileTransactionHistory';
 import DepositWithdraw from '../components/DepositWithdraw';
 import WithdrawForm from '../components/WithdrawForm';
@@ -13,7 +12,7 @@ import kycService from '../services/kycService';
 const MobileWalletPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('balance');
+  const [activeTab, setActiveTab] = useState('account');
   const [userInfo, setUserInfo] = useState({
     username: '',
     email: '',
@@ -69,9 +68,15 @@ const MobileWalletPage = () => {
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab) {
+      // Nếu tab là balance, redirect về /account
+      if (tab === 'balance') {
+        navigate('/account', { replace: true });
+        return;
+      } else {
       setActiveTab(tab);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   const handleProfileUpdate = (data) => {
     setUserInfo(prev => ({
@@ -85,8 +90,6 @@ const MobileWalletPage = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'balance':
-        return <MobileWalletBalance onTabChange={setActiveTab} />;
       case 'deposit-withdraw':
         return <DepositWithdraw />;
       case 'withdraw':
@@ -105,7 +108,14 @@ const MobileWalletPage = () => {
           />
         );
       default:
-        return <MobileWalletBalance onTabChange={setActiveTab} />;
+        return (
+          <MobileAccountSettings
+            onBack={() => {
+              navigate('/account');
+            }}
+            onProfileUpdate={handleProfileUpdate}
+          />
+        );
     }
   };
 

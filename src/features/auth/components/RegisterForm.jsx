@@ -10,7 +10,6 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
-    email: '',
     phoneNumber: '',
     inviteCode: '',
     password: '',
@@ -39,9 +38,6 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
     
     if (!formData.username) newErrors.username = 'Vui lòng nhập tên đăng nhập!';
     else if (formData.username.length < 3) newErrors.username = 'Tên đăng nhập tối thiểu 3 ký tự!';
-    
-    if (!formData.email) newErrors.email = 'Vui lòng nhập email!';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email không hợp lệ!';
     
     if (!formData.phoneNumber) newErrors.phoneNumber = 'Vui lòng nhập số điện thoại!';
     else if (!/^[0-9]{10,11}$/.test(formData.phoneNumber)) newErrors.phoneNumber = 'Số điện thoại không hợp lệ!';
@@ -161,24 +157,8 @@ const RegisterForm = ({ onClose, onSwitchToLogin }) => {
               </div>
             </div>
 
-            {/* Row 2: Email + Số điện thoại */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <Input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Nhập email"
-                  prefix={<Icon icon="mdi:email" className="text-gray-400 text-base" />}
-                  error={errors.email}
-                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                />
-              </div>
-
+            {/* Row 2: Số điện thoại */}
+            <div className="grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Số điện thoại

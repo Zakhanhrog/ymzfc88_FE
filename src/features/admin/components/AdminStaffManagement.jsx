@@ -6,7 +6,17 @@ import adminService from '../services/adminService';
 const { Text } = Typography;
 
 const STAFF_ROLE_OPTIONS = [
-  { label: 'Đại lý', value: 'AGENT' },
+  { label: 'Admin', value: 'ADMIN' },
+  { label: 'Nhân viên TX 1', value: 'STAFF_TX1' },
+  { label: 'Nhân viên TX 2', value: 'STAFF_TX2' },
+  { label: 'Nhân viên Xóc Đĩa', value: 'STAFF_XD' },
+  { label: 'Nhân viên MKT', value: 'STAFF_MKT' },
+  { label: 'Nhân viên XNK', value: 'STAFF_XNK' },
+];
+
+// Role options cho trang Phân quyền khi tạo tài khoản nhân viên (bỏ AGENT, thêm ADMIN)
+const ROLE_ASSIGNMENT_CREATE_OPTIONS = [
+  { label: 'Admin', value: 'ADMIN' },
   { label: 'Nhân viên TX 1', value: 'STAFF_TX1' },
   { label: 'Nhân viên TX 2', value: 'STAFF_TX2' },
   { label: 'Nhân viên Xóc Đĩa', value: 'STAFF_XD' },
@@ -22,11 +32,12 @@ const STAFF_ROLE_LABELS = STAFF_ROLE_OPTIONS.reduce((acc, item) => {
 const DEFAULT_PAGE_SIZE = 20;
 
 const AdminStaffManagement = ({
-  initialRole = 'ALL',
+  initialRole = 'STAFF',
   allowRoleFilter = true,
   title = 'Quản lý nhân viên',
   description,
   readOnly = false,
+  useRoleAssignmentCreateOptions = false, // Flag để dùng role options đặc biệt cho trang Phân quyền
 }) => {
   const [roleFilter, setRoleFilter] = useState(initialRole);
   const [loading, setLoading] = useState(false);
@@ -44,15 +55,14 @@ const AdminStaffManagement = ({
       return [];
     }
     if (readOnly) {
-      const staffOptions = STAFF_ROLE_OPTIONS.filter((option) => option.value !== 'AGENT');
       return [
         { label: 'Tất cả nhân viên', value: 'STAFF' },
-        ...staffOptions,
+        { label: 'Admin', value: 'ADMIN' },
+        ...STAFF_ROLE_OPTIONS,
       ];
     }
     return [
-      { label: 'Tất cả người dùng', value: 'ALL' },
-      { label: 'Chỉ nhân viên', value: 'STAFF' },
+      { label: 'Tất cả nhân viên', value: 'STAFF' },
       ...STAFF_ROLE_OPTIONS,
     ];
   }, [allowRoleFilter, readOnly]);
@@ -64,8 +74,8 @@ const AdminStaffManagement = ({
       }
       return roleFilter;
     }
-    if (!roleFilter || roleFilter === 'ALL') {
-      return 'ALL';
+    if (!roleFilter || roleFilter === 'ALL' || roleFilter === 'STAFF') {
+      return 'STAFF';
     }
     return roleFilter;
   }, [roleFilter, readOnly]);
@@ -129,9 +139,16 @@ const AdminStaffManagement = ({
     try {
       const payload = {
         ...values,
-        role: 'USER',
-        staffRole: values.staffRole,
       };
+      
+      // Nếu là ADMIN thì set role = 'ADMIN', không có staffRole
+      if (values.staffRole === 'ADMIN') {
+        payload.role = 'ADMIN';
+        delete payload.staffRole;
+      } else {
+        payload.role = 'USER';
+        payload.staffRole = values.staffRole;
+      }
       
       const response = await adminService.createUser(payload);
       if (response.success) {
@@ -188,28 +205,38 @@ const AdminStaffManagement = ({
       title: 'Phân quyền',
       dataIndex: 'staffRole',
       width: 220,
-      render: (value, record) => (
-        <Select
-          value={value || undefined}
-          allowClear
-          placeholder="Chưa phân quyền"
-          options={STAFF_ROLE_OPTIONS}
-          style={{ width: '100%' }}
-          onChange={(nextValue) => handleUpdateStaffRole(record.id, nextValue ?? null)}
-        />
-      ),
+      render: (value, record) => {
+        // Nếu là Admin thì chỉ hiển thị tag, không cho chỉnh sửa tại đây
+        if (record.role === 'ADMIN') {
+          return <Tag color="volcano">Admin</Tag>;
+        }
+        return (
+          <Select
+            value={value || undefined}
+            allowClear
+            placeholder="Chưa phân quyền"
+            options={STAFF_ROLE_OPTIONS}
+            style={{ width: '100%' }}
+            onChange={(nextValue) => handleUpdateStaffRole(record.id, nextValue ?? null)}
+          />
+        );
+      },
     };
 
     const readOnlyColumn = {
       title: 'Phân quyền',
       dataIndex: 'staffRole',
       width: 220,
-      render: (value) =>
-        value ? (
+      render: (value, record) => {
+        if (record.role === 'ADMIN') {
+          return <Tag color="volcano">Admin</Tag>;
+        }
+        return value ? (
           <Tag color="blue">{STAFF_ROLE_LABELS[value] ?? value}</Tag>
         ) : (
           <Tag>Chưa phân quyền</Tag>
-        ),
+        );
+      },
     };
 
     return [...baseColumns, readOnly ? readOnlyColumn : editableColumn];
@@ -330,7 +357,7 @@ const AdminStaffManagement = ({
               >
                 <Select
                   placeholder="Chọn vai trò"
-                  options={STAFF_ROLE_OPTIONS}
+                  options={useRoleAssignmentCreateOptions ? ROLE_ASSIGNMENT_CREATE_OPTIONS : STAFF_ROLE_OPTIONS}
                 />
               </Form.Item>
             </Col>

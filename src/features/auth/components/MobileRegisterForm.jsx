@@ -9,7 +9,6 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
     confirmPassword: '',
     phone: '',
@@ -39,12 +38,6 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
       newErrors.username = 'Vui lòng nhập tên đăng nhập!';
     } else if (formData.username.length < 3) {
       newErrors.username = 'Tên đăng nhập tối thiểu 3 ký tự!';
-    }
-    
-    if (!formData.email) {
-      newErrors.email = 'Vui lòng nhập email!';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ!';
     }
     
     if (!formData.password) {
@@ -128,7 +121,7 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
       <div className="bg-white px-4 py-2 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/logo.svg" 
+            src="/logo.png" 
             alt="LOTO79 Logo" 
             className="h-6 w-auto"
           />
@@ -172,25 +165,6 @@ const MobileRegisterForm = ({ onClose, onSwitchToLogin, redirectAfterLogin }) =>
                   placeholder="Nhập tên đăng nhập"
                   prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
                   error={errors.username}
-                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
-                />
-              </div>
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email
-              </label>
-              <div className="relative">
-                <Input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Nhập email"
-                  prefix={<Icon icon="mdi:email" className="text-gray-400 text-base" />}
-                  error={errors.email}
                   className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>

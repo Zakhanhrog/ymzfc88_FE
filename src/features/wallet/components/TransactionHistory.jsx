@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Card,
+  Card as AntCard,
   Table,
   Tag,
   Space,
@@ -28,6 +28,7 @@ import dayjs from 'dayjs';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import walletService from '../services/walletService';
 import BettingHistory from './BettingHistory';
+import { Card, CardContent } from '../../../components/ui/Card';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -49,10 +50,18 @@ const TransactionHistoryTab = () => {
   });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [stats, setStats] = useState({
+    totalDeposit: 0,
+    totalWithdraw: 0,
+    totalBonus: 0,
+    pendingCount: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
 
   // Load transaction history when component mounts
   useEffect(() => {
     loadTransactionHistory();
+    loadTransactionStatistics();
   }, [pagination.current, pagination.pageSize]);
 
   const loadTransactionHistory = async () => {
@@ -84,20 +93,27 @@ const TransactionHistoryTab = () => {
     }
   };
 
-  // Calculate statistics from real data
-  const calculateStats = () => {
-    return {
-      totalDeposit: transactions.filter(t => t.type === 'DEPOSIT' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + (t.amount || 0), 0),
-      totalWithdraw: transactions.filter(t => t.type === 'WITHDRAW' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + (t.amount || 0), 0),
-      totalBonus: transactions.filter(t => t.type === 'BONUS' && t.status === 'COMPLETED')
-        .reduce((sum, t) => sum + (t.amount || 0), 0),
-      pendingCount: transactions.filter(t => t.status === 'PENDING').length
-    };
+  // Load transaction statistics from API
+  const loadTransactionStatistics = async () => {
+    try {
+      setLoadingStats(true);
+      const response = await walletService.getTransactionStatistics();
+      
+      if (response.success && response.data) {
+        setStats({
+          totalDeposit: response.data.totalDeposit || 0,
+          totalWithdraw: response.data.totalWithdraw || 0,
+          totalBonus: response.data.totalBonus || 0,
+          pendingCount: response.data.pendingCount || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error loading transaction statistics:', error);
+      message.error('Lỗi khi tải thống kê giao dịch: ' + error.message);
+    } finally {
+      setLoadingStats(false);
+    }
   };
-
-  const stats = calculateStats();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -304,42 +320,37 @@ const TransactionHistoryTab = () => {
 
 
       {/* Statistics Cards - Responsive */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng nạp</div>
-          <div className="text-green-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <ArrowUpOutlined style={{ fontSize: FONT_SIZE.sm }} />
-            {stats.totalDeposit.toLocaleString()}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
+              <div className="text-lg font-bold text-green-600">{stats.totalDeposit.toLocaleString()}</div>
           </div>
+          </CardContent>
         </Card>
         
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng rút</div>
-          <div className="text-green-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <ArrowDownOutlined style={{ fontSize: FONT_SIZE.sm }} />
-            {stats.totalWithdraw.toLocaleString()}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
+              <div className="text-lg font-bold text-green-600">{stats.totalWithdraw.toLocaleString()}</div>
           </div>
+          </CardContent>
         </Card>
         
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Tổng thưởng</div>
-          <div className="text-blue-600 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <ArrowUpOutlined style={{ fontSize: FONT_SIZE.sm }} />
-            {stats.totalBonus.toLocaleString()}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
+              <div className="text-lg font-bold text-orange-600">{stats.pendingCount} giao dịch</div>
           </div>
-        </Card>
-        
-        <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
-          <div style={{ fontSize: FONT_SIZE.xs, color: TEXT_COLORS.secondary, marginBottom: '4px' }}>Đang chờ</div>
-          <div className="text-orange-500 flex items-center gap-1" style={{ fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold }}>
-            <span style={{ fontSize: FONT_SIZE.sm }}>⏳</span>
-            {stats.pendingCount} giao dịch
-          </div>
+          </CardContent>
         </Card>
       </div>
 
       {/* Table */}
-      <Card className="shadow-sm" style={{ borderRadius: '12px' }}>
+      <AntCard className="shadow-sm" style={{ borderRadius: '12px' }}>
         {loading ? (
           <Loading />
         ) : (
@@ -362,7 +373,7 @@ const TransactionHistoryTab = () => {
             scroll={{ x: 1000 }}
           />
         )}
-      </Card>
+      </AntCard>
 
       {/* Detail Modal */}
       <Modal

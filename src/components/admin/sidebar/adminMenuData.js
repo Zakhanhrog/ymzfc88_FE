@@ -97,6 +97,7 @@ const ICONS = {
 };
 
 export const adminMenuItems = [
+  // 1. DASHBOARD - Tổng quan và thống kê
   {
     key: 'dashboard',
     icon: ICONS.dashboard,
@@ -114,6 +115,7 @@ export const adminMenuItems = [
       }
     ]
   },
+  // 2. QUẢN LÝ NGƯỜI DÙNG - Sắp xếp theo thứ tự: danh sách -> xác thực -> nhân viên -> đại lý -> lịch sử
   {
     key: 'user-management',
     icon: ICONS.userManagement,
@@ -127,12 +129,12 @@ export const adminMenuItems = [
       {
         key: 'kyc-verification',
         icon: ICONS.kyc,
-        label: 'Xác thực tài khoản',
+        label: 'Xác thực tài khoản (KYC)',
       },
       {
-        key: 'user-roles',
-        icon: ICONS.userRoles,
-        label: 'Phân quyền',
+        key: 'login-history',
+        icon: ICONS.notifications,
+        label: 'Lịch sử đăng nhập',
       },
       {
         key: 'staff-management',
@@ -140,22 +142,13 @@ export const adminMenuItems = [
         label: 'Quản lý nhân viên',
       },
       {
-        key: 'agent-management',
-        icon: ICONS.agent,
-        label: 'Quản lý đại lý',
-      },
-      {
         key: 'agent-report',
         icon: ICONS.agentReport,
         label: 'Báo cáo đại lý',
-      },
-      {
-        key: 'login-history',
-        icon: ICONS.notifications,
-        label: 'Lịch sử đăng nhập',
       }
     ]
   },
+  // 3. QUẢN LÝ TÀI CHÍNH - Sắp xếp theo thứ tự: nạp -> rút -> phương thức -> cấu hình -> điểm
   {
     key: 'financial-management',
     icon: ICONS.financialManagement,
@@ -188,6 +181,7 @@ export const adminMenuItems = [
       }
     ]
   },
+  // 4. QUẢN LÝ GAME - Sắp xếp theo thứ tự: danh sách -> cài đặt -> tỷ lệ cược -> quản lý cược -> kết quả -> lịch sử
   {
     key: 'game-management',
     icon: ICONS.gameManagement,
@@ -203,35 +197,11 @@ export const adminMenuItems = [
         icon: ICONS.gameSettings,
         label: 'Cài đặt game',
       },
+      // Tỷ lệ cược
       {
         key: 'betting-odds',
         icon: ICONS.bettingOdds,
         label: 'Tỷ lệ cược xổ số',
-      },
-      {
-        key: 'bet-management',
-        icon: ICONS.betManagement,
-        label: 'Quản lý lệnh cược xổ số',
-      },
-      {
-        key: 'game-history',
-        icon: ICONS.betManagement,
-        label: 'Lịch sử game',
-      },
-      {
-        key: 'user-game-bets',
-        icon: ICONS.points,
-        label: 'Lịch sử cược người dùng',
-      },
-      {
-        key: 'game-results',
-        icon: ICONS.gameResults,
-        label: 'Kết quả xổ số',
-      },
-      {
-        key: 'xoc-dia-results',
-        icon: ICONS.xocdiaResults,
-        label: 'Kết quả Xóc Đĩa',
       },
       {
         key: 'xoc-dia-quick-bets',
@@ -242,9 +212,94 @@ export const adminMenuItems = [
         key: 'sicbo-quick-bets',
         icon: ICONS.sicboOdds,
         label: 'Tỷ lệ cược Tài xỉu',
+      },
+      // Quản lý cược
+      {
+        key: 'bet-management',
+        icon: ICONS.betManagement,
+        label: 'Quản lý lệnh cược xổ số',
+      },
+      {
+        key: 'user-game-bets',
+        icon: ICONS.points,
+        label: 'Báo cáo thắng/thua',
+      },
+      // Kết quả game
+      {
+        key: 'game-results',
+        icon: ICONS.gameResults,
+        label: 'Kết quả xổ số',
+      },
+      {
+        key: 'xoc-dia-results',
+        icon: ICONS.xocdiaResults,
+        label: 'Kết quả Xóc Đĩa',
+      },
+      // Lịch sử
+      {
+        key: 'game-history',
+        icon: ICONS.betManagement,
+        label: 'Lịch sử game',
       }
     ]
   },
+  // 5. QUẢN LÝ NỘI DUNG - Sắp xếp theo thứ tự: banner -> stream -> thông báo
+  {
+    key: 'content-management',
+    icon: ICONS.contentManagement,
+    label: 'QUẢN LÝ NỘI DUNG',
+    children: [
+      {
+        key: 'banners',
+        icon: ICONS.banners,
+        label: 'Banner quảng cáo',
+      },
+      {
+        key: 'stream-configs',
+        icon: ICONS.streamConfigs,
+        label: 'Cấu hình Stream',
+      },
+      {
+        key: 'notifications',
+        icon: ICONS.notifications,
+        label: 'Thông báo',
+      },
+      {
+        key: 'marquee-notifications',
+        icon: ICONS.marquee,
+        label: 'Thông báo chạy (Marquee)',
+      }
+    ]
+  },
+  // 6. QUẢN LÝ HỆ THỐNG - Sắp xếp theo thứ tự: cài đặt -> khuyến mãi -> liên hệ -> telegram
+  {
+    key: 'system-management',
+    icon: ICONS.systemManagement,
+    label: 'QUẢN LÝ HỆ THỐNG',
+    children: [
+      {
+        key: 'settings',
+        icon: ICONS.settings,
+        label: 'Cài đặt hệ thống',
+      },
+      {
+        key: 'promotions',
+        icon: ICONS.promotions,
+        label: 'Khuyến mãi',
+      },
+      {
+        key: 'contact-links',
+        icon: ICONS.contactLinks,
+        label: 'Links liên hệ',
+      },
+      {
+        key: 'telegram-settings',
+        icon: ICONS.telegram,
+        label: 'Cài đặt Telegram',
+      }
+    ]
+  },
+  // 7. ĐẠI LÝ - Portal riêng cho đại lý
   {
     key: 'agent-portal',
     icon: ICONS.agentPortal,
@@ -272,6 +327,7 @@ export const adminMenuItems = [
       }
     ]
   },
+  // 8. NHÂN VIÊN - Portal riêng cho nhân viên, sắp xếp theo loại nhân viên
   {
     key: 'staff-portal',
     icon: ICONS.staffPortal,
@@ -327,14 +383,14 @@ export const adminMenuItems = [
         label: 'Nhân viên bàn TX1',
         children: [
           {
-            key: 'staff-tx1-history',
-            icon: ICONS.staffTx1,
-            label: 'Lịch sử kết quả TX1',
-          },
-          {
             key: 'staff-tx1-sicbo-results',
             icon: ICONS.sicboResults,
             label: 'Kết quả bàn TX1',
+          },
+          {
+            key: 'staff-tx1-history',
+            icon: ICONS.staffTx1,
+            label: 'Lịch sử kết quả TX1',
           }
         ]
       },
@@ -344,14 +400,14 @@ export const adminMenuItems = [
         label: 'Nhân viên bàn TX2',
         children: [
           {
-            key: 'staff-tx2-history',
-            icon: ICONS.staffTx2,
-            label: 'Lịch sử kết quả TX2',
-          },
-          {
             key: 'staff-tx2-sicbo-results',
             icon: ICONS.sicboResults,
             label: 'Kết quả bàn TX2',
+          },
+          {
+            key: 'staff-tx2-history',
+            icon: ICONS.staffTx2,
+            label: 'Lịch sử kết quả TX2',
           }
         ]
       },
@@ -361,70 +417,16 @@ export const adminMenuItems = [
         label: 'Nhân viên Xóc Đĩa',
         children: [
           {
-            key: 'staff-xd-history',
-            icon: ICONS.staffXd,
-            label: 'Lịch sử kết quả Xóc Đĩa',
-          },
-          {
             key: 'staff-xd-results',
             icon: ICONS.xocdiaResults,
             label: 'Kết quả bàn Xóc Đĩa',
+  },
+  {
+            key: 'staff-xd-history',
+            icon: ICONS.staffXd,
+            label: 'Lịch sử kết quả Xóc Đĩa',
           }
         ]
-      }
-    ]
-  },
-  {
-    key: 'content-management',
-    icon: ICONS.contentManagement,
-    label: 'QUẢN LÝ NỘI DUNG',
-    children: [
-      {
-        key: 'banners',
-        icon: ICONS.banners,
-        label: 'Banner quảng cáo',
-      },
-      {
-        key: 'stream-configs',
-        icon: ICONS.streamConfigs,
-        label: 'Stream Config',
-      },
-      {
-        key: 'notifications',
-        icon: ICONS.notifications,
-        label: 'Thông báo',
-      },
-      {
-        key: 'marquee-notifications',
-        icon: ICONS.marquee,
-        label: 'Thông báo chạy',
-      }
-    ]
-  },
-  {
-    key: 'system-management',
-    icon: ICONS.systemManagement,
-    label: 'QUẢN LÝ HỆ THỐNG',
-    children: [
-      {
-        key: 'settings',
-        icon: ICONS.settings,
-        label: 'Cài đặt hệ thống',
-      },
-      {
-        key: 'contact-links',
-        icon: ICONS.contactLinks,
-        label: 'Links liên hệ',
-      },
-      {
-        key: 'promotions',
-        icon: ICONS.promotions,
-        label: 'Khuyến mãi',
-      },
-      {
-        key: 'telegram-settings',
-        icon: ICONS.telegram,
-        label: 'Cài đặt Telegram',
       }
     ]
   }

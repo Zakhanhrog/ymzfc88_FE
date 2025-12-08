@@ -68,7 +68,37 @@ const WithdrawForm = () => {
     { code: 'VTB', name: 'Vietinbank' },
     { code: 'BIDV', name: 'BIDV' },
     { code: 'TPB', name: 'TPBank' },
-    { code: 'STB', name: 'Sacombank' }
+    { code: 'STB', name: 'Sacombank' },
+    { code: 'AGB', name: 'Agribank' },
+    { code: 'VPB', name: 'VPBank' },
+    { code: 'HDB', name: 'HDBank' },
+    { code: 'EIB', name: 'Eximbank' },
+    { code: 'SHB', name: 'SHB' },
+    { code: 'VIB', name: 'VIB' },
+    { code: 'MSB', name: 'MSB' },
+    { code: 'SEA', name: 'SeABank' },
+    { code: 'OCB', name: 'OCB' },
+    { code: 'BVB', name: 'BaoViet Bank' },
+    { code: 'HSBC', name: 'HSBC' },
+    { code: 'CITI', name: 'CitiBank' },
+    { code: 'SCB', name: 'SCB' },
+    { code: 'NAB', name: 'Nam A Bank' },
+    { code: 'VCCB', name: 'VietCapitalBank' },
+    { code: 'PGB', name: 'PGBank' },
+    { code: 'VAB', name: 'VietABank' },
+    { code: 'BAB', name: 'BacABank' },
+    { code: 'GPB', name: 'GPBank' },
+    { code: 'KLB', name: 'KienLongBank' },
+    { code: 'LPB', name: 'LienVietPostBank' },
+    { code: 'NAV', name: 'Navibank' },
+    { code: 'NCB', name: 'NCB' },
+    { code: 'OJB', name: 'OceanBank' },
+    { code: 'PUB', name: 'PublicBank' },
+    { code: 'PVB', name: 'PVcomBank' },
+    { code: 'SGB', name: 'SaigonBank' },
+    { code: 'VDB', name: 'VietBank' },
+    { code: 'VNCB', name: 'Vietnam Construction Bank' },
+    { code: 'WVB', name: 'Woori Bank' }
   ];
 
   useEffect(() => {
@@ -175,8 +205,6 @@ const WithdrawForm = () => {
         return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'ZALO_PAY':
         return <img src="/iconacc/imgi_26_withdraw.avif" alt="ZaloPay" className="w-8 h-8 md:w-10 md:h-10" />;
-      case 'VIET_QR':
-        return <img src="/iconacc/imgi_27_bank.avif" alt="VietQR" className="w-8 h-8 md:w-10 md:h-10" />;
       default:
         return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
     }
@@ -190,8 +218,6 @@ const WithdrawForm = () => {
         return 'Ngân hàng';
       case 'ZALO_PAY':
         return 'ZaloPay';
-      case 'VIET_QR':
-        return 'VietQR';
       default:
         return type;
     }
@@ -819,7 +845,6 @@ const WithdrawForm = () => {
               <Option value="BANK">Ngân hàng</Option>
               <Option value="MOMO">Ví MoMo</Option>
               <Option value="ZALO_PAY">ZaloPay</Option>
-              <Option value="VIET_QR">VietQR</Option>
             </Select>
           </Form.Item>
 

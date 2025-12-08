@@ -128,7 +128,8 @@ const MobileLoginPage = () => {
                 onChange={handleChange}
                 placeholder="Nhập ít nhất 6 ký tự"
                 error={errors.usernameOrEmail}
-                className="h-10 text-sm rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
+                className="h-10 text-base rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
+                style={{ fontSize: '16px' }}
               />
             </div>
 
@@ -145,7 +146,8 @@ const MobileLoginPage = () => {
                   onChange={handleChange}
                   placeholder="Nhập ít nhất 6 ký tự"
                   error={errors.password}
-                  className="h-10 text-sm rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500 pr-10"
+                  className="h-10 text-base rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500 pr-10"
+                  style={{ fontSize: '16px' }}
                 />
                 <button
                   type="button"

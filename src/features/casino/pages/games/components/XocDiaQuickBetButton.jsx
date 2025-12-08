@@ -68,7 +68,7 @@ const XocDiaQuickBetButton = ({
               option.code === 'tai' ? 'text-[#dc2626]' 
               : option.code === 'xiu' ? 'text-[#0f4c2c]'
               : option.code === 'chan' ? 'text-[#dc2626]'
-              : option.code === 'le' ? 'text-[#10b981]'
+              : option.code === 'le' ? 'text-[#0f4c2c]'
               : styledPlainCodes.has(option.code)
                 ? 'text-[#111827]'
                 : isSelected

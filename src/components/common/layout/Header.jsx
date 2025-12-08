@@ -193,24 +193,23 @@ const Header = ({
   return (
     <header className="fixed top-0 left-0 right-0 h-[56px] md:h-[70px] bg-gray-50 border-b border-gray-200 z-20 pl-2 pr-4 md:px-6">
       <div className="w-full h-full flex items-center justify-between">
-        {/* Left: Logo & Menu Toggle */}
+        {/* Left: Menu Toggle + Logo */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle - Bên trái logo */}
           {onMobileMenuToggle && (
             <button
               onClick={onMobileMenuToggle}
-              className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+              className="md:hidden w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
             >
               <Icon icon="mdi:menu" className="w-6 h-6 text-gray-700" />
             </button>
           )}
-          
           <div className="cursor-pointer flex items-center" onClick={() => navigate('/')}>
             <img 
-              src="/images/logos/logo.svg" 
+              src="/images/logos/logo.png" 
               alt="Logo" 
-              className="h-11 md:h-16 w-auto object-contain transition-transform duration-300 hover:scale-110"
-              style={{ maxHeight: '56px' }}
+              className="h-10 md:h-16 w-auto object-contain transition-transform duration-300 hover:scale-110"
+              style={{ maxHeight: '40px' }}
             />
           </div>
         </div>
@@ -253,7 +252,7 @@ const Header = ({
                       {userName}
                     </span>
                     <span className="text-yellow-500 font-semibold text-xs">
-                      {userBalance.toLocaleString()} điểm
+                      {userBalance.toLocaleString()} đ
                     </span>
                   </div>
                 </button>
@@ -298,7 +297,7 @@ const Header = ({
                 {/* Balance Display with integrated Add button */}
                 <div className="flex items-center gap-1.5 pl-3 pr-1.5 h-[32px] bg-gray-200 rounded-lg">
                   <span className="font-semibold text-yellow-500 text-sm">
-                    {userBalance.toLocaleString()} điểm
+                    {userBalance.toLocaleString()} đ
                   </span>
                   {/* Add/Deposit button inside */}
                   <button

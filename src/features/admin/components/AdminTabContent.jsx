@@ -129,13 +129,20 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         );
 
       case 'user-roles':
+        // Redirect to staff-management (merged functionality)
         return (
           <div className="space-y-6">
             <TabPageHeader 
-              title="Phân quyền người dùng" 
-              description="Phân quyền đại lý và nhân viên cho người dùng" 
+              title="Quản lý nhân viên & Phân quyền"
+              description="Quản lý nhân viên và phân quyền đại lý, nhân viên cho người dùng"
             />
-            <AdminRoleAssignment />
+            <AdminStaffManagement 
+              initialRole="ALL"
+              allowRoleFilter
+              title="Quản lý nhân viên & Phân quyền"
+              description="Quản lý nhân viên và phân quyền đại lý, nhân viên cho người dùng. Chọn phân quyền trong bảng để cập nhật."
+              useRoleAssignmentCreateOptions={true}
+            />
           </div>
         );
 
@@ -143,21 +150,16 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         return (
           <div className="space-y-6">
             <TabPageHeader
-              title="Quản lý nhân viên"
-              description="Danh sách nhân viên theo từng nhóm phân quyền"
+              title="Quản lý nhân viên & Phân quyền"
+              description="Quản lý nhân viên và phân quyền đại lý, nhân viên cho người dùng"
             />
-            <AdminStaffManagement readOnly initialRole="STAFF" />
-          </div>
-        );
-
-      case 'agent-management':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader
-              title="Quản lý đại lý"
-              description="Danh sách đại lý hiện có trong hệ thống"
+            <AdminStaffManagement 
+              initialRole="ALL"
+              allowRoleFilter
+              title="Quản lý nhân viên & Phân quyền"
+              description="Quản lý nhân viên và phân quyền đại lý, nhân viên cho người dùng. Chọn phân quyền trong bảng để cập nhật."
+              useRoleAssignmentCreateOptions={true}
             />
-            <AdminAgentManagement />
           </div>
         );
 
@@ -353,7 +355,7 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         return (
           <div className="space-y-6">
             <TabPageHeader
-              title="Lịch sử cược người dùng"
+              title="BÁO CÁO THẮNG/THUA"
               description="Thống kê tổng cược, lãi/lỗ và lịch sử lệnh của từng người dùng"
             />
             <AdminUserBetHistory />

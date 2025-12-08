@@ -567,17 +567,17 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Mobile Deposit/Withdraw Header */}
       {isMobileDepositPage && depositPageTitle && (
-        <MobileDepositHeader title={depositPageTitle} backPath="/wallet?tab=balance" />
+        <MobileDepositHeader title={depositPageTitle} backPath="/account" />
       )}
 
       {/* Mobile Transaction History Header */}
       {isMobileTransactionHistoryPage && (
-        <MobileDepositHeader title="Lịch sử giao dịch" backPath="/wallet?tab=balance" />
+        <MobileDepositHeader title="Lịch sử giao dịch" backPath="/account" />
       )}
 
       {/* Mobile KYC Verification Header (from wallet tab) */}
       {isMobileKycVerificationPage && (
-        <MobileDepositHeader title="Xác thực tài khoản" backPath="/wallet?tab=balance" />
+        <MobileDepositHeader title="Xác thực tài khoản" backPath="/account" />
       )}
 
       {/* Mobile Promotions Header */}

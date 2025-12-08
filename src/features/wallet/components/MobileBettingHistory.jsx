@@ -43,6 +43,7 @@ const MobileBettingHistory = () => {
   const [hasMore, setHasMore] = useState(true);
   const [sicboPage, setSicboPage] = useState(0);
   const [xocDiaPage, setXocDiaPage] = useState(0);
+  const [lotteryPage, setLotteryPage] = useState(0);
 
   // Load betting history - load 20 items đầu tiên cho hiển thị
   useEffect(() => {
@@ -97,7 +98,8 @@ const MobileBettingHistory = () => {
               lostAmount: (bet.status === 'LOST' || bet.status === 'LOSE') ? (bet.stake || 0) : 0,
               refundAmount: bet.refundAmount || 0,
               refundType: bet.refundType || null,
-              refundPercentage: bet.refundPercentage || null
+              refundPercentage: bet.refundPercentage || null,
+              isRefundPaid: bet.isRefundPaid || false
             }));
             sicboAllBets = [...sicboAllBets, ...sicboBets];
             sicboHasMore = sicboResponse.data.data.hasMore || false;
@@ -139,7 +141,8 @@ const MobileBettingHistory = () => {
               lostAmount: (bet.status === 'LOST' || bet.status === 'LOSE') ? (bet.stake || 0) : 0,
               refundAmount: bet.refundAmount || 0,
               refundType: bet.refundType || null,
-              refundPercentage: bet.refundPercentage || null
+              refundPercentage: bet.refundPercentage || null,
+              isRefundPaid: bet.isRefundPaid || false
             }));
             xocDiaAllBets = [...xocDiaAllBets, ...xocDiaBets];
             xocDiaHasMore = xocDiaResponse.data.data.hasMore || false;
@@ -152,6 +155,58 @@ const MobileBettingHistory = () => {
         allBetsForStats = [...allBetsForStats, ...xocDiaAllBets];
       } catch (error) {
         console.warn('Không thể tải lịch sử Xóc Đĩa cho thống kê:', error.message);
+      }
+
+      // Fetch tất cả Lottery bets cho thống kê
+      try {
+        let lotteryAllBets = [];
+        let lotteryPage = 0;
+        let lotteryHasMore = true;
+        
+        while (lotteryHasMore && lotteryAllBets.length < 10000) {
+          const lotteryResponse = await axios.get(`http://localhost:8080/api/bets/my-bets`, {
+            params: {
+              page: lotteryPage,
+              size: 100
+            },
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (lotteryResponse.data.success && lotteryResponse.data.data) {
+            const lotteryBets = lotteryResponse.data.data.map(bet => {
+              // BetResponse có: betAmount, winAmount, status (Bet.BetStatus enum: WON, LOST, PENDING, CANCELLED)
+              const statusStr = bet.status || 'PENDING';
+              const betAmount = Number(bet.betAmount || bet.totalAmount || 0);
+              const winAmount = Number(bet.winAmount || 0);
+              
+              return {
+                ...bet,
+                gameType: 'LOTTERY',
+                gameTypeName: 'Xổ số',
+                betAmount: betAmount,
+                sessionCode: bet.resultDate ? `Ngày ${bet.resultDate}` : 'N/A',
+                betType: bet.betType || 'N/A',
+                completedAt: bet.resultCheckedAt || bet.updatedAt || bet.createdAt,
+                winAmount: winAmount,
+                status: statusStr,
+                lostAmount: (statusStr === 'LOST' || statusStr === 'CANCELLED') ? betAmount : 0,
+                refundAmount: 0,
+                refundType: null,
+                refundPercentage: null,
+                isRefundPaid: false
+              };
+            });
+            lotteryAllBets = [...lotteryAllBets, ...lotteryBets];
+            lotteryHasMore = lotteryResponse.data.pagination && lotteryPage < lotteryResponse.data.pagination.totalPages - 1;
+            lotteryPage++;
+          } else {
+            lotteryHasMore = false;
+          }
+        }
+        
+        allBetsForStats = [...allBetsForStats, ...lotteryAllBets];
+      } catch (error) {
+        console.warn('Không thể tải lịch sử Xổ số cho thống kê:', error.message);
       }
 
       // Sort by createdAt DESC
@@ -171,6 +226,7 @@ const MobileBettingHistory = () => {
         setLoading(true);
         setSicboPage(0);
         setXocDiaPage(0);
+        setLotteryPage(0);
         setHasMore(true);
       } else {
         setLoadingMore(true);
@@ -180,6 +236,7 @@ const MobileBettingHistory = () => {
       let newBets = [];
       let sicboHasMore = false;
       let xocDiaHasMore = false;
+      let lotteryHasMore = false;
       
       // Fetch Sicbo betting history
       try {
@@ -207,10 +264,13 @@ const MobileBettingHistory = () => {
             isRefundPaid: bet.isRefundPaid || false
           }));
           newBets = [...newBets, ...sicboBets];
-          sicboHasMore = sicboResponse.data.data.hasMore || false;
-          if (!reset) {
+          // Chỉ set hasMore = true nếu thực sự có hasMore và có items
+          sicboHasMore = (sicboResponse.data.data.hasMore || false) && sicboResponse.data.data.items.length > 0;
+          if (!reset && sicboBets.length > 0) {
             setSicboPage(prev => prev + 1);
           }
+        } else {
+          sicboHasMore = false;
         }
       } catch (error) {
         console.warn('Không thể tải lịch sử Sicbo:', error.message);
@@ -242,24 +302,105 @@ const MobileBettingHistory = () => {
             isRefundPaid: bet.isRefundPaid || false
           }));
           newBets = [...newBets, ...xocDiaBets];
-          xocDiaHasMore = xocDiaResponse.data.data.hasMore || false;
-          if (!reset) {
+          // Chỉ set hasMore = true nếu thực sự có hasMore và có items
+          xocDiaHasMore = (xocDiaResponse.data.data.hasMore || false) && xocDiaResponse.data.data.items.length > 0;
+          if (!reset && xocDiaBets.length > 0) {
             setXocDiaPage(prev => prev + 1);
           }
+        } else {
+          xocDiaHasMore = false;
         }
       } catch (error) {
         console.warn('Không thể tải lịch sử Xóc Đĩa:', error.message);
+      }
+
+      // Fetch Lottery betting history
+      try {
+        const lotteryResponse = await axios.get(`http://localhost:8080/api/bets/my-bets`, {
+          params: {
+            page: reset ? 0 : lotteryPage,
+            size: 10
+          },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (lotteryResponse.data.success && lotteryResponse.data.data && Array.isArray(lotteryResponse.data.data) && lotteryResponse.data.data.length > 0) {
+          const lotteryBets = lotteryResponse.data.data.map(bet => {
+            // BetResponse có: betAmount, winAmount, status (Bet.BetStatus enum: WON, LOST, PENDING, CANCELLED)
+            const statusStr = bet.status || 'PENDING';
+            const betAmount = Number(bet.betAmount || bet.totalAmount || 0);
+            const winAmount = Number(bet.winAmount || 0);
+            
+            return {
+              ...bet,
+              gameType: 'LOTTERY',
+              gameTypeName: 'Xổ số',
+              betAmount: betAmount,
+              sessionCode: bet.resultDate ? `Ngày ${bet.resultDate}` : 'N/A',
+              betType: bet.betType || 'N/A',
+              completedAt: bet.resultCheckedAt || bet.updatedAt || bet.createdAt,
+              winAmount: winAmount,
+              status: statusStr,
+              lostAmount: (statusStr === 'LOST' || statusStr === 'CANCELLED') ? betAmount : 0,
+              refundAmount: 0,
+              refundType: null,
+              refundPercentage: null,
+              isRefundPaid: false
+            };
+          });
+          newBets = [...newBets, ...lotteryBets];
+          // Chỉ set hasMore = true nếu thực sự còn page tiếp theo và có items
+          const pagination = lotteryResponse.data.pagination;
+          lotteryHasMore = pagination && (lotteryPage + 1) < pagination.totalPages && lotteryBets.length > 0;
+          if (!reset && lotteryBets.length > 0) {
+            setLotteryPage(prev => prev + 1);
+          }
+        } else {
+          lotteryHasMore = false;
+        }
+      } catch (error) {
+        console.warn('Không thể tải lịch sử Xổ số:', error.message);
       }
 
       // Sort by createdAt DESC
       newBets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       // Merge với bets đã có (nếu load thêm) hoặc thay thế (nếu reset)
-      const mergedBets = reset ? newBets : [...originalBets, ...newBets];
+      let mergedBets = reset ? newBets : [...originalBets, ...newBets];
+      
+      // Loại bỏ duplicate bets (cùng id và gameType)
+      const seenBets = new Map();
+      mergedBets = mergedBets.filter(bet => {
+        const key = `${bet.gameType}-${bet.id}`;
+        if (seenBets.has(key)) {
+          return false;
+        }
+        seenBets.set(key, true);
+        return true;
+      });
+      
       mergedBets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      // Cập nhật hasMore
-      setHasMore(sicboHasMore || xocDiaHasMore);
+      // Cập nhật hasMore: chỉ true nếu còn ít nhất 1 API có data VÀ có bets mới thực sự được thêm vào
+      // Nếu không có bets mới nào được load, hoặc tất cả bets mới đều là duplicate, thì set hasMore = false
+      if (reset) {
+        // Khi reset: nếu không có bets nào, hoặc không còn API nào có data, thì set hasMore = false
+        if (newBets.length === 0) {
+          setHasMore(false);
+        } else {
+          setHasMore(sicboHasMore || xocDiaHasMore || lotteryHasMore);
+        }
+      } else {
+        // Khi load thêm: chỉ set hasMore = true nếu có bets mới thực sự được thêm vào (không phải duplicate)
+        const newBetsCount = mergedBets.length - originalBets.length;
+        if (newBetsCount === 0) {
+          // Không có bets mới nào được thêm vào (tất cả đều duplicate hoặc không có data)
+          setHasMore(false);
+        } else {
+          // Có bets mới được thêm vào, kiểm tra xem còn API nào có data không
+          setHasMore(sicboHasMore || xocDiaHasMore || lotteryHasMore);
+        }
+      }
 
       // Lưu bets gốc để filter
       setOriginalBets(mergedBets);
@@ -270,8 +411,8 @@ const MobileBettingHistory = () => {
       if (reset) {
         if (mergedBets.length > 0) {
           message.success(`Đã tải ${mergedBets.length} cược gần nhất`);
-        } else {
-          message.info('Chưa có lịch sử cược nào');
+      } else {
+        message.info('Chưa có lịch sử cược nào');
         }
       } else {
         if (newBets.length > 0) {
@@ -292,6 +433,83 @@ const MobileBettingHistory = () => {
   const loadMoreBets = async () => {
     if (!hasMore || loadingMore) return;
     await loadBettingHistory(false);
+  };
+
+  // Kiểm tra xem có đang filter theo ngày hôm nay không
+  const isFilteringToday = () => {
+    if (!dateRange || !Array.isArray(dateRange) || dateRange.length !== 2) {
+      return false;
+    }
+    const today = dayjs();
+    const startOfToday = today.startOf('day');
+    const endOfToday = today.endOf('day');
+    const rangeStart = dayjs(dateRange[0]).startOf('day');
+    const rangeEnd = dayjs(dateRange[1]).endOf('day');
+    return rangeStart.isSame(startOfToday, 'day') && rangeEnd.isSame(endOfToday, 'day');
+  };
+
+  // Thống kê theo ngày hiện tại hoặc huỷ filter
+  const toggleTodayFilter = () => {
+    if (isFilteringToday()) {
+      // Đang filter theo ngày, huỷ filter
+      setDateRange(null);
+      
+      // Filter bets hiển thị (chỉ theo gameFilter)
+      let filteredBets = [...originalBets];
+      
+      if (gameFilter !== 'ALL') {
+        filteredBets = filteredBets.filter(bet => bet.gameType === gameFilter);
+      }
+      
+      setBets(filteredBets);
+      
+      // Recalculate stats với allBets (chỉ filter theo gameFilter)
+      let filteredAllBets = [...allBets];
+      
+      if (gameFilter !== 'ALL') {
+        filteredAllBets = filteredAllBets.filter(bet => bet.gameType === gameFilter);
+      }
+      
+      calculateStats(filteredAllBets);
+    } else {
+      // Chưa filter theo ngày, filter theo ngày hôm nay
+      const today = dayjs();
+      const startOfToday = today.startOf('day');
+      const endOfToday = today.endOf('day');
+      
+      // Set date range cho ngày hiện tại
+      setDateRange([startOfToday, endOfToday]);
+      
+      // Filter bets hiển thị
+      let filteredBets = [...originalBets];
+      
+      // Filter by game type
+      if (gameFilter !== 'ALL') {
+        filteredBets = filteredBets.filter(bet => bet.gameType === gameFilter);
+      }
+      
+      // Filter by today
+      filteredBets = filteredBets.filter(bet => {
+        const betDate = dayjs(bet.createdAt);
+        return betDate.isBetween(startOfToday, endOfToday, 'day', '[]');
+      });
+      
+      setBets(filteredBets);
+      
+      // Recalculate stats với allBets đã filter
+      let filteredAllBets = [...allBets];
+      
+      if (gameFilter !== 'ALL') {
+        filteredAllBets = filteredAllBets.filter(bet => bet.gameType === gameFilter);
+      }
+      
+      filteredAllBets = filteredAllBets.filter(bet => {
+        const betDate = dayjs(bet.createdAt);
+        return betDate.isBetween(startOfToday, endOfToday, 'day', '[]');
+      });
+      
+      calculateStats(filteredAllBets);
+    }
   };
 
   const filterBets = () => {
@@ -343,11 +561,24 @@ const MobileBettingHistory = () => {
     
     const totalBets = betsData.length;
     const totalWagered = betsData.reduce((sum, bet) => sum + (Number(bet.betAmount) || 0), 0);
+    // Tổng thắng: chỉ tính lãi (winAmount - stake), không tính gốc - nhất quán với admin
     const totalWon = betsData
-      .filter(bet => bet.status === 'WON' || bet.status === 'COMPLETED')
-      .reduce((sum, bet) => sum + (Number(bet.winAmount) || 0), 0);
+      .filter(bet => {
+        const status = bet.status || '';
+        return status === 'WON' || status === 'COMPLETED';
+      })
+      .reduce((sum, bet) => {
+        const winAmount = Number(bet.winAmount) || 0;
+        const betAmount = Number(bet.betAmount) || 0;
+        // Tính lãi: winAmount - betAmount (stake)
+        const profit = winAmount - betAmount;
+        return sum + (profit > 0 ? profit : 0);
+      }, 0);
     const totalLost = betsData
-      .filter(bet => bet.status === 'LOST' || bet.status === 'LOSE')
+      .filter(bet => {
+        const status = bet.status || '';
+        return status === 'LOST' || status === 'LOSE' || status === 'CANCELLED';
+      })
       .reduce((sum, bet) => sum + (Number(bet.betAmount) || 0), 0);
     // Tính tổng tiền cược đã được hoàn (refundAmount > 0, refundType = LOSS_PERCENT, và isRefundPaid = true)
     const totalRefund = betsData
@@ -402,34 +633,55 @@ const MobileBettingHistory = () => {
   return (
     <div className="space-y-4">
       {/* Statistics Cards - Mobile */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <div className="bg-white rounded-xl p-3 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">Tổng số cược</div>
-          <div className="text-blue-600 flex items-center gap-1 text-base font-bold">
-            {stats.totalBets}
+      <div className="space-y-2 mb-4">
+        {/* Dòng 1: Tổng số cược, Tổng tiền cược */}
+          <div className="grid grid-cols-2 gap-2">
+          <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng số cược</div>
+              <div className="text-blue-600 flex items-center justify-center gap-1 text-base font-bold">
+                {stats.totalBets}
+            </div>
+            </div>
+            </div>
+            
+          <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng tiền cược</div>
+              <div className="text-orange-600 flex items-center justify-center gap-1 text-base font-bold">
+                {stats.totalWagered.toLocaleString()}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">Tổng tiền cược</div>
-          <div className="text-orange-600 flex items-center gap-1 text-base font-bold">
-            {stats.totalWagered.toLocaleString()}
+        {/* Dòng 2: Tổng thắng, Tổng thua, Hoàn thua cược */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng thắng</div>
+              <div className="text-green-600 text-base font-bold">
+                {stats.totalWon.toLocaleString()}
           </div>
         </div>
+          </div>
 
-        <div className="bg-white rounded-xl p-3 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">Tổng thắng</div>
-          <div className="text-green-600 flex items-center gap-1 text-base font-bold">
-            <CheckCircleOutlined className="text-sm" />
-            {stats.totalWon.toLocaleString()}
+          <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng thua</div>
+              <div className="text-red-600 text-base font-bold">
+                {stats.totalLost.toLocaleString()}
           </div>
         </div>
+          </div>
 
-        <div className="bg-white rounded-xl p-3 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">Tổng thua</div>
-          <div className="text-red-600 flex items-center gap-1 text-base font-bold">
-            <CloseCircleOutlined className="text-sm" />
-            {stats.totalLost.toLocaleString()}
+          <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Hoàn thua cược</div>
+              <div className="text-cyan-600 flex items-center justify-center gap-1 text-base font-bold">
+                {stats.totalRefund.toLocaleString()}
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -448,6 +700,7 @@ const MobileBettingHistory = () => {
             <Option value="ALL">Tất cả game</Option>
             <Option value="SICBO">Tài xỉu</Option>
             <Option value="XOCDIA">Xóc đĩa</Option>
+            <Option value="LOTTERY">Xổ số</Option>
           </Select>
           <button 
             onClick={() => {
@@ -466,15 +719,56 @@ const MobileBettingHistory = () => {
             Làm mới
           </button>
         </div>
+        <div className="flex gap-2 items-center">
         <RangePicker
           value={dateRange}
-          onChange={setDateRange}
+          onChange={(dates) => {
+            if (dates && dates.length === 2) {
+              const [start, end] = dates;
+              const daysDiff = end.diff(start, 'day');
+              if (daysDiff > 14) {
+                message.warning('Chỉ được xem lịch sử tối đa 14 ngày');
+                return;
+              }
+              // Kiểm tra không được chọn quá 14 ngày từ ngày hiện tại
+              const today = dayjs();
+              const daysFromToday = today.diff(start, 'day');
+              if (daysFromToday > 14) {
+                message.warning('Chỉ được xem lịch sử tối đa 14 ngày gần nhất');
+                return;
+              }
+            }
+            setDateRange(dates);
+          }}
           placeholder={['Từ ngày', 'Đến ngày']}
           format="DD/MM/YYYY"
           size="large"
-          style={{ width: '100%', height: 40 }}
+            className="flex-1"
+          disabledDate={(current) => {
+            if (!current) return false;
+            const today = dayjs();
+            const daysDiff = today.diff(current, 'day');
+            // Disable các ngày quá 14 ngày trước
+            return daysDiff > 14 || current.isAfter(today, 'day');
+          }}
+            style={{ height: 40 }}
           allowClear
         />
+          <button 
+            onClick={toggleTodayFilter}
+            className="flex items-center justify-center gap-1 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 font-medium shadow-md rounded-lg cursor-pointer text-sm hover:from-blue-600 hover:to-blue-700 transition-colors"
+            style={{ 
+              height: 40, 
+              minWidth: 100,
+              background: isFilteringToday() 
+                ? 'linear-gradient(to right, rgb(239, 68, 68), rgb(220, 38, 38))'
+                : 'linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235))',
+              fontSize: '14px'
+            }}
+          >
+            {isFilteringToday() ? 'Huỷ thống kê' : 'Thống kê theo ngày'}
+          </button>
+        </div>
       </div>
 
       {/* Betting List - Mobile Optimized */}
@@ -530,23 +824,60 @@ const MobileBettingHistory = () => {
                 </div>
                 
                 {/* Refund - Inline with net result */}
-                {bet.refundAmount > 0 && (
-                  <div className="mb-1 flex items-center gap-2 bg-green-50 rounded-md px-2 py-1 border border-green-200">
-                    <span className="text-xs text-gray-600">Hoàn tiền:</span>
-                    <span className="text-sm font-bold text-green-600">
+                {(() => {
+                  const isLossRefund = bet.refundType === 'LOSS_PERCENT' && (bet.status === 'LOST' || bet.status === 'LOSE');
+                  
+                  if (isLossRefund) {
+                    // Nếu đã hoàn cược (isRefundPaid = true và refundAmount > 0)
+                    if (bet.isRefundPaid === true && bet.refundAmount && bet.refundAmount > 0) {
+                      return (
+                        <div className="mb-1 flex flex-col gap-1">
+                          <div className="flex items-center gap-2 bg-green-50 rounded-md px-2 py-1 border border-green-200">
+                            <span className="text-xs text-gray-600">Hoàn tiền:</span>
+                            <span className="text-sm font-bold text-green-600">
+                              +{bet.refundAmount?.toLocaleString()} điểm
+                            </span>
+                            {bet.refundType === 'LOSS_PERCENT' && (
+                              <span className="text-xs text-gray-500">({bet.refundPercentage}% thua)</span>
+                            )}
+                          </div>
+                          <Tag color="green" className="text-xs w-fit">
+                            Đã hoàn cược
+                          </Tag>
+                        </div>
+                      );
+                    } else {
+                      // Chưa hoàn cược
+                      return (
+                        <div className="mb-1">
+                          <Tag color="orange" className="text-xs">
+                            Chưa hoàn cược
+                          </Tag>
+                        </div>
+                      );
+                    }
+                  }
+                  
+                  // Các trường hợp khác (FULL_REFUND, WIN_PERCENT)
+                  if (bet.refundAmount > 0) {
+                    return (
+                      <div className="mb-1 flex items-center gap-2 bg-green-50 rounded-md px-2 py-1 border border-green-200">
+                        <span className="text-xs text-gray-600">Hoàn tiền:</span>
+                        <span className="text-sm font-bold text-green-600">
                       +{bet.refundAmount?.toLocaleString()} điểm
-                    </span>
-                    {bet.refundType === 'FULL_REFUND' && (
-                      <span className="text-xs text-gray-500">(100%)</span>
-                    )}
-                    {bet.refundType === 'WIN_PERCENT' && (
-                      <span className="text-xs text-gray-500">({bet.refundPercentage}% thắng)</span>
-                    )}
-                    {bet.refundType === 'LOSS_PERCENT' && (
-                      <span className="text-xs text-gray-500">({bet.refundPercentage}% thua)</span>
-                    )}
-                  </div>
-                )}
+                        </span>
+                      {bet.refundType === 'FULL_REFUND' && (
+                          <span className="text-xs text-gray-500">(100%)</span>
+                      )}
+                      {bet.refundType === 'WIN_PERCENT' && (
+                          <span className="text-xs text-gray-500">({bet.refundPercentage}% thắng)</span>
+                      )}
+                    </div>
+                    );
+                  }
+                  
+                  return null;
+                })()}
                 
                 {/* Footer: Date + Detail button */}
                 <div className="flex items-center justify-between pt-1 border-t border-gray-100">
@@ -586,9 +917,6 @@ const MobileBettingHistory = () => {
               </Button>
             </div>
           )}
-          <div className="text-center text-xs text-gray-500 py-2">
-            Hiển thị {bets.length} cược. Thống kê được tính trên tất cả lịch sử cược.
-          </div>
         </>
       )}
 

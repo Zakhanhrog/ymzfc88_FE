@@ -80,6 +80,24 @@ class WalletService {
     }
   }
 
+  // Lấy thống kê giao dịch
+  async getTransactionStatistics() {
+    try {
+      const headers = this.getHeaders();
+      
+      const response = await fetch(`${API_BASE_URL}/wallet/statistics`, {
+        method: 'GET',
+        headers: headers
+      });
+      
+      const result = await this.handleResponse(response);
+      return result;
+    } catch (error) {
+      console.error('Error fetching transaction statistics:', error);
+      throw error;
+    }
+  }
+
   async getUserProfile() {
     try {
       const response = await fetch(`${API_BASE_URL}/user/profile`, {

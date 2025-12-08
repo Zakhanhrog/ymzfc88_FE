@@ -24,6 +24,10 @@ const getChipIconSrc = (label) => {
       return '/pokerchip/1M.svg';
     case '10M':
       return '/pokerchip/10M.svg';
+    case '20M':
+      return '/pokerchip/20M.svg';
+    case '50M':
+      return '/pokerchip/50M.svg';
     default:
       return null;
   }

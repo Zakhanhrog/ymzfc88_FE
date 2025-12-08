@@ -792,30 +792,31 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
   const quickActionButtons = useMemo(
     () => [
-      {
-        action: 'clear-all',
-        label: 'Huỷ hết',
-        style: 'bg-[#0f4c2c] text-white shadow-lg shadow-[#0f4c2c]/25',
-        icon: 'mdi:close-thick',
-      },
-      {
-        action: 'clear',
-        label: 'Huỷ',
-        style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
-        icon: 'mdi:undo-variant',
-      },
-      {
-        action: 'repeat',
-        label: 'Lặp lại',
-        style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
-        icon: 'mdi:autorenew',
-      },
+        {
+          action: 'clear-all',
+          label: 'Huỷ hết',
+          style: 'bg-[#0f4c2c] text-white shadow-lg shadow-[#0f4c2c]/25',
+          icon: 'mdi:close-thick',
+        },
+        {
+          action: 'clear',
+          label: 'Huỷ',
+          style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
+          icon: 'mdi:undo-variant',
+        },
+        {
+          action: 'repeat',
+          label: 'Lặp lại',
+          style: 'border border-[#0f4c2c] text-[#0f4c2c] bg-white',
+          icon: 'mdi:autorenew',
+        },
     ],
     []
   );
 
   const handleQuickAction = useCallback(
     (action) => {
+      console.log('[Sicbo handleQuickAction] Action:', action, 'selectedQuickBets:', selectedQuickBets);
       switch (action) {
         case 'clear-all':
           setSelectedQuickBets({});
@@ -847,7 +848,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
           break;
       }
     },
-    [isBettingLocked, lastPlacedBets]
+    [isBettingLocked, lastPlacedBets, selectedQuickBets]
   );
 
   useEffect(() => {
@@ -892,8 +893,13 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
   };
 
   const handleCustomChipValueChange = (event) => {
-    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 4);
-    setCustomChipValue(digitsOnly);
+    const digitsOnly = event.target.value.replace(/\D/g, '');
+    // Giới hạn tối đa 1000
+    let value = digitsOnly;
+    if (digitsOnly && Number(digitsOnly) > 1000) {
+      value = '1000';
+    }
+    setCustomChipValue(value);
     if (customChipError) {
       setCustomChipError('');
     }
@@ -928,14 +934,19 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     let value = null;
 
     if (trimmed) {
-      if (!/^\d{1,4}$/.test(trimmed)) {
-        setCustomChipError('Chỉ nhập tối đa 4 chữ số');
+      if (!/^\d+$/.test(trimmed)) {
+        setCustomChipError('Chỉ nhập số');
         return;
       }
 
       const numeric = Number(trimmed);
       if (numeric === 0) {
         setCustomChipError('Giá trị phải lớn hơn 0');
+        return;
+      }
+
+      if (numeric > 1000) {
+        setCustomChipError('Giá trị tối đa là 1000');
         return;
       }
 
@@ -1111,50 +1122,46 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
   const latestResultRef = useRef({ faces: [], key: '' });
   const [resultOverlayState, setResultOverlayState] = useState({ faces: [], visible: false });
+  const displayedResultSessionIdRef = useRef(null);
 
+  // Lưu kết quả khi có parsedResultFaces và chỉ xóa khi sessionId thay đổi (bắt đầu phiên mới)
   useEffect(() => {
-    const allowedPhases = ['show-result', 'payout', 'invite-bet'];
-    if (!isSessionRunning) {
-      setResultOverlayState((prev) => ({ ...prev, visible: false, faces: [] }));
-      return undefined;
+    if (parsedResultFaces.length === 3) {
+      // Nếu sessionId thay đổi, xóa kết quả cũ
+      if (displayedResultSessionIdRef.current !== null && displayedResultSessionIdRef.current !== sessionId) {
+        setResultOverlayState({ faces: [], visible: false });
     }
-
-    if (parsedResultFaces.length === 3 && allowedPhases.includes(phaseKey)) {
+      // Lưu kết quả mới
       const facesKey = parsedResultFaces.join('-');
       if (latestResultRef.current.key !== facesKey) {
         latestResultRef.current = { faces: parsedResultFaces, key: facesKey };
       }
       setResultOverlayState({ faces: parsedResultFaces, visible: true });
-      const timeoutId = window.setTimeout(() => {
-        setResultOverlayState((prev) => ({ ...prev, visible: false }));
-      }, 3000);
-      return () => window.clearTimeout(timeoutId);
+      displayedResultSessionIdRef.current = sessionId;
+    } else if (sessionId && displayedResultSessionIdRef.current !== null && displayedResultSessionIdRef.current !== sessionId) {
+      // Khi sessionId thay đổi (bắt đầu phiên mới), xóa kết quả
+      setResultOverlayState({ faces: [], visible: false });
+      displayedResultSessionIdRef.current = null;
     }
-
-    setResultOverlayState((prev) => ({ ...prev, visible: false }));
-    return undefined;
-  }, [isSessionRunning, parsedResultFaces, phaseKey]);
+  }, [sessionId, parsedResultFaces]);
 
   const resultOverlay =
     resultOverlayState.visible && resultOverlayState.faces.length === 3 ? (
-      <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-6 py-4 backdrop-blur-md shadow-[0_12px_35px_rgba(15,23,42,0.35)]">
-          <div className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Kết quả</div>
-          <div className="flex items-center justify-center gap-3">
+      <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 z-30 pointer-events-none">
+        <div className="flex items-center justify-center gap-1 rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 backdrop-blur-md shadow-[0_4px_12px_rgba(15,23,42,0.35)]">
             {resultOverlayState.faces.map((face, index) => (
               <div
                 key={`sicbo-result-face-${index}`}
-                className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 shadow-md"
+              className="flex h-6 w-6 items-center justify-center rounded bg-white/90 shadow-sm"
               >
                 <img
                   src={`/matxucxac/${face}cham.svg`}
                   alt={`Mặt ${face}`}
-                  className="h-10 w-10 object-contain"
+                className="h-5 w-5 object-contain"
                   draggable={false}
                 />
               </div>
             ))}
-          </div>
         </div>
       </div>
     ) : null;
@@ -1262,6 +1269,7 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
     [
       applyPointsUpdate,
       betSignature,
+      selectedQuickBets,
       fetchAndUpdateUserPoints,
       isBettingLocked,
       isPlacingBet,

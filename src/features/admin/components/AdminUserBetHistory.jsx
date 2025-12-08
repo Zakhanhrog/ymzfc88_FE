@@ -12,12 +12,16 @@ import {
   Select,
   Space,
   Statistic,
-  Table
+  Table,
+  DatePicker,
+  Form
 } from 'antd';
 import { BarChartOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { adminService } from '../services/adminService';
-import { formatCurrency } from '../../../utils/helpers';
+import { formatPointsDisplay, formatPoints } from '../../../utils/helpers';
+
+const { RangePicker } = DatePicker;
 
 const DEFAULT_PAGE_SIZE = 20;
 const DETAIL_PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -30,8 +34,11 @@ const gameTypeOptions = [
 ];
 
 const AdminUserBetHistory = () => {
+  const [form] = Form.useForm();
   const [searchInput, setSearchInput] = useState('');
   const [searchValue, setSearchValue] = useState('');
+  const [dateRange, setDateRange] = useState(null);
+  const [agentCode, setAgentCode] = useState('');
   const [summaryData, setSummaryData] = useState([]);
   const [summaryPage, setSummaryPage] = useState(0);
   const [summarySize, setSummarySize] = useState(DEFAULT_PAGE_SIZE);
@@ -49,8 +56,12 @@ const AdminUserBetHistory = () => {
   const fetchSummary = useCallback(async () => {
     setSummaryLoading(true);
     try {
+      const [startDate, endDate] = dateRange || [];
       const response = await adminService.getUserBetSummary({
         search: searchValue,
+        agentCode: agentCode || undefined,
+        startDate: startDate ? startDate.startOf('day').toISOString() : undefined,
+        endDate: endDate ? endDate.endOf('day').toISOString() : undefined,
         page: summaryPage,
         size: summarySize
       });
@@ -66,7 +77,7 @@ const AdminUserBetHistory = () => {
     } finally {
       setSummaryLoading(false);
     }
-  }, [searchValue, summaryPage, summarySize]);
+  }, [searchValue, dateRange, agentCode, summaryPage, summarySize]);
 
   useEffect(() => {
     fetchSummary();
@@ -79,8 +90,11 @@ const AdminUserBetHistory = () => {
 
   const handleResetFilters = () => {
     setSearchInput('');
+    setDateRange(null);
+    setAgentCode('');
     setSummaryPage(0);
     setSearchValue('');
+    form.resetFields();
   };
 
   const handleDetailClose = () => {
@@ -135,7 +149,7 @@ const AdminUserBetHistory = () => {
   const summaryColumns = useMemo(
     () => [
       {
-        title: 'Tài khoản',
+        title: 'Tên tài khoản',
         dataIndex: 'username',
         key: 'username',
         render: (value, record) => (
@@ -149,25 +163,86 @@ const AdminUserBetHistory = () => {
         title: 'Tổng cược',
         dataIndex: 'totalStakeAmount',
         key: 'totalStakeAmount',
-        render: (value) => formatCurrency(Number(value ?? 0))
+        align: 'right',
+        render: (value) => formatPointsDisplay(Number(value ?? 0))
       },
       {
-        title: 'Tổng lãi',
+        title: 'Tổng Thắng',
         dataIndex: 'totalWinAmount',
         key: 'totalWinAmount',
-        render: (value) => formatCurrency(Number(value ?? 0))
+        align: 'right',
+        render: (value) => {
+          const win = Number(value ?? 0);
+          return (
+            <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+              {formatPointsDisplay(win)}
+            </span>
+          );
+        }
       },
       {
-        title: 'Tổng lỗ',
+        title: 'Tổng Thua',
         dataIndex: 'totalLossAmount',
         key: 'totalLossAmount',
-        render: (value) => formatCurrency(Number(value ?? 0))
+        align: 'right',
+        render: (value) => {
+          const loss = Number(value ?? 0);
+          return (
+            <span style={{ color: '#ef4444', fontWeight: 'bold' }}>
+              {formatPointsDisplay(loss)}
+            </span>
+          );
+        }
       },
       {
-        title: 'Tổng nạp',
+        title: 'Tổng thắng/thua',
+        key: 'netWinLoss',
+        align: 'right',
+        render: (_, record) => {
+          const win = Number(record.totalWinAmount ?? 0);
+          const loss = Number(record.totalLossAmount ?? 0);
+          const net = win - loss;
+          return (
+            <span
+              style={{
+                color: net >= 0 ? '#10b981' : '#ef4444',
+                fontWeight: 'bold'
+              }}
+            >
+              {formatPointsDisplay(net)}
+            </span>
+          );
+        }
+      },
+      {
+        title: 'Tổng Nạp',
         dataIndex: 'totalDepositAmount',
         key: 'totalDepositAmount',
-        render: (value) => formatCurrency(Number(value ?? 0))
+        align: 'right',
+        render: (value) => formatPoints(Number(value ?? 0)) // VND, cần chia 1000
+      },
+      {
+        title: 'Tổng Rút',
+        dataIndex: 'totalWithdrawAmount',
+        key: 'totalWithdrawAmount',
+        align: 'right',
+        render: (value) => formatPoints(Number(value ?? 0)) // VND, cần chia 1000
+      },
+      {
+        title: 'Số dư điểm',
+        dataIndex: 'currentBalance',
+        key: 'currentBalance',
+        align: 'right',
+        render: (value) => {
+          // currentBalance is already in points, just format it
+          return formatPointsDisplay(value);
+        }
+      },
+      {
+        title: 'IP',
+        dataIndex: 'firstLoginIp',
+        key: 'firstLoginIp',
+        render: (value) => value || '-'
       },
       {
         title: 'Thao tác',
@@ -227,14 +302,14 @@ const AdminUserBetHistory = () => {
         dataIndex: 'stakeAmount',
         key: 'stakeAmount',
         width: 140,
-        render: (value) => formatCurrency(Number(value ?? 0))
+        render: (value) => formatPointsDisplay(Number(value ?? 0))
       },
       {
         title: 'Tiền thắng',
         dataIndex: 'winAmount',
         key: 'winAmount',
         width: 140,
-        render: (value) => formatCurrency(Number(value ?? 0))
+        render: (value) => formatPointsDisplay(Number(value ?? 0))
       },
       {
         title: 'Trạng thái',
@@ -257,30 +332,66 @@ const AdminUserBetHistory = () => {
     if (!detailSummary) {
       return null;
     }
+    const totalStake = Number(detailSummary.totalStakeAmount ?? 0);
+    const totalWin = Number(detailSummary.totalWinAmount ?? 0); // Đã là lãi, không tính gốc
+    const totalLoss = Number(detailSummary.totalLossAmount ?? 0);
+    const totalDeposit = Number(detailSummary.totalDepositAmount ?? 0);
+    const totalWithdraw = Number(detailSummary.totalWithdrawAmount ?? 0);
+    const totalRefund = Number(detailSummary.totalRefundAmount ?? 0);
+    const totalDailyLossRefund = Number(detailSummary.totalDailyLossRefundAmount ?? 0);
+    const totalPromotionalMoney = Number(detailSummary.totalPromotionalMoneyAmount ?? 0);
+    const net = totalWin - totalLoss;
+    
     const cards = [
       {
-        title: 'Tổng cược',
-        value: formatCurrency(Number(detailSummary.totalStakeAmount ?? 0))
-      },
-      {
-        title: 'Tổng lãi',
-        value: formatCurrency(Number(detailSummary.totalWinAmount ?? 0))
-      },
-      {
-        title: 'Tổng lỗ',
-        value: formatCurrency(Number(detailSummary.totalLossAmount ?? 0))
-      },
-      {
         title: 'Tổng nạp',
-        value: formatCurrency(Number(detailSummary.totalDepositAmount ?? 0))
+        value: formatPoints(totalDeposit) // VND, cần chia 1000
+      },
+      {
+        title: 'Tổng rút',
+        value: formatPoints(totalWithdraw) // VND, cần chia 1000
+      },
+      {
+        title: 'Tổng cược',
+        value: formatPointsDisplay(totalStake)
+      },
+      {
+        title: 'Tổng thắng',
+        value: formatPointsDisplay(totalWin),
+        valueStyle: { color: '#16a34a' }
+      },
+      {
+        title: 'Tổng thua',
+        value: formatPointsDisplay(totalLoss),
+        valueStyle: { color: '#dc2626' }
+      },
+      {
+        title: 'Thắng/Thua',
+        value: formatPointsDisplay(net),
+        valueStyle: { color: net >= 0 ? '#16a34a' : '#dc2626', fontWeight: 'bold' }
+      },
+      {
+        title: 'Hoàn trả',
+        value: formatPointsDisplay(totalRefund),
+        valueStyle: { color: '#f59e0b' }
+      },
+      {
+        title: 'Hoàn thua theo ngày',
+        value: formatPointsDisplay(totalDailyLossRefund),
+        valueStyle: { color: '#8b5cf6' }
+      },
+      {
+        title: 'Khuyến mại',
+        value: formatPointsDisplay(totalPromotionalMoney),
+        valueStyle: { color: '#06b6d4' }
       }
     ];
     return (
       <Row gutter={16} className="mb-4">
         {cards.map((card) => (
-          <Col xs={12} md={6} key={card.title}>
+          <Col xs={12} md={8} lg={6} key={card.title}>
             <Card bordered={false}>
-              <Statistic title={card.title} value={card.value} />
+              <Statistic title={card.title} value={card.value} valueStyle={card.valueStyle} />
             </Card>
           </Col>
         ))}
@@ -291,20 +402,51 @@ const AdminUserBetHistory = () => {
   return (
     <div className="space-y-4">
       <Card>
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            placeholder="Tìm theo tài khoản / tên"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onPressEnter={handleSearch}
-          />
-          <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
-            Tìm kiếm
-          </Button>
-          <Button icon={<ReloadOutlined />} onClick={handleResetFilters}>
-            Đặt lại
-          </Button>
-        </Space.Compact>
+        <Form form={form} layout="vertical">
+          <Row gutter={16}>
+            <Col xs={24} md={8} lg={6}>
+              <Form.Item label="Tìm theo tài khoản/tên">
+                <Input
+                  placeholder="Tài khoản / tên"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onPressEnter={handleSearch}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={8} lg={6}>
+              <Form.Item label="Mã đại lý">
+                <Input
+                  placeholder="Mã đại lý"
+                  value={agentCode}
+                  onChange={(e) => setAgentCode(e.target.value)}
+                  onPressEnter={handleSearch}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={8} lg={8}>
+              <Form.Item label="Khoảng thời gian">
+                <RangePicker
+                  className="w-full"
+                  value={dateRange}
+                  onChange={(dates) => setDateRange(dates)}
+                  format="DD/MM/YYYY"
+                  placeholder={['Từ ngày', 'Đến ngày']}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={24} lg={4} className="flex items-end">
+              <Space>
+                <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
+                  Tìm kiếm
+                </Button>
+                <Button icon={<ReloadOutlined />} onClick={handleResetFilters}>
+                  Đặt lại
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </Form>
       </Card>
 
       <Card>

@@ -22,8 +22,8 @@ const ResponsiveAccountWrapper = () => {
     return <MobileAccountPage />;
   }
 
-  // For desktop, show ResponsiveWalletWrapper with balance tab (Tổng Quan) as default
-  return <ResponsiveWalletWrapper initialTab="balance" />;
+  // For desktop, show ResponsiveWalletWrapper with account tab as default
+  return <ResponsiveWalletWrapper initialTab="account" />;
 };
 
 export default ResponsiveAccountWrapper;

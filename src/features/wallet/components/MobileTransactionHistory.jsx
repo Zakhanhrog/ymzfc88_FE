@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Card,
+  Card as AntCard,
   Tag,
   Space,
   Button,
@@ -23,6 +23,7 @@ import dayjs from 'dayjs';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import walletService from '../services/walletService';
 import MobileBettingHistory from './MobileBettingHistory';
+import { Card, CardContent } from '../../../components/ui/Card';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -44,9 +45,17 @@ const MobileTransactionHistoryTab = () => {
   });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [stats, setStats] = useState({
+    totalDeposit: 0,
+    totalWithdraw: 0,
+    totalBonus: 0,
+    pendingCount: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(false);
 
   useEffect(() => {
     loadTransactionHistory();
+    loadTransactionStatistics();
   }, [pagination.current, pagination.pageSize]);
 
   const loadTransactionHistory = async () => {
@@ -189,6 +198,28 @@ const MobileTransactionHistoryTab = () => {
     setDetailModalVisible(true);
   };
 
+  // Load transaction statistics from API
+  const loadTransactionStatistics = async () => {
+    try {
+      setLoadingStats(true);
+      const response = await walletService.getTransactionStatistics();
+      
+      if (response.success && response.data) {
+        setStats({
+          totalDeposit: response.data.totalDeposit || 0,
+          totalWithdraw: response.data.totalWithdraw || 0,
+          totalBonus: response.data.totalBonus || 0,
+          pendingCount: response.data.pendingCount || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error loading transaction statistics:', error);
+      message.error('Lỗi khi tải thống kê giao dịch: ' + error.message);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   const loadMore = () => {
     setPagination(prev => ({
       ...prev,
@@ -198,6 +229,36 @@ const MobileTransactionHistoryTab = () => {
 
   return (
     <div className="space-y-4">
+      {/* Statistics Cards - Mobile */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-3 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
+              <div className="text-base font-bold text-green-600">{stats.totalDeposit.toLocaleString()}</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-3 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
+              <div className="text-base font-bold text-green-600">{stats.totalWithdraw.toLocaleString()}</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="hover:shadow-md transition-shadow col-span-2">
+          <CardContent className="p-3 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
+              <div className="text-base font-bold text-orange-600">{stats.pendingCount} giao dịch</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Transaction List - Mobile Optimized */}
       <div className="space-y-2">
         {paginatedTransactions.length === 0 ? ( 

@@ -112,13 +112,6 @@ const MobileAccountPage = () => {
 
   const menuItems = [
     {
-      key: 'balance',
-      label: 'Tổng Quan',
-      icon: '/iconacc/imgi_24_overview.avif',
-      section: 'Giao Dịch',
-      action: () => navigate('/wallet?tab=balance')
-    },
-    {
       key: 'deposit-withdraw',
       label: 'Nạp Tiền',
       icon: '/iconacc/imgi_25_deposit.avif',
@@ -140,18 +133,18 @@ const MobileAccountPage = () => {
       action: () => navigate('/wallet?tab=transaction-history')
     },
     {
-      key: 'kyc-verification',
-      label: 'Xác thực tài khoản (KYC)',
-      icon: '/iconacc/imgi_29_account.avif',
-      section: 'Thông Tin',
-      action: () => navigate('/wallet?tab=kyc-verification')
-    },
-    {
       key: 'account',
       label: 'Tài khoản',
       icon: '/iconacc/imgi_24_overview.avif',
       section: 'Thông Tin',
       action: () => navigate('/wallet?tab=account')
+    },
+    {
+      key: 'kyc-verification',
+      label: 'Xác thực tài khoản (KYC)',
+      icon: '/iconacc/imgi_29_account.avif',
+      section: 'Thông Tin',
+      action: () => navigate('/wallet?tab=kyc-verification')
     },
     {
       key: 'promotions',
@@ -162,12 +155,12 @@ const MobileAccountPage = () => {
     }
   ];
 
-  const sections = ['Giao Dịch', 'Thông Tin'];
+  const sections = ['Thông Tin', 'Giao Dịch'];
 
   const getActiveSection = () => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    return tab || 'balance';
+    return tab || 'account';
   };
 
   const activeTab = getActiveSection();
@@ -222,36 +215,13 @@ const MobileAccountPage = () => {
                   <div className="border-t border-gray-200 my-3"></div>
                 )}
                 
-                {/* Section Header - only show for first section */}
-                {sectionIndex === 0 && (
-                  <>
-                    <div className="mb-3">
-                      <button
-                        onClick={() => menuItems.find(item => item.section === section && item.key === 'balance')?.action()}
-                        className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-gray-50 rounded-lg transition-colors"
-                      >
-                        <img 
-                          src="/iconacc/imgi_24_overview.avif" 
-                          alt="Tổng Quan"
-                          className="w-6 h-6"
-                        />
-                        <span className="text-gray-900 text-base font-medium">Tổng Quan</span>
-                      </button>
-                    </div>
-                    <h3 className="text-gray-600 text-xs font-medium mb-2 px-1">
-                      {section}
-                    </h3>
-                  </>
-                )}
-
-                {sectionIndex > 0 && (
-                  <h3 className="text-gray-600 text-xs font-medium mb-2 px-1">
-                    {section}
-                  </h3>
-                )}
+                {/* Section Header */}
+                <h3 className="text-gray-600 text-xs font-medium mb-2 px-1">
+                  {section}
+                </h3>
 
                 {menuItems
-                  .filter(item => item.section === section && (sectionIndex === 0 ? item.key !== 'balance' : true))
+                  .filter(item => item.section === section)
                   .map((item) => (
                     <button
                       key={item.key}

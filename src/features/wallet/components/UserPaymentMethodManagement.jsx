@@ -56,8 +56,7 @@ const UserPaymentMethodManagement = () => {
   const withdrawalPaymentTypes = [
     { value: 'BANK', label: 'Ngân hàng', icon: <BankOutlined />, color: 'blue' },
     { value: 'MOMO', label: 'Ví MoMo', icon: <MobileOutlined />, color: 'pink' },
-    { value: 'ZALO_PAY', label: 'ZaloPay', icon: <MobileOutlined />, color: 'cyan' },
-    { value: 'VIET_QR', label: 'VietQR', icon: <QrcodeOutlined />, color: 'green' }
+    { value: 'ZALO_PAY', label: 'ZaloPay', icon: <MobileOutlined />, color: 'cyan' }
   ];
 
   // Popular banks
@@ -70,7 +69,36 @@ const UserPaymentMethodManagement = () => {
     { code: 'BIDV', name: 'BIDV', fullName: 'Ngân hàng TMCP Đầu tư và Phát triển Việt Nam' },
     { code: 'TPB', name: 'TPBank', fullName: 'Ngân hàng TMCP Tiên Phong' },
     { code: 'STB', name: 'Sacombank', fullName: 'Ngân hàng TMCP Sài Gòn Thương tín' },
-    { code: 'VPB', name: 'VPBank', fullName: 'Ngân hàng TMCP Việt Nam Thịnh vượng' }
+    { code: 'AGB', name: 'Agribank', fullName: 'Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam' },
+    { code: 'VPB', name: 'VPBank', fullName: 'Ngân hàng TMCP Việt Nam Thịnh vượng' },
+    { code: 'HDB', name: 'HDBank', fullName: 'Ngân hàng TMCP Phát triển Thành phố Hồ Chí Minh' },
+    { code: 'EIB', name: 'Eximbank', fullName: 'Ngân hàng TMCP Xuất Nhập khẩu Việt Nam' },
+    { code: 'SHB', name: 'SHB', fullName: 'Ngân hàng TMCP Sài Gòn - Hà Nội' },
+    { code: 'VIB', name: 'VIB', fullName: 'Ngân hàng TMCP Quốc tế Việt Nam' },
+    { code: 'MSB', name: 'MSB', fullName: 'Ngân hàng TMCP Hàng Hải' },
+    { code: 'SEA', name: 'SeABank', fullName: 'Ngân hàng TMCP Đông Nam Á' },
+    { code: 'OCB', name: 'OCB', fullName: 'Ngân hàng TMCP Phương Đông' },
+    { code: 'BVB', name: 'BaoViet Bank', fullName: 'Ngân hàng TMCP Bảo Việt' },
+    { code: 'HSBC', name: 'HSBC', fullName: 'Ngân hàng TNHH MTV HSBC Việt Nam' },
+    { code: 'CITI', name: 'CitiBank', fullName: 'Ngân hàng Citibank Việt Nam' },
+    { code: 'SCB', name: 'SCB', fullName: 'Ngân hàng TMCP Sài Gòn' },
+    { code: 'NAB', name: 'Nam A Bank', fullName: 'Ngân hàng TMCP Nam Á' },
+    { code: 'VCCB', name: 'VietCapitalBank', fullName: 'Ngân hàng TMCP Bản Việt' },
+    { code: 'PGB', name: 'PGBank', fullName: 'Ngân hàng TMCP Xăng dầu Petrolimex' },
+    { code: 'VAB', name: 'VietABank', fullName: 'Ngân hàng TMCP Việt Á' },
+    { code: 'BAB', name: 'BacABank', fullName: 'Ngân hàng TMCP Bắc Á' },
+    { code: 'GPB', name: 'GPBank', fullName: 'Ngân hàng TMCP Dầu Khí Toàn Cầu' },
+    { code: 'KLB', name: 'KienLongBank', fullName: 'Ngân hàng TMCP Kiên Long' },
+    { code: 'LPB', name: 'LienVietPostBank', fullName: 'Ngân hàng TMCP Bưu Điện Liên Việt' },
+    { code: 'NAV', name: 'Navibank', fullName: 'Ngân hàng TMCP Navibank' },
+    { code: 'NCB', name: 'NCB', fullName: 'Ngân hàng TMCP Quốc Dân' },
+    { code: 'OJB', name: 'OceanBank', fullName: 'Ngân hàng TMCP Đại Dương' },
+    { code: 'PUB', name: 'PublicBank', fullName: 'Ngân hàng TNHH MTV Public Việt Nam' },
+    { code: 'PVB', name: 'PVcomBank', fullName: 'Ngân hàng TMCP Đại Chúng Việt Nam' },
+    { code: 'SGB', name: 'SaigonBank', fullName: 'Ngân hàng TMCP Sài Gòn Công Thương' },
+    { code: 'VDB', name: 'VietBank', fullName: 'Ngân hàng TMCP Việt Nam Thương Tín' },
+    { code: 'VNCB', name: 'Vietnam Construction Bank', fullName: 'Ngân hàng TMCP Xây dựng Việt Nam' },
+    { code: 'WVB', name: 'Woori Bank', fullName: 'Ngân hàng TNHH MTV Woori Việt Nam' }
   ];
 
   useEffect(() => {

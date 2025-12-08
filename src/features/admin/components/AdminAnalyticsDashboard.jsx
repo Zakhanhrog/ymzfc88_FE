@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Row, Col, Form, Select, DatePicker, Button, Table, Tag, Space, Statistic, message } from 'antd';
 import dayjs from 'dayjs';
 import adminService from '../services/adminService';
+import { formatPoints as formatPointsFromVND } from '../../../utils/helpers';
 
 const { RangePicker } = DatePicker;
 
@@ -10,6 +11,21 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN', {
   currency: 'VND',
   maximumFractionDigits: 0,
 });
+
+// Formatter cho điểm (value đã là điểm rồi, không cần chia 1000) - dùng cho BETTING
+const pointFormatter = new Intl.NumberFormat('vi-VN', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+// Hàm format điểm cho BETTING (value đã là điểm rồi, không cần chia 1000)
+const formatPointsDisplay = (points) => {
+  if (!points && points !== 0) return '0 điểm';
+  return `${pointFormatter.format(Number(points ?? 0))} điểm`;
+};
+
+// Hàm format điểm cho TRANSACTION (value là VND, cần chia 1000) - import từ helpers.js
+const formatPoints = formatPointsFromVND;
 
 const numberFormatter = new Intl.NumberFormat('vi-VN');
 
@@ -40,11 +56,9 @@ const BET_STATUS_COLORS = {
 const DEFAULT_PAGE_SIZE = 20;
 
 const buildDefaultFilters = () => {
-  const end = dayjs().endOf('day');
-  const start = dayjs().subtract(6, 'day').startOf('day');
   return {
-    dateRange: [start, end],
-    gameType: 'lottery',
+    dateRange: null, // Không có mặc định, để thống kê hết tất cả dữ liệu
+    gameType: 'all',
     betStatus: 'all',
     transactionType: 'all',
     transactionStatus: 'all',
@@ -150,7 +164,7 @@ const AdminAnalyticsDashboard = () => {
   const handleFilterSubmit = (values) => {
     const nextFilters = {
       dateRange: values.dateRange ?? null,
-      gameType: values.gameType ?? 'lottery',
+      gameType: values.gameType ?? 'all',
       betStatus: values.betStatus ?? 'all',
       transactionType: values.transactionType ?? 'all',
       transactionStatus: values.transactionStatus ?? 'all',
@@ -218,7 +232,7 @@ const AdminAnalyticsDashboard = () => {
       dataIndex: 'stake',
       width: 140,
       align: 'right',
-      render: (value) => currencyFormatter.format(Number(value ?? 0)),
+      render: (value) => formatPointsDisplay(value ?? 0),
     },
     {
       title: 'Phế',
@@ -229,7 +243,7 @@ const AdminAnalyticsDashboard = () => {
         const fee = Number(value ?? 0);
         return fee > 0 ? (
           <span style={{ color: '#9333ea' }}>
-            {currencyFormatter.format(fee)}
+            {formatPointsDisplay(fee)}
           </span>
         ) : '—';
       },
@@ -243,24 +257,46 @@ const AdminAnalyticsDashboard = () => {
         const bao = Number(value ?? 0);
         return bao > 0 ? (
           <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
-            {currencyFormatter.format(bao)}
+            {formatPointsDisplay(bao)}
           </span>
         ) : '—';
       },
     },
     {
-      title: 'Thắng',
+      title: 'Thắng/Thua',
       dataIndex: 'winAmount',
       width: 140,
       align: 'right',
-      render: (value) => currencyFormatter.format(Number(value ?? 0)),
-    },
-    {
-      title: 'Doanh thu',
-      dataIndex: 'revenue',
-      width: 140,
-      align: 'right',
-      render: (value) => currencyFormatter.format(Number(value ?? 0)),
+      render: (value, record) => {
+        // Nếu trạng thái là REFUNDED thì hiển thị 0
+        if (record?.status === 'REFUNDED') {
+          return <span style={{ color: '#6b7280' }}>{formatPointsDisplay(0)}</span>;
+        }
+        
+        const winAmount = Number(record?.winAmount ?? 0);
+        const stake = Number(record?.stake ?? 0);
+        
+        // Tính Thắng/Thua = (Tiền thắng) - (Tiền cược)
+        // Nếu thắng: winAmount > stake => dương (màu xanh)
+        // Nếu thua: winAmount < stake => âm (màu đỏ)
+        const winLoss = winAmount - stake;
+        
+        if (winLoss > 0) {
+          return (
+            <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+              +{formatPointsDisplay(winLoss)}
+            </span>
+          );
+        } else if (winLoss < 0) {
+          return (
+            <span style={{ color: '#ef4444', fontWeight: 'bold' }}>
+              {formatPointsDisplay(winLoss)}
+            </span>
+          );
+        } else {
+          return <span style={{ color: '#6b7280' }}>{formatPointsDisplay(0)}</span>;
+        }
+      },
     },
     {
       title: 'Trạng thái',
@@ -319,14 +355,14 @@ const AdminAnalyticsDashboard = () => {
       dataIndex: 'amount',
       width: 140,
       align: 'right',
-      render: (value) => currencyFormatter.format(Number(value ?? 0)),
+      render: (value) => formatPoints(value ?? 0),
     },
     {
       title: 'Thực nhận',
       dataIndex: 'netAmount',
       width: 140,
       align: 'right',
-      render: (value) => currencyFormatter.format(Number(value ?? 0)),
+      render: (value) => formatPoints(value ?? 0),
     },
     {
       title: 'Phương thức',
@@ -346,6 +382,25 @@ const AdminAnalyticsDashboard = () => {
       width: 180,
       render: (value) => formatDateTime(value),
     },
+    {
+      title: 'Người duyệt',
+      dataIndex: 'processedByUsername',
+      key: 'processedByUsername',
+      width: 150,
+      render: (username, record) => {
+        if (!username) {
+          return <span className="text-gray-400">-</span>;
+        }
+        return (
+          <div>
+            <div className="font-semibold">{username}</div>
+            {record.processedAt && (
+              <div className="text-gray-500 text-xs">{formatDateTime(record.processedAt)}</div>
+            )}
+          </div>
+        );
+      },
+    },
   ];
 
   return (
@@ -357,13 +412,13 @@ const AdminAnalyticsDashboard = () => {
               <Form.Item
                 label="Khoảng thời gian"
                 name="dateRange"
-                rules={[{ required: true, message: 'Vui lòng chọn khoảng thời gian' }]}
               >
                 <RangePicker
-                  allowClear={false}
+                  allowClear={true}
                   className="w-full"
                   showTime={false}
                   format="DD/MM/YYYY"
+                  placeholder={['Từ ngày', 'Đến ngày']}
                 />
               </Form.Item>
             </Col>
@@ -371,6 +426,7 @@ const AdminAnalyticsDashboard = () => {
               <Form.Item label="Game" name="gameType">
                 <Select
                   options={[
+                    { label: 'Tất cả', value: 'all' },
                     { label: 'Xổ số', value: 'lottery' },
                     { label: 'Sicbo', value: 'sicbo' },
                     { label: 'Xóc Đĩa', value: 'xocdia' },
@@ -439,7 +495,7 @@ const AdminAnalyticsDashboard = () => {
           <Card>
             <Statistic
               title="Tổng tiền cược"
-              value={currencyFormatter.format(Number(betSummary.totalStake ?? 0))}
+              value={formatPointsDisplay(betSummary.totalStake ?? 0)}
             />
           </Card>
         </Col>
@@ -447,7 +503,7 @@ const AdminAnalyticsDashboard = () => {
           <Card>
             <Statistic
               title="Tổng tiền thắng"
-              value={currencyFormatter.format(Number(betSummary.totalWinAmount ?? 0))}
+              value={formatPointsDisplay(betSummary.totalWinAmount ?? 0)}
               valueStyle={{ color: '#16a34a' }}
             />
           </Card>
@@ -455,10 +511,18 @@ const AdminAnalyticsDashboard = () => {
         <Col xs={24} lg={4} md={8}>
           <Card>
             <Statistic
+              title="Tổng tiền thua"
+              value={formatPointsDisplay(betSummary.totalLostAmount ?? 0)}
+              valueStyle={{ color: '#dc2626' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={4} md={8}>
+          <Card>
+            <Statistic
               title="Doanh thu"
-              value={currencyFormatter.format(
-                Number(betSummary.totalLostAmount ?? 0) + 
-                Number(betSummary.totalFee ?? 0)
+              value={formatPointsDisplay(
+                Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0)
               )}
               valueStyle={{ color: '#f97316' }}
             />
@@ -467,31 +531,60 @@ const AdminAnalyticsDashboard = () => {
         <Col xs={24} lg={4} md={8}>
           <Card>
             <Statistic
-              title={filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}
-              value={currencyFormatter.format(Number(betSummary.totalFee ?? 0))}
-              valueStyle={{ color: '#9333ea' }}
+              title="Lợi nhuận"
+              value={formatPointsDisplay(
+                Number(betSummary.totalWinAmount ?? 0) - 
+                Number(betSummary.totalLostAmount ?? 0) - 
+                Number(betSummary.totalRefund ?? 0) - 
+                Number(betSummary.totalAgentCommission ?? 0) - 
+                (filters.gameType === 'all' 
+                  ? (Number(betSummary.sicboTotalFee ?? 0) + Number(betSummary.xocDiaTotalFee ?? 0))
+                  : Number(betSummary.totalFee ?? 0)
+                ) - 
+                Number(betSummary.totalBao ?? 0)
+              )}
+              valueStyle={{ color: '#059669' }}
             />
           </Card>
         </Col>
+        {filters.gameType === 'all' ? (
+          <>
+            <Col xs={24} lg={4} md={8}>
+              <Card>
+                <Statistic
+                  title="Tài Xỉu Thu Phế"
+                  value={formatPointsDisplay(betSummary.sicboTotalFee ?? 0)}
+                  valueStyle={{ color: '#9333ea' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} lg={4} md={8}>
+              <Card>
+                <Statistic
+                  title="Xóc Đĩa Thu Phế"
+                  value={formatPointsDisplay(betSummary.xocDiaTotalFee ?? 0)}
+                  valueStyle={{ color: '#9333ea' }}
+                />
+              </Card>
+            </Col>
+          </>
+        ) : (
+          <Col xs={24} lg={4} md={8}>
+            <Card>
+              <Statistic
+                title={filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}
+                value={formatPointsDisplay(betSummary.totalFee ?? 0)}
+                valueStyle={{ color: '#9333ea' }}
+              />
+            </Card>
+          </Col>
+        )}
         <Col xs={24} lg={4} md={8}>
           <Card>
             <Statistic
               title="Tài Xỉu Thu Bão"
-              value={currencyFormatter.format(Number(betSummary.totalBao ?? 0))}
+              value={formatPointsDisplay(betSummary.totalBao ?? 0)}
               valueStyle={{ color: '#dc2626' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} lg={4} md={8}>
-          <Card>
-            <Statistic
-              title="Tổng lợi nhuận"
-              value={currencyFormatter.format(
-                Number(betSummary.totalLostAmount ?? 0) + 
-                Number(betSummary.totalFee ?? 0) - 
-                Number(betSummary.totalWinAmount ?? 0)
-              )}
-              valueStyle={{ color: '#059669' }}
             />
           </Card>
         </Col>
@@ -529,7 +622,7 @@ const AdminAnalyticsDashboard = () => {
           <Card>
             <Statistic
               title="Tổng số tiền giao dịch"
-              value={currencyFormatter.format(Number(transactionSummary.totalAmount ?? 0))}
+              value={formatPoints(transactionSummary.totalAmount ?? 0)}
             />
           </Card>
         </Col>
@@ -537,7 +630,7 @@ const AdminAnalyticsDashboard = () => {
           <Card>
             <Statistic
               title="Tổng thực nhận"
-              value={currencyFormatter.format(Number(transactionSummary.totalNetAmount ?? 0))}
+              value={formatPoints(transactionSummary.totalNetAmount ?? 0)}
               valueStyle={{ color: '#2563eb' }}
             />
           </Card>
@@ -550,7 +643,7 @@ const AdminAnalyticsDashboard = () => {
           dataSource={transactionData}
           columns={transactionColumns}
           loading={transactionLoading}
-          scroll={{ x: 1100 }}
+          scroll={{ x: 1300 }}
           pagination={{
             current: txnPagination.current,
             pageSize: txnPagination.pageSize,

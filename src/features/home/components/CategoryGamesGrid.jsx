@@ -29,10 +29,8 @@ const CategoryGamesGrid = () => {
         '/images/games/songbai/imgi_33_90f0d9fb-e5a6-49ac-9e90-095354d75b95.png',
         '/images/games/songbai/imgi_34_38dc4055-ae80-4854-bcdd-754d29e9ec4c.png',
         '/images/games/songbai/imgi_35_7f8ebb55-51a9-4d3e-8240-17affd8608ff.png',
-        '/images/games/songbai/imgi_36_984fb1e8-f91e-469a-b40a-11c55e1b48d3.png',
         '/images/games/songbai/imgi_37_76c957f9-390c-4d0a-9cbe-1168da0f6ec3.png',
-        '/images/games/songbai/imgi_38_125fb559-36dd-432d-8efc-4b5712334cd7.png',
-        '/images/games/songbai/imgi_39_346325f6-d32d-4f99-beb4-cb64dd81c266.png'
+        '/images/games/songbai/imgi_38_125fb559-36dd-432d-8efc-4b5712334cd7.png'
       ]
     },
     slotquay: {

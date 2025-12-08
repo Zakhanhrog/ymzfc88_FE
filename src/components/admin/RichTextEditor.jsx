@@ -10,10 +10,57 @@ const ReactQuill = lazy(() => import('react-quill'));
 const RichTextEditor = ({ value, onChange, placeholder = 'Nhập nội dung...' }) => {
   const quillRef = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [displayValue, setDisplayValue] = useState('');
+
+  // Convert relative URL thành full URL để hiển thị trong editor
+  const convertToDisplayHtml = (html) => {
+    if (!html) return '';
+    // Nếu đã có http thì giữ nguyên, nếu là relative URL thì convert
+    return html.replace(
+      /src="(\/uploads\/[^"]+)"/g,
+      `src="${API_BASE_URL}$1"`
+    );
+  };
+
+  // Convert full URL thành relative URL để lưu vào database
+  const convertToSaveHtml = (html) => {
+    if (!html) return '';
+    // Thay thế full URL bằng relative URL
+    return html.replace(
+      new RegExp(API_BASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      ''
+    );
+  };
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Khi value thay đổi từ bên ngoài, convert để hiển thị
+  useEffect(() => {
+    if (isMounted && value !== undefined) {
+      const displayHtml = convertToDisplayHtml(value);
+      setDisplayValue(displayHtml);
+      // Cập nhật quill editor nếu đã mount
+      if (quillRef.current) {
+        const quill = quillRef.current.getEditor();
+        if (quill && quill.root.innerHTML !== displayHtml) {
+          quill.root.innerHTML = displayHtml;
+        }
+      }
+    }
+  }, [value, isMounted]);
+
+  // Wrapper để đảm bảo HTML luôn dùng relative URL khi lưu (tiết kiệm ký tự)
+  const handleChange = (html) => {
+    // Convert full URL thành relative URL trước khi lưu
+    const optimizedHtml = convertToSaveHtml(html);
+    setDisplayValue(html); // Giữ full URL để hiển thị
+    
+    if (onChange) {
+      onChange(optimizedHtml);
+    }
+  };
 
   // Custom image handler
   const imageHandler = () => {
@@ -43,35 +90,60 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Nhập nội dung...' 
         
         let imageUrl = await promotionService.uploadPromotionImage(file);
         
-        // Convert relative URL to full URL if needed
-        if (imageUrl && !imageUrl.startsWith('http')) {
-          if (imageUrl.startsWith('/')) {
-            imageUrl = `${API_BASE_URL}${imageUrl}`;
-          } else {
-            imageUrl = `${API_BASE_URL}/${imageUrl}`;
-          }
-        }
+        // Lưu relative URL vào database để tiết kiệm ký tự
+        // Backend trả về relative URL (ví dụ: /uploads/promotions/abc123.jpg)
+        // Chỉ dài ~30-40 ký tự thay vì ~60-70 ký tự nếu dùng full URL
         
         // Get quill instance
         const quill = quillRef.current?.getEditor();
         if (!quill) return;
-
+        
         // Get current selection
         const range = quill.getSelection(true);
         if (!range) {
           range = { index: quill.getLength(), length: 0 };
         }
         
-        // Insert image at cursor position
-        quill.insertEmbed(range.index, 'image', imageUrl);
+        // Convert relative URL to full URL chỉ để hiển thị trong editor
+        // Nhưng khi lưu vào HTML, sẽ dùng relative URL để tiết kiệm ký tự
+        let displayUrl = imageUrl;
+        if (imageUrl && !imageUrl.startsWith('http')) {
+          if (imageUrl.startsWith('/')) {
+            displayUrl = `${API_BASE_URL}${imageUrl}`;
+          } else {
+            displayUrl = `${API_BASE_URL}/${imageUrl}`;
+          }
+        }
+        
+        // Insert image với full URL để hiển thị trong editor
+        quill.insertEmbed(range.index, 'image', displayUrl);
         
         // Move cursor after image
         quill.setSelection(range.index + 1);
         
-        // Trigger onChange to update form value
-        if (onChange) {
-          onChange(quill.root.innerHTML);
-        }
+        // Lấy HTML và thay thế full URL bằng relative URL trước khi lưu
+        // Điều này giúp tiết kiệm ~30-40 ký tự mỗi ảnh
+        setTimeout(() => {
+          const html = quill.root.innerHTML;
+          // Thay thế tất cả full URL bằng relative URL trong HTML
+          const updatedHtml = html.replace(
+            new RegExp(API_BASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+            ''
+          );
+          if (updatedHtml !== html) {
+            // Cập nhật HTML với relative URL
+            quill.root.innerHTML = updatedHtml;
+            // Trigger onChange với HTML đã được tối ưu
+            if (onChange) {
+              onChange(updatedHtml);
+            }
+          } else {
+            // Nếu không có thay đổi, vẫn trigger onChange
+            if (onChange) {
+              onChange(html);
+            }
+          }
+        }, 50);
         
         message.success({ content: 'Upload ảnh thành công!', key: 'upload-image' });
       } catch (error) {
@@ -155,8 +227,8 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Nhập nội dung...' 
         <ReactQuill
           ref={quillRef}
           theme="snow"
-          value={value || ''}
-          onChange={onChange}
+          value={displayValue || convertToDisplayHtml(value || '')}
+          onChange={handleChange}
           modules={modules}
           formats={formats}
           placeholder={placeholder}

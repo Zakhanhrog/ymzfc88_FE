@@ -29,6 +29,7 @@ import {
 } from '@ant-design/icons';
 import promotionService from '../../../services/promotionService';
 import RichTextEditor from '../../../components/admin/RichTextEditor';
+import { API_BASE_URL } from '../../../utils/constants';
 
 const { Title, Text } = Typography;
 
@@ -72,6 +73,16 @@ const PromotionManagement = () => {
     }
   };
 
+  // Normalize HTML: chuyển full URL thành relative URL để tiết kiệm ký tự
+  const normalizeHtml = (html) => {
+    if (!html) return html;
+    // Thay thế tất cả full URL bằng relative URL
+    return html.replace(
+      new RegExp(API_BASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      ''
+    );
+  };
+
   // Create/Update promotion
   const handleSubmit = async (values) => {
     try {
@@ -82,9 +93,13 @@ const PromotionManagement = () => {
         return;
       }
       
+      // Normalize HTML details trước khi submit để tiết kiệm ký tự
+      const normalizedDetails = normalizeHtml(values.details);
+      
       // Đảm bảo imageUrl là string
       const formData = {
         ...values,
+        details: normalizedDetails,
         imageUrl: imageUrl
       };
       
@@ -140,10 +155,14 @@ const PromotionManagement = () => {
   const handleEdit = (promotion) => {
     setEditingPromotion(promotion);
     setUploadedImageUrl(promotion.imageUrl);
+    
+    // Normalize HTML details khi load lại (nếu có full URL từ database cũ)
+    const normalizedDetails = normalizeHtml(promotion.details || '');
+    
     form.setFieldsValue({
       title: promotion.title,
       description: promotion.description,
-      details: promotion.details || '',
+      details: normalizedDetails,
       isActive: promotion.isActive,
       displayOrder: promotion.displayOrder
     });
@@ -293,7 +312,10 @@ const PromotionManagement = () => {
                       <div 
                         className="text-gray-600 block mb-2"
                         dangerouslySetInnerHTML={{ 
-                          __html: promotion.details || '' 
+                          __html: (promotion.details || '').replace(
+                            /src="(\/uploads\/[^"]+)"/g,
+                            `src="${API_BASE_URL}$1"`
+                          )
                         }}
                         style={{
                           overflow: 'hidden',
@@ -380,7 +402,7 @@ const PromotionManagement = () => {
             name="details"
             label="Chi tiết"
             rules={[
-              { max: 10000, message: 'Chi tiết không được vượt quá 10000 ký tự' }
+              { max: 50000, message: 'Chi tiết không được vượt quá 50000 ký tự' }
             ]}
             getValueFromEvent={(value) => value}
             getValueProps={(value) => ({ value: value || '' })}

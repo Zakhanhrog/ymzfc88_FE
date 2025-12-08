@@ -11,8 +11,8 @@ const MobileRegisterPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
-    email: '',
     phoneNumber: '',
+    inviteCode: '',
     password: '',
     confirmPassword: '',
     agreedToTerms: false
@@ -27,6 +27,16 @@ const MobileRegisterPage = () => {
     setTimeout(() => {
       setIsAnimating(true);
     }, 10);
+
+    // Load inviteCode from URL params
+    const params = new URLSearchParams(window.location.search);
+    const inviteCode = params.get('inviteCode');
+    if (inviteCode) {
+      setFormData((prev) => ({
+        ...prev,
+        inviteCode
+      }));
+    }
   }, []);
 
   const validate = () => {
@@ -42,12 +52,6 @@ const MobileRegisterPage = () => {
       newErrors.username = 'Vui lòng nhập tên đăng nhập!';
     } else if (formData.username.length < 3) {
       newErrors.username = 'Tên đăng nhập tối thiểu 3 ký tự!';
-    }
-    
-    if (!formData.email) {
-      newErrors.email = 'Vui lòng nhập email!';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ!';
     }
     
     if (!formData.phoneNumber) {
@@ -66,6 +70,10 @@ const MobileRegisterPage = () => {
       newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu!';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Mật khẩu không khớp!';
+    }
+
+    if (formData.inviteCode && !/^[A-Za-z0-9]{5,10}$/.test(formData.inviteCode)) {
+      newErrors.inviteCode = 'Mã mời chỉ gồm chữ và số (5-10 ký tự)';
     }
     
     if (!formData.agreedToTerms) {
@@ -176,22 +184,6 @@ const MobileRegisterPage = () => {
               />
             </div>
 
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1.5">
-                Email
-              </label>
-              <Input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Nhập email"
-                error={errors.email}
-                className="h-10 text-sm rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
-              />
-            </div>
-
             {/* Phone Number Field */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-1.5">
@@ -203,6 +195,22 @@ const MobileRegisterPage = () => {
                 onChange={handleChange}
                 placeholder="Nhập số điện thoại"
                 error={errors.phoneNumber}
+                className="h-10 text-sm rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
+              />
+            </div>
+
+            {/* Invite Code Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                Mã mời (nếu có)
+              </label>
+              <Input
+                name="inviteCode"
+                value={formData.inviteCode}
+                onChange={handleChange}
+                placeholder="Nhập mã mời của bạn"
+                error={errors.inviteCode}
+                maxLength={10}
                 className="h-10 text-sm rounded-lg bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
               />
             </div>

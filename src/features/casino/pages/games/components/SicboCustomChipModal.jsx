@@ -9,6 +9,8 @@ const chipIconMap = {
   '500K': '/pokerchip/500K.svg',
   '1M': '/pokerchip/1M.svg',
   '10M': '/pokerchip/10M.svg',
+  '20M': '/pokerchip/20M.svg',
+  '50M': '/pokerchip/50M.svg',
 };
 
 const SicboCustomChipModal = ({

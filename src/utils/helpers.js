@@ -72,3 +72,42 @@ export const getTimeAgo = (date) => {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
   return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
 };
+
+/**
+ * Format points (1000 = 1 điểm)
+ * Converts amount in VND to points and formats it
+ * Format: dấu chấm (.) cho hàng nghìn, dấu phẩy (,) cho phần thập phân
+ */
+export const formatPoints = (amount) => {
+  if (!amount && amount !== 0) return '0 điểm';
+  
+  // Convert VND to points: 1000 VND = 1 điểm
+  const points = Number(amount) / 1000;
+  
+  // Format with Vietnamese locale - đảm bảo dấu chấm cho hàng nghìn, dấu phẩy cho thập phân
+  const formatted = new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    useGrouping: true
+  }).format(points);
+  
+  return formatted + ' điểm';
+};
+
+/**
+ * Format points display (value is already in points, no conversion needed)
+ * Use this when the value from backend is already in points
+ * Format: dấu chấm (.) cho hàng nghìn, dấu phẩy (,) cho phần thập phân
+ */
+export const formatPointsDisplay = (points) => {
+  if (!points && points !== 0) return '0 điểm';
+  
+  // Value is already in points, just format it
+  const formatted = new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    useGrouping: true
+  }).format(Number(points));
+  
+  return formatted + ' điểm';
+};

@@ -95,7 +95,7 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
       <div className="bg-white px-4 py-2 flex items-center justify-between">
         <div className="flex items-center">
           <img 
-            src="/logo.svg" 
+            src="/logo.png" 
             alt="LOTO79 Logo" 
             className="h-6 w-auto"
           />
@@ -139,7 +139,8 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
                   placeholder="Nhập tên đăng nhập hoặc email"
                   prefix={<Icon icon="mdi:account" className="text-gray-400 text-base" />}
                   error={errors.usernameOrEmail}
-                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="h-11 text-base rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
             </div>
@@ -167,7 +168,8 @@ const MobileLoginForm = ({ onClose, onSwitchToRegister, redirectAfterLogin }) =>
                     </button>
                   }
                   error={errors.password}
-                  className="h-11 text-sm rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  className="h-11 text-base rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
             </div>

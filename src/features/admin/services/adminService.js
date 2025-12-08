@@ -311,8 +311,39 @@ export const adminService = {
     }
   },
 
-  // Note: updateUserBalance đã bị xóa khỏi BE - hệ thống chỉ dùng points
-  // Admin có thể cộng/trừ points qua PointService thay thế
+  // Lấy danh sách phương thức thanh toán của user
+  getUserPaymentMethods: async (userId) => {
+    try {
+      const response = await adminAPI.get(`/admin/users/${userId}/payment-methods`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy danh sách phương thức thanh toán');
+    }
+  },
+
+  // Cập nhật phương thức thanh toán của user
+  updateUserPaymentMethod: async (userId, paymentMethodId, paymentMethodData) => {
+    try {
+      const response = await adminAPI.put(`/admin/users/${userId}/payment-methods/${paymentMethodId}`, paymentMethodData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật thông tin ngân hàng');
+    }
+  },
+
+  // Cộng/Trừ điểm cho user
+  adjustUserPoints: async (userId, adjustmentData) => {
+    try {
+      // Backend endpoint expects payload: { userId, points, type, description }
+      const response = await adminAPI.post('/points/admin/adjust', {
+        userId,
+        ...adjustmentData,
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi điều chỉnh điểm');
+    }
+  },
 
   // Lấy thống kê người dùng
   getUserStats: async () => {
@@ -454,7 +485,7 @@ export const adminService = {
   // ============ ANALYTICS ============
 
   getBetAnalytics: async ({
-    gameType = 'lottery',
+    gameType = 'all',
     status,
     startDate,
     endDate,
@@ -463,7 +494,7 @@ export const adminService = {
   } = {}) => {
     try {
       const params = new URLSearchParams({
-        gameType,
+        gameType: gameType || 'all',
         page: page.toString(),
         size: size.toString(),
       });
@@ -833,6 +864,25 @@ export const adminService = {
     }
   },
 
+  getAgentPayoutHistory: async (agentId, month) => {
+    try {
+      const params = month ? `?month=${month}` : '';
+      const response = await adminAPI.get(`/admin/agent/report/${agentId}/payout-history${params}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử chia hoa hồng');
+    }
+  },
+  // Lưu ghi chú cho đại lý
+  saveAgentNote: async (agentId, month, note) => {
+    try {
+      const response = await adminAPI.post(`/admin/agent/report/${agentId}/note?month=${month}`, { note });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lưu ghi chú');
+    }
+  },
+
   getGameHistory: async (params = {}) => {
     try {
       const response = await adminAPI.get('/admin/game-history', { params });
@@ -842,7 +892,7 @@ export const adminService = {
     }
   },
 
-  getUserBetSummary: async ({ search, page = 0, size = 20 } = {}) => {
+  getUserBetSummary: async ({ search, agentCode, startDate, endDate, page = 0, size = 20 } = {}) => {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -850,6 +900,15 @@ export const adminService = {
       });
       if (search) {
         params.append('search', search);
+      }
+      if (agentCode) {
+        params.append('agentCode', agentCode);
+      }
+      if (startDate) {
+        params.append('startDate', startDate);
+      }
+      if (endDate) {
+        params.append('endDate', endDate);
       }
       const response = await adminAPI.get(`/admin/game-history/user-summary?${params.toString()}`);
       return response.data;

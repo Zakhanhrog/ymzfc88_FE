@@ -8,7 +8,7 @@ import kycService from '../services/kycService';
 
 const UserWalletPage = () => {
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('balance');
+  const [activeTab, setActiveTab] = useState('account');
   const [userInfo, setUserInfo] = useState({
     username: '',
     email: '',
