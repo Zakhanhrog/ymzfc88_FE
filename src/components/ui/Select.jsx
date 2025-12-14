@@ -48,8 +48,8 @@ const Select = ({
 
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm h-8',
-    md: 'px-4 py-2 text-base h-10',
-    lg: 'px-4 py-3 text-lg h-12',
+    md: 'px-4 py-2 text-sm h-10',
+    lg: 'px-4 py-3 text-sm h-12',
   };
 
   return (
@@ -60,14 +60,14 @@ const Select = ({
         disabled={disabled}
         className={`
           w-full flex items-center justify-between gap-2 
-          border border-gray-300 rounded-lg 
+          border border-transparent rounded-lg 
           bg-white transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-[#4CAF50]
+          focus:outline-none
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${sizeClasses[size]}
         `}
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-gray-400'}>
+        <span className={`text-sm ${selectedOption ? 'text-gray-900' : 'text-gray-400'}`}>
           {selectedOption?.label || placeholder}
         </span>
         
@@ -103,7 +103,7 @@ const Select = ({
               onClick={() => handleSelect(option)}
               disabled={option.disabled}
               className={`
-                w-full text-left px-4 py-2 transition-colors
+                w-full text-left px-4 py-2 text-sm transition-colors
                 ${currentValue === option.value ? 'bg-[#4CAF50] bg-opacity-10 text-[#4CAF50] font-medium' : 'text-gray-900 hover:bg-gray-50'}
                 ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}

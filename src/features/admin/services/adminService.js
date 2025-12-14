@@ -617,7 +617,7 @@ export const adminService = {
       const response = await adminAPI.get('/sicbo/result-history', { params });
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử kết quả Sicbo');
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải lịch sử kết quả Tài Xỉu');
     }
   },
 

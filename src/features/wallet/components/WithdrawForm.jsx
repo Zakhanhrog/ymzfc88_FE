@@ -255,13 +255,35 @@ const WithdrawForm = () => {
     try {
       setLoading(true);
       
+      // Validate userPaymentMethodId
+      if (!values.userPaymentMethodId) {
+        message.error('Vui lòng chọn phương thức thanh toán');
+        setLoading(false);
+        return;
+      }
+
+      // Đảm bảo amount và points là số hợp lệ
+      const amountValue = Number(amount);
+      const pointsValue = Number(points);
+      
+      if (isNaN(amountValue) || amountValue < 10000) {
+        message.error('Số tiền tối thiểu là 10,000 VNĐ');
+        setLoading(false);
+        return;
+      }
+      
+      if (isNaN(pointsValue) || pointsValue < 1) {
+        message.error('Số điểm tối thiểu là 1 điểm');
+        setLoading(false);
+        return;
+      }
+      
       const withdrawData = {
-        amount: amount.toString(), // Convert to string for BigDecimal
-        points: points, // Thêm số điểm vào data gửi lên backend
+        amount: amountValue, // Gửi dưới dạng number, Spring Boot sẽ tự convert sang BigDecimal
+        points: pointsValue, // Gửi dưới dạng number
         userPaymentMethodId: values.userPaymentMethodId,
         description: values.description || ''
       };
-
 
       const response = await walletService.createWithdrawOrder(withdrawData);
       

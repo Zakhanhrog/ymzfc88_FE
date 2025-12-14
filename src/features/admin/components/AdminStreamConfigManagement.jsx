@@ -36,7 +36,7 @@ const AdminStreamConfigManagement = () => {
 
   const gameTypes = [
     { value: 'XOC_DIA', label: 'Xóc Đĩa' },
-    { value: 'SICBO', label: 'Sicbo' }
+    { value: 'SICBO', label: 'Tài Xỉu' }
   ];
 
   useEffect(() => {
@@ -300,7 +300,7 @@ const AdminStreamConfigManagement = () => {
           <Form.Item
             name="tableNumber"
             label="Bàn số (để trống nếu không có bàn)"
-            extra="Chỉ dùng cho game có nhiều bàn chơi (ví dụ: Sicbo). Xóc Đĩa thường để trống."
+            extra="Chỉ dùng cho game có nhiều bàn chơi (ví dụ: Tài Xỉu). Xóc Đĩa thường để trống."
           >
             <InputNumber 
               min={1} 
@@ -336,7 +336,7 @@ const AdminStreamConfigManagement = () => {
           >
             <TextArea 
               rows={3} 
-              placeholder="Mô tả stream config (ví dụ: Stream chính cho Xóc Đĩa, Stream bàn 1 Sicbo...)" 
+              placeholder="Mô tả stream config (ví dụ: Stream chính cho Xóc Đĩa, Stream bàn 1 Tài Xỉu...)" 
               maxLength={200}
               showCount
             />

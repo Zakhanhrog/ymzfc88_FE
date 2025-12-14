@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Table, Select, Space, Tag, message, Typography, Button, Modal, Form, Input, Row, Col } from 'antd';
-import { PlusOutlined, ReloadOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Card, Table, Select, Space, Tag, message, Typography, Button, Modal, Form, Input, Row, Col, Tooltip } from 'antd';
+import { PlusOutlined, ReloadOutlined, UserAddOutlined, EditOutlined, KeyOutlined, SafetyOutlined } from '@ant-design/icons';
 import adminService from '../services/adminService';
 
 const { Text } = Typography;
@@ -49,6 +49,13 @@ const AdminStaffManagement = ({
   });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm] = Form.useForm();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showC2Modal, setShowC2Modal] = useState(false);
+  const [editForm] = Form.useForm();
+  const [passwordForm] = Form.useForm();
+  const [c2Form] = Form.useForm();
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   const filterOptions = useMemo(() => {
     if (!allowRoleFilter) {
@@ -134,6 +141,81 @@ const AdminStaffManagement = ({
       message.error(error.message || 'Không thể cập nhật phân quyền');
     }
   }, [fetchStaff]);
+
+  const handleOpenEdit = (record) => {
+    setSelectedStaff(record);
+    editForm.setFieldsValue({
+      fullName: record.fullName,
+      email: record.email,
+      phoneNumber: record.phoneNumber,
+      status: record.status,
+      staffRole: record.role === 'ADMIN' ? 'ADMIN' : record.staffRole
+    });
+    setShowEditModal(true);
+  };
+
+  const handleOpenPassword = (record) => {
+    setSelectedStaff(record);
+    passwordForm.resetFields();
+    setShowPasswordModal(true);
+  };
+
+  const handleOpenC2 = (record) => {
+    setSelectedStaff(record);
+    c2Form.resetFields();
+    setShowC2Modal(true);
+  };
+
+  const handleUpdateStaff = async (values) => {
+    try {
+      const payload = { ...values };
+      if (values.staffRole === 'ADMIN') {
+        payload.role = 'ADMIN';
+        delete payload.staffRole;
+      } else {
+        payload.role = 'USER';
+        payload.staffRole = values.staffRole || null;
+      }
+      const response = await adminService.updateUser(selectedStaff.id, payload);
+      if (response.success) {
+        message.success('Cập nhật thông tin thành công');
+        setShowEditModal(false);
+        editForm.resetFields();
+        setSelectedStaff(null);
+        fetchStaff();
+      }
+    } catch (error) {
+      message.error(error.message || 'Không thể cập nhật thông tin');
+    }
+  };
+
+  const handleUpdatePassword = async (values) => {
+    try {
+      const response = await adminService.resetUserPassword(selectedStaff.id, values.newPassword);
+      if (response.success) {
+        message.success('Đổi mật khẩu thành công');
+        setShowPasswordModal(false);
+        passwordForm.resetFields();
+        setSelectedStaff(null);
+      }
+    } catch (error) {
+      message.error(error.message || 'Không thể đổi mật khẩu');
+    }
+  };
+
+  const handleUpdateC2Password = async (values) => {
+    try {
+      const response = await adminService.updateUserC2Password(selectedStaff.id, values.newC2Password);
+      if (response.success) {
+        message.success('Đổi mật khẩu C2 thành công');
+        setShowC2Modal(false);
+        c2Form.resetFields();
+        setSelectedStaff(null);
+      }
+    } catch (error) {
+      message.error(error.message || 'Không thể đổi mật khẩu C2');
+    }
+  };
 
   const handleCreateStaff = async (values) => {
     try {
@@ -239,7 +321,38 @@ const AdminStaffManagement = ({
       },
     };
 
-    return [...baseColumns, readOnly ? readOnlyColumn : editableColumn];
+    const actionColumn = {
+      title: 'Thao tác',
+      key: 'actions',
+      width: 180,
+      render: (_, record) => (
+        <Space size="small">
+          <Tooltip title="Chỉnh sửa thông tin">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => handleOpenEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Đổi mật khẩu">
+            <Button
+              type="text"
+              icon={<KeyOutlined />}
+              onClick={() => handleOpenPassword(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Đổi mật khẩu C2">
+            <Button
+              type="text"
+              icon={<SafetyOutlined />}
+              onClick={() => handleOpenC2(record)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    };
+
+    return [...baseColumns, readOnly ? readOnlyColumn : editableColumn, actionColumn];
   }, [readOnly, handleUpdateStaffRole]);
 
   return (
@@ -404,6 +517,180 @@ const AdminStaffManagement = ({
             </Button>
             <Button type="primary" htmlType="submit">
               Tạo tài khoản
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
+
+      {/* Modal chỉnh sửa nhân viên */}
+      <Modal
+        title="Chỉnh sửa thông tin nhân viên"
+        open={showEditModal}
+        onCancel={() => {
+          setShowEditModal(false);
+          editForm.resetFields();
+          setSelectedStaff(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={handleUpdateStaff}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="fullName"
+                label="Họ và tên"
+                rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập email' },
+                  { type: 'email', message: 'Email không hợp lệ' }
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="phoneNumber"
+                label="Số điện thoại"
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="status"
+                label="Trạng thái"
+                rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+              >
+                <Select>
+                  <Select.Option value="ACTIVE">Hoạt động</Select.Option>
+                  <Select.Option value="INACTIVE">Tạm khóa</Select.Option>
+                  <Select.Option value="SUSPENDED">Tạm dừng</Select.Option>
+                  <Select.Option value="BANNED">Bị cấm</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="staffRole"
+            label="Phân quyền"
+            rules={[{ required: true, message: 'Vui lòng chọn phân quyền' }]}
+          >
+            <Select
+              placeholder="Chọn phân quyền"
+              options={STAFF_ROLE_OPTIONS}
+            />
+          </Form.Item>
+
+          <Space className="w-full justify-end">
+            <Button
+              onClick={() => {
+                setShowEditModal(false);
+                editForm.resetFields();
+                setSelectedStaff(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button type="primary" htmlType="submit">
+              Cập nhật
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
+
+      {/* Modal đổi mật khẩu */}
+      <Modal
+        title="Đổi mật khẩu"
+        open={showPasswordModal}
+        onCancel={() => {
+          setShowPasswordModal(false);
+          passwordForm.resetFields();
+          setSelectedStaff(null);
+        }}
+        footer={null}
+        width={400}
+      >
+        <Form form={passwordForm} layout="vertical" onFinish={handleUpdatePassword}>
+          <Form.Item
+            name="newPassword"
+            label="Mật khẩu mới"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu mới' },
+              { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Space className="w-full justify-end">
+            <Button
+              onClick={() => {
+                setShowPasswordModal(false);
+                passwordForm.resetFields();
+                setSelectedStaff(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button type="primary" htmlType="submit">
+              Cập nhật
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
+
+      {/* Modal đổi mật khẩu C2 */}
+      <Modal
+        title="Đổi mật khẩu C2"
+        open={showC2Modal}
+        onCancel={() => {
+          setShowC2Modal(false);
+          c2Form.resetFields();
+          setSelectedStaff(null);
+        }}
+        footer={null}
+        width={400}
+      >
+        <Form form={c2Form} layout="vertical" onFinish={handleUpdateC2Password}>
+          <Form.Item
+            name="newC2Password"
+            label="Mật khẩu C2 mới"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu C2 mới' },
+              { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Space className="w-full justify-end">
+            <Button
+              onClick={() => {
+                setShowC2Modal(false);
+                c2Form.resetFields();
+                setSelectedStaff(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button type="primary" htmlType="submit">
+              Cập nhật
             </Button>
           </Space>
         </Form>

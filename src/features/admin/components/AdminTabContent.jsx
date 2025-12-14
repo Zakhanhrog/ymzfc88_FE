@@ -8,7 +8,7 @@ import DashboardStats from './DashboardStats';
 import DashboardCharts from './DashboardCharts';
 import TabPageHeader from './TabPageHeader';
 import PlaceholderContent from './PlaceholderContent';
-import AdminAnalyticsDashboard from './AdminAnalyticsDashboard';
+import { AdminAnalyticsDashboard } from '../analytics';
 import AdminStaffManagement from './AdminStaffManagement';
 import AdminRoleAssignment from './AdminRoleAssignment';
 import AdminAgentManagement from './AdminAgentManagement';
@@ -98,10 +98,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         }
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Thống kê" 
-              description="Báo cáo chi tiết cược và giao dịch nạp rút" 
-            />
             <AdminAnalyticsDashboard />
           </div>
         );

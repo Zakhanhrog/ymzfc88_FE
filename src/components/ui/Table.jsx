@@ -17,7 +17,7 @@ const Table = ({
 
   if (!dataSource || dataSource.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 text-sm">
         {emptyText}
       </div>
     );
@@ -25,13 +25,13 @@ const Table = ({
 
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="w-full divide-y divide-gray-200 table-auto">
         <thead className="bg-gray-50">
           <tr>
             {columns.map((column, index) => (
               <th
                 key={column.key || column.dataIndex || index}
-                className={`px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider ${column.className || ''}`}
+                className={`px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider ${column.className || ''}`}
                 style={{ width: column.width }}
               >
                 {column.title}
@@ -54,12 +54,12 @@ const Table = ({
                   const value = record[column.dataIndex];
                   const content = column.render 
                     ? column.render(value, record, recordIndex)
-                    : value;
+                    : <span className="text-sm text-gray-900">{value}</span>;
                   
                   return (
                     <td
                       key={column.key || column.dataIndex || columnIndex}
-                      className={`px-6 py-4 text-sm text-gray-900 ${column.className || ''}`}
+                      className={`px-4 py-3 text-sm text-gray-900 ${column.className || ''}`}
                     >
                       {content}
                     </td>
@@ -75,4 +75,3 @@ const Table = ({
 };
 
 export default Table;
-

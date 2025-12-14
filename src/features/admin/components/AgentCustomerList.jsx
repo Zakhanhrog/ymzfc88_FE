@@ -221,7 +221,7 @@ const AgentCustomerList = () => {
           lottery: 'Lô đề',
           'xoc-dia': 'Xóc Đĩa',
           xocdia: 'Xóc Đĩa',
-          sicbo: 'Sicbo'
+          sicbo: 'Tài Xỉu'
         };
         const colorMap = {
           lottery: 'geekblue',
@@ -538,7 +538,7 @@ const AgentCustomerList = () => {
                   <Option value="all">Tất cả trò chơi</Option>
                   <Option value="lottery">Lô đề</Option>
                   <Option value="xoc-dia">Xóc Đĩa</Option>
-                  <Option value="sicbo">Sicbo</Option>
+                  <Option value="sicbo">Tài Xỉu</Option>
                 </Select>
               </Col>
               <Col xs={24} sm={12} md={8}>

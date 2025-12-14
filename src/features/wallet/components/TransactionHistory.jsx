@@ -29,6 +29,7 @@ import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from
 import walletService from '../services/walletService';
 import BettingHistory from './BettingHistory';
 import { Card, CardContent } from '../../../components/ui/Card';
+import { formatPoints } from '../../../utils/helpers';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -265,16 +266,19 @@ const TransactionHistoryTab = () => {
       title: <span style={{ ...HEADING_STYLES.h6 }}>Số tiền</span>,
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount, record) => (
-        <span style={{ 
-          color: record.type === 'DEPOSIT' || record.type === 'BONUS' ? '#52c41a' : '#ff4d4f',
-          fontSize: FONT_SIZE.md,
-          fontWeight: FONT_WEIGHT.bold
-        }}>
-          {record.type === 'DEPOSIT' || record.type === 'BONUS' ? '+' : '-'}
-          {amount?.toLocaleString()} VNĐ
-        </span>
-      ),
+      render: (amount, record) => {
+        const netAmount = record.netAmount || amount;
+        return (
+          <span style={{ 
+            color: record.type === 'DEPOSIT' || record.type === 'BONUS' ? '#52c41a' : '#ff4d4f',
+            fontSize: FONT_SIZE.md,
+            fontWeight: FONT_WEIGHT.bold
+          }}>
+            {record.type === 'DEPOSIT' || record.type === 'BONUS' ? '+' : '-'}
+            {formatPoints(netAmount)}
+          </span>
+        );
+      },
     },
     {
       title: <span style={{ ...HEADING_STYLES.h6 }}>Phương thức</span>,
@@ -325,7 +329,7 @@ const TransactionHistoryTab = () => {
           <CardContent className="p-4 text-center">
             <div className="flex flex-col items-center">
               <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-              <div className="text-lg font-bold text-green-600">{stats.totalDeposit.toLocaleString()}</div>
+              <div className="text-lg font-bold text-green-600">{formatPoints(stats.totalDeposit)}</div>
           </div>
           </CardContent>
         </Card>
@@ -334,7 +338,7 @@ const TransactionHistoryTab = () => {
           <CardContent className="p-4 text-center">
             <div className="flex flex-col items-center">
               <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-              <div className="text-lg font-bold text-green-600">{stats.totalWithdraw.toLocaleString()}</div>
+              <div className="text-lg font-bold text-green-600">{formatPoints(stats.totalWithdraw)}</div>
           </div>
           </CardContent>
         </Card>
@@ -398,7 +402,7 @@ const TransactionHistoryTab = () => {
             <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Số tiền</span>}>
               <span style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: selectedTransaction.type === 'DEPOSIT' ? '#52c41a' : '#ff4d4f' }}>
                 {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
-                {selectedTransaction.amount?.toLocaleString()} VNĐ
+                {formatPoints(selectedTransaction.netAmount || selectedTransaction.amount)}
               </span>
             </Descriptions.Item>
             <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Phương thức</span>}>

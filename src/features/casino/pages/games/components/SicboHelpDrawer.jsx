@@ -142,7 +142,7 @@ const SicboHelpDrawer = ({ isOpen, onClose, tableType = 'table1' }) => {
                 <div className="text-gray-600">
                   {isTable1 ? 'Tổng số điểm 11 đến 18' : 'Tổng số điểm 11 đến 17 (Trừ bão)'}
                 </div>
-                <div className="text-sm font-semibold text-green-600 text-right">1:0.97</div>
+                <div className="text-sm font-semibold text-green-600 text-right">{isTable1 ? '1:0.97' : '1:1'}</div>
               </div>
 
               {/* Xỉu */}
@@ -151,21 +151,21 @@ const SicboHelpDrawer = ({ isOpen, onClose, tableType = 'table1' }) => {
                 <div className="text-gray-600">
                   {isTable1 ? 'Tổng số điểm 3 đến 10' : 'Tổng số điểm 4 đến 10 (Trừ bão)'}
                 </div>
-                <div className="text-sm font-semibold text-green-600 text-right">1:0.97</div>
+                <div className="text-sm font-semibold text-green-600 text-right">{isTable1 ? '1:0.97' : '1:1'}</div>
               </div>
 
               {/* Lẻ */}
               <div className="grid grid-cols-[1.5fr_2fr_1fr] gap-2 items-center border-b border-gray-100 pb-2">
                 <div className="font-medium">Lẻ</div>
                 <div className="text-gray-600">Tổng số điểm 3, 5, 7, 9, 11, 13, 15 & 17 (Trừ bão)</div>
-                <div className="text-sm font-semibold text-green-600 text-right">1:0.97</div>
+                <div className="text-sm font-semibold text-green-600 text-right">{isTable1 ? '1:0.97' : '1:1'}</div>
               </div>
 
               {/* Chẵn */}
               <div className="grid grid-cols-[1.5fr_2fr_1fr] gap-2 items-center border-b border-gray-100 pb-2">
                 <div className="font-medium">Chẵn</div>
                 <div className="text-gray-600">Tổng số điểm 4, 6, 8, 10, 12, 14, 16 & 18 (Trừ bão)</div>
-                <div className="text-sm font-semibold text-green-600 text-right">1:0.97</div>
+                <div className="text-sm font-semibold text-green-600 text-right">{isTable1 ? '1:0.97' : '1:1'}</div>
               </div>
 
               {/* Tổng số điểm header */}

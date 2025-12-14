@@ -25,10 +25,11 @@ const XocDiaCustomChipModal = ({
             <input
               type="text"
               inputMode="numeric"
+              maxLength={6}
               value={customChipValue}
               onChange={onCustomChipValueChange}
               className="w-full rounded-xl border border-emerald-400/40 px-3 py-2 text-sm text-gray-800 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-              placeholder="Ví dụ: 250"
+              placeholder="Tối đa 500000"
             />
             {customChipError ? <p className="text-xs font-medium text-red-500">{customChipError}</p> : null}
           </div>

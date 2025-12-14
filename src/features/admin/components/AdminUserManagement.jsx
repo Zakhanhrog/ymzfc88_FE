@@ -905,7 +905,7 @@ const AdminUserManagement = () => {
       </Card>
 
       {/* User Table */}
-      <Card>
+      <Card bodyStyle={{ overflowX: 'auto' }}>
         <Table
           columns={columns}
           dataSource={users}
@@ -919,7 +919,7 @@ const AdminUserManagement = () => {
               `${range[0]}-${range[1]} của ${total} người dùng`,
           }}
           onChange={handleTableChange}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
 

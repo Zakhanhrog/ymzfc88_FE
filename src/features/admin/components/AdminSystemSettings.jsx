@@ -83,7 +83,9 @@ const AdminSystemSettings = () => {
           xocdia_refund_win_percentage: parsePercentage(settingsMap.xocdia_refund_win_percentage),
           xocdia_refund_loss_percentage: parsePercentage(settingsMap.xocdia_refund_loss_percentage),
           sicbo_refund_payout_time: parseTimeSetting(settingsMap.sicbo_refund_payout_time),
-          xocdia_refund_payout_time: parseTimeSetting(settingsMap.xocdia_refund_payout_time)
+          xocdia_refund_payout_time: parseTimeSetting(settingsMap.xocdia_refund_payout_time),
+          sicbo_refund_instant: settingsMap.sicbo_refund_instant === 'true' || settingsMap.sicbo_refund_instant === '1',
+          xocdia_refund_instant: settingsMap.xocdia_refund_instant === 'true' || settingsMap.xocdia_refund_instant === '1'
         });
         dailyLossRefundForm.setFieldsValue({
           daily_loss_refund_enabled: settingsMap.daily_loss_refund_enabled === 'true' || settingsMap.daily_loss_refund_enabled === '1',
@@ -255,6 +257,18 @@ const AdminSystemSettings = () => {
         key: 'xocdia_refund_payout_time',
         value: formatTimeValue(values.xocdia_refund_payout_time),
         description: 'Thời gian chạy hoàn trả Xóc Đĩa hằng ngày (HH:mm)',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'sicbo_refund_instant',
+        value: values.sicbo_refund_instant ? 'true' : 'false',
+        description: 'Bật/tắt hoàn trả ngay cho lệnh thua Tài xỉu (nếu bật, hoàn trả ngay sau khi cược thua, không cần chờ đến giờ đã cài)',
+        category: 'GAME_REFUND'
+      },
+      {
+        key: 'xocdia_refund_instant',
+        value: values.xocdia_refund_instant ? 'true' : 'false',
+        description: 'Bật/tắt hoàn trả ngay cho lệnh thua Xóc Đĩa (nếu bật, hoàn trả ngay sau khi cược thua, không cần chờ đến giờ đã cài)',
         category: 'GAME_REFUND'
       }
     ];
@@ -731,6 +745,16 @@ const AdminSystemSettings = () => {
                             />
                           </Form.Item>
                         </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="sicbo_refund_instant"
+                            label="Hoàn trả ngay"
+                            valuePropName="checked"
+                            tooltip="Khi bật, lệnh cược thua sẽ được hoàn trả ngay sau khi xử lý, không cần chờ đến giờ đã cài. Khi tắt, hoàn trả theo giờ đã cài."
+                          >
+                            <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+                          </Form.Item>
+                        </Col>
                       </Row>
 
                       <Divider orientation="left">Xóc Đĩa</Divider>
@@ -820,6 +844,16 @@ const AdminSystemSettings = () => {
                             />
                           </Form.Item>
                         </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="xocdia_refund_instant"
+                            label="Hoàn trả ngay"
+                            valuePropName="checked"
+                            tooltip="Khi bật, lệnh cược thua sẽ được hoàn trả ngay sau khi xử lý, không cần chờ đến giờ đã cài. Khi tắt, hoàn trả theo giờ đã cài."
+                          >
+                            <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+                          </Form.Item>
+                        </Col>
                       </Row>
 
                       <Alert
@@ -847,7 +881,9 @@ const AdminSystemSettings = () => {
                                 xocdia_refund_win_percentage: parsePercentage(settings.xocdia_refund_win_percentage),
                                 xocdia_refund_loss_percentage: parsePercentage(settings.xocdia_refund_loss_percentage),
                                 sicbo_refund_payout_time: parseTimeSetting(settings.sicbo_refund_payout_time),
-                                xocdia_refund_payout_time: parseTimeSetting(settings.xocdia_refund_payout_time)
+                                xocdia_refund_payout_time: parseTimeSetting(settings.xocdia_refund_payout_time),
+                                sicbo_refund_instant: settings.sicbo_refund_instant === 'true' || settings.sicbo_refund_instant === '1',
+                                xocdia_refund_instant: settings.xocdia_refund_instant === 'true' || settings.xocdia_refund_instant === '1'
                               })
                             }
                             disabled={loading}

@@ -82,7 +82,7 @@ const BettingHistory = () => {
       const token = localStorage.getItem('token');
       let allBetsForStats = [];
       
-      // Fetch tất cả Sicbo bets cho thống kê
+      // Fetch tất cả Tài Xỉu bets cho thống kê
       try {
         let sicboAllBets = [];
         let sicboPage = 0;
@@ -122,7 +122,7 @@ const BettingHistory = () => {
         
         allBetsForStats = [...allBetsForStats, ...sicboAllBets];
       } catch (error) {
-        console.warn('Không thể tải lịch sử Sicbo cho thống kê:', error.message);
+        console.warn('Không thể tải lịch sử Tài Xỉu cho thống kê:', error.message);
       }
 
       // Fetch tất cả Xoc Dia bets cho thống kê
@@ -249,7 +249,7 @@ const BettingHistory = () => {
       let xocDiaHasMore = false;
       let lotteryHasMore = false;
       
-      // Fetch Sicbo betting history
+      // Fetch Tài Xỉu betting history
       try {
         const sicboResponse = await axios.get(`http://localhost:8080/api/sicbo/bets/history`, {
           params: {
@@ -283,7 +283,7 @@ const BettingHistory = () => {
           sicboHasMore = false;
         }
       } catch (error) {
-        console.warn('Không thể tải lịch sử Sicbo:', error.message);
+        console.warn('Không thể tải lịch sử Tài Xỉu:', error.message);
       }
 
       // Fetch Xoc Dia betting history

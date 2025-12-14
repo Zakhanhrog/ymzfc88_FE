@@ -24,6 +24,7 @@ import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from
 import walletService from '../services/walletService';
 import MobileBettingHistory from './MobileBettingHistory';
 import { Card, CardContent } from '../../../components/ui/Card';
+import { formatPoints } from '../../../utils/helpers';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -235,7 +236,7 @@ const MobileTransactionHistoryTab = () => {
           <CardContent className="p-3 text-center">
             <div className="flex flex-col items-center">
               <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-              <div className="text-base font-bold text-green-600">{stats.totalDeposit.toLocaleString()}</div>
+              <div className="text-base font-bold text-green-600">{formatPoints(stats.totalDeposit)}</div>
             </div>
           </CardContent>
         </Card>
@@ -244,7 +245,7 @@ const MobileTransactionHistoryTab = () => {
           <CardContent className="p-3 text-center">
             <div className="flex flex-col items-center">
               <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-              <div className="text-base font-bold text-green-600">{stats.totalWithdraw.toLocaleString()}</div>
+              <div className="text-base font-bold text-green-600">{formatPoints(stats.totalWithdraw)}</div>
             </div>
           </CardContent>
         </Card>
@@ -287,7 +288,7 @@ const MobileTransactionHistoryTab = () => {
                   transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {transaction.type === 'DEPOSIT' || transaction.type === 'BONUS' ? '+' : '-'}
-                  {transaction.amount?.toLocaleString()} điểm
+                  {formatPoints(transaction.netAmount || transaction.amount)}
                 </span>
               </div>
               
@@ -352,7 +353,7 @@ const MobileTransactionHistoryTab = () => {
                   selectedTransaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
-                  {selectedTransaction.amount?.toLocaleString()} điểm
+                  {formatPoints(selectedTransaction.netAmount || selectedTransaction.amount)}
                 </div>
               </div>
               <div>

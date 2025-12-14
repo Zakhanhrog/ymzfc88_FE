@@ -28,7 +28,7 @@ import {
   UploadOutlined
 } from '@ant-design/icons';
 import { THEME_COLORS } from '../../../utils/theme';
-import { formatCurrency } from '../../../utils/helpers';
+import { formatCurrency, formatPoints } from '../../../utils/helpers';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
 import walletService from '../services/walletService';
 
@@ -357,7 +357,7 @@ const DepositWithdraw = () => {
               <div className="flex justify-between text-sm md:text-base">
                 <span className="font-semibold">Số tiền nhận được:</span>
                 <span className="font-semibold text-green-600">
-                  {formatCurrency(amount)}
+                  {formatPoints(amount - calculateFee(amount, selectedMethod))}
                 </span>
               </div>
             </div>

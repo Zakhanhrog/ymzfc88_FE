@@ -47,18 +47,18 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" {...props}>
+    <div className="fixed inset-0 z-[200] overflow-y-auto" {...props}>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity z-[200]"
         onClick={handleMaskClick}
       />
       
       {/* Modal Container */}
-      <div className={`relative min-h-screen flex items-center justify-center p-4 ${centered ? '' : 'items-start pt-20'}`}>
+      <div className={`relative min-h-screen flex items-center justify-center p-4 z-[201] ${centered ? '' : 'items-start pt-20'}`}>
         {/* Modal Content */}
         <div 
-          className={`relative bg-white rounded-lg shadow-xl w-full ${width} ${className}`}
+          className={`relative bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto ${width} ${className}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

@@ -894,10 +894,10 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
 
   const handleCustomChipValueChange = (event) => {
     const digitsOnly = event.target.value.replace(/\D/g, '');
-    // Giới hạn tối đa 1000
+    // Giới hạn tối đa 500000
     let value = digitsOnly;
-    if (digitsOnly && Number(digitsOnly) > 1000) {
-      value = '1000';
+    if (digitsOnly && Number(digitsOnly) > 500000) {
+      value = '500000';
     }
     setCustomChipValue(value);
     if (customChipError) {
@@ -945,8 +945,8 @@ const SicboGamePage = ({ tableNumber: initialTableNumber }) => {
         return;
       }
 
-      if (numeric > 1000) {
-        setCustomChipError('Giá trị tối đa là 1000');
+      if (numeric > 500000) {
+        setCustomChipError('Giá trị tối đa là 500000');
         return;
       }
 

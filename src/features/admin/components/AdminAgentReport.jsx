@@ -484,24 +484,28 @@ const AdminAgentReport = () => {
         ))}
       </Row>
 
-      <Card>
-        <Table
-          loading={loading}
-          dataSource={report?.agents || []}
-          columns={columns}
-          rowKey="agentId"
-          scroll={{ x: 2000, y: 'calc(100vh - 400px)' }}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '50', '100'],
-            showTotal: (total) => `Tổng ${total} đại lý`
-          }}
-          locale={{
-            emptyText: 'Chưa có dữ liệu đại lý cho tháng này'
-          }}
-          size="small"
-        />
+      <Card bodyStyle={{ overflowX: 'auto' }}>
+        <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <Table
+            loading={loading}
+            dataSource={report?.agents || []}
+            columns={columns}
+            rowKey="agentId"
+            tableLayout="auto"
+            style={{ minWidth: 1600 }}
+            scroll={{ x: 2200, y: 'calc(100vh - 400px)' }}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              showTotal: (total) => `Tổng ${total} đại lý`
+            }}
+            locale={{
+              emptyText: 'Chưa có dữ liệu đại lý cho tháng này'
+            }}
+            size="small"
+          />
+        </div>
       </Card>
 
       <Drawer
@@ -514,6 +518,7 @@ const AdminAgentReport = () => {
         <Table
           dataSource={payoutHistoryDrawer.history}
           rowKey="id"
+          scroll={{ x: 'max-content' }}
           columns={[
             {
               title: 'Tháng',

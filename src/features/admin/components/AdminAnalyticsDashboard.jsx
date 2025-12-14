@@ -428,7 +428,7 @@ const AdminAnalyticsDashboard = () => {
                   options={[
                     { label: 'Tất cả', value: 'all' },
                     { label: 'Xổ số', value: 'lottery' },
-                    { label: 'Sicbo', value: 'sicbo' },
+                    { label: 'Tài Xỉu', value: 'sicbo' },
                     { label: 'Xóc Đĩa', value: 'xocdia' },
                   ]}
                 />
@@ -490,101 +490,165 @@ const AdminAnalyticsDashboard = () => {
         </Form>
       </Card>
 
-      <Row gutter={16}>
-        <Col xs={24} lg={4} md={8}>
-          <Card>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tổng tiền cược"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tổng tiền cược</span>}
               value={formatPointsDisplay(betSummary.totalStake ?? 0)}
+              valueStyle={{ fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
-        <Col xs={24} lg={4} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tổng tiền thắng"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tổng tiền thắng</span>}
               value={formatPointsDisplay(betSummary.totalWinAmount ?? 0)}
-              valueStyle={{ color: '#16a34a' }}
+              valueStyle={{ color: '#16a34a', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
-        <Col xs={24} lg={4} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tổng tiền thua"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tổng tiền thua</span>}
               value={formatPointsDisplay(betSummary.totalLostAmount ?? 0)}
-              valueStyle={{ color: '#dc2626' }}
+              valueStyle={{ color: '#dc2626', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
-        <Col xs={24} lg={4} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Doanh thu"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Doanh thu</span>}
               value={formatPointsDisplay(
                 Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0)
               )}
-              valueStyle={{ color: '#f97316' }}
+              valueStyle={{ color: '#f97316', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
-        <Col xs={24} lg={4} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Lợi nhuận"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Lợi nhuận</span>}
               value={formatPointsDisplay(
-                Number(betSummary.totalWinAmount ?? 0) - 
-                Number(betSummary.totalLostAmount ?? 0) - 
-                Number(betSummary.totalRefund ?? 0) - 
-                Number(betSummary.totalAgentCommission ?? 0) - 
-                (filters.gameType === 'all' 
-                  ? (Number(betSummary.sicboTotalFee ?? 0) + Number(betSummary.xocDiaTotalFee ?? 0))
-                  : Number(betSummary.totalFee ?? 0)
-                ) - 
-                Number(betSummary.totalBao ?? 0)
+                (() => {
+                  // Doanh thu = Tổng tiền thắng - Tổng tiền thua
+                  const doanhThu = Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0);
+                  
+                  // Tổng các khoản trừ: Hoàn trả + Hoàn thua theo ngày + Hoa hồng đại lý + Tiền phế + Tiền bão + Tiền KM
+                  const totalRefund = Number(betSummary.totalRefund ?? 0);
+                  const totalDailyLossRefund = Number(betSummary.totalDailyLossRefund ?? 0);
+                  const totalAgentCommission = Number(betSummary.totalAgentCommission ?? 0);
+                  const totalFee = filters.gameType === 'all' 
+                    ? (Number(betSummary.sicboTotalFee ?? 0) + Number(betSummary.xocDiaTotalFee ?? 0))
+                    : Number(betSummary.totalFee ?? 0);
+                  const totalBao = Number(betSummary.totalBao ?? 0);
+                  const totalPromotionalMoney = Number(betSummary.totalPromotionalMoney ?? 0);
+                  
+                  const tongCacKhoanTru = totalRefund + totalDailyLossRefund + totalAgentCommission + totalFee + totalBao + totalPromotionalMoney;
+                  
+                  // Lợi nhuận = Doanh thu - Tổng các khoản trừ
+                  return doanhThu - tongCacKhoanTru;
+                })()
               )}
-              valueStyle={{ color: '#059669' }}
+              valueStyle={{ color: '#059669', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
         {filters.gameType === 'all' ? (
           <>
-            <Col xs={24} lg={4} md={8}>
-              <Card>
+            <Col xs={24} sm={12} lg={6} xl={4}>
+              <Card style={{ minHeight: '100px', textAlign: 'center' }}>
                 <Statistic
-                  title="Tài Xỉu Thu Phế"
+                  title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tài Xỉu Thu Phế</span>}
                   value={formatPointsDisplay(betSummary.sicboTotalFee ?? 0)}
-                  valueStyle={{ color: '#9333ea' }}
+                  valueStyle={{ color: '#9333ea', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
                 />
               </Card>
             </Col>
-            <Col xs={24} lg={4} md={8}>
-              <Card>
+            <Col xs={24} sm={12} lg={6} xl={4}>
+              <Card style={{ minHeight: '100px', textAlign: 'center' }}>
                 <Statistic
-                  title="Xóc Đĩa Thu Phế"
+                  title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Xóc Đĩa Thu Phế</span>}
                   value={formatPointsDisplay(betSummary.xocDiaTotalFee ?? 0)}
-                  valueStyle={{ color: '#9333ea' }}
+                  valueStyle={{ color: '#9333ea', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
                 />
               </Card>
             </Col>
           </>
         ) : (
-          <Col xs={24} lg={4} md={8}>
-            <Card>
+          <Col xs={24} sm={12} lg={6} xl={4}>
+            <Card style={{ minHeight: '100px', textAlign: 'center' }}>
               <Statistic
-                title={filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}
+                title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>{filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}</span>}
                 value={formatPointsDisplay(betSummary.totalFee ?? 0)}
-                valueStyle={{ color: '#9333ea' }}
+                valueStyle={{ color: '#9333ea', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
               />
             </Card>
           </Col>
         )}
-        <Col xs={24} lg={4} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tài Xỉu Thu Bão"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tài Xỉu Thu Bão</span>}
               value={formatPointsDisplay(betSummary.totalBao ?? 0)}
-              valueStyle={{ color: '#dc2626' }}
+              valueStyle={{ color: '#dc2626', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
+            <Statistic
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Hoàn trả</span>}
+              value={formatPointsDisplay(betSummary.totalRefund ?? 0)}
+              valueStyle={{ color: '#3b82f6', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
+            <Statistic
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Hoàn thua theo ngày</span>}
+              value={formatPointsDisplay(betSummary.totalDailyLossRefund ?? 0)}
+              valueStyle={{ color: '#8b5cf6', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
+            <Statistic
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Hoa hồng đại lý</span>}
+              value={formatPointsDisplay(betSummary.totalAgentCommission ?? 0)}
+              valueStyle={{ color: '#f59e0b', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
+            <Statistic
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Khuyến mãi</span>}
+              value={formatPointsDisplay(betSummary.totalPromotionalMoney ?? 0)}
+              valueStyle={{ color: '#10b981', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
+            <Statistic
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Thắng/Thua XS</span>}
+              value={formatPointsDisplay(
+                Number(betSummary.lotteryWinAmount ?? 0) - Number(betSummary.lotteryLostAmount ?? 0)
+              )}
+              valueStyle={{ 
+                color: (Number(betSummary.lotteryWinAmount ?? 0) - Number(betSummary.lotteryLostAmount ?? 0)) >= 0 ? '#16a34a' : '#dc2626', 
+                fontSize: '14px', 
+                lineHeight: '1.2', 
+                wordBreak: 'break-word', 
+                textAlign: 'center' 
+              }}
             />
           </Card>
         </Col>
@@ -611,27 +675,29 @@ const AdminAnalyticsDashboard = () => {
 
       <Row gutter={16}>
         <Col xs={24} md={8}>
-          <Card>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tổng số giao dịch"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tổng số giao dịch</span>}
               value={numberFormatter.format(Number(transactionSummary.totalCount ?? 0))}
+              valueStyle={{ fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tổng số tiền giao dịch"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tổng số tiền giao dịch</span>}
               value={formatPoints(transactionSummary.totalAmount ?? 0)}
+              valueStyle={{ fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card>
+          <Card style={{ minHeight: '100px', textAlign: 'center' }}>
             <Statistic
-              title="Tổng thực nhận"
+              title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Tổng thực nhận</span>}
               value={formatPoints(transactionSummary.totalNetAmount ?? 0)}
-              valueStyle={{ color: '#2563eb' }}
+              valueStyle={{ color: '#2563eb', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
           </Card>
         </Col>
