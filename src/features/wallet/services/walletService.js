@@ -21,7 +21,9 @@ class WalletService {
       
       // Xử lý các loại lỗi cụ thể
       if (response.status === 500) {
-        throw new Error('Đã xảy ra lỗi máy chủ, vui lòng thử lại sau');
+        // Cố gắng lấy error message từ response
+        const errorMessage = errorData.message || errorData.error || 'Đã xảy ra lỗi máy chủ, vui lòng thử lại sau';
+        throw new Error(errorMessage);
       } else if (response.status === 404) {
         throw new Error('Không tìm thấy dữ liệu');
       } else if (response.status === 401) {

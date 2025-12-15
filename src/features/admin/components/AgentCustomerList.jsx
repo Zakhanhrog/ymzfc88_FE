@@ -1,39 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Card,
-  Table,
-  Input,
-  Select,
-  DatePicker,
-  Tag,
-  Space,
-  Button,
-  Row,
-  Col,
-  Statistic,
-  Modal,
-  message
-} from 'antd';
-import {
-  UserOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  FilterOutlined
-} from '@ant-design/icons';
+import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { adminService } from '../services/adminService';
 import TabPageHeader from './TabPageHeader';
-import { formatCurrency } from '../../../utils/helpers';
-
-const { RangePicker } = DatePicker;
-const { Option } = Select;
-
-const statusColors = {
-  ACTIVE: 'green',
-  INACTIVE: 'orange',
-  SUSPENDED: 'volcano',
-  BANNED: 'red'
-};
+import { formatCurrency, formatPointsOnly } from '../../../utils/helpers';
+import Table from '../../../components/ui/Table';
+import Pagination from '../../../components/ui/Pagination';
+import { Button } from '../../../components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
+import { Input } from '../../../components/ui/Input';
+import Select from '../../../components/ui/Select';
+import DateRangePicker from '../../../components/ui/DateRangePicker';
+import Modal from '../../../components/ui/Modal';
+import StatCard from '../analytics/components/StatCard';
+import StatusTag from './StatusTag';
+import AgentCustomerDetailModal from './AgentCustomerDetailModal';
 
 const AgentCustomerList = () => {
   const [loading, setLoading] = useState(false);
@@ -50,34 +30,21 @@ const AgentCustomerList = () => {
     total: 0
   });
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [historyVisible, setHistoryVisible] = useState(false);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyData, setHistoryData] = useState([]);
-  const [historyTotals, setHistoryTotals] = useState({
-    stake: 0,
-    win: 0,
-    lost: 0,
-    net: 0
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [statistics, setStatistics] = useState({
+    totalCustomers: 0,
+    totalDeposit: 0,
+    totalWithdraw: 0,
+    totalBet: 0,
+    totalWin: 0,
+    totalLoss: 0,
+    totalPromotionalMoney: 0,
+    totalGameRefund: 0,
+    totalDailyLossRefund: 0,
+    currentCommission: 0,
+    commissionRate: 0
   });
-  const [historyFilters, setHistoryFilters] = useState({
-    gameType: 'all',
-    dateRange: []
-  });
-
-  const totals = useMemo(() => {
-    return customers.reduce(
-      (acc, item) => {
-        const bet = Number(item.totalBetAmount ?? 0);
-        const lost = Number(item.totalLostAmount ?? 0);
-        const commission = Number(item.commissionAmount ?? 0);
-        acc.bet += bet;
-        acc.lost += lost;
-        acc.commission += commission;
-        return acc;
-      },
-      { bet: 0, lost: 0, commission: 0 }
-    );
-  }, [customers]);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
 
   const loadCustomers = useCallback(async () => {
     try {
@@ -112,19 +79,51 @@ const AgentCustomerList = () => {
           pageSize: payload.size || prev.pageSize,
           total: payload.totalItems || 0
         }));
-      } else {
-        message.error(response?.message || 'Không thể tải danh sách khách hàng');
       }
     } catch (error) {
-      message.error(error.message || 'Có lỗi xảy ra khi tải danh sách khách hàng');
+      console.error('Error loading customers:', error);
     } finally {
       setLoading(false);
     }
   }, [filters, pagination.current, pagination.pageSize]);
 
+  const loadStatistics = useCallback(async () => {
+    try {
+      setStatisticsLoading(true);
+      const params = {};
+      if (filters.dateRange && filters.dateRange.length === 2) {
+        params.startDate = filters.dateRange[0].format('YYYY-MM-DD');
+        params.endDate = filters.dateRange[1].format('YYYY-MM-DD');
+      }
+
+      const response = await adminService.getAgentCustomerStatistics(params);
+      if (response?.success && response.data) {
+        const data = response.data;
+        setStatistics({
+          totalCustomers: data.totalCustomers || 0,
+          totalDeposit: Number(data.totalDeposit || 0),
+          totalWithdraw: Number(data.totalWithdraw || 0),
+          totalBet: Number(data.totalBet || 0),
+          totalWin: Number(data.totalWin || 0),
+          totalLoss: Number(data.totalLoss || 0),
+          totalPromotionalMoney: Number(data.totalPromotionalMoney || 0),
+          totalGameRefund: Number(data.totalGameRefund || 0),
+          totalDailyLossRefund: Number(data.totalDailyLossRefund || 0),
+          currentCommission: Number(data.currentCommission || 0),
+          commissionRate: data.commissionRate || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error loading statistics:', error);
+    } finally {
+      setStatisticsLoading(false);
+    }
+  }, [filters.dateRange]);
+
   useEffect(() => {
     loadCustomers();
-  }, [loadCustomers]);
+    loadStatistics();
+  }, [loadCustomers, loadStatistics]);
 
   const handleTableChange = ({ current, pageSize }) => {
     setPagination((prev) => ({
@@ -151,210 +150,65 @@ const AgentCustomerList = () => {
     setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
+  const handleViewDetail = (record) => {
+    setSelectedCustomer(record);
+    setDetailModalVisible(true);
+  };
+
+  const statusOptions = [
+    { value: 'ACTIVE', label: 'Hoạt động' },
+    { value: 'INACTIVE', label: 'Tạm khóa' },
+    { value: 'SUSPENDED', label: 'Tạm dừng' },
+    { value: 'BANNED', label: 'Bị cấm' }
+  ];
+
   const columns = [
     {
-      title: 'Tên đăng nhập',
+      title: 'Tên tài khoản',
       dataIndex: 'username',
       key: 'username',
       render: (value) => (
-        <Space>
-          <UserOutlined />
+        <div className="flex items-center gap-2">
           <span className="font-medium">{value}</span>
-        </Space>
+        </div>
       )
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={statusColors[status] || 'default'}>{status}</Tag>
-      )
+      render: (status) => <StatusTag status={status} />
     },
     {
       title: 'Ngày tham gia',
       dataIndex: 'joinedAt',
       key: 'joinedAt',
       render: (value) =>
-        value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '-',
-      sorter: (a, b) =>
-        dayjs(a.joinedAt).valueOf() - dayjs(b.joinedAt).valueOf(),
-      defaultSortOrder: 'descend'
+        value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '-'
     },
     {
-      title: 'Tổng cược',
-      dataIndex: 'totalBetAmount',
-      key: 'totalBetAmount',
-      render: (value) => formatCurrency(Number(value ?? 0))
+      title: 'Số dư hiện tại',
+      dataIndex: 'currentBalance',
+      key: 'currentBalance',
+      render: (value) => formatPointsOnly(value ?? 0)
     },
     {
-      title: 'Tổng thua',
-      dataIndex: 'totalLostAmount',
-      key: 'totalLostAmount',
-      render: (value) => formatCurrency(Number(value ?? 0))
-    },
-    {
-      title: 'Hoa hồng tạo ra',
-      dataIndex: 'commissionAmount',
-      key: 'commissionAmount',
-      render: (value) => formatCurrency(Number(value ?? 0))
-    }
-  ];
-
-  const historyColumns = [
-    {
-      title: 'Thời gian',
-      dataIndex: 'placedAt',
-      key: 'placedAt',
-      render: (value) => (value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '-'),
-      sorter: (a, b) =>
-        dayjs(a.placedAt).valueOf() - dayjs(b.placedAt).valueOf(),
-      defaultSortOrder: 'descend'
-    },
-    {
-      title: 'Trò chơi',
-      dataIndex: 'gameType',
-      key: 'gameType',
-      render: (value) => {
-        const normalized = value?.toLowerCase();
-        const labelMap = {
-          lottery: 'Lô đề',
-          'xoc-dia': 'Xóc Đĩa',
-          xocdia: 'Xóc Đĩa',
-          sicbo: 'Tài Xỉu'
-        };
-        const colorMap = {
-          lottery: 'geekblue',
-          'xoc-dia': 'volcano',
-          xocdia: 'volcano',
-          sicbo: 'purple'
-        };
-        return (
-          <Tag color={colorMap[normalized] || 'default'}>
-            {labelMap[normalized] || value}
-          </Tag>
-        );
-      }
-    },
-    {
-      title: 'Mã cược',
-      dataIndex: 'betCode',
-      key: 'betCode'
-    },
-    {
-      title: 'Tiền cược',
-      dataIndex: 'stake',
-      key: 'stake',
-      render: (value) => formatCurrency(Number(value ?? 0))
-    },
-    {
-      title: 'Tiền thắng',
-      dataIndex: 'winAmount',
-      key: 'winAmount',
-      render: (value) => formatCurrency(Number(value ?? 0))
-    },
-    {
-      title: 'Kết quả',
-      dataIndex: 'netResult',
-      key: 'netResult',
-      render: (value) => {
-        const amount = Number(value ?? 0);
-        const formatted = formatCurrency(Math.abs(amount));
-        if (amount > 0) {
-          return <span className="text-emerald-500">+{formatted}</span>;
-        }
-        if (amount < 0) {
-          return <span className="text-red-500">-{formatted}</span>;
-        }
-        return formatted;
-      }
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'default'}>
-          {status}
-        </Tag>
+      title: 'Thao tác',
+      key: 'action',
+      render: (_, record) => (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleViewDetail(record);
+          }}
+        >
+          Chi tiết
+        </Button>
       )
     }
   ];
-
-  const fetchHistory = useCallback(
-    async (customerId, overrides = {}) => {
-      if (!customerId) return;
-      const appliedFilters = {
-        ...historyFilters,
-        ...overrides
-      };
-      setHistoryFilters(appliedFilters);
-      try {
-        setHistoryLoading(true);
-        const params = {
-          size: 100
-        };
-        if (appliedFilters.gameType && appliedFilters.gameType !== 'all') {
-          params.gameType = appliedFilters.gameType;
-        }
-        if (appliedFilters.dateRange && appliedFilters.dateRange.length === 2) {
-          params.startDate = appliedFilters.dateRange[0].format('YYYY-MM-DD');
-          params.endDate = appliedFilters.dateRange[1].format('YYYY-MM-DD');
-        }
-
-        const response = await adminService.getAgentCustomerBetHistory(customerId, params);
-        if (response?.success && response.data) {
-          const payload = response.data;
-          setHistoryData(payload.items || []);
-          setHistoryTotals({
-            stake: Number(payload.totalStake ?? 0),
-            win: Number(payload.totalWinAmount ?? 0),
-            lost: Number(payload.totalLostAmount ?? 0),
-            net: Number(payload.totalNetResult ?? 0)
-          });
-        } else {
-          message.error(response?.message || 'Không thể tải lịch sử cược');
-        }
-      } catch (error) {
-        message.error(error.message || 'Có lỗi xảy ra khi tải lịch sử cược');
-      } finally {
-        setHistoryLoading(false);
-      }
-    },
-    [historyFilters]
-  );
-
-  const openHistoryModal = async (record) => {
-    setSelectedCustomer(record);
-    setHistoryFilters({
-      gameType: 'all',
-      dateRange: []
-    });
-    setHistoryVisible(true);
-    await fetchHistory(record.id, {
-      gameType: 'all',
-      dateRange: []
-    });
-  };
-
-  const handleHistorySearch = () => {
-    if (selectedCustomer) {
-      fetchHistory(selectedCustomer.id);
-    }
-  };
-
-  const handleHistoryReset = () => {
-    setHistoryFilters({
-      gameType: 'all',
-      dateRange: []
-    });
-    if (selectedCustomer) {
-      fetchHistory(selectedCustomer.id, {
-        gameType: 'all',
-        dateRange: []
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -363,240 +217,175 @@ const AgentCustomerList = () => {
         description="Quản lý danh sách người chơi thuộc đại lý"
       />
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={8}>
-          <Card>
-            <Statistic
-              title="Tổng cược (trang hiện tại)"
-              value={formatCurrency(totals.bet)}
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <StatCard
+          title="Tổng khách hàng"
+          value={statistics.totalCustomers}
+          bgColor="bg-blue-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title="Tổng nạp"
+          value={formatCurrency(statistics.totalDeposit)}
+          bgColor="bg-green-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title="Tổng rút"
+          value={formatCurrency(statistics.totalWithdraw)}
+          bgColor="bg-orange-600"
+          textColor="text-white"
+          valueColor="text-white"
             />
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card>
-            <Statistic
-              title="Tổng thua (trang hiện tại)"
-              value={formatCurrency(totals.lost)}
+        <StatCard
+          title="Tổng cược"
+          value={formatCurrency(statistics.totalBet)}
+          bgColor="bg-purple-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title="Tổng thắng"
+          value={formatCurrency(statistics.totalWin)}
+          bgColor="bg-emerald-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title="Tổng thua"
+          value={formatCurrency(statistics.totalLoss)}
+          bgColor="bg-red-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title="Tổng khuyến mãi"
+          value={formatCurrency(statistics.totalPromotionalMoney)}
+          bgColor="bg-cyan-600"
+          textColor="text-white"
+          valueColor="text-white"
             />
-          </Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card>
-            <Statistic
-              title={`Hoa hồng (Trang hiện tại • ${commissionRate}% )`}
-              value={formatCurrency(totals.commission)}
-            />
-          </Card>
-        </Col>
-      </Row>
+        <StatCard
+          title="Tổng hoàn cược"
+          value={formatCurrency(statistics.totalGameRefund)}
+          bgColor="bg-indigo-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title="Tổng hoàn thua"
+          value={formatCurrency(statistics.totalDailyLossRefund)}
+          bgColor="bg-pink-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+        <StatCard
+          title={`Hoa hồng (${statistics.commissionRate}%)`}
+          value={formatCurrency(statistics.currentCommission)}
+          bgColor="bg-teal-600"
+          textColor="text-white"
+          valueColor="text-white"
+        />
+      </div>
 
-      <Card>
-        <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} md={8} lg={6}>
+      {/* Filters */}
+      <Card className="rounded-2xl">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tìm kiếm
+              </label>
             <Input
               placeholder="Tìm kiếm theo tên đăng nhập"
-              prefix={<SearchOutlined />}
-              allowClear
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              onPressEnter={loadCustomers}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    loadCustomers();
+                  }
+                }}
             />
-          </Col>
-          <Col xs={24} md={8} lg={6}>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Trạng thái
+              </label>
             <Select
-              allowClear
-              placeholder="Trạng thái"
-              style={{ width: '100%' }}
               value={filters.status}
               onChange={(value) => handleFilterChange('status', value)}
-            >
-              <Option value="ACTIVE">Hoạt động</Option>
-              <Option value="INACTIVE">Tạm khóa</Option>
-              <Option value="SUSPENDED">Tạm dừng</Option>
-              <Option value="BANNED">Bị cấm</Option>
-            </Select>
-          </Col>
-          <Col xs={24} md={8} lg={8}>
-            <RangePicker
-              style={{ width: '100%' }}
+                options={statusOptions}
+                placeholder="Trạng thái"
+                allowClear
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Khoảng thời gian
+              </label>
+              <DateRangePicker
               value={filters.dateRange}
               onChange={(dates) => handleFilterChange('dateRange', dates || [])}
-              format="DD/MM/YYYY"
+                placeholder={['Từ ngày', 'Đến ngày']}
             />
-          </Col>
-          <Col xs={24} lg={4}>
-            <Space wrap>
+            </div>
+            <div className="flex gap-2">
               <Button
-                type="primary"
-                icon={<SearchOutlined />}
-                onClick={loadCustomers}
-                loading={loading}
+                variant="outline"
+                onClick={resetFilters}
+                className="rounded-2xl"
               >
-                Tìm kiếm
+                Đặt lại
               </Button>
-              <Button icon={<FilterOutlined />} onClick={resetFilters}>
-                Xóa lọc
-              </Button>
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={loadCustomers}
-                loading={loading}
-              >
-                Làm mới
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-
-      <Card>
-        <Table
-          bordered
-          rowKey="id"
-          loading={loading}
-          dataSource={customers}
-          columns={columns}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} khách hàng`
-          }}
-          onChange={handleTableChange}
-          onRow={(record) => ({
-            onClick: () => openHistoryModal(record),
-            style: { cursor: 'pointer' }
-          })}
-        />
-      </Card>
-
-      <Modal
-        title={
-          <div>
-            Lịch sử cược
-            {selectedCustomer ? ` - ${selectedCustomer.username}` : ''}
+            </div>
           </div>
-        }
-        open={historyVisible}
-        onCancel={() => {
-          setHistoryVisible(false);
-          setSelectedCustomer(null);
-          setHistoryData([]);
-        }}
-        width={1000}
-        footer={null}
-      >
-        <Space direction="vertical" size="large" className="w-full">
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={6}>
-              <Card bordered={false}>
-                <Statistic
-                  title="Tổng cược"
-                  value={formatCurrency(historyTotals.stake)}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card bordered={false}>
-                <Statistic
-                  title="Tổng thắng"
-                  value={formatCurrency(historyTotals.win)}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card bordered={false}>
-                <Statistic
-                  title="Tổng thua"
-                  value={formatCurrency(historyTotals.lost)}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card bordered={false}>
-                <Statistic
-                  title="Lãi ròng"
-                  value={`${historyTotals.net > 0 ? '+' : historyTotals.net < 0 ? '-' : ''}${formatCurrency(Math.abs(historyTotals.net))}`}
-                />
-              </Card>
-            </Col>
-          </Row>
+        </CardContent>
+      </Card>
 
-          <Card bordered={false}>
-            <Row gutter={[16, 16]} align="middle">
-              <Col xs={24} sm={12} md={6}>
-                <Select
-                  value={historyFilters.gameType}
-                  onChange={(value) =>
-                    setHistoryFilters((prev) => ({ ...prev, gameType: value }))
-                  }
-                  style={{ width: '100%' }}
-                >
-                  <Option value="all">Tất cả trò chơi</Option>
-                  <Option value="lottery">Lô đề</Option>
-                  <Option value="xoc-dia">Xóc Đĩa</Option>
-                  <Option value="sicbo">Tài Xỉu</Option>
-                </Select>
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <RangePicker
-                  style={{ width: '100%' }}
-                  value={historyFilters.dateRange}
-                  onChange={(dates) =>
-                    setHistoryFilters((prev) => ({
-                      ...prev,
-                      dateRange: dates || []
-                    }))
-                  }
-                  format="DD/MM/YYYY"
-                />
-              </Col>
-              <Col xs={24} sm={24} md={10}>
-                <Space wrap>
-                  <Button
-                    type="primary"
-                    icon={<SearchOutlined />}
-                    onClick={handleHistorySearch}
-                    loading={historyLoading}
-                  >
-                    Tìm kiếm
-                  </Button>
-                  <Button icon={<FilterOutlined />} onClick={handleHistoryReset}>
-                    Xóa lọc
-                  </Button>
-                  <Button
-                    icon={<ReloadOutlined />}
-                    onClick={() => selectedCustomer && fetchHistory(selectedCustomer.id)}
-                    loading={historyLoading}
-                  >
-                    Làm mới
-                  </Button>
-                </Space>
-              </Col>
-            </Row>
-          </Card>
-
-          <Table
-            bordered
-            rowKey={(record) => `${record.gameType}-${record.betId}`}
-            loading={historyLoading}
-            dataSource={historyData}
-            columns={historyColumns}
-            pagination={false}
-            locale={{
-              emptyText: historyLoading
-                ? 'Đang tải dữ liệu...'
-                : 'Chưa có lịch sử cược nào'
-            }}
+      {/* Table */}
+      <Card>
+        <CardContent className="p-0">
+        <Table
+            columns={columns}
+            dataSource={customers}
+            loading={loading}
+          rowKey="id"
+            emptyText="Không có dữ liệu"
           />
-        </Space>
-      </Modal>
+          {pagination.total > 0 && (
+            <div className="p-4 border-t">
+              <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onChange={handleTableChange}
+                showSizeChanger
+                showTotal={(total, range) =>
+              `${range[0]}-${range[1]} của ${total} khách hàng`
+                }
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Detail Modal */}
+      {selectedCustomer && (
+        <AgentCustomerDetailModal
+          open={detailModalVisible}
+          onClose={() => {
+            setDetailModalVisible(false);
+          setSelectedCustomer(null);
+          }}
+          customer={selectedCustomer}
+          dateRange={filters.dateRange}
+        />
+      )}
     </div>
   );
 };
 
 export default AgentCustomerList;
-

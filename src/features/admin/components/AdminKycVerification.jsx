@@ -1,58 +1,45 @@
 import { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Table, 
-  Tag, 
-  Button, 
-  Modal, 
-  Image, 
-  Space, 
-  Input,
-  message,
-  Tabs,
-  Descriptions
-} from 'antd';
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  EyeOutlined,
-  SafetyCertificateOutlined,
-  ClockCircleOutlined
-} from '@ant-design/icons';
-import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
+import { Clock, ShieldCheck, RefreshCw } from 'lucide-react';
+import { message } from '../../../utils/notification';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
+import { Button } from '../../../components/ui/Button';
+import Tabs from '../../../components/ui/Tabs';
+import KycTable from './kyc/KycTable';
+import KycDetailModal from './kyc/KycDetailModal';
+import KycProcessModal from './kyc/KycProcessModal';
 import kycService from '../../wallet/services/kycService';
-
-const { TextArea } = Input;
 
 const AdminKycVerification = () => {
   const [loading, setLoading] = useState(false);
   const [kycRequests, setKycRequests] = useState([]);
   const [selectedKyc, setSelectedKyc] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [processModalVisible, setProcessModalVisible] = useState(false);
   const [processingAction, setProcessingAction] = useState('');
-  const [rejectedReason, setRejectedReason] = useState('');
-  const [adminNotes, setAdminNotes] = useState('');
   const [activeTab, setActiveTab] = useState('pending');
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
   useEffect(() => {
     fetchKycRequests();
-  }, [activeTab]);
+  }, [activeTab, pagination.current, pagination.pageSize]);
 
   const fetchKycRequests = async () => {
     setLoading(true);
     try {
-      // Debug: Check admin token
-      const adminToken = localStorage.getItem('adminToken');
-      
       const response = activeTab === 'pending' 
         ? await kycService.getPendingKycRequests()
         : await kycService.getAllKycRequests();
       
-      
       if (response.success) {
-        setKycRequests(response.data || []);
+        const data = response.data || [];
+        setKycRequests(data);
+        setPagination(prev => ({ ...prev, total: data.length }));
       } else {
+        message.error(response.message || 'Không thể tải danh sách xác thực');
       }
     } catch (error) {
       message.error(error.message || 'Lỗi khi tải danh sách xác thực');
@@ -63,18 +50,22 @@ const AdminKycVerification = () => {
 
   const handleViewDetails = (record) => {
     setSelectedKyc(record);
-    setModalVisible(true);
+    setDetailModalVisible(true);
   };
 
-  const handleProcessKyc = (record, action) => {
+  const handleApprove = (record) => {
     setSelectedKyc(record);
-    setProcessingAction(action);
+    setProcessingAction('approve');
     setProcessModalVisible(true);
-    setRejectedReason('');
-    setAdminNotes('');
   };
 
-  const confirmProcess = async () => {
+  const handleReject = (record) => {
+    setSelectedKyc(record);
+    setProcessingAction('reject');
+    setProcessModalVisible(true);
+  };
+
+  const handleProcessConfirm = async (rejectedReason, adminNotes) => {
     if (processingAction === 'reject' && !rejectedReason.trim()) {
       message.error('Vui lòng nhập lý do từ chối');
       return;
@@ -95,307 +86,119 @@ const AdminKycVerification = () => {
             : 'Từ chối xác thực thành công'
         );
         setProcessModalVisible(false);
+        setSelectedKyc(null);
         fetchKycRequests();
+      } else {
+        message.error(response.message || 'Xử lý yêu cầu thất bại');
       }
     } catch (error) {
       message.error(error.message || 'Xử lý yêu cầu thất bại');
     }
   };
 
-  const statusConfig = {
-    PENDING: { color: 'orange', text: 'Chờ duyệt', icon: <ClockCircleOutlined /> },
-    APPROVED: { color: 'green', text: 'Đã duyệt', icon: <CheckCircleOutlined /> },
-    REJECTED: { color: 'red', text: 'Từ chối', icon: <CloseCircleOutlined /> }
+  const handlePaginationChange = (page, pageSize) => {
+    setPagination({
+      current: page,
+      pageSize: pageSize || pagination.pageSize,
+      total: pagination.total
+    });
   };
 
-
-  const columns = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 60,
-      responsive: ['md']
-    },
-    {
-      title: 'Người dùng',
-      key: 'user',
-      render: (_, record) => (
-        <div>
-          <div className="font-semibold">{record.username}</div>
-          <div className="text-xs text-gray-500">{record.email}</div>
-        </div>
-      )
-    },
-    {
-      title: 'Họ tên',
-      dataIndex: 'fullName',
-      key: 'fullName',
-      responsive: ['lg']
-    },
-    {
-      title: 'Số CCCD',
-      dataIndex: 'idNumber',
-      key: 'idNumber',
-      responsive: ['lg']
-    },
-    {
-      title: 'Trạng thái',
-      key: 'status',
-      render: (_, record) => {
-        const config = statusConfig[record.status];
-        return (
-          <Tag color={config.color} icon={config.icon}>
-            {config.text}
-          </Tag>
-        );
-      }
-    },
-    {
-      title: 'Ngày gửi',
-      dataIndex: 'submittedAt',
-      key: 'submittedAt',
-      render: (date) => new Date(date).toLocaleString('vi-VN'),
-      responsive: ['md']
-    },
-    {
-      title: 'Thao tác',
-      key: 'actions',
-      fixed: 'right',
-      width: 200,
-      render: (_, record) => (
-        <Space size="small" direction="horizontal">
-          <Button
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetails(record)}
-          >
-            {'Xem'}
-          </Button>
-          {record.status === 'PENDING' && (
-            <>
-              <Button
-                size="small"
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                onClick={() => handleProcessKyc(record, 'approve')}
-              >
-                {'Duyệt'}
-              </Button>
-              <Button
-                size="small"
-                danger
-                icon={<CloseCircleOutlined />}
-                onClick={() => handleProcessKyc(record, 'reject')}
-              >
-                {'Từ chối'}
-              </Button>
-            </>
-          )}
-        </Space>
-      )
-    }
-  ];
+  // Paginate data
+  const paginatedData = kycRequests.slice(
+    (pagination.current - 1) * pagination.pageSize,
+    pagination.current * pagination.pageSize
+  );
 
   return (
-    <Card
-      title={
-        <div className="flex items-center gap-2">
-          <SafetyCertificateOutlined />
-          <span>Quản lý xác thực tài khoản</span>
-        </div>
-      }
-      extra={
-        <Button onClick={fetchKycRequests} loading={loading}>
-          Tải lại
-        </Button>
-      }
-    >
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        items={[
-          {
-            key: 'pending',
-            label: (
-              <span>
-                <ClockCircleOutlined /> Chờ duyệt
-              </span>
-            )
-          },
-          {
-            key: 'all',
-            label: (
-              <span>
-                <SafetyCertificateOutlined /> Tất cả
-              </span>
-            )
-          }
-        ]}
-      />
-
-      <Table
-        columns={columns}
-        dataSource={kycRequests}
-        rowKey="id"
-        loading={loading}
-        scroll={{ x: 'max-content' }}
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Tổng ${total} yêu cầu`
-        }}
-      />
-
-      {/* Modal xem chi tiết */}
-      <Modal
-        title="Chi tiết xác thực"
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        {selectedKyc && (
-          <div>
-            <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Người dùng">{selectedKyc.username}</Descriptions.Item>
-              <Descriptions.Item label="Email">{selectedKyc.email}</Descriptions.Item>
-              <Descriptions.Item label="Họ tên">{selectedKyc.fullName}</Descriptions.Item>
-              <Descriptions.Item label="Số CCCD">{selectedKyc.idNumber}</Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                <Tag color={statusConfig[selectedKyc.status].color}>
-                  {statusConfig[selectedKyc.status].text}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày gửi">
-                {new Date(selectedKyc.submittedAt).toLocaleString('vi-VN')}
-              </Descriptions.Item>
-              {selectedKyc.verifiedAt && (
-                <Descriptions.Item label="Ngày duyệt">
-                  {new Date(selectedKyc.verifiedAt).toLocaleString('vi-VN')}
-                </Descriptions.Item>
-              )}
-              {selectedKyc.rejectedReason && (
-                <Descriptions.Item label="Lý do từ chối">
-                  <span className="text-green-600">{selectedKyc.rejectedReason}</span>
-                </Descriptions.Item>
-              )}
-              {selectedKyc.adminNotes && (
-                <Descriptions.Item label="Ghi chú admin">
-                  {selectedKyc.adminNotes}
-                </Descriptions.Item>
-              )}
-            </Descriptions>
-
-            <div className="mt-4">
-              <h4 className="font-semibold mb-2 text-center">Ảnh căn cước:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
-                <div className="flex flex-col items-center">
-                  <p className="text-sm text-gray-500 mb-2">Mặt trước</p>
-                  <div className="border rounded-lg overflow-hidden" style={{ height: '200px', width: '350px' }}>
-                    <Image
-                      src={`http://localhost:8080/api/files/kyc/${selectedKyc.frontImageUrl}`}
-                      alt="Mặt trước"
-                      width={350}
-                      height={200}
-                      style={{ objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <p className="text-sm text-gray-500 mb-2">Mặt sau</p>
-                  <div className="border rounded-lg overflow-hidden" style={{ height: '200px', width: '350px' }}>
-                    <Image
-                      src={`http://localhost:8080/api/files/kyc/${selectedKyc.backImageUrl}`}
-                      alt="Mặt sau"
-                      width={350}
-                      height={200}
-                      style={{ objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {selectedKyc.status === 'PENDING' && (
-              <div className="mt-4 flex gap-2">
-                <Button
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => {
-                    setModalVisible(false);
-                    handleProcessKyc(selectedKyc, 'approve');
-                  }}
-                  block
-                >
-                  Duyệt
-                </Button>
-                <Button
-                  danger
-                  icon={<CloseCircleOutlined />}
-                  onClick={() => {
-                    setModalVisible(false);
-                    handleProcessKyc(selectedKyc, 'reject');
-                  }}
-                  block
-                >
-                  Từ chối
-                </Button>
-              </div>
-            )}
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              <span>Quản lý xác thực tài khoản</span>
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchKycRequests}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Tải lại
+            </Button>
           </div>
-        )}
-      </Modal>
+        </CardHeader>
+        <CardContent>
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={[
+              {
+                key: 'pending',
+                label: 'Chờ duyệt',
+                icon: <Clock className="h-4 w-4" />,
+                children: (
+                  <KycTable
+                    data={paginatedData}
+                    loading={loading}
+                    pagination={pagination}
+                    onPaginationChange={handlePaginationChange}
+                    onViewDetail={handleViewDetails}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                  />
+                )
+              },
+              {
+                key: 'all',
+                label: 'Tất cả',
+                icon: <ShieldCheck className="h-4 w-4" />,
+                children: (
+                  <KycTable
+                    data={paginatedData}
+                    loading={loading}
+                    pagination={pagination}
+                    onPaginationChange={handlePaginationChange}
+                    onViewDetail={handleViewDetails}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                  />
+                )
+              }
+            ]}
+            contentClassName="p-0"
+          />
+        </CardContent>
+      </Card>
 
-      {/* Modal xử lý (duyệt/từ chối) */}
-      <Modal
-        title={processingAction === 'approve' ? 'Duyệt xác thực' : 'Từ chối xác thực'}
+      {/* Detail Modal */}
+      <KycDetailModal
+        open={detailModalVisible}
+        onClose={() => {
+          setDetailModalVisible(false);
+          setSelectedKyc(null);
+        }}
+        kyc={selectedKyc}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
+
+      {/* Process Modal */}
+      <KycProcessModal
         open={processModalVisible}
-        onOk={confirmProcess}
-        onCancel={() => setProcessModalVisible(false)}
-        okText={processingAction === 'approve' ? 'Duyệt' : 'Từ chối'}
-        cancelText="Hủy"
-        okButtonProps={{ 
-          danger: processingAction === 'reject',
-          type: processingAction === 'approve' ? 'primary' : 'default'
+        onClose={() => {
+          setProcessModalVisible(false);
+          setSelectedKyc(null);
+          setProcessingAction('');
         }}
-      >
-        {selectedKyc && (
-          <div>
-            <p className="mb-4">
-              Bạn có chắc chắn muốn {processingAction === 'approve' ? 'duyệt' : 'từ chối'} yêu cầu xác thực của{' '}
-              <strong>{selectedKyc.username}</strong>?
-            </p>
-
-            {processingAction === 'reject' && (
-              <div className="mb-4">
-                <label className="block mb-2 font-semibold text-green-600">
-                  Lý do từ chối: <span className="text-green-500">*</span>
-                </label>
-                <TextArea
-                  rows={3}
-                  placeholder="Nhập lý do từ chối..."
-                  value={rejectedReason}
-                  onChange={(e) => setRejectedReason(e.target.value)}
-                />
-              </div>
-            )}
-
-            <div>
-              <label className="block mb-2 font-semibold">Ghi chú của admin:</label>
-              <TextArea
-                rows={3}
-                placeholder="Thêm ghi chú (tùy chọn)..."
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-      </Modal>
-    </Card>
+        kyc={selectedKyc}
+        action={processingAction}
+        onConfirm={handleProcessConfirm}
+      />
+    </div>
   );
 };
 
 export default AdminKycVerification;
-

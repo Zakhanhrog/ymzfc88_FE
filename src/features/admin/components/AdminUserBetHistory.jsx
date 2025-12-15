@@ -382,31 +382,31 @@ const AdminUserBetHistory = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Tìm theo tài khoản/tên
               </label>
-              <Input
-                placeholder="Tài khoản / tên"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
+                <Input
+                  placeholder="Tài khoản / tên"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
             </div>
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Mã đại lý
               </label>
-              <Input
-                placeholder="Mã đại lý"
-                value={agentCode}
-                onChange={(e) => setAgentCode(e.target.value)}
-              />
+                <Input
+                  placeholder="Mã đại lý"
+                  value={agentCode}
+                  onChange={(e) => setAgentCode(e.target.value)}
+                />
             </div>
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Khoảng thời gian
               </label>
               <DateRangePicker
-                value={dateRange}
+                  value={dateRange}
                 onChange={(value) => setDateRange(value)}
-                placeholder={['Từ ngày', 'Đến ngày']}
-              />
+                  placeholder={['Từ ngày', 'Đến ngày']}
+                />
             </div>
             <div className="flex gap-2">
               <Button
@@ -417,8 +417,8 @@ const AdminUserBetHistory = () => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Đặt lại
-              </Button>
+                  Đặt lại
+                </Button>
             </div>
           </div>
         </CardContent>
@@ -427,12 +427,12 @@ const AdminUserBetHistory = () => {
       {/* Summary Table */}
       <div>
         <h3 className="text-sm font-semibold text-gray-700 mb-2">Báo cáo thắng/thua người dùng</h3>
-        <Card>
+      <Card>
           <CardContent className="p-0">
-            <Table
-              columns={summaryColumns}
-              dataSource={summaryData}
-              loading={summaryLoading}
+        <Table
+          columns={summaryColumns}
+          dataSource={summaryData}
+          loading={summaryLoading}
               rowKey="userId"
             />
             {summaryTotal > 0 && (
@@ -447,16 +447,16 @@ const AdminUserBetHistory = () => {
                   }}
                   onShowSizeChange={(page, pageSize) => {
                     setSummaryPage(page);
-                    setSummarySize(pageSize);
-                  }}
+              setSummarySize(pageSize);
+          }}
                   showSizeChanger
                   pageSizeOptions={['10', '20', '50', '100']}
                   showTotal={(total, range) => `${numberFormatter.format(range[0])}-${numberFormatter.format(range[1])} của ${numberFormatter.format(total)} bản ghi`}
-                />
+        />
               </div>
             )}
           </CardContent>
-        </Card>
+      </Card>
       </div>
 
       {/* Detail Modal */}
@@ -471,7 +471,7 @@ const AdminUserBetHistory = () => {
         detailFilters={detailFilters}
         onFilterChange={handleDetailFilterChange}
         onPaginationChange={handleDetailPaginationChange}
-      />
+          />
     </div>
   );
 };

@@ -6,6 +6,24 @@ import FilterForm from './components/FilterForm';
 import StatCard from './components/StatCard';
 import BetTable from './components/BetTable';
 import TransactionTable from './components/TransactionTable';
+import {
+  Coins,
+  Trophy,
+  TrendingDown,
+  DollarSign,
+  TrendingUp,
+  Receipt,
+  Gamepad2,
+  Wind,
+  RefreshCw,
+  Calendar,
+  Users,
+  Gift,
+  Ticket,
+  CreditCard,
+  Wallet,
+  CheckCircle
+} from 'lucide-react';
 
 // Formatter cho điểm (value đã là điểm rồi, không cần chia 1000) - dùng cho BETTING
 const pointFormatter = new Intl.NumberFormat('vi-VN', {
@@ -151,51 +169,44 @@ const AdminAnalyticsDashboard = () => {
     setTxnPagination((prev) => ({ ...prev, current: 1 }));
   };
 
-  const handleResetFilters = (defaults) => {
-    setFilters(defaults);
-    setBetPagination({ current: 1, pageSize: DEFAULT_PAGE_SIZE, total: 0 });
-    setTxnPagination({ current: 1, pageSize: DEFAULT_PAGE_SIZE, total: 0 });
+  const handleResetFilters = () => {
+    const defaultFilters = buildDefaultFilters();
+    setFilters(defaultFilters);
+    setBetPagination((prev) => ({ ...prev, current: 1 }));
+    setTxnPagination((prev) => ({ ...prev, current: 1 }));
   };
 
-  const handleBetPaginationChange = (newPagination) => {
+  const handleBetPaginationChange = (page, pageSize) => {
     setBetPagination((prev) => ({
       ...prev,
-      current: newPagination.current ?? 1,
-      pageSize: newPagination.pageSize ?? prev.pageSize,
+      current: page,
+      pageSize: pageSize || prev.pageSize,
     }));
   };
 
-  const handleTransactionPaginationChange = (newPagination) => {
+  const handleTransactionPaginationChange = (page, pageSize) => {
     setTxnPagination((prev) => ({
       ...prev,
-      current: newPagination.current ?? 1,
-      pageSize: newPagination.pageSize ?? prev.pageSize,
+      current: page,
+      pageSize: pageSize || prev.pageSize,
     }));
   };
 
-  // Tính toán lợi nhuận
-  const calculateProfit = () => {
-    const doanhThu = Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0);
-    const totalRefund = Number(betSummary.totalRefund ?? 0);
-    const totalDailyLossRefund = Number(betSummary.totalDailyLossRefund ?? 0);
-    const totalAgentCommission = Number(betSummary.totalAgentCommission ?? 0);
-    const totalFee = filters.gameType === 'all' 
-      ? (Number(betSummary.sicboTotalFee ?? 0) + Number(betSummary.xocDiaTotalFee ?? 0))
-      : Number(betSummary.totalFee ?? 0);
-    const totalBao = Number(betSummary.totalBao ?? 0);
-    const totalPromotionalMoney = Number(betSummary.totalPromotionalMoney ?? 0);
-    const tongCacKhoanTru = totalRefund + totalDailyLossRefund + totalAgentCommission + totalFee + totalBao + totalPromotionalMoney;
-    return doanhThu - tongCacKhoanTru;
-  };
-
-  // Tính doanh thu
   const calculateRevenue = () => {
-    return Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0);
+    const totalStake = Number(betSummary.totalStake ?? 0);
+    const totalWinAmount = Number(betSummary.totalWinAmount ?? 0);
+    return totalStake - totalWinAmount;
   };
 
-  // Tính thắng/thua xổ số
-  const calculateLotteryWinLoss = () => {
-    return Number(betSummary.lotteryWinAmount ?? 0) - Number(betSummary.lotteryLostAmount ?? 0);
+  const calculateProfit = () => {
+    const revenue = calculateRevenue();
+    // Công thức: Lợi nhuận = Doanh thu - (Hoàn trả + Khuyến mãi + Hoàn Thua + Hoa hồng)
+    const totalRefund = Number(betSummary.totalRefund ?? 0); // Hoàn trả
+    const totalPromotionalMoney = Number(betSummary.totalPromotionalMoney ?? 0); // Khuyến mãi
+    const totalDailyLossRefund = Number(betSummary.totalDailyLossRefund ?? 0); // Hoàn Thua
+    const totalAgentCommission = Number(betSummary.totalAgentCommission ?? 0); // Hoa hồng
+    
+    return revenue - totalRefund - totalPromotionalMoney - totalDailyLossRefund - totalAgentCommission;
   };
 
   return (
@@ -217,6 +228,7 @@ const AdminAnalyticsDashboard = () => {
             valueColor="text-white"
             bgColor="bg-blue-600"
             textColor="text-white"
+            icon={Coins}
           />
           <StatCard
             title="Tổng tiền thắng"
@@ -224,6 +236,7 @@ const AdminAnalyticsDashboard = () => {
             valueColor="text-white"
             bgColor="bg-green-600"
             textColor="text-white"
+            icon={Trophy}
           />
           <StatCard
             title="Tổng tiền thua"
@@ -231,6 +244,7 @@ const AdminAnalyticsDashboard = () => {
             valueColor="text-white"
             bgColor="bg-red-600"
             textColor="text-white"
+            icon={TrendingDown}
           />
           <StatCard
             title="Doanh thu"
@@ -238,6 +252,7 @@ const AdminAnalyticsDashboard = () => {
             valueColor="text-white"
             bgColor="bg-purple-600"
             textColor="text-white"
+            icon={DollarSign}
           />
           <StatCard
             title="Lợi nhuận"
@@ -245,112 +260,125 @@ const AdminAnalyticsDashboard = () => {
             valueColor="text-white"
             bgColor="bg-emerald-600"
             textColor="text-white"
+            icon={TrendingUp}
           />
         </div>
       </div>
 
       {/* Phần 2 & 3: Chi phí & Khấu trừ và Giao dịch */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Chi phí & Khấu trừ */}
+        
         <div className="lg:col-span-3">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">Chi phí & Khấu trừ</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {filters.gameType === 'all' ? (
-              <>
-                <StatCard
-                  title="Tài Xỉu Thu Phế"
-                  value={formatPointsDisplay(betSummary.sicboTotalFee ?? 0)}
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Chi phí & Khấu trừ</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {filters.gameType === 'all' ? (
+            <>
+              <StatCard
+                title="Tài Xỉu Thu Phế"
+                value={formatPointsDisplay(betSummary.sicboTotalFee ?? 0)}
                   valueColor="text-white"
                   bgColor="bg-indigo-600"
                   textColor="text-white"
-                />
-                <StatCard
-                  title="Xóc Đĩa Thu Phế"
-                  value={formatPointsDisplay(betSummary.xocDiaTotalFee ?? 0)}
+                  icon={Receipt}
+              />
+              <StatCard
+                title="Xóc Đĩa Thu Phế"
+                value={formatPointsDisplay(betSummary.xocDiaTotalFee ?? 0)}
                   valueColor="text-white"
                   bgColor="bg-cyan-600"
                   textColor="text-white"
-                />
-              </>
-            ) : (
-              <StatCard
-                title={filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}
-                value={formatPointsDisplay(betSummary.totalFee ?? 0)}
+                  icon={Gamepad2}
+              />
+            </>
+          ) : (
+            <StatCard
+              title={filters.gameType === 'xocdia' ? 'Xóc Đĩa Thu Phế' : 'Tài Xỉu Thu Phế'}
+              value={formatPointsDisplay(betSummary.totalFee ?? 0)}
                 valueColor="text-white"
                 bgColor="bg-indigo-600"
                 textColor="text-white"
-              />
-            )}
-            <StatCard
-              title="Tài Xỉu Thu Bão"
-              value={formatPointsDisplay(betSummary.totalBao ?? 0)}
+                icon={filters.gameType === 'xocdia' ? Gamepad2 : Receipt}
+            />
+          )}
+          <StatCard
+            title="Tài Xỉu Thu Bão"
+            value={formatPointsDisplay(betSummary.totalBao ?? 0)}
               valueColor="text-white"
               bgColor="bg-orange-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Hoàn trả"
-              value={formatPointsDisplay(betSummary.totalRefund ?? 0)}
+              icon={Wind}
+          />
+          <StatCard
+            title="Hoàn trả"
+            value={formatPointsDisplay(betSummary.totalRefund ?? 0)}
               valueColor="text-white"
               bgColor="bg-yellow-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Hoàn thua theo ngày"
-              value={formatPointsDisplay(betSummary.totalDailyLossRefund ?? 0)}
+              icon={RefreshCw}
+          />
+          <StatCard
+            title="Hoàn thua theo ngày"
+            value={formatPointsDisplay(betSummary.totalDailyLossRefund ?? 0)}
               valueColor="text-white"
               bgColor="bg-pink-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Hoa hồng đại lý"
-              value={formatPointsDisplay(betSummary.totalAgentCommission ?? 0)}
+              icon={Calendar}
+          />
+          <StatCard
+            title="Hoa hồng đại lý"
+            value={formatPointsDisplay(betSummary.totalAgentCommission ?? 0)}
               valueColor="text-white"
               bgColor="bg-amber-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Khuyến mãi"
-              value={formatPointsDisplay(betSummary.totalPromotionalMoney ?? 0)}
+              icon={Users}
+          />
+          <StatCard
+            title="Khuyến mãi"
+            value={formatPointsDisplay(betSummary.totalPromotionalMoney ?? 0)}
               valueColor="text-white"
               bgColor="bg-teal-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Thắng/Thua XS"
-              value={formatPointsDisplay(calculateLotteryWinLoss())}
+              icon={Gift}
+          />
+          <StatCard
+            title="Thắng/Thua XS"
+            value={formatPointsDisplay(betSummary.totalLotteryWinLoss ?? 0)}
               valueColor="text-white"
               bgColor="bg-violet-600"
               textColor="text-white"
-            />
-          </div>
+              icon={Ticket}
+          />
         </div>
+      </div>
 
         {/* Giao dịch */}
         <div className="lg:col-span-2">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">Giao dịch</h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Giao dịch</h3>
           <div className="grid grid-cols-3 gap-2">
-            <StatCard
-              title="Tổng số giao dịch"
-              value={numberFormatter.format(Number(transactionSummary.totalCount ?? 0))}
+          <StatCard
+            title="Tổng số giao dịch"
+            value={numberFormatter.format(Number(transactionSummary.totalCount ?? 0))}
               valueColor="text-white"
               bgColor="bg-slate-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Tổng số tiền"
-              value={formatPoints(transactionSummary.totalAmount ?? 0)}
+              icon={CreditCard}
+          />
+          <StatCard
+            title="Tổng số tiền"
+            value={formatPoints(transactionSummary.totalAmount ?? 0)}
               valueColor="text-white"
               bgColor="bg-sky-600"
               textColor="text-white"
-            />
-            <StatCard
-              title="Tổng thực nhận"
-              value={formatPoints(transactionSummary.totalNetAmount ?? 0)}
+              icon={Wallet}
+          />
+          <StatCard
+            title="Tổng thực nhận"
+            value={formatPoints(transactionSummary.totalNetAmount ?? 0)}
               valueColor="text-white"
               bgColor="bg-lime-600"
               textColor="text-white"
-            />
+              icon={CheckCircle}
+          />
           </div>
         </div>
       </div>

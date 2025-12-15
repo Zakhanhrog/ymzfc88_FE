@@ -1,25 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Card, DatePicker, Form, Input, message, Select, Space, Table, Tag, Typography } from 'antd';
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { message } from '../../../utils/notification';
 import { adminService } from '../services/adminService';
-
-const { RangePicker } = DatePicker;
-const { Text } = Typography;
-
-const successOptions = [
-  { label: 'Tất cả', value: 'all' },
-  { label: 'Thành công', value: 'success' },
-  { label: 'Thất bại', value: 'failure' },
-];
-
-const portalOptions = [
-  { label: 'Tất cả', value: 'all' },
-  { label: 'Người dùng', value: 'USER' },
-  { label: 'Admin', value: 'ADMIN' },
-  { label: 'Nhân viên', value: 'STAFF' },
-  { label: 'Đại lý', value: 'AGENT' },
-];
+import LoginHistoryFilters from './login-history/LoginHistoryFilters';
+import LoginHistoryTable from './login-history/LoginHistoryTable';
 
 const defaultFilters = {
   username: '',
@@ -32,7 +16,6 @@ const defaultFilters = {
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 const AdminLoginHistory = () => {
-  const [form] = Form.useForm();
   const [filters, setFilters] = useState(defaultFilters);
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
@@ -95,187 +78,46 @@ const AdminLoginHistory = () => {
     loadData();
   }, [loadData]);
 
-  const handleSearch = (values) => {
-    setPage(1);
-    setFilters({
-      username: values.username || '',
-      ip: values.ip || '',
-      portal: values.portal || 'all',
-      success: values.success || 'all',
-      dateRange: values.dateRange || null,
-    });
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    setPage(1); // Reset về trang đầu khi filter thay đổi
   };
 
-  const handleReset = () => {
-    form.resetFields();
-    setPage(1);
-    setFilters(defaultFilters);
+  const handlePaginationChange = (newPage, newPageSize) => {
+    setPage(newPage);
+    if (newPageSize && newPageSize !== pageSize) {
+      setPageSize(newPageSize);
+    }
   };
 
-  const columns = [
-    {
-      title: 'Thời gian',
-      dataIndex: 'loginAt',
-      key: 'loginAt',
-      render: (value) => (value ? dayjs(value).format('DD/MM/YYYY HH:mm:ss') : '—'),
-      width: 190,
-    },
-    {
-      title: 'Tài khoản',
-      key: 'username',
-      render: (_, record) => (
-        <Space direction="vertical" size={0}>
-          <Text strong>{record.username || '—'}</Text>
-          {record.fullName && <Text type="secondary">{record.fullName}</Text>}
-        </Space>
-      ),
-      width: 200,
-    },
-    {
-      title: 'IP',
-      dataIndex: 'ipAddress',
-      key: 'ipAddress',
-      width: 140,
-      render: (value) => value || '—',
-    },
-    {
-      title: 'Cổng',
-      dataIndex: 'portal',
-      key: 'portal',
-      width: 110,
-      render: (value) => value || 'USER',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'success',
-      key: 'success',
-      width: 120,
-      render: (success) =>
-        success ? <Tag color="green">Thành công</Tag> : <Tag color="red">Thất bại</Tag>,
-    },
-    {
-      title: 'Lý do thất bại',
-      dataIndex: 'failureReason',
-      key: 'failureReason',
-      render: (value, record) => (record.success ? '—' : value || '—'),
-    },
-    {
-      title: 'User Agent',
-      dataIndex: 'userAgent',
-      key: 'userAgent',
-      ellipsis: true,
-      render: (value) => (value ? <span title={value}>{value}</span> : '—'),
-    },
-  ];
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+    setPage(1); // Reset về trang đầu khi đổi page size
+  };
 
   return (
     <div className="space-y-4">
-      <Card>
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={defaultFilters}
-          onFinish={handleSearch}
-        >
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Form.Item label="Tài khoản / Email" name="username">
-              <Input placeholder="Nhập username hoặc email" allowClear />
-            </Form.Item>
-            <Form.Item label="Địa chỉ IP" name="ip">
-              <Input placeholder="Ví dụ: 192.168.1.1" allowClear />
-            </Form.Item>
-            <Form.Item label="Cổng đăng nhập" name="portal">
-              <Select options={portalOptions} />
-            </Form.Item>
-            <Form.Item label="Trạng thái" name="success">
-              <Select options={successOptions} />
-            </Form.Item>
-            <Form.Item label="Khoảng thời gian" name="dateRange">
-              <RangePicker
-                className="w-full"
-                showTime
-                format="DD/MM/YYYY HH:mm"
-                allowClear
-                disabledDate={(current) => current && current > dayjs().endOf('day')}
-              />
-            </Form.Item>
-          </div>
-          <Space>
-            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-              Tìm kiếm
-            </Button>
-            <Button onClick={handleReset}>Đặt lại</Button>
-            <Button icon={<ReloadOutlined />} onClick={loadData}>
-              Tải lại
-            </Button>
-          </Space>
-        </Form>
-      </Card>
+      <LoginHistoryFilters
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onRefresh={loadData}
+        loading={loading}
+      />
 
-      <Card>
-        <Table
-          rowKey={(record) => record.id || `${record.username}-${record.loginAt}`}
-          dataSource={data}
-          columns={columns}
-          loading={loading}
-          pagination={false}
-          scroll={{ x: 900 }}
-        />
-        <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <Text type="secondary">
-            Tổng số: <strong>{total}</strong> bản ghi
-          </Text>
-          <Space>
-            <Select
-              value={pageSize}
-              onChange={(value) => {
-                setPage(1);
-                setPageSize(value);
-              }}
-              options={PAGE_SIZE_OPTIONS.map((sizeOption) => ({
-                label: `${sizeOption}/trang`,
-                value: sizeOption,
-              }))}
-            />
-            <PaginationControls
-              current={page}
-              pageSize={pageSize}
-              total={total}
-              onChange={(newPage, newSize) => {
-                setPage(newPage);
-                if (newSize !== pageSize) {
-                  setPageSize(newSize);
-                }
-              }}
-            />
-          </Space>
-        </div>
-      </Card>
+      <LoginHistoryTable
+        data={data}
+        loading={loading}
+        pagination={{
+          current: page,
+          pageSize: pageSize,
+          total: total
+        }}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        onPaginationChange={handlePaginationChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 };
 
-const PaginationControls = ({ current, pageSize, total, onChange }) => {
-  const totalPages = Math.ceil(total / pageSize) || 1;
-
-  const canPrev = current > 1;
-  const canNext = current < totalPages;
-
-  return (
-    <Space>
-      <Button disabled={!canPrev} onClick={() => canPrev && onChange(current - 1, pageSize)}>
-        Trang trước
-      </Button>
-      <Text>
-        Trang {current} / {totalPages}
-      </Text>
-      <Button disabled={!canNext} onClick={() => canNext && onChange(current + 1, pageSize)}>
-        Trang sau
-      </Button>
-    </Space>
-  );
-};
-
 export default AdminLoginHistory;
-
-

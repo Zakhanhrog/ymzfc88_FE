@@ -791,6 +791,28 @@ export const adminService = {
     }
   },
 
+  getAgentCustomerStatistics: async (params = {}) => {
+    try {
+      const response = await adminAPI.get('/admin/agent/customers/statistics', {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải thống kê khách hàng đại lý');
+    }
+  },
+
+  getAgentCustomerDetail: async (customerId, params = {}) => {
+    try {
+      const response = await adminAPI.get(`/admin/agent/customers/${customerId}/detail`, {
+        params
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tải chi tiết khách hàng');
+    }
+  },
+
   getAgentInviteInfo: async () => {
     try {
       const response = await adminAPI.get('/admin/agent/invite-info');

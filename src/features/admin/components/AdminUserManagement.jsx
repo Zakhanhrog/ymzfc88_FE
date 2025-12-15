@@ -1,64 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Table,
-  Button,
-  Space,
-  Tag,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Card,
-  Row,
-  Col,
-  Statistic,
-  Popconfirm,
-  message,
-  Drawer,
-  Avatar,
-  Divider,
-  InputNumber,
-  Typography,
-  Tooltip,
-  Badge,
-  Alert,
-  DatePicker,
-  Spin,
-  List,
-  Empty
-} from 'antd';
 import dayjs from 'dayjs';
-import {
-  UserOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  EyeOutlined,
-  KeyOutlined,
-  FilterOutlined,
-  UserAddOutlined,
-  TeamOutlined,
-  UserSwitchOutlined,
-  UserDeleteOutlined,
-  LockOutlined,
-  UnlockOutlined,
-  SafetyOutlined,
-  BankOutlined,
-  DollarOutlined,
-  PlusCircleOutlined,
-  MinusCircleOutlined
-} from '@ant-design/icons';
-import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT } from '../../../utils/typography';
+import { User, Edit, Key, Lock, Unlock, Shield, Banknote, DollarSign, Plus, Minus } from 'lucide-react';
+import { message } from '../../../utils/notification';
 import { adminAuthService } from '../services/adminAuthService';
 import { getPortalType } from '../../../utils/subdomain';
 import { adminService } from '../services/adminService';
-import { formatPointsDisplay } from '../../../utils/helpers';
-
-const { Option } = Select;
-const { Search } = Input;
-const { Title, Text } = Typography;
+import UserStatsCards from './user-management/UserStatsCards';
+import UserFilterForm from './user-management/UserFilterForm';
+import UserTable from './user-management/UserTable';
+import StatusTag from './StatusTag';
+import Modal from '../../../components/ui/Modal';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import Select from '../../../components/ui/Select';
+import Alert from '../../../components/ui/Alert';
+import { Card, CardContent } from '../../../components/ui/Card';
 
 const ROLE_SELECTIONS = [
   { value: 'USER', label: 'Người dùng' },
@@ -101,14 +57,24 @@ const AdminUserManagement = () => {
   const [userPaymentMethods, setUserPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
+  const [showC2InfoModal, setShowC2InfoModal] = useState(false);
+  const [c2InfoUser, setC2InfoUser] = useState(null);
 
-  const [createForm] = Form.useForm();
-  const [editForm] = Form.useForm();
-  const [passwordForm] = Form.useForm();
-  const [c2Form] = Form.useForm();
-  const [lockForm] = Form.useForm();
-  const [bankForm] = Form.useForm();
-  const [pointForm] = Form.useForm();
+  // Form states
+  const [createFormData, setCreateFormData] = useState({});
+  const [createFormErrors, setCreateFormErrors] = useState({});
+  const [editFormData, setEditFormData] = useState({});
+  const [editFormErrors, setEditFormErrors] = useState({});
+  const [passwordFormData, setPasswordFormData] = useState({});
+  const [passwordFormErrors, setPasswordFormErrors] = useState({});
+  const [c2FormData, setC2FormData] = useState({});
+  const [c2FormErrors, setC2FormErrors] = useState({});
+  const [lockFormData, setLockFormData] = useState({});
+  const [lockFormErrors, setLockFormErrors] = useState({});
+  const [bankFormData, setBankFormData] = useState({});
+  const [bankFormErrors, setBankFormErrors] = useState({});
+  const [pointFormData, setPointFormData] = useState({});
+  const [pointFormErrors, setPointFormErrors] = useState({});
 
   const currentAdminSession = adminAuthService.getCurrentAdmin();
   const currentPortal = useMemo(
@@ -208,19 +174,19 @@ const AdminUserManagement = () => {
   };
 
   // Handle table pagination
-  const handleTableChange = (paginationData) => {
+  const handleTableChange = (page, pageSize) => {
     setPagination(prev => ({
       ...prev,
-      current: paginationData.current,
-      pageSize: paginationData.pageSize
+      current: page,
+      pageSize: pageSize || prev.pageSize
     }));
   };
 
   const openCreateModal = () => {
-    createForm.resetFields();
-    createForm.setFieldsValue({
+    setCreateFormData({
       role: isStaffXnk ? 'USER' : 'USER'
     });
+    setCreateFormErrors({});
     setShowCreateModal(true);
   };
 
@@ -238,11 +204,24 @@ const AdminUserManagement = () => {
     };
   };
 
-  const handleCreateUser = async (values) => {
+  const handleCreateUser = async () => {
+    // Validation
+    const errors = {};
+    if (!createFormData.username) errors.username = 'Vui lòng nhập tên đăng nhập';
+    if (!createFormData.email) errors.email = 'Vui lòng nhập email';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createFormData.email)) errors.email = 'Email không hợp lệ';
+    if (!createFormData.password) errors.password = 'Vui lòng nhập mật khẩu';
+    if (!createFormData.fullName) errors.fullName = 'Vui lòng nhập họ và tên';
+    
+    if (Object.keys(errors).length > 0) {
+      setCreateFormErrors(errors);
+      return;
+    }
+
     try {
-      const selectedRole = isStaffXnk ? 'USER' : values.role;
+      const selectedRole = isStaffXnk ? 'USER' : createFormData.role;
       const payload = {
-        ...values,
+        ...createFormData,
         ...normalizeRolePayload(selectedRole)
       };
 
@@ -263,7 +242,8 @@ const AdminUserManagement = () => {
       if (response.success) {
         message.success('Tạo người dùng thành công!');
         setShowCreateModal(false);
-        createForm.resetFields();
+        setCreateFormData({});
+        setCreateFormErrors({});
         loadUsers();
         loadUserStats();
       }
@@ -273,11 +253,22 @@ const AdminUserManagement = () => {
   };
 
   // Update user
-  const handleUpdateUser = async (values) => {
+  const handleUpdateUser = async () => {
+    // Validation
+    const errors = {};
+    if (!editFormData.fullName) errors.fullName = 'Vui lòng nhập họ và tên';
+    if (!editFormData.email) errors.email = 'Vui lòng nhập email';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) errors.email = 'Email không hợp lệ';
+    
+    if (Object.keys(errors).length > 0) {
+      setEditFormErrors(errors);
+      return;
+    }
+
     try {
-      const selectedRole = isStaffXnk ? 'USER' : values.role;
+      const selectedRole = isStaffXnk ? 'USER' : editFormData.role;
       const payload = {
-        ...values,
+        ...editFormData,
         ...normalizeRolePayload(selectedRole)
       };
       
@@ -299,7 +290,8 @@ const AdminUserManagement = () => {
       if (response.success) {
         message.success('Cập nhật người dùng thành công!');
         setShowEditModal(false);
-        editForm.resetFields();
+        setEditFormData({});
+        setEditFormErrors({});
         setSelectedUser(null);
         loadUsers();
       }
@@ -336,13 +328,23 @@ const AdminUserManagement = () => {
   };
 
   // Reset password
-  const handleResetPassword = async (values) => {
+  const handleResetPassword = async () => {
+    if (!passwordFormData.newPassword) {
+      setPasswordFormErrors({ newPassword: 'Vui lòng nhập mật khẩu mới' });
+      return;
+    }
+    if (passwordFormData.newPassword.length < 6) {
+      setPasswordFormErrors({ newPassword: 'Mật khẩu tối thiểu 6 ký tự' });
+      return;
+    }
+
     try {
-      const response = await adminService.resetUserPassword(selectedUser.id, values.newPassword);
+      const response = await adminService.resetUserPassword(selectedUser.id, passwordFormData.newPassword);
       if (response.success) {
         message.success('Reset mật khẩu thành công!');
         setShowPasswordModal(false);
-        passwordForm.resetFields();
+        setPasswordFormData({});
+        setPasswordFormErrors({});
         setSelectedUser(null);
       }
     } catch (error) {
@@ -350,13 +352,23 @@ const AdminUserManagement = () => {
     }
   };
 
-  const handleResetC2Password = async (values) => {
+  const handleResetC2Password = async () => {
+    if (!c2FormData.newC2Password) {
+      setC2FormErrors({ newC2Password: 'Vui lòng nhập mật khẩu bảo vệ mới' });
+      return;
+    }
+    if (c2FormData.newC2Password.length < 6) {
+      setC2FormErrors({ newC2Password: 'Mật khẩu tối thiểu 6 ký tự' });
+      return;
+    }
+
     try {
-      const response = await adminService.updateUserC2Password(selectedUser.id, values.newC2Password);
+      const response = await adminService.updateUserC2Password(selectedUser.id, c2FormData.newC2Password);
       if (response.success) {
         message.success('Cập nhật mật khẩu bảo vệ thành công!');
         setShowC2Modal(false);
-        c2Form.resetFields();
+        setC2FormData({});
+        setC2FormErrors({});
         setSelectedUser(null);
         loadUsers();
       }
@@ -366,17 +378,30 @@ const AdminUserManagement = () => {
   };
 
   // Update bank info
-  const handleUpdateBank = async (values) => {
+  const handleUpdateBank = async () => {
+    const errors = {};
+    if (!bankFormData.name) errors.name = 'Vui lòng nhập tên phương thức';
+    if (!bankFormData.type) errors.type = 'Vui lòng chọn loại';
+    if (!bankFormData.accountNumber) errors.accountNumber = 'Vui lòng nhập số tài khoản';
+    if (!bankFormData.accountName) errors.accountName = 'Vui lòng nhập tên chủ tài khoản';
+    if (bankFormData.type === 'BANK' && !bankFormData.bankCode) errors.bankCode = 'Vui lòng chọn ngân hàng';
+
+    if (Object.keys(errors).length > 0) {
+      setBankFormErrors(errors);
+      return;
+    }
+
     try {
       const response = await adminService.updateUserPaymentMethod(
         selectedUser.id,
         selectedPaymentMethod.id,
-        values
+        bankFormData
       );
       if (response.success) {
         message.success('Cập nhật thông tin ngân hàng thành công!');
         setShowBankModal(false);
-        bankForm.resetFields();
+        setBankFormData({});
+        setBankFormErrors({});
         setSelectedPaymentMethod(null);
         await loadUserPaymentMethods(selectedUser.id);
       }
@@ -386,24 +411,36 @@ const AdminUserManagement = () => {
   };
 
   // Adjust points
-  const handleAdjustPoints = async (values) => {
+  const handleAdjustPoints = async () => {
+    const errors = {};
+    if (!pointFormData.type) errors.type = 'Vui lòng chọn loại thao tác';
+    if (!pointFormData.points || parseInt(pointFormData.points) < 1) errors.points = 'Số điểm phải lớn hơn 0';
+    if (pointFormData.type === 'ADD' && !pointFormData.moneyType) errors.moneyType = 'Vui lòng chọn loại tiền';
+    if (!pointFormData.description) errors.description = 'Vui lòng nhập lý do';
+
+    if (Object.keys(errors).length > 0) {
+      setPointFormErrors(errors);
+      return;
+    }
+
     try {
       const payload = {
-        points: parseInt(values.points),
-        type: values.type,
-        description: values.description
+        points: parseInt(pointFormData.points),
+        type: pointFormData.type,
+        description: pointFormData.description
       };
       
       // Chỉ gửi moneyType khi type = ADD
-      if (values.type === 'ADD' && values.moneyType) {
-        payload.moneyType = values.moneyType;
+      if (pointFormData.type === 'ADD' && pointFormData.moneyType) {
+        payload.moneyType = pointFormData.moneyType;
       }
       
       const response = await adminService.adjustUserPoints(selectedUser.id, payload);
       if (response.success) {
-        message.success(`${values.type === 'ADD' ? 'Cộng' : 'Trừ'} điểm thành công!`);
+        message.success(`${pointFormData.type === 'ADD' ? 'Cộng' : 'Trừ'} điểm thành công!`);
         setShowPointModal(false);
-        pointForm.resetFields();
+        setPointFormData({});
+        setPointFormErrors({});
         setSelectedUser(null);
         loadUsers();
       }
@@ -431,30 +468,33 @@ const AdminUserManagement = () => {
   const showEditUserModal = (user) => {
     setSelectedUser(user);
     // Nếu user có staffRole, hiển thị staffRole trong dropdown, không phải role
-    const formValues = {
+    setEditFormData({
       ...user,
       role: user.staffRole || user.role,
       referralCode: user.referralCode || ''
-    };
-    editForm.setFieldsValue(formValues);
+    });
+    setEditFormErrors({});
     setShowEditModal(true);
   };
 
   const showBankModalHandler = async (user) => {
     setSelectedUser(user);
     setSelectedPaymentMethod(null);
+    setBankFormData({});
+    setBankFormErrors({});
     await loadUserPaymentMethods(user.id);
     setShowBankModal(true);
   };
 
   const showPointModalHandler = (user) => {
     setSelectedUser(user);
-    pointForm.setFieldsValue({
+    setPointFormData({
       points: '',
       type: 'ADD',
       moneyType: 'MANUAL', // Mặc định là tiền thủ công
       description: ''
     });
+    setPointFormErrors({});
     setShowPointModal(true);
   };
 
@@ -465,37 +505,21 @@ const AdminUserManagement = () => {
 
   const showPasswordResetModal = (user) => {
     setSelectedUser(user);
+    setPasswordFormData({});
+    setPasswordFormErrors({});
     setShowPasswordModal(true);
   };
 
   const showC2ResetModal = (user) => {
     setSelectedUser(user);
+    setC2FormData({});
+    setC2FormErrors({});
     setShowC2Modal(true);
   };
 
   const handleViewC2Info = (user) => {
-    Modal.info({
-      title: 'Thông tin mật khẩu bảo vệ (C2)',
-      content: (
-        <div className="space-y-2">
-          {user.hasC2Password ? (
-            <span>
-              Mật khẩu bảo vệ được lưu trữ dưới dạng bảo mật nên không thể hiển thị. Vui lòng sử dụng chức năng
-              "Thay đổi" để đặt mật khẩu mới cho tài khoản này.
-            </span>
-          ) : (
-            <span>Tài khoản chưa thiết lập mật khẩu bảo vệ C2.</span>
-          )}
-          {user.c2PasswordUpdatedAt && (
-            <div>
-              <Text strong>Thời gian cập nhật gần nhất:</Text>{' '}
-              {new Date(user.c2PasswordUpdatedAt).toLocaleString('vi-VN')}
-            </div>
-          )}
-        </div>
-      ),
-      okText: 'Đã hiểu',
-    });
+    setC2InfoUser(user);
+    setShowC2InfoModal(true);
   };
 
 
@@ -525,13 +549,23 @@ const AdminUserManagement = () => {
   };
 
   // Handle lock withdrawal with custom reason
-  const handleLockWithdrawalWithReason = async (values) => {
+  const handleLockWithdrawalWithReason = async () => {
+    if (!lockFormData.reason || lockFormData.reason.length < 10) {
+      setLockFormErrors({ reason: 'Lý do tối thiểu 10 ký tự' });
+      return;
+    }
+    if (lockFormData.reason.length > 500) {
+      setLockFormErrors({ reason: 'Lý do tối đa 500 ký tự' });
+      return;
+    }
+
     try {
-      const reason = values.reason || '';
+      const reason = lockFormData.reason || '';
       await adminService.lockWithdrawal(selectedUser?.id, reason);
       message.success('Khóa rút tiền thành công!');
       setShowLockModal(false);
-      lockForm.resetFields();
+      setLockFormData({});
+      setLockFormErrors({});
       setSelectedUser(null);
       loadUsers();
     } catch (error) {
@@ -539,776 +573,503 @@ const AdminUserManagement = () => {
     }
   };
 
-  // Table columns
-  const columns = [
-    {
-      title: 'Avatar',
-      dataIndex: 'avatar',
-      key: 'avatar',
-      width: 60,
-      render: (_, record) => {
-        const isAgent = record.staffRole === 'AGENT';
-        return (
-          <Avatar 
-            size="large" 
-            icon={<UserOutlined />}
-            style={{ backgroundColor: isAgent ? '#52c41a' : '#1890ff' }}
-          >
-            {record.fullName?.charAt(0)?.toUpperCase()}
-          </Avatar>
-        );
-      },
-    },
-    {
-      title: 'Thông tin',
-      key: 'userInfo',
-      render: (_, record) => (
-        <div>
-          <div className="font-medium">
-            {record.fullName}
-            {record.withdrawalLocked && (
-              <Tooltip 
-                title={
-                  <div>
-                    <div><strong>Trạng thái:</strong> Đã khóa rút tiền</div>
-                    <div><strong>Lý do:</strong> {record.withdrawalLockReason || 'Không có lý do'}</div>
-                    {record.withdrawalLockedAt && (
-                      <div><strong>Thời gian:</strong> {new Date(record.withdrawalLockedAt).toLocaleString('vi-VN')}</div>
-                    )}
-                  </div>
-                }
-                placement="topLeft"
-              >
-                <Tag color="red" style={{ marginLeft: 8 }} icon={<LockOutlined />}>
-                  Khóa rút
-                </Tag>
-              </Tooltip>
-            )}
-          </div>
-          <div className="text-gray-500 text-sm">@{record.username}</div>
-          <div className="text-gray-400 text-xs">{record.email}</div>
-        </div>
-      ),
-    },
-    {
-      title: 'Vai trò',
-      dataIndex: 'role',
-      key: 'role',
-      width: 100,
-      filters: [
-        { text: 'Người dùng', value: 'USER' },
-        { text: 'Đại lý', value: 'AGENT' }
-      ],
-      render: (role, record) => {
-        const isAgent = record.staffRole === 'AGENT';
-        return (
-          <Tag color={isAgent ? 'green' : 'blue'}>
-            {isAgent ? 'Đại lý' : 'Người dùng'}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      width: 120,
-      filters: [
-        { text: 'Hoạt động', value: 'ACTIVE' },
-        { text: 'Tạm khóa', value: 'INACTIVE' },
-        { text: 'Bị cấm', value: 'BANNED' }
-      ],
-      render: (status) => {
-        const statusMap = {
-          ACTIVE: { color: 'green', text: 'Hoạt động' },
-          INACTIVE: { color: 'orange', text: 'Tạm khóa' },
-          SUSPENDED: { color: 'red', text: 'Tạm dừng' },
-          BANNED: { color: 'red', text: 'Bị cấm' }
-        };
-        const config = statusMap[status] || { color: 'default', text: status };
-        return <Tag color={config.color}>{config.text}</Tag>;
-      },
-    },
-    {
-      title: 'Số dư',
-      dataIndex: 'points',
-      key: 'balance',
-      width: 120,
-      sorter: true,
-      render: (points) => {
-        // points là số điểm, quy đổi sang VND: 1 điểm = 1000 VND
-        const balanceVND = (Number(points) || 0) * 1000;
-        return (
-          <Text className={balanceVND > 0 ? 'text-green-600' : 'text-gray-500'}>
-            {new Intl.NumberFormat('vi-VN', {
-              style: 'currency',
-              currency: 'VND'
-            }).format(balanceVND)}
-          </Text>
-        );
-      },
-    },
-    {
-      title: 'Mật khẩu C2',
-      key: 'c2Password',
-      width: 220,
-      render: (_, record) => (
-        <Space size="small">
-          <span>{record.hasC2Password ? '••••••' : 'Chưa có'}</span>
-          <Tooltip title="Xem thông tin C2">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => handleViewC2Info(record)}
-            />
-          </Tooltip>
-          {canManageC2(record) && (
-            <Tooltip title={record.hasC2Password ? 'Đổi mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}>
-              <Button
-                type="text"
-                icon={<SafetyOutlined />}
-                onClick={() => showC2ResetModal(record)}
-              />
-            </Tooltip>
-          )}
-        </Space>
-      ),
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 120,
-      sorter: true,
-      render: (date) => new Date(date).toLocaleDateString('vi-VN'),
-    },
-    {
-      title: 'IP',
-      dataIndex: 'firstLoginIp',
-      key: 'firstLoginIp',
-      width: 150,
-      render: (value) => value || '-'
-    },
-    {
-      title: 'Hoàn trả',
-      dataIndex: 'totalRefund',
-      key: 'totalRefund',
-      width: 140,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Hoàn thua theo ngày',
-      dataIndex: 'totalDailyLossRefund',
-      key: 'totalDailyLossRefund',
-      width: 160,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Thao tác',
-      key: 'actions',
-      width: 200,
-      render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => showUserDetailDrawer(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => showEditUserModal(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Reset mật khẩu">
-            <Button
-              type="text"
-              icon={<KeyOutlined />}
-              onClick={() => showPasswordResetModal(record)}
-            />
-          </Tooltip>
-          {record.withdrawalLocked ? (
-            <Tooltip title="Mở khóa rút tiền">
-              <Button
-                type="text"
-                icon={<UnlockOutlined />}
-                style={{ color: '#52c41a' }}
-                onClick={() => showLockWithdrawalModal(record, 'unlock')}
-              />
-            </Tooltip>
-          ) : (
-            <Tooltip title="Khóa rút tiền">
-              <Button
-                type="text"
-                danger
-                icon={<LockOutlined />}
-                onClick={() => showLockWithdrawalModal(record, 'lock')}
-              />
-            </Tooltip>
-          )}
-          {record.status !== 'BANNED' && (
-            <Popconfirm
-              title="Bạn có chắc muốn xóa người dùng này?"
-              onConfirm={() => handleDeleteUser(record.id)}
-              okText="Xóa"
-              cancelText="Hủy"
-            >
-              <Tooltip title="Xóa">
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                />
-              </Tooltip>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
-    },
-  ];
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Stats Cards */}
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Tổng người dùng"
-              value={userStats.usersByRole?.USER || 0}
-              prefix={<TeamOutlined className="text-blue-600" />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Đại lý"
-              value={userStats.usersByStaffRole?.AGENT || 0}
-              prefix={<UserSwitchOutlined className="text-green-600" />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Người dùng hoạt động"
-              value={userStats.usersByStatus?.ACTIVE || 0}
-              prefix={<UserOutlined className="text-green-600" />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Người dùng mới (30 ngày)"
-              value={userStats.newUsersLast30Days || 0}
-              prefix={<UserAddOutlined className="text-orange-600" />}
-              valueStyle={{ color: '#fa8c16' }}
-            />
-          </Card>
-        </Col>
-      </Row>
+      <UserStatsCards stats={userStats} loading={loading} />
 
       {/* Filter and Search */}
-      <Card>
-        <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Search
-              placeholder="Tìm kiếm theo tên, email..."
-              allowClear
-              value={filters.searchTerm}
-              onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-              onSearch={() => setPagination(prev => ({ ...prev, current: 1 }))}
-              prefix={<SearchOutlined />}
-            />
-          </Col>
-          {isAdminPortal && (
-          <Col xs={12} sm={6} md={4} lg={3}>
-            <Select
-              placeholder="Vai trò"
-              allowClear
-              value={filters.role}
-              onChange={(value) => handleFilterChange('role', value)}
-              style={{ width: '100%' }}
-            >
-              <Option value="USER">Người dùng</Option>
-              <Option value="AGENT">Đại lý</Option>
-            </Select>
-          </Col>
-          )}
-          <Col xs={12} sm={6} md={4} lg={3}>
-            <Select
-              placeholder="Trạng thái"
-              allowClear
-              value={filters.status}
-              onChange={(value) => handleFilterChange('status', value)}
-              style={{ width: '100%' }}
-            >
-              <Option value="ACTIVE">Hoạt động</Option>
-              <Option value="INACTIVE">Tạm khóa</Option>
-              <Option value="SUSPENDED">Tạm dừng</Option>
-              <Option value="BANNED">Bị cấm</Option>
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <DatePicker.RangePicker
-              placeholder={['Từ ngày', 'Đến ngày']}
-              value={filters.startDate && filters.endDate ? [dayjs(filters.startDate), dayjs(filters.endDate)] : null}
-              onChange={(dates) => {
-                if (dates && dates[0] && dates[1]) {
-                  handleFilterChange('startDate', dates[0].startOf('day'));
-                  handleFilterChange('endDate', dates[1].endOf('day'));
-                } else {
-                  handleFilterChange('startDate', null);
-                  handleFilterChange('endDate', null);
-                }
-              }}
-              format="DD/MM/YYYY"
-              style={{ width: '100%' }}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} sm={24} md={24} lg={6}>
-            <Space wrap>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={openCreateModal}
-              >
-                Thêm người dùng
-              </Button>
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={loadUsers}
-                loading={loading}
-              >
-                Làm mới
-              </Button>
-              <Button
-                icon={<FilterOutlined />}
-                onClick={resetFilters}
-              >
-                Reset bộ lọc
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-      </Card>
+      <UserFilterForm
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onReset={resetFilters}
+        onCreateUser={openCreateModal}
+        isAdminPortal={isAdminPortal}
+        loading={loading}
+      />
 
       {/* User Table */}
-      <Card bodyStyle={{ overflowX: 'auto' }}>
-        <Table
-          columns={columns}
-          dataSource={users}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} người dùng`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 'max-content' }}
-        />
-      </Card>
+      <UserTable
+        data={users}
+        loading={loading}
+        pagination={pagination}
+        onPaginationChange={handleTableChange}
+        onViewDetail={showUserDetailDrawer}
+        onEdit={showEditUserModal}
+        onResetPassword={showPasswordResetModal}
+        onLockWithdrawal={(user) => showLockWithdrawalModal(user, 'lock')}
+        onUnlockWithdrawal={(user) => showLockWithdrawalModal(user, 'unlock')}
+        onDelete={handleDeleteUser}
+        onViewC2Info={handleViewC2Info}
+        onSetC2Password={showC2ResetModal}
+        canManageC2={canManageC2}
+      />
 
       {/* Create User Modal */}
       <Modal
         title="Tạo người dùng mới"
         open={showCreateModal}
-        onCancel={() => {
+        onClose={() => {
           setShowCreateModal(false);
-          createForm.resetFields();
+          setCreateFormData({});
+          setCreateFormErrors({});
         }}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={createForm}
-          layout="vertical"
-          onFinish={handleCreateUser}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="username"
-                label="Tên đăng nhập"
-                rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}
-              >
-                <Input prefix={<UserOutlined />} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập email' },
-                  { type: 'email', message: 'Email không hợp lệ' }
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="password"
-                label="Mật khẩu"
-                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
-              >
-                <Input.Password />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="role"
-                label="Vai trò"
-                rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
-              >
-                <Select
-                  disabled={isStaffXnk}
-                  placeholder="Chọn vai trò"
-                >
-                  {createRoleOptions.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            name="fullName"
-            label="Họ và tên"
-            rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            noStyle
-            shouldUpdate={(prev, curr) => prev.role !== curr.role}
-          >
-            {({ getFieldValue }) => {
-              const selectedRole = getFieldValue('role');
-              const isAgentOrStaffRole =
-                selectedRole === 'AGENT' ||
-                (selectedRole && selectedRole.startsWith('STAFF_'));
-              if (!isAgentOrStaffRole) {
-                return null;
-              }
-              return (
-                <Form.Item
-                  name="c2Password"
-                  label="Mật khẩu bảo vệ (C2)"
-                  rules={[
-                    { required: true, message: 'Vui lòng nhập mật khẩu bảo vệ' },
-                    { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
-                  ]}
-                >
-                  <Input.Password />
-                </Form.Item>
-              );
-            }}
-          </Form.Item>
-          <Form.Item
-            name="phoneNumber"
-            label="Số điện thoại"
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
+        width="max-w-2xl"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
                 setShowCreateModal(false);
-                createForm.resetFields();
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Tạo người dùng
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+                setCreateFormData({});
+                setCreateFormErrors({});
+              }}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleCreateUser}>
+              Tạo người dùng
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tên đăng nhập <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  value={createFormData.username || ''}
+                  onChange={(e) => {
+                    setCreateFormData({ ...createFormData, username: e.target.value });
+                    if (createFormErrors.username) setCreateFormErrors({ ...createFormErrors, username: null });
+                  }}
+                  className={createFormErrors.username ? 'border-red-500 pl-9' : 'pl-9'}
+                  placeholder="Nhập tên đăng nhập"
+                />
+              </div>
+              {createFormErrors.username && (
+                <p className="text-red-500 text-xs mt-1">{createFormErrors.username}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="email"
+                value={createFormData.email || ''}
+                onChange={(e) => {
+                  setCreateFormData({ ...createFormData, email: e.target.value });
+                  if (createFormErrors.email) setCreateFormErrors({ ...createFormErrors, email: null });
+                }}
+                className={createFormErrors.email ? 'border-red-500' : ''}
+                placeholder="Nhập email"
+              />
+              {createFormErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{createFormErrors.email}</p>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mật khẩu <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="password"
+                value={createFormData.password || ''}
+                onChange={(e) => {
+                  setCreateFormData({ ...createFormData, password: e.target.value });
+                  if (createFormErrors.password) setCreateFormErrors({ ...createFormErrors, password: null });
+                }}
+                className={createFormErrors.password ? 'border-red-500' : ''}
+                placeholder="Nhập mật khẩu"
+              />
+              {createFormErrors.password && (
+                <p className="text-red-500 text-xs mt-1">{createFormErrors.password}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Vai trò <span className="text-red-500">*</span>
+              </label>
+              <Select
+                value={createFormData.role || ''}
+                onChange={(value) => {
+                  setCreateFormData({ ...createFormData, role: value, c2Password: value === 'AGENT' ? createFormData.c2Password : '' });
+                  if (createFormErrors.role) setCreateFormErrors({ ...createFormErrors, role: null });
+                }}
+                disabled={isStaffXnk}
+                placeholder="Chọn vai trò"
+                options={createRoleOptions.map(opt => ({ label: opt.label, value: opt.value }))}
+                className={createFormErrors.role ? 'border-red-500' : ''}
+              />
+              {createFormErrors.role && (
+                <p className="text-red-500 text-xs mt-1">{createFormErrors.role}</p>
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Họ và tên <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              value={createFormData.fullName || ''}
+              onChange={(e) => {
+                setCreateFormData({ ...createFormData, fullName: e.target.value });
+                if (createFormErrors.fullName) setCreateFormErrors({ ...createFormErrors, fullName: null });
+              }}
+              className={createFormErrors.fullName ? 'border-red-500' : ''}
+              placeholder="Nhập họ và tên"
+            />
+            {createFormErrors.fullName && (
+              <p className="text-red-500 text-xs mt-1">{createFormErrors.fullName}</p>
+            )}
+          </div>
+          {(createFormData.role === 'AGENT' || (createFormData.role && createFormData.role.startsWith('STAFF_'))) && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mật khẩu bảo vệ (C2) <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="password"
+                value={createFormData.c2Password || ''}
+                onChange={(e) => {
+                  setCreateFormData({ ...createFormData, c2Password: e.target.value });
+                  if (createFormErrors.c2Password) setCreateFormErrors({ ...createFormErrors, c2Password: null });
+                }}
+                className={createFormErrors.c2Password ? 'border-red-500' : ''}
+                placeholder="Nhập mật khẩu bảo vệ (tối thiểu 6 ký tự)"
+              />
+              {createFormErrors.c2Password && (
+                <p className="text-red-500 text-xs mt-1">{createFormErrors.c2Password}</p>
+              )}
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Số điện thoại
+            </label>
+            <Input
+              type="text"
+              value={createFormData.phoneNumber || ''}
+              onChange={(e) => setCreateFormData({ ...createFormData, phoneNumber: e.target.value })}
+              placeholder="Nhập số điện thoại"
+            />
+          </div>
+        </div>
       </Modal>
 
       {/* Edit User Modal */}
       <Modal
         title="Chỉnh sửa người dùng"
         open={showEditModal}
-        onCancel={() => {
+        onClose={() => {
           setShowEditModal(false);
-          editForm.resetFields();
+          setEditFormData({});
+          setEditFormErrors({});
           setSelectedUser(null);
         }}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={handleUpdateUser}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="fullName"
-                label="Họ và tên"
-                rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập email' },
-                  { type: 'email', message: 'Email không hợp lệ' }
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="phoneNumber"
-                label="Số điện thoại"
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="role"
-                label="Vai trò"
-              >
-                <Select disabled={isStaffXnk}>
-                  <Option value="USER">Người dùng</Option>
-                  <Option value="AGENT">Đại lý</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="status"
-                label="Trạng thái"
-              >
-                <Select>
-                  <Option value="ACTIVE">Hoạt động</Option>
-                  <Option value="INACTIVE">Tạm khóa</Option>
-                  <Option value="SUSPENDED">Tạm dừng</Option>
-                  <Option value="BANNED">Bị cấm</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="referralCode"
-                label="Mã đại lý (Mã mời)"
-                tooltip="Mã đại lý cũng là mã mời của người dùng"
-              >
-                <Input placeholder="Nhập mã đại lý" maxLength={10} style={{ textTransform: 'uppercase' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
+        width="max-w-2xl"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
                 setShowEditModal(false);
-                editForm.resetFields();
+                setEditFormData({});
+                setEditFormErrors({});
                 setSelectedUser(null);
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Cập nhật
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+              }}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleUpdateUser}>
+              Cập nhật
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Họ và tên <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                value={editFormData.fullName || ''}
+                onChange={(e) => {
+                  setEditFormData({ ...editFormData, fullName: e.target.value });
+                  if (editFormErrors.fullName) setEditFormErrors({ ...editFormErrors, fullName: null });
+                }}
+                className={editFormErrors.fullName ? 'border-red-500' : ''}
+                placeholder="Nhập họ và tên"
+              />
+              {editFormErrors.fullName && (
+                <p className="text-red-500 text-xs mt-1">{editFormErrors.fullName}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="email"
+                value={editFormData.email || ''}
+                onChange={(e) => {
+                  setEditFormData({ ...editFormData, email: e.target.value });
+                  if (editFormErrors.email) setEditFormErrors({ ...editFormErrors, email: null });
+                }}
+                className={editFormErrors.email ? 'border-red-500' : ''}
+                placeholder="Nhập email"
+              />
+              {editFormErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{editFormErrors.email}</p>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Số điện thoại
+              </label>
+              <Input
+                type="text"
+                value={editFormData.phoneNumber || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, phoneNumber: e.target.value })}
+                placeholder="Nhập số điện thoại"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Vai trò
+              </label>
+              <Select
+                value={editFormData.role || ''}
+                onChange={(value) => setEditFormData({ ...editFormData, role: value })}
+                disabled={isStaffXnk}
+                options={[
+                  { label: 'Người dùng', value: 'USER' },
+                  { label: 'Đại lý', value: 'AGENT' }
+                ]}
+                placeholder="Chọn vai trò"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Trạng thái
+              </label>
+              <Select
+                value={editFormData.status || ''}
+                onChange={(value) => setEditFormData({ ...editFormData, status: value })}
+                options={[
+                  { label: 'Hoạt động', value: 'ACTIVE' },
+                  { label: 'Tạm khóa', value: 'INACTIVE' },
+                  { label: 'Tạm dừng', value: 'SUSPENDED' },
+                  { label: 'Bị cấm', value: 'BANNED' }
+                ]}
+                placeholder="Chọn trạng thái"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mã đại lý (Mã mời)
+              </label>
+              <Input
+                type="text"
+                value={editFormData.referralCode || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, referralCode: e.target.value.toUpperCase() })}
+                placeholder="Nhập mã đại lý"
+                maxLength={10}
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+          </div>
+        </div>
       </Modal>
 
-      {/* User Detail Drawer */}
-      <Drawer
+      {/* User Detail Modal */}
+      <Modal
         title="Chi tiết người dùng"
-        placement="right"
+        open={showUserDetail}
         onClose={() => {
           setShowUserDetail(false);
           setSelectedUser(null);
         }}
-        open={showUserDetail}
-        width={400}
+        width="max-w-md"
       >
         {selectedUser && (
           <div className="space-y-4">
             <div className="text-center">
-              <Avatar 
-                size={80} 
-                icon={<UserOutlined />}
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full text-2xl font-bold text-white mb-2"
                 style={{ backgroundColor: selectedUser.staffRole === 'AGENT' ? '#52c41a' : '#1890ff' }}
               >
                 {selectedUser.fullName?.charAt(0)?.toUpperCase()}
-              </Avatar>
+              </div>
               <div className="mt-2">
-                <Title level={4} className="mb-1">{selectedUser.fullName}</Title>
-                <Text type="secondary">@{selectedUser.username}</Text>
+                <h4 className="text-lg font-semibold mb-1">{selectedUser.fullName}</h4>
+                <p className="text-sm text-gray-500">@{selectedUser.username}</p>
               </div>
             </div>
 
-            <Divider />
+            <div className="border-t border-gray-200 pt-4"></div>
 
             <div className="space-y-3">
               <div>
-                <Text strong>Email:</Text>
-                <div>{selectedUser.email}</div>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Email:</p>
+                <p className="text-sm text-gray-900">{selectedUser.email}</p>
               </div>
               <div>
-                <Text strong>Số điện thoại:</Text>
-                <div>{selectedUser.phoneNumber || 'Chưa cập nhật'}</div>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Số điện thoại:</p>
+                <p className="text-sm text-gray-900">{selectedUser.phoneNumber || 'Chưa cập nhật'}</p>
               </div>
               <div>
-                <Text strong>Vai trò:</Text>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Vai trò:</p>
                 <div>
-                  <Tag color={selectedUser.staffRole === 'AGENT' ? 'green' : 'blue'}>
-                    {selectedUser.staffRole === 'AGENT' ? 'Đại lý' : 'Người dùng'}
-                  </Tag>
+                  <StatusTag 
+                    status={selectedUser.staffRole === 'AGENT' ? 'AGENT' : 'USER'} 
+                    customConfig={{
+                      AGENT: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Đại lý' },
+                      USER: { bgColor: 'bg-blue-50', textColor: 'text-blue-700', borderColor: 'border-blue-200', label: 'Người dùng' }
+                    }}
+                  />
                 </div>
               </div>
               <div>
-                <Text strong>Trạng thái:</Text>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Trạng thái:</p>
                 <div>
-                  <Tag color={
-                    selectedUser.status === 'ACTIVE' ? 'green' :
-                    selectedUser.status === 'INACTIVE' ? 'orange' : 'red'
-                  }>
-                    {selectedUser.status === 'ACTIVE' ? 'Hoạt động' :
-                     selectedUser.status === 'INACTIVE' ? 'Tạm khóa' : 'Bị cấm'}
-                  </Tag>
+                  <StatusTag 
+                    status={selectedUser.status} 
+                    customConfig={{
+                      ACTIVE: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Hoạt động' },
+                      INACTIVE: { bgColor: 'bg-orange-50', textColor: 'text-orange-700', borderColor: 'border-orange-200', label: 'Tạm khóa' },
+                      SUSPENDED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Tạm dừng' },
+                      BANNED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Bị cấm' }
+                    }}
+                  />
                 </div>
               </div>
               <div>
-                <Text strong>Số dư:</Text>
-                <div className={(selectedUser.points || 0) > 0 ? 'text-green-600' : 'text-gray-500'}>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Số dư:</p>
+                <p className={`text-sm font-medium ${(selectedUser.points || 0) > 0 ? 'text-green-600' : 'text-gray-500'}`}>
                   {new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
                     currency: 'VND'
                   }).format((selectedUser.points || 0) * 1000)}
-                </div>
+                </p>
               </div>
               <div>
-                <Text strong>Ngày tạo:</Text>
-                <div>{new Date(selectedUser.createdAt).toLocaleString('vi-VN')}</div>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Ngày tạo:</p>
+                <p className="text-sm text-gray-900">{new Date(selectedUser.createdAt).toLocaleString('vi-VN')}</p>
               </div>
               <div>
-                <Text strong>Cập nhật cuối:</Text>
-                <div>{new Date(selectedUser.updatedAt).toLocaleString('vi-VN')}</div>
+                <p className="text-xs font-semibold text-gray-700 mb-1">Cập nhật cuối:</p>
+                <p className="text-sm text-gray-900">{new Date(selectedUser.updatedAt).toLocaleString('vi-VN')}</p>
               </div>
               {selectedUser.lastLogin && (
                 <div>
-                  <Text strong>Đăng nhập cuối:</Text>
-                  <div>{new Date(selectedUser.lastLogin).toLocaleString('vi-VN')}</div>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">Đăng nhập cuối:</p>
+                  <p className="text-sm text-gray-900">{new Date(selectedUser.lastLogin).toLocaleString('vi-VN')}</p>
                 </div>
               )}
               {selectedUser.withdrawalLocked && (
                 <div>
-                  <Text strong>Trạng thái rút tiền:</Text>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">Trạng thái rút tiền:</p>
                   <div>
-                    <Tag color="red" icon={<LockOutlined />}>
-                      Đã khóa rút tiền
-                    </Tag>
+                    <StatusTag 
+                      status="LOCKED" 
+                      customConfig={{
+                        LOCKED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Đã khóa rút tiền' }
+                      }}
+                    />
                   </div>
                   {selectedUser.withdrawalLockReason && (
                     <div className="mt-2">
-                      <Text strong>Lý do khóa:</Text>
-                      <div className="text-green-600 bg-green-50 p-2 rounded mt-1">
+                      <p className="text-xs font-semibold text-gray-700 mb-1">Lý do khóa:</p>
+                      <div className="text-sm text-gray-700 bg-green-50 p-2 rounded-lg mt-1">
                         {selectedUser.withdrawalLockReason}
                       </div>
                     </div>
                   )}
                   {selectedUser.withdrawalLockedAt && (
                     <div className="mt-2">
-                      <Text strong>Thời gian khóa:</Text>
-                      <div>{new Date(selectedUser.withdrawalLockedAt).toLocaleString('vi-VN')}</div>
+                      <p className="text-xs font-semibold text-gray-700 mb-1">Thời gian khóa:</p>
+                      <p className="text-sm text-gray-900">{new Date(selectedUser.withdrawalLockedAt).toLocaleString('vi-VN')}</p>
                     </div>
                   )}
                 </div>
               )}
               {canManageC2(selectedUser) && (
                 <div>
-                  <Text strong>Mật khẩu bảo vệ:</Text>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">Mật khẩu bảo vệ:</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Tag color={selectedUser.hasC2Password ? 'green' : 'default'}>
-                      {selectedUser.hasC2Password ? 'Đã thiết lập' : 'Chưa thiết lập'}
-                    </Tag>
+                    <StatusTag 
+                      status={selectedUser.hasC2Password ? 'SET' : 'NOT_SET'} 
+                      customConfig={{
+                        SET: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Đã thiết lập' },
+                        NOT_SET: { bgColor: 'bg-gray-50', textColor: 'text-gray-700', borderColor: 'border-gray-200', label: 'Chưa thiết lập' }
+                      }}
+                    />
                     {selectedUser.c2PasswordUpdatedAt && (
-                      <Text type="secondary">
+                      <p className="text-xs text-gray-500">
                         Cập nhật {new Date(selectedUser.c2PasswordUpdatedAt).toLocaleString('vi-VN')}
-                      </Text>
+                      </p>
                     )}
                   </div>
                 </div>
               )}
             </div>
 
-            <Divider />
+            <div className="border-t border-gray-200 pt-4"></div>
 
             <div className="space-y-2">
               <Button 
-                block 
-                icon={<EditOutlined />}
+                className="w-full"
                 onClick={() => {
                   setShowUserDetail(false);
                   showEditUserModal(selectedUser);
                 }}
               >
+                <Edit className="h-4 w-4 mr-2" />
                 Chỉnh sửa
               </Button>
               <Button 
-                block 
-                icon={<KeyOutlined />}
+                className="w-full"
+                variant="outline"
                 onClick={() => {
                   setShowUserDetail(false);
                   showPasswordResetModal(selectedUser);
                 }}
               >
+                <Key className="h-4 w-4 mr-2" />
                 Reset mật khẩu
               </Button>
               {canManageC2(selectedUser) && (
                 <Button
-                  block
-                  icon={<SafetyOutlined />}
+                  className="w-full"
+                  variant="outline"
                   onClick={() => {
                     setShowUserDetail(false);
                     showC2ResetModal(selectedUser);
                   }}
                 >
+                  <Shield className="h-4 w-4 mr-2" />
                   {selectedUser.hasC2Password ? 'Đổi mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
                 </Button>
               )}
               {selectedUser.status === 'ACTIVE' && (
                 <Button 
-                  block 
-                  danger
+                  className="w-full"
+                  variant="destructive"
                   onClick={() => handleUpdateStatus(selectedUser.id, 'INACTIVE')}
                 >
                   Khóa tài khoản
@@ -1316,353 +1077,440 @@ const AdminUserManagement = () => {
               )}
               {selectedUser.status === 'INACTIVE' && (
                 <Button 
-                  block 
-                  type="primary"
+                  className="w-full"
                   onClick={() => handleUpdateStatus(selectedUser.id, 'ACTIVE')}
                 >
                   Mở khóa tài khoản
                 </Button>
               )}
               <Button 
-                block 
-                icon={<BankOutlined />}
+                className="w-full"
+                variant="outline"
                 onClick={async () => {
                   setShowUserDetail(false);
                   await showBankModalHandler(selectedUser);
                 }}
               >
+                <Banknote className="h-4 w-4 mr-2" />
                 Thay đổi thông tin ngân hàng
               </Button>
               <Button 
-                block 
-                icon={<DollarOutlined />}
+                className="w-full"
+                variant="outline"
                 onClick={() => {
                   setShowUserDetail(false);
                   showPointModalHandler(selectedUser);
                 }}
               >
+                <DollarSign className="h-4 w-4 mr-2" />
                 Cộng/Trừ điểm thủ công
               </Button>
             </div>
           </div>
         )}
-      </Drawer>
+      </Modal>
 
       {/* Reset Password Modal */}
       <Modal
         title="Reset mật khẩu"
         open={showPasswordModal}
-        onCancel={() => {
+        onClose={() => {
           setShowPasswordModal(false);
-          passwordForm.resetFields();
+          setPasswordFormData({});
+          setPasswordFormErrors({});
           setSelectedUser(null);
         }}
-        footer={null}
-      >
-        <Form
-          form={passwordForm}
-          layout="vertical"
-          onFinish={handleResetPassword}
-        >
-          <div className="mb-4">
-            <Text>Reset mật khẩu cho người dùng: <Text strong>{selectedUser?.fullName}</Text></Text>
-          </div>
-          <Form.Item
-            name="newPassword"
-            label="Mật khẩu mới"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu mới' },
-              { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
                 setShowPasswordModal(false);
-                passwordForm.resetFields();
+                setPasswordFormData({});
+                setPasswordFormErrors({});
                 setSelectedUser(null);
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Reset mật khẩu
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+              }}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleResetPassword}>
+              Reset mật khẩu
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-700">
+              Reset mật khẩu cho người dùng: <span className="font-semibold">{selectedUser?.fullName}</span>
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Mật khẩu mới <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="password"
+              value={passwordFormData.newPassword || ''}
+              onChange={(e) => {
+                setPasswordFormData({ ...passwordFormData, newPassword: e.target.value });
+                if (passwordFormErrors.newPassword) setPasswordFormErrors({ ...passwordFormErrors, newPassword: null });
+              }}
+              className={passwordFormErrors.newPassword ? 'border-red-500' : ''}
+              placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+            />
+            {passwordFormErrors.newPassword && (
+              <p className="text-red-500 text-xs mt-1">{passwordFormErrors.newPassword}</p>
+            )}
+          </div>
+        </div>
       </Modal>
 
       {/* Update C2 Password Modal */}
       <Modal
         title={selectedUser?.hasC2Password ? 'Đổi mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
         open={showC2Modal}
-        onCancel={() => {
+        onClose={() => {
           setShowC2Modal(false);
-          c2Form.resetFields();
+          setC2FormData({});
+          setC2FormErrors({});
           setSelectedUser(null);
         }}
-        footer={null}
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowC2Modal(false);
+                setC2FormData({});
+                setC2FormErrors({});
+                setSelectedUser(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleResetC2Password}>
+              {selectedUser?.hasC2Password ? 'Cập nhật mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
+            </Button>
+          </div>
+        }
       >
-        <Form
-          form={c2Form}
-          layout="vertical"
-          onFinish={handleResetC2Password}
-        >
-          <div className="mb-4">
-            <Text>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-700">
               {selectedUser?.hasC2Password
                 ? 'Đổi mật khẩu bảo vệ cho người dùng: '
                 : 'Thiết lập mật khẩu bảo vệ cho người dùng: '}
-              <Text strong>{selectedUser?.fullName}</Text>
-            </Text>
+              <span className="font-semibold">{selectedUser?.fullName}</span>
+            </p>
           </div>
-          <Form.Item
-            name="newC2Password"
-            label="Mật khẩu bảo vệ mới"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu bảo vệ mới' },
-              { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
-                setShowC2Modal(false);
-                c2Form.resetFields();
-                setSelectedUser(null);
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit">
-                {selectedUser?.hasC2Password ? 'Cập nhật mật khẩu bảo vệ' : 'Thiết lập mật khẩu bảo vệ'}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Mật khẩu bảo vệ mới <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="password"
+              value={c2FormData.newC2Password || ''}
+              onChange={(e) => {
+                setC2FormData({ ...c2FormData, newC2Password: e.target.value });
+                if (c2FormErrors.newC2Password) setC2FormErrors({ ...c2FormErrors, newC2Password: null });
+              }}
+              className={c2FormErrors.newC2Password ? 'border-red-500' : ''}
+              placeholder="Nhập mật khẩu bảo vệ mới (tối thiểu 6 ký tự)"
+            />
+            {c2FormErrors.newC2Password && (
+              <p className="text-red-500 text-xs mt-1">{c2FormErrors.newC2Password}</p>
+            )}
+          </div>
+        </div>
       </Modal>
 
       {/* Lock Withdrawal Modal */}
       <Modal
         title="Khóa rút tiền"
         open={showLockModal}
-        onCancel={() => {
+        onClose={() => {
           setShowLockModal(false);
-          lockForm.resetFields();
+          setLockFormData({});
+          setLockFormErrors({});
           setSelectedUser(null);
         }}
-        footer={null}
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowLockModal(false);
+                setLockFormData({});
+                setLockFormErrors({});
+                setSelectedUser(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleLockWithdrawalWithReason}
+            >
+              Khóa rút tiền
+            </Button>
+          </div>
+        }
       >
-        <Form
-          form={lockForm}
-          layout="vertical"
-          onFinish={handleLockWithdrawalWithReason}
-        >
-          <div className="mb-4">
-            <Text>Khóa rút tiền cho người dùng: <Text strong>{selectedUser?.fullName}</Text></Text>
-            <div className="text-gray-500">
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-700">
+              Khóa rút tiền cho người dùng: <span className="font-semibold">{selectedUser?.fullName}</span>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
               Username: @{selectedUser?.username}
-            </div>
+            </p>
           </div>
           
-          <Form.Item
-            name="reason"
-            label="Lý do khóa rút tiền"
-            rules={[
-              { required: true, message: 'Vui lòng nhập lý do khóa rút tiền' },
-              { min: 10, message: 'Lý do tối thiểu 10 ký tự' },
-              { max: 500, message: 'Lý do tối đa 500 ký tự' }
-            ]}
-          >
-            <Input.TextArea 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Lý do khóa rút tiền <span className="text-red-500">*</span>
+            </label>
+            <textarea
               rows={4}
+              value={lockFormData.reason || ''}
+              onChange={(e) => {
+                setLockFormData({ ...lockFormData, reason: e.target.value });
+                if (lockFormErrors.reason) setLockFormErrors({ ...lockFormErrors, reason: null });
+              }}
+              className={`w-full px-3 py-2 border rounded-md resize-none ${
+                lockFormErrors.reason ? 'border-red-500' : 'border-gray-300'
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               placeholder="Nhập lý do khóa rút tiền cho người dùng này..."
               maxLength={500}
-              showCount
             />
-          </Form.Item>
+            <div className="flex justify-between items-center mt-1">
+              {lockFormErrors.reason && (
+                <p className="text-red-500 text-xs">{lockFormErrors.reason}</p>
+              )}
+              <p className="text-xs text-gray-500 ml-auto">
+                {(lockFormData.reason || '').length}/500
+              </p>
+            </div>
+          </div>
 
           <Alert
+            type="info"
             message="Lưu ý"
             description="Lý do này sẽ được hiển thị cho người dùng khi họ cố gắng rút tiền. Hãy nhập lý do rõ ràng và cụ thể."
-            type="info"
-            showIcon
-            className="mb-4"
           />
-
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
-                setShowLockModal(false);
-                lockForm.resetFields();
-                setSelectedUser(null);
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit" danger>
-                Khóa rút tiền
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+        </div>
       </Modal>
 
       {/* Bank Info Modal */}
       <Modal
         title="Thay đổi thông tin ngân hàng"
         open={showBankModal}
-        onCancel={() => {
+        onClose={() => {
           setShowBankModal(false);
-          bankForm.resetFields();
+          setBankFormData({});
+          setBankFormErrors({});
           setSelectedPaymentMethod(null);
           setSelectedUser(null);
         }}
-        footer={null}
-        width={600}
+        width="max-w-2xl"
+        footer={
+          selectedPaymentMethod && (
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowBankModal(false);
+                  setBankFormData({});
+                  setBankFormErrors({});
+                  setSelectedPaymentMethod(null);
+                  setSelectedUser(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button onClick={handleUpdateBank}>
+                Cập nhật
+              </Button>
+            </div>
+          )
+        }
       >
         {loadingPaymentMethods ? (
           <div className="text-center py-8">
-            <Spin size="large" />
+            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
         ) : userPaymentMethods.length === 0 ? (
-          <Empty description="Người dùng chưa có phương thức thanh toán nào" />
+          <div className="text-center py-12 text-gray-500 text-sm">
+            Người dùng chưa có phương thức thanh toán nào
+          </div>
         ) : (
-          <>
-            <div className="mb-4">
-              <Text strong>Chọn phương thức thanh toán để chỉnh sửa:</Text>
-              <List
-                className="mt-2"
-                dataSource={userPaymentMethods}
-                renderItem={(method) => (
-                  <List.Item
-                    className={`cursor-pointer hover:bg-gray-50 p-3 rounded ${
-                      selectedPaymentMethod?.id === method.id ? 'bg-blue-50 border border-blue-300' : ''
-                    }`}
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-700 mb-2">Chọn phương thức thanh toán để chỉnh sửa:</p>
+              <div className="space-y-2 mt-2">
+                {userPaymentMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={cn(
+                      "cursor-pointer hover:bg-gray-50 p-3 rounded-lg border transition-colors",
+                      selectedPaymentMethod?.id === method.id ? 'bg-blue-50 border-blue-300' : 'border-gray-200'
+                    )}
                     onClick={() => {
                       setSelectedPaymentMethod(method);
-                      bankForm.setFieldsValue({
-                        name: method.name,
-                        type: method.type,
-                        accountNumber: method.accountNumber,
-                        accountName: method.accountName,
-                        bankCode: method.bankCode || undefined,
+                      setBankFormData({
+                        name: method.name || '',
+                        type: method.type || 'BANK',
+                        accountNumber: method.accountNumber || '',
+                        accountName: method.accountName || '',
+                        bankCode: method.bankCode || '',
                         note: method.note || ''
                       });
+                      setBankFormErrors({});
                     }}
                   >
-                    <List.Item.Meta
-                      avatar={<BankOutlined className="text-2xl text-blue-600" />}
-                      title={method.name}
-                      description={
-                        <div>
-                          <div>{method.accountName} - {method.accountNumber}</div>
-                          {method.bankCode && <div className="text-xs text-gray-500">{method.bankCode}</div>}
-                        </div>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
+                    <div className="flex items-start gap-3">
+                      <Banknote className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{method.name}</p>
+                        <p className="text-sm text-gray-600 mt-1">{method.accountName} - {method.accountNumber}</p>
+                        {method.bankCode && <p className="text-xs text-gray-500 mt-1">{method.bankCode}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {selectedPaymentMethod && (
-              <Form
-                form={bankForm}
-                layout="vertical"
-                onFinish={handleUpdateBank}
-              >
-                <Form.Item
-                  name="name"
-                  label="Tên phương thức"
-                  rules={[{ required: true, message: 'Vui lòng nhập tên phương thức' }]}
-                >
-                  <Input placeholder="Ví dụ: Tài khoản chính" />
-                </Form.Item>
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Tên phương thức <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={bankFormData.name || ''}
+                    onChange={(e) => {
+                      setBankFormData({ ...bankFormData, name: e.target.value });
+                      if (bankFormErrors.name) setBankFormErrors({ ...bankFormErrors, name: null });
+                    }}
+                    className={bankFormErrors.name ? 'border-red-500' : ''}
+                    placeholder="Ví dụ: Tài khoản chính"
+                  />
+                  {bankFormErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">{bankFormErrors.name}</p>
+                  )}
+                </div>
 
-                <Form.Item
-                  name="type"
-                  label="Loại phương thức"
-                  rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
-                >
-                  <Select>
-                    <Option value="BANK">Ngân hàng</Option>
-                    <Option value="MOMO">Ví MoMo</Option>
-                    <Option value="ZALO_PAY">ZaloPay</Option>
-                    <Option value="VIET_QR">VietQR</Option>
-                  </Select>
-                </Form.Item>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Loại phương thức <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={bankFormData.type || ''}
+                    onChange={(value) => {
+                      setBankFormData({ ...bankFormData, type: value, bankCode: value !== 'BANK' ? '' : bankFormData.bankCode });
+                      if (bankFormErrors.type) setBankFormErrors({ ...bankFormErrors, type: null });
+                    }}
+                    options={[
+                      { label: 'Ngân hàng', value: 'BANK' },
+                      { label: 'Ví MoMo', value: 'MOMO' },
+                      { label: 'ZaloPay', value: 'ZALO_PAY' },
+                      { label: 'VietQR', value: 'VIET_QR' }
+                    ]}
+                    className={bankFormErrors.type ? 'border-red-500' : ''}
+                    placeholder="Chọn loại"
+                  />
+                  {bankFormErrors.type && (
+                    <p className="text-red-500 text-xs mt-1">{bankFormErrors.type}</p>
+                  )}
+                </div>
 
-                <Form.Item
-                  noStyle
-                  shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
-                >
-                  {({ getFieldValue }) =>
-                    getFieldValue('type') === 'BANK' && (
-                      <Form.Item
-                        name="bankCode"
-                        label="Ngân hàng"
-                        rules={[{ required: true, message: 'Vui lòng chọn ngân hàng' }]}
-                      >
-                        <Select placeholder="Chọn ngân hàng" showSearch>
-                          <Option value="VCB">Vietcombank</Option>
-                          <Option value="TCB">Techcombank</Option>
-                          <Option value="ACB">ACB</Option>
-                          <Option value="MB">MBBank</Option>
-                          <Option value="VTB">Vietinbank</Option>
-                          <Option value="BIDV">BIDV</Option>
-                          <Option value="TPB">TPBank</Option>
-                          <Option value="STB">Sacombank</Option>
-                          <Option value="VPB">VPBank</Option>
-                        </Select>
-                      </Form.Item>
-                    )
-                  }
-                </Form.Item>
+                {bankFormData.type === 'BANK' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Ngân hàng <span className="text-red-500">*</span>
+                    </label>
+                    <Select
+                      value={bankFormData.bankCode || ''}
+                      onChange={(value) => {
+                        setBankFormData({ ...bankFormData, bankCode: value });
+                        if (bankFormErrors.bankCode) setBankFormErrors({ ...bankFormErrors, bankCode: null });
+                      }}
+                      options={[
+                        { label: 'Vietcombank', value: 'VCB' },
+                        { label: 'Techcombank', value: 'TCB' },
+                        { label: 'ACB', value: 'ACB' },
+                        { label: 'MBBank', value: 'MB' },
+                        { label: 'Vietinbank', value: 'VTB' },
+                        { label: 'BIDV', value: 'BIDV' },
+                        { label: 'TPBank', value: 'TPB' },
+                        { label: 'Sacombank', value: 'STB' },
+                        { label: 'VPBank', value: 'VPB' }
+                      ]}
+                      className={bankFormErrors.bankCode ? 'border-red-500' : ''}
+                      placeholder="Chọn ngân hàng"
+                    />
+                    {bankFormErrors.bankCode && (
+                      <p className="text-red-500 text-xs mt-1">{bankFormErrors.bankCode}</p>
+                    )}
+                  </div>
+                )}
 
-                <Form.Item
-                  name="accountNumber"
-                  label="Số tài khoản"
-                  rules={[{ required: true, message: 'Vui lòng nhập số tài khoản' }]}
-                >
-                  <Input placeholder="Nhập số tài khoản" />
-                </Form.Item>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Số tài khoản <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={bankFormData.accountNumber || ''}
+                    onChange={(e) => {
+                      setBankFormData({ ...bankFormData, accountNumber: e.target.value });
+                      if (bankFormErrors.accountNumber) setBankFormErrors({ ...bankFormErrors, accountNumber: null });
+                    }}
+                    className={bankFormErrors.accountNumber ? 'border-red-500' : ''}
+                    placeholder="Nhập số tài khoản"
+                  />
+                  {bankFormErrors.accountNumber && (
+                    <p className="text-red-500 text-xs mt-1">{bankFormErrors.accountNumber}</p>
+                  )}
+                </div>
 
-                <Form.Item
-                  name="accountName"
-                  label="Tên chủ tài khoản"
-                  rules={[{ required: true, message: 'Vui lòng nhập tên chủ tài khoản' }]}
-                >
-                  <Input placeholder="Nhập tên chủ tài khoản" />
-                </Form.Item>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Tên chủ tài khoản <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={bankFormData.accountName || ''}
+                    onChange={(e) => {
+                      setBankFormData({ ...bankFormData, accountName: e.target.value });
+                      if (bankFormErrors.accountName) setBankFormErrors({ ...bankFormErrors, accountName: null });
+                    }}
+                    className={bankFormErrors.accountName ? 'border-red-500' : ''}
+                    placeholder="Nhập tên chủ tài khoản"
+                  />
+                  {bankFormErrors.accountName && (
+                    <p className="text-red-500 text-xs mt-1">{bankFormErrors.accountName}</p>
+                  )}
+                </div>
 
-                <Form.Item
-                  name="note"
-                  label="Ghi chú (tùy chọn)"
-                >
-                  <Input.TextArea rows={3} placeholder="Ghi chú thêm..." />
-                </Form.Item>
-
-                <Form.Item className="mb-0">
-                  <Space className="w-full justify-end">
-                    <Button onClick={() => {
-                      setShowBankModal(false);
-                      bankForm.resetFields();
-                      setSelectedPaymentMethod(null);
-                      setSelectedUser(null);
-                    }}>
-                      Hủy
-                    </Button>
-                    <Button type="primary" htmlType="submit">
-                      Cập nhật
-                    </Button>
-                  </Space>
-                </Form.Item>
-              </Form>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Ghi chú (tùy chọn)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={bankFormData.note || ''}
+                    onChange={(e) => setBankFormData({ ...bankFormData, note: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ghi chú thêm..."
+                  />
+                </div>
+              </div>
             )}
-          </>
+          </div>
         )}
       </Modal>
 
@@ -1670,140 +1518,210 @@ const AdminUserManagement = () => {
       <Modal
         title="Cộng/Trừ điểm thủ công"
         open={showPointModal}
-        onCancel={() => {
+        onClose={() => {
           setShowPointModal(false);
-          pointForm.resetFields();
+          setPointFormData({});
+          setPointFormErrors({});
           setSelectedUser(null);
         }}
-        footer={null}
-        width={500}
-      >
-        {selectedUser && (
-          <div className="mb-4 p-3 bg-gray-50 rounded">
-            <Text strong>Người dùng: </Text>
-            <Text>{selectedUser.fullName} (@{selectedUser.username})</Text>
-            <div className="mt-2">
-              <Text strong>Số điểm hiện tại: </Text>
-              <Text className="text-blue-600 font-semibold">
-                {new Intl.NumberFormat('vi-VN').format(selectedUser.points || 0)} điểm
-              </Text>
-            </div>
-          </div>
-        )}
-
-        <Form
-          form={pointForm}
-          layout="vertical"
-          onFinish={handleAdjustPoints}
-        >
-          <Form.Item
-            name="type"
-            label="Loại thao tác"
-            rules={[{ required: true, message: 'Vui lòng chọn loại thao tác' }]}
-          >
-            <Select
-              onChange={(value) => {
-                // Reset moneyType khi đổi loại thao tác
-                if (value !== 'ADD') {
-                  pointForm.setFieldsValue({ moneyType: undefined });
-                }
+        width="max-w-lg"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPointModal(false);
+                setPointFormData({});
+                setPointFormErrors({});
+                setSelectedUser(null);
               }}
             >
-              <Option value="ADD">
-                <Space>
-                  <PlusCircleOutlined className="text-green-600" />
-                  <span>Cộng điểm</span>
-                </Space>
-              </Option>
-              <Option value="SUBTRACT">
-                <Space>
-                  <MinusCircleOutlined className="text-red-600" />
-                  <span>Trừ điểm</span>
-                </Space>
-              </Option>
-            </Select>
-          </Form.Item>
+              Hủy
+            </Button>
+            <Button onClick={handleAdjustPoints}>
+              Xác nhận
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {selectedUser && (
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">Người dùng:</span> {selectedUser.fullName} (@{selectedUser.username})
+              </p>
+              <div className="mt-2">
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">Số điểm hiện tại:</span>{' '}
+                  <span className="text-blue-600 font-semibold">
+                    {new Intl.NumberFormat('vi-VN').format(selectedUser.points || 0)} điểm
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
 
-          <Form.Item
-            noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
-          >
-            {({ getFieldValue }) => {
-              const type = getFieldValue('type');
-              if (type === 'ADD') {
-                return (
-                  <Form.Item
-                    name="moneyType"
-                    label="Loại tiền"
-                    rules={[{ required: true, message: 'Vui lòng chọn loại tiền' }]}
-                  >
-                    <Select placeholder="Chọn loại tiền">
-                      <Option value="PROMOTIONAL">
-                        <Space>
-                          <span>Tiền khuyến mại</span>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            (Tiền này sẽ được tính vào bảng KM)
-                          </Text>
-                        </Space>
-                      </Option>
-                      <Option value="MANUAL">
-                        <Space>
-                          <span>Tiền thủ công</span>
-                        </Space>
-                      </Option>
-                    </Select>
-                  </Form.Item>
-                );
-              }
-              return null;
-            }}
-          </Form.Item>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Loại thao tác <span className="text-red-500">*</span>
+            </label>
+            <Select
+              value={pointFormData.type || ''}
+              onChange={(value) => {
+                setPointFormData({ 
+                  ...pointFormData, 
+                  type: value, 
+                  moneyType: value !== 'ADD' ? undefined : pointFormData.moneyType 
+                });
+                if (pointFormErrors.type) setPointFormErrors({ ...pointFormErrors, type: null });
+              }}
+              options={[
+                { 
+                  label: (
+                    <div className="flex items-center gap-2">
+                      <Plus className="h-4 w-4 text-green-600" />
+                      <span>Cộng điểm</span>
+                    </div>
+                  ), 
+                  value: 'ADD' 
+                },
+                { 
+                  label: (
+                    <div className="flex items-center gap-2">
+                      <Minus className="h-4 w-4 text-red-600" />
+                      <span>Trừ điểm</span>
+                    </div>
+                  ), 
+                  value: 'SUBTRACT' 
+                }
+              ]}
+              className={pointFormErrors.type ? 'border-red-500' : ''}
+              placeholder="Chọn loại thao tác"
+            />
+            {pointFormErrors.type && (
+              <p className="text-red-500 text-xs mt-1">{pointFormErrors.type}</p>
+            )}
+          </div>
 
-          <Form.Item
-            name="points"
-            label="Số điểm"
-            rules={[
-              { required: true, message: 'Vui lòng nhập số điểm' },
-              { type: 'number', min: 1, message: 'Số điểm phải lớn hơn 0' }
-            ]}
-          >
-            <InputNumber
-              className="w-full"
+          {pointFormData.type === 'ADD' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Loại tiền <span className="text-red-500">*</span>
+              </label>
+              <Select
+                value={pointFormData.moneyType || ''}
+                onChange={(value) => {
+                  setPointFormData({ ...pointFormData, moneyType: value });
+                  if (pointFormErrors.moneyType) setPointFormErrors({ ...pointFormErrors, moneyType: null });
+                }}
+                options={[
+                  { 
+                    label: (
+                      <div>
+                        <span>Tiền khuyến mại</span>
+                        <span className="text-xs text-gray-500 ml-2">(Tiền này sẽ được tính vào bảng KM)</span>
+                      </div>
+                    ), 
+                    value: 'PROMOTIONAL' 
+                  },
+                  { label: 'Tiền thủ công', value: 'MANUAL' }
+                ]}
+                className={pointFormErrors.moneyType ? 'border-red-500' : ''}
+                placeholder="Chọn loại tiền"
+              />
+              {pointFormErrors.moneyType && (
+                <p className="text-red-500 text-xs mt-1">{pointFormErrors.moneyType}</p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Số điểm <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="number"
+              value={pointFormData.points || ''}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                setPointFormData({ ...pointFormData, points: value });
+                if (pointFormErrors.points) setPointFormErrors({ ...pointFormErrors, points: null });
+              }}
+              className={pointFormErrors.points ? 'border-red-500' : ''}
               placeholder="Nhập số điểm"
               min={1}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
             />
-          </Form.Item>
+            {pointFormErrors.points && (
+              <p className="text-red-500 text-xs mt-1">{pointFormErrors.points}</p>
+            )}
+          </div>
 
-          <Form.Item
-            name="description"
-            label="Lý do"
-            rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}
-          >
-            <Input.TextArea
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Lý do <span className="text-red-500">*</span>
+            </label>
+            <textarea
               rows={4}
+              value={pointFormData.description || ''}
+              onChange={(e) => {
+                setPointFormData({ ...pointFormData, description: e.target.value });
+                if (pointFormErrors.description) setPointFormErrors({ ...pointFormErrors, description: null });
+              }}
+              className={`w-full px-3 py-2 border rounded-md resize-none ${
+                pointFormErrors.description ? 'border-red-500' : 'border-gray-300'
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
               placeholder="Nhập lý do cộng/trừ điểm..."
               maxLength={500}
-              showCount
             />
-          </Form.Item>
+            <div className="flex justify-between items-center mt-1">
+              {pointFormErrors.description && (
+                <p className="text-red-500 text-xs">{pointFormErrors.description}</p>
+              )}
+              <p className="text-xs text-gray-500 ml-auto">
+                {(pointFormData.description || '').length}/500
+              </p>
+            </div>
+          </div>
+        </div>
+      </Modal>
 
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
-                setShowPointModal(false);
-                pointForm.resetFields();
-                setSelectedUser(null);
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Xác nhận
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+      {/* C2 Info Modal */}
+      <Modal
+        title="Thông tin mật khẩu bảo vệ (C2)"
+        open={showC2InfoModal}
+        onClose={() => {
+          setShowC2InfoModal(false);
+          setC2InfoUser(null);
+        }}
+        footer={
+          <div className="flex justify-end">
+            <Button onClick={() => {
+              setShowC2InfoModal(false);
+              setC2InfoUser(null);
+            }}>
+              Đã hiểu
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-2">
+          {c2InfoUser?.hasC2Password ? (
+            <p className="text-sm text-gray-700">
+              Mật khẩu bảo vệ được lưu trữ dưới dạng bảo mật nên không thể hiển thị. Vui lòng sử dụng chức năng
+              "Thay đổi" để đặt mật khẩu mới cho tài khoản này.
+            </p>
+          ) : (
+            <p className="text-sm text-gray-700">Tài khoản chưa thiết lập mật khẩu bảo vệ C2.</p>
+          )}
+          {c2InfoUser?.c2PasswordUpdatedAt && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <p className="text-xs font-semibold text-gray-700 mb-1">Thời gian cập nhật gần nhất:</p>
+              <p className="text-sm text-gray-900">
+                {new Date(c2InfoUser.c2PasswordUpdatedAt).toLocaleString('vi-VN')}
+              </p>
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );

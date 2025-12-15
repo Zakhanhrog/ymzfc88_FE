@@ -306,11 +306,6 @@ export const adminMenuItems = [
     label: 'ĐẠI LÝ',
     children: [
       {
-        key: 'agent-dashboard',
-        icon: ICONS.agentOverview,
-        label: 'Dashboard',
-      },
-      {
         key: 'agent-customer-list',
         icon: ICONS.agentCustomers,
         label: 'Danh sách khách hàng',

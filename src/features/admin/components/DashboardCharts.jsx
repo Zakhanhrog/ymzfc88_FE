@@ -1,10 +1,3 @@
-import { Card, Row, Col, List, Avatar, Empty, Tag } from 'antd';
-import {
-  ThunderboltOutlined,
-  DollarCircleOutlined,
-  SwapOutlined,
-  FundProjectionScreenOutlined
-} from '@ant-design/icons';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -17,6 +10,17 @@ import {
   Line
 } from 'recharts';
 import dayjs from 'dayjs';
+import { TrendingUp, ArrowLeftRight, Zap, FileText, Activity } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import Table from '../../../components/ui/Table';
+
+const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0
+});
+
+const numberFormatter = new Intl.NumberFormat('vi-VN');
 
 const DashboardCharts = ({ chartData = [], activities = [] }) => {
   const formattedChartData = chartData.map((item) => ({
@@ -33,47 +37,95 @@ const DashboardCharts = ({ chartData = [], activities = [] }) => {
       ...activity,
       time: activity.time ? dayjs(activity.time) : null,
       amount: Number(activity.amount ?? 0)
-    }));
+    }))
+    .slice(0, 10);
 
   const renderActivityIcon = (type) => {
     switch (type) {
       case 'TRANSACTION':
-        return <SwapOutlined className="text-blue-500" />;
+        return <ArrowLeftRight className="h-4 w-4 text-blue-500" />;
       case 'BET':
-        return <ThunderboltOutlined className="text-purple-500" />;
+        return <Zap className="h-4 w-4 text-purple-500" />;
       default:
-        return <FundProjectionScreenOutlined className="text-gray-500" />;
+        return <FileText className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const getActivityTypeColor = (type) => {
+    switch (type) {
+      case 'TRANSACTION':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'BET':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   return (
-    <Row gutter={[16, 16]}>
-      <Col xs={24} lg={16}>
-        <Card title="Biểu đồ thống kê 7 ngày">
+    <div className="space-y-6">
+      {/* Chart Section */}
+      <div>
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden w-full">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Biểu đồ thống kê 7 ngày
+            </h3>
+          </div>
+          <div className="p-6">
           {formattedChartData.length === 0 ? (
-            <Empty description="Chưa có dữ liệu thống kê" />
+              <div className="flex flex-col items-center justify-center h-80 text-gray-400">
+                <TrendingUp className="h-12 w-12 mb-2 opacity-50" />
+                <p className="text-sm">Chưa có dữ liệu thống kê</p>
+              </div>
           ) : (
             <div style={{ width: '100%', height: 320 }}>
               <ResponsiveContainer>
                 <ComposedChart data={formattedChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="dateLabel" />
-                  <YAxis yAxisId="left" orientation="left" />
-                  <YAxis yAxisId="right" orientation="right" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="dateLabel" 
+                      stroke="#6b7280"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis 
+                      yAxisId="left" 
+                      orientation="left"
+                      stroke="#6b7280"
+                      style={{ fontSize: '12px' }}
+                      tickFormatter={(value) => {
+                        if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                        if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                        return value.toString();
+                      }}
+                    />
+                    <YAxis 
+                      yAxisId="right" 
+                      orientation="right"
+                      stroke="#6b7280"
+                      style={{ fontSize: '12px' }}
+                    />
                   <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
                     formatter={(value, name) => {
                       if (name === 'Doanh thu') {
-                        return new Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                          maximumFractionDigits: 0
-                        }).format(value);
+                          return currencyFormatter.format(value);
                       }
-                      return new Intl.NumberFormat('vi-VN').format(value);
+                        return numberFormatter.format(value);
                     }}
                     labelFormatter={(label) => `Ngày ${label}`}
                   />
-                  <Legend />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+                      iconType="circle"
+                      iconSize={10}
+                      style={{ fontSize: '12px' }}
+                    />
                   <Area
                     yAxisId="left"
                     type="monotone"
@@ -82,9 +134,10 @@ const DashboardCharts = ({ chartData = [], activities = [] }) => {
                     stroke="#16a34a"
                     fill="#bbf7d0"
                     strokeWidth={2}
+                      fillOpacity={0.6}
                   />
                   <Line
-                    yAxisId="right"
+                      yAxisId="left"
                     type="monotone"
                     dataKey="transactions"
                     name="Giao dịch"
@@ -105,60 +158,94 @@ const DashboardCharts = ({ chartData = [], activities = [] }) => {
               </ResponsiveContainer>
             </div>
           )}
-        </Card>
-      </Col>
-      <Col xs={24} lg={8}>
-        <Card title="Hoạt động gần đây">
-          {recentActivities.length === 0 ? (
-            <Empty description="Chưa ghi nhận hoạt động" />
-          ) : (
-            <List
-              dataSource={recentActivities}
-              renderItem={(item) => (
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        style={{ backgroundColor: '#f5f5f5' }}
-                        icon={renderActivityIcon(item.type)}
-                      />
-                    }
-                    title={
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Activities Section - Below chart */}
+      <div>
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden w-full">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Hoạt động gần đây
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <Table
+              columns={[
+                {
+                  key: 'type',
+                  dataIndex: 'type',
+                  title: 'Loại',
+                  width: 120,
+                  render: (value) => (
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-800">{item.username}</span>
-                        <Tag color={item.type === 'TRANSACTION' ? 'blue' : 'purple'}>
-                          {item.type === 'TRANSACTION' ? 'Giao dịch' : 'Cược'}
-                        </Tag>
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center border",
+                        getActivityTypeColor(value)
+                      )}>
+                        {renderActivityIcon(value)}
                       </div>
-                    }
-                    description={
-                      <div className="flex flex-col text-sm text-gray-500">
-                        <span>{item.description}</span>
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {item.time ? item.time.format('HH:mm DD/MM') : 'Không rõ thời gian'}
-                          </span>
-                          <span className="text-gray-400">•</span>
-                          <span>
-                            {new Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND',
-                              maximumFractionDigits: 0
-                            }).format(item.amount)}
+                      <span className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-medium border",
+                        getActivityTypeColor(value)
+                      )}>
+                        {value === 'TRANSACTION' ? 'Giao dịch' : 'Cược'}
                           </span>
             </div>
-          </div>
-                    }
-                  />
-                </List.Item>
-              )}
+                  ),
+                },
+                {
+                  key: 'username',
+                  dataIndex: 'username',
+                  title: 'Người dùng',
+                  width: 150,
+                  render: (value) => (
+                    <span className="text-sm font-medium text-gray-900">{value}</span>
+                  ),
+                },
+                {
+                  key: 'description',
+                  dataIndex: 'description',
+                  title: 'Mô tả',
+                  render: (value) => (
+                    <span className="text-sm text-gray-700">{value}</span>
+                  ),
+                },
+                {
+                  key: 'time',
+                  dataIndex: 'time',
+                  title: 'Thời gian',
+                  width: 150,
+                  render: (value, record) => (
+                    <span className="text-sm text-gray-600">
+                      {record.time ? record.time.format('HH:mm DD/MM/YYYY') : 'Không rõ thời gian'}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'amount',
+                  dataIndex: 'amount',
+                  title: 'Số tiền',
+                  width: 150,
+                  className: 'text-right',
+                  render: (value) => (
+                    <span className="text-sm font-medium text-gray-900">
+                      {currencyFormatter.format(value ?? 0)}
+                    </span>
+                  ),
+                },
+              ]}
+              dataSource={recentActivities}
+              loading={false}
+              rowKey={(record, index) => record.id || index}
+              emptyText="Chưa ghi nhận hoạt động"
             />
-          )}
-        </Card>
-      </Col>
-    </Row>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default DashboardCharts;
-

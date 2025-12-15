@@ -22,15 +22,11 @@ import {
 } from 'antd';
 import {
   PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
   BankOutlined,
-  MobileOutlined,
   CreditCardOutlined,
-  QrcodeOutlined,
   WalletOutlined,
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
   StarOutlined,
   StarFilled,
   ReloadOutlined
@@ -46,17 +42,13 @@ const UserPaymentMethodManagement = () => {
   const [userPaymentMethods, setUserPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState(null);
 
   const [createForm] = Form.useForm();
-  const [editForm] = Form.useForm();
 
-  // Payment method types for withdrawal
+  // Payment method types for withdrawal - chỉ có BANK và E_WALLET
   const withdrawalPaymentTypes = [
     { value: 'BANK', label: 'Ngân hàng', icon: <BankOutlined />, color: 'blue' },
-    { value: 'MOMO', label: 'Ví MoMo', icon: <MobileOutlined />, color: 'pink' },
-    { value: 'ZALO_PAY', label: 'ZaloPay', icon: <MobileOutlined />, color: 'cyan' }
+    { value: 'E_WALLET', label: 'Ví điện tử', icon: <WalletOutlined />, color: 'green' }
   ];
 
   // Popular banks
@@ -122,6 +114,7 @@ const UserPaymentMethodManagement = () => {
   // Create user payment method
   const handleCreatePaymentMethod = async (values) => {
     try {
+      setLoading(true);
       const response = await walletService.createUserPaymentMethod(values);
       if (response.success) {
         message.success('Thêm phương thức thanh toán thành công!');
@@ -130,25 +123,14 @@ const UserPaymentMethodManagement = () => {
         loadUserPaymentMethods();
       }
     } catch (error) {
-      message.error(error.message);
+      console.error('Error creating payment method:', error);
+      const errorMessage = error.message || error.response?.data?.message || 'Có lỗi xảy ra khi thêm phương thức thanh toán';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Update user payment method
-  const handleUpdatePaymentMethod = async (values) => {
-    try {
-      const response = await walletService.updateUserPaymentMethod(selectedMethod.id, values);
-      if (response.success) {
-        message.success('Cập nhật phương thức thanh toán thành công!');
-        setShowEditModal(false);
-        editForm.resetFields();
-        setSelectedMethod(null);
-        loadUserPaymentMethods();
-      }
-    } catch (error) {
-      message.error(error.message);
-    }
-  };
 
   // Delete user payment method
   const handleDeletePaymentMethod = async (id) => {
@@ -176,15 +158,6 @@ const UserPaymentMethodManagement = () => {
     }
   };
 
-  // Show modals
-  const showEditPaymentMethodModal = (method) => {
-    setSelectedMethod(method);
-    editForm.setFieldsValue({
-      ...method,
-      bankCode: method.bankCode || undefined
-    });
-    setShowEditModal(true);
-  };
 
   // Get payment type config
   const getPaymentTypeConfig = (type) => {
@@ -212,13 +185,6 @@ const UserPaymentMethodManagement = () => {
         }}
         bodyStyle={{ padding: '20px' }}
         actions={[
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => showEditPaymentMethodModal(method)}
-            />
-          </Tooltip>,
           <Popconfirm
             title="Bạn có chắc muốn xóa phương thức thanh toán này?"
             onConfirm={() => handleDeletePaymentMethod(method.id)}
@@ -348,7 +314,17 @@ const UserPaymentMethodManagement = () => {
                 type="primary"
                 size="large"
                 icon={<PlusOutlined />}
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => {
+                  // Kiểm tra xem đã có đủ 2 loại chưa
+                  const hasBank = userPaymentMethods.some(m => m.type === 'BANK');
+                  const hasEWallet = userPaymentMethods.some(m => m.type === 'E_WALLET');
+                  if (hasBank && hasEWallet) {
+                    message.warning('Bạn đã có đủ 2 loại phương thức (Ngân hàng và Ví điện tử). Mỗi loại chỉ được thêm 1 lần.');
+                    return;
+                  }
+                  setShowCreateModal(true);
+                }}
+                disabled={userPaymentMethods.length >= 2}
                 className="bg-white text-blue-600 border-white hover:bg-white/90 font-semibold"
                 style={{ borderRadius: '12px' }}
               >
@@ -422,29 +398,84 @@ const UserPaymentMethodManagement = () => {
             label="Loại phương thức"
             rules={[{ required: true, message: 'Vui lòng chọn loại phương thức' }]}
           >
-            <Select placeholder="Chọn loại phương thức">
-              {withdrawalPaymentTypes.map(type => (
-                <Option key={type.value} value={type.value}>
-                  <div className="flex items-center gap-2">
-                    {type.icon}
-                    <span>{type.label}</span>
-                  </div>
-                </Option>
-              ))}
+            <Select 
+              placeholder="Chọn loại phương thức"
+              onChange={(value) => {
+                // Kiểm tra xem đã có phương thức loại này chưa
+                const existingMethod = userPaymentMethods.find(m => m.type === value);
+                if (existingMethod) {
+                  message.warning(`Bạn đã có phương thức ${value === 'BANK' ? 'Ngân hàng' : 'Ví điện tử'}. Mỗi loại chỉ được thêm 1 lần.`);
+                  createForm.setFieldsValue({ type: undefined });
+                }
+              }}
+            >
+              {withdrawalPaymentTypes
+                .filter(type => {
+                  // Chỉ hiển thị loại chưa có
+                  return !userPaymentMethods.some(m => m.type === type.value);
+                })
+                .map(type => (
+                  <Option key={type.value} value={type.value}>
+                    <div className="flex items-center gap-2">
+                      {type.icon}
+                      <span>{type.label}</span>
+                    </div>
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="accountNumber"
-                label="Số tài khoản/SĐT"
-                rules={[{ required: true, message: 'Vui lòng nhập số tài khoản' }]}
+                noStyle
+                shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
               >
-                <Input placeholder="Số tài khoản hoặc số điện thoại" />
+                <Form.Item
+                  name="accountNumber"
+                  label="Số tài khoản"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập số tài khoản' },
+                    {
+                      max: 60,
+                      message: 'Số tài khoản không được vượt quá 60 ký tự'
+                    }
+                  ]}
+                >
+                  <Input 
+                    placeholder="Số tài khoản (có thể có chữ và số)"
+                    maxLength={60}
+                  />
+                </Form.Item>
               </Form.Item>
             </Col>
             <Col span={12}>
+              <Form.Item
+                name="phoneNumber"
+                label="Số điện thoại"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập số điện thoại' },
+                  {
+                    pattern: /^0\d{9}$/,
+                    message: 'Số điện thoại phải có đúng 10 số và bắt đầu bằng 0 (ví dụ: 0912345678)'
+                  }
+                ]}
+              >
+                <Input 
+                  placeholder="0912345678"
+                  maxLength={10}
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={24}>
               <Form.Item
                 name="accountName"
                 label="Tên chủ tài khoản"
@@ -456,24 +487,32 @@ const UserPaymentMethodManagement = () => {
           </Row>
 
           <Form.Item
-            name="bankCode"
-            label="Ngân hàng (nếu chọn loại Ngân hàng)"
-            dependencies={['type']}
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
           >
-            <Select
-              placeholder="Chọn ngân hàng"
-              allowClear
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {popularBanks.map(bank => (
-                <Option key={bank.code} value={bank.code}>
-                  {bank.name} - {bank.fullName}
-                </Option>
-              ))}
-            </Select>
+            {({ getFieldValue }) =>
+              getFieldValue('type') === 'BANK' && (
+                <Form.Item
+                  name="bankCode"
+                  label="Ngân hàng"
+                  rules={[{ required: true, message: 'Vui lòng chọn ngân hàng' }]}
+                >
+                  <Select
+                    placeholder="Chọn ngân hàng"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {popularBanks.map(bank => (
+                      <Option key={bank.code} value={bank.code}>
+                        {bank.name} - {bank.fullName}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              )
+            }
           </Form.Item>
 
           <Form.Item
@@ -502,116 +541,6 @@ const UserPaymentMethodManagement = () => {
         </Form>
       </Modal>
 
-      {/* Edit Payment Method Modal */}
-      <Modal
-        title="Chỉnh sửa phương thức rút tiền"
-        open={showEditModal}
-        onCancel={() => {
-          setShowEditModal(false);
-          editForm.resetFields();
-          setSelectedMethod(null);
-        }}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={editForm}
-          layout="vertical"
-          onFinish={handleUpdatePaymentMethod}
-        >
-          <Form.Item
-            name="name"
-            label="Tên phương thức"
-            rules={[{ required: true, message: 'Vui lòng nhập tên phương thức' }]}
-          >
-            <Input placeholder="VD: Tài khoản VCB chính" />
-          </Form.Item>
-
-          <Form.Item
-            name="type"
-            label="Loại phương thức"
-            rules={[{ required: true, message: 'Vui lòng chọn loại phương thức' }]}
-          >
-            <Select placeholder="Chọn loại phương thức">
-              {withdrawalPaymentTypes.map(type => (
-                <Option key={type.value} value={type.value}>
-                  <div className="flex items-center gap-2">
-                    {type.icon}
-                    <span>{type.label}</span>
-                  </div>
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="accountNumber"
-                label="Số tài khoản/SĐT"
-                rules={[{ required: true, message: 'Vui lòng nhập số tài khoản' }]}
-              >
-                <Input placeholder="Số tài khoản hoặc số điện thoại" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="accountName"
-                label="Tên chủ tài khoản"
-                rules={[{ required: true, message: 'Vui lòng nhập tên chủ tài khoản' }]}
-              >
-                <Input placeholder="Họ và tên đầy đủ" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            name="bankCode"
-            label="Ngân hàng (nếu chọn loại Ngân hàng)"
-            dependencies={['type']}
-          >
-            <Select
-              placeholder="Chọn ngân hàng"
-              allowClear
-              showSearch
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {popularBanks.map(bank => (
-                <Option key={bank.code} value={bank.code}>
-                  {bank.name} - {bank.fullName}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="note"
-            label="Ghi chú (tùy chọn)"
-          >
-            <TextArea
-              rows={3}
-              placeholder="Ghi chú thêm về phương thức thanh toán..."
-            />
-          </Form.Item>
-
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => {
-                setShowEditModal(false);
-                editForm.resetFields();
-                setSelectedMethod(null);
-              }}>
-                Hủy
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Cập nhật
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
 
       <style dangerouslySetInnerHTML={{
         __html: `

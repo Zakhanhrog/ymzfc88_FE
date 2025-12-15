@@ -103,11 +103,6 @@ const AgentInviteCodes = () => {
       )
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email'
-    },
-    {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',

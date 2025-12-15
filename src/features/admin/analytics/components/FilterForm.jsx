@@ -44,97 +44,97 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
   return (
     <Card className="rounded-2xl">
       <CardContent className="p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Khoảng thời gian
-            </label>
-            <DateRangePicker
-              value={formData.dateRange}
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Khoảng thời gian
+              </label>
+              <DateRangePicker
+                value={formData.dateRange}
               onChange={(value) => handleFilterChange({ ...formData, dateRange: value })}
-              placeholder={['Từ ngày', 'Đến ngày']}
-            />
-          </div>
+                placeholder={['Từ ngày', 'Đến ngày']}
+              />
+            </div>
 
-          <div className="w-[140px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Game
-            </label>
-            <Select
-              value={formData.gameType}
+            <div className="w-[140px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Game
+              </label>
+              <Select
+                value={formData.gameType}
               onChange={(value) => handleFilterChange({ ...formData, gameType: value })}
-              options={[
-                { label: 'Tất cả', value: 'all' },
-                { label: 'Xổ số', value: 'lottery' },
-                { label: 'Tài Xỉu', value: 'sicbo' },
-                { label: 'Xóc Đĩa', value: 'xocdia' },
-              ]}
-            />
-          </div>
+                options={[
+                  { label: 'Tất cả', value: 'all' },
+                  { label: 'Xổ số', value: 'lottery' },
+                  { label: 'Tài Xỉu', value: 'sicbo' },
+                  { label: 'Xóc Đĩa', value: 'xocdia' },
+                ]}
+              />
+            </div>
 
-          <div className="w-[140px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Trạng thái cược
-            </label>
-            <Select
-              value={formData.betStatus}
+            <div className="w-[140px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Trạng thái cược
+              </label>
+              <Select
+                value={formData.betStatus}
               onChange={(value) => handleFilterChange({ ...formData, betStatus: value })}
-              options={[
-                { label: 'Tất cả', value: 'all' },
-                { label: 'Đang chờ', value: 'PENDING' },
-                { label: 'Thắng', value: 'WON' },
-                { label: 'Thua', value: 'LOST' },
-                { label: 'Hủy', value: 'CANCELLED' },
-              ]}
-            />
-          </div>
+                options={[
+                  { label: 'Tất cả', value: 'all' },
+                  { label: 'Đang chờ', value: 'PENDING' },
+                  { label: 'Thắng', value: 'WON' },
+                  { label: 'Thua', value: 'LOST' },
+                  { label: 'Hủy', value: 'CANCELLED' },
+                ]}
+              />
+            </div>
 
-          <div className="w-[140px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Loại giao dịch
-            </label>
-            <Select
-              value={formData.transactionType}
+            <div className="w-[140px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Loại giao dịch
+              </label>
+              <Select
+                value={formData.transactionType}
               onChange={(value) => handleFilterChange({ ...formData, transactionType: value })}
-              options={[
-                { label: 'Tất cả', value: 'all' },
-                { label: 'Nạp tiền', value: 'DEPOSIT' },
-                { label: 'Rút tiền', value: 'WITHDRAW' },
-                { label: 'Thưởng', value: 'BONUS' },
-                { label: 'Hoàn tiền', value: 'REFUND' },
-                { label: 'Điều chỉnh', value: 'ADJUSTMENT' },
-              ]}
-            />
-          </div>
+                options={[
+                  { label: 'Tất cả', value: 'all' },
+                  { label: 'Nạp tiền', value: 'DEPOSIT' },
+                  { label: 'Rút tiền', value: 'WITHDRAW' },
+                  { label: 'Thưởng', value: 'BONUS' },
+                  { label: 'Hoàn tiền', value: 'REFUND' },
+                  { label: 'Điều chỉnh', value: 'ADJUSTMENT' },
+                ]}
+              />
+            </div>
 
-          <div className="w-[140px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Trạng thái giao dịch
-            </label>
-            <Select
-              value={formData.transactionStatus}
+            <div className="w-[140px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Trạng thái giao dịch
+              </label>
+              <Select
+                value={formData.transactionStatus}
               onChange={(value) => handleFilterChange({ ...formData, transactionStatus: value })}
-              options={[
-                { label: 'Tất cả', value: 'all' },
-                { label: 'Đang chờ', value: 'PENDING' },
-                { label: 'Đã duyệt', value: 'APPROVED' },
-                { label: 'Hoàn thành', value: 'COMPLETED' },
-                { label: 'Từ chối', value: 'REJECTED' },
-                { label: 'Hủy', value: 'CANCELLED' },
-                { label: 'Thất bại', value: 'FAILED' },
-              ]}
-            />
-          </div>
+                options={[
+                  { label: 'Tất cả', value: 'all' },
+                  { label: 'Đang chờ', value: 'PENDING' },
+                  { label: 'Đã duyệt', value: 'APPROVED' },
+                  { label: 'Hoàn thành', value: 'COMPLETED' },
+                  { label: 'Từ chối', value: 'REJECTED' },
+                  { label: 'Hủy', value: 'CANCELLED' },
+                  { label: 'Thất bại', value: 'FAILED' },
+                ]}
+              />
+            </div>
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReset}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReset}
               className="px-4 rounded-2xl"
-            >
-              Đặt lại
-            </Button>
+              >
+                Đặt lại
+              </Button>
           </div>
         </div>
       </CardContent>

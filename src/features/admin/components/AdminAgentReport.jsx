@@ -1,29 +1,11 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import {
-  Card,
-  DatePicker,
-  Table,
-  Tag,
-  Space,
-  Button,
-  Typography,
-  message,
-  Popconfirm,
-  Row,
-  Col,
-  Statistic,
-  Input,
-  InputNumber,
-  Modal,
-  Drawer
-} from 'antd';
-import { DollarOutlined, ReloadOutlined, UsergroupAddOutlined, SearchOutlined, HistoryOutlined, SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { message } from '../../../utils/notification';
 import { adminService } from '../services/adminService';
-import TabPageHeader from './TabPageHeader';
-import { formatCurrency, formatPointsDisplay, formatPoints } from '../../../utils/helpers';
-
-const { Text } = Typography;
+import AgentReportStats from './agent-report/AgentReportStats';
+import AgentReportFilters from './agent-report/AgentReportFilters';
+import AgentReportTable from './agent-report/AgentReportTable';
+import PayoutHistoryModal from './agent-report/PayoutHistoryModal';
 
 const AdminAgentReport = () => {
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
@@ -32,11 +14,20 @@ const AdminAgentReport = () => {
   const [loading, setLoading] = useState(false);
   const [payoutLoading, setPayoutLoading] = useState({});
   const [noteLoading, setNoteLoading] = useState({});
-  const [customCommissions, setCustomCommissions] = useState({}); // { agentId: commissionAmount }
-  const [notes, setNotes] = useState({}); // { agentId: note }
-  const [payoutHistoryDrawer, setPayoutHistoryDrawer] = useState({ visible: false, agentId: null, history: [] });
+  const [customCommissions, setCustomCommissions] = useState({});
+  const [notes, setNotes] = useState({});
+  const [payoutHistoryModal, setPayoutHistoryModal] = useState({ 
+    open: false, 
+    agentId: null, 
+    history: [] 
+  });
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
-  const loadReport = async (monthValue, ipValue) => {
+  const loadReport = useCallback(async (monthValue, ipValue) => {
     try {
       setLoading(true);
       const params = {
@@ -58,6 +49,10 @@ const AdminAgentReport = () => {
           });
         }
         setNotes(notesMap);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data?.agents?.length || 0
+        }));
       } else {
         message.error(response?.message || 'Không thể tải báo cáo đại lý');
       }
@@ -66,30 +61,35 @@ const AdminAgentReport = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadReport(selectedMonth, ipSearch);
-  }, [selectedMonth, ipSearch]);
+  }, [selectedMonth, ipSearch, loadReport]);
 
   const handleMonthChange = (value) => {
     if (value) {
       setSelectedMonth(value);
+      setPagination(prev => ({ ...prev, current: 1 }));
     }
   };
 
-  const handlePayout = useCallback(async (record) => {
+  const handleIpSearchChange = (value) => {
+    setIpSearch(value);
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
+
+  const handlePayout = useCallback(async (agent) => {
     try {
-      const customCommission = customCommissions[record.agentId];
-      // Kiểm tra đã điền hoa hồng chưa
+      const customCommission = customCommissions[agent.agentId];
       if (!customCommission || Number(customCommission) <= 0) {
         message.warning('Vui lòng nhập số tiền hoa hồng trước khi chia');
         return;
       }
       
-      setPayoutLoading((prev) => ({ ...prev, [record.agentId]: true }));
-      const note = notes[record.agentId] || '';
-      const response = await adminService.payoutAgentCommission(record.agentId, {
+      setPayoutLoading((prev) => ({ ...prev, [agent.agentId]: true }));
+      const note = notes[agent.agentId] || '';
+      const response = await adminService.payoutAgentCommission(agent.agentId, {
         month: selectedMonth.format('YYYY-MM'),
         customCommissionAmount: Number(customCommission),
         note: note
@@ -99,12 +99,12 @@ const AdminAgentReport = () => {
         // Clear custom values
         setCustomCommissions((prev) => {
           const newState = { ...prev };
-          delete newState[record.agentId];
+          delete newState[agent.agentId];
           return newState;
         });
         setNotes((prev) => {
           const newState = { ...prev };
-          delete newState[record.agentId];
+          delete newState[agent.agentId];
           return newState;
         });
         await loadReport(selectedMonth, ipSearch);
@@ -114,7 +114,7 @@ const AdminAgentReport = () => {
     } catch (error) {
       message.error(error.message || 'Không thể chia hoa hồng');
     } finally {
-      setPayoutLoading((prev) => ({ ...prev, [record.agentId]: false }));
+      setPayoutLoading((prev) => ({ ...prev, [agent.agentId]: false }));
     }
   }, [selectedMonth, ipSearch, customCommissions, notes, loadReport]);
 
@@ -123,8 +123,8 @@ const AdminAgentReport = () => {
       const month = selectedMonth.format('YYYY-MM');
       const response = await adminService.getAgentPayoutHistory(agentId, month);
       if (response?.success) {
-        setPayoutHistoryDrawer({
-          visible: true,
+        setPayoutHistoryModal({
+          open: true,
           agentId: agentId,
           history: response.data || []
         });
@@ -154,406 +154,73 @@ const AdminAgentReport = () => {
     }
   }, [selectedMonth, notes]);
 
-  const summaryCards = useMemo(() => {
-    if (!report) {
-      return [];
-    }
-    return [
-      {
-        title: 'Tổng đại lý',
-        value: report.totalAgents ?? 0,
-        prefix: <UsergroupAddOutlined className="text-blue-400" />,
-        formatter: (val) => val
-      },
-      {
-        title: 'Tổng khách hàng',
-        value: report.totalCustomers ?? 0,
-        prefix: <UsergroupAddOutlined className="text-purple-400" />,
-        formatter: (val) => val
-      },
-      {
-        title: 'Tổng cược',
-        value: Number(report.totalBetAmount ?? 0),
-        prefix: <DollarOutlined className="text-indigo-400" />,
-        formatter: formatPointsDisplay
-      },
-      {
-        title: 'Tổng thua',
-        value: Number(report.totalLostAmount ?? 0),
-        prefix: <DollarOutlined className="text-red-400" />,
-        formatter: formatPointsDisplay
-      },
-      {
-        title: 'Hoa hồng dự kiến',
-        value: Number(report.totalCalculatedCommission ?? 0),
-        prefix: <DollarOutlined className="text-emerald-400" />,
-        formatter: formatPointsDisplay
-      },
-      {
-        title: 'Đã chia',
-        value: Number(report.totalPaidCommission ?? 0),
-        prefix: <DollarOutlined className="text-green-400" />,
-        formatter: formatPointsDisplay
-      },
-      {
-        title: 'Chưa chia',
-        value: Number(report.totalPendingCommission ?? 0),
-        prefix: <DollarOutlined className="text-orange-400" />,
-        formatter: formatPointsDisplay
-      }
-    ];
-  }, [report]);
+  const handleCustomCommissionChange = (agentId, value) => {
+    setCustomCommissions((prev) => ({
+      ...prev,
+      [agentId]: value
+    }));
+  };
 
-  const columns = useMemo(() => [
-    {
-      title: 'Đại lý',
-      dataIndex: 'username',
-      key: 'username',
-      width: 150,
-      fixed: 'left',
-      render: (_, record) => (
-        <Space direction="vertical" size={0}>
-          <Text strong>{record.username}</Text>
-          {record.fullName && <Text type="secondary" style={{ fontSize: '12px' }}>{record.fullName}</Text>}
-        </Space>
-      )
-    },
-    {
-      title: 'Mã giới thiệu',
-      dataIndex: 'referralCode',
-      key: 'referralCode',
-      width: 120,
-      render: (value) => <Text copyable={{ text: value || '' }}>{value || '-'}</Text>
-    },
-    {
-      title: 'Khách hàng',
-      dataIndex: 'customerCount',
-      key: 'customerCount',
-      width: 100,
-      align: 'right'
-    },
-    {
-      title: 'Tổng cược',
-      dataIndex: 'totalBetAmount',
-      key: 'totalBetAmount',
-      width: 130,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Tổng thua',
-      dataIndex: 'totalLostAmount',
-      key: 'totalLostAmount',
-      width: 130,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Tổng Nạp',
-      dataIndex: 'totalDepositAmount',
-      key: 'totalDepositAmount',
-      width: 130,
-      align: 'right',
-      render: (value) => formatPoints(Number(value ?? 0)) // VND, cần chia 1000
-    },
-    {
-      title: 'Tổng Rút',
-      dataIndex: 'totalWithdrawAmount',
-      key: 'totalWithdrawAmount',
-      width: 130,
-      align: 'right',
-      render: (value) => formatPoints(Number(value ?? 0)) // VND, cần chia 1000
-    },
-    {
-      title: 'Tổng hoàn thua',
-      dataIndex: 'totalDailyLossRefund',
-      key: 'totalDailyLossRefund',
-      width: 140,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Tổng hoàn cược',
-      dataIndex: 'totalRefund',
-      key: 'totalRefund',
-      width: 140,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Tổng KM',
-      dataIndex: 'totalPromotionalMoney',
-      key: 'totalPromotionalMoney',
-      width: 120,
-      align: 'right',
-      render: (value) => formatPointsDisplay(Number(value ?? 0))
-    },
-    {
-      title: 'Số dư cuối',
-      dataIndex: 'finalBalance',
-      key: 'finalBalance',
-      width: 140,
-      align: 'right',
-      render: (value) => {
-        const balance = Number(value ?? 0);
-        return (
-          <span style={{ color: balance >= 0 ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
-            {formatPointsDisplay(balance)}
-          </span>
-        );
-      }
-    },
-    {
-      title: 'IP',
-      dataIndex: 'firstLoginIp',
-      key: 'firstLoginIp',
-      width: 180,
-      render: (value) => <Text ellipsis={{ tooltip: value || '-' }} style={{ maxWidth: 180 }}>{value || '-'}</Text>
-    },
-    {
-      title: 'Hoa hồng',
-      key: 'commission',
-      width: 180,
-      align: 'right',
-      render: (_, record) => {
-        const calculated = Number(record.calculatedCommissionAmount ?? 0);
-        const custom = customCommissions[record.agentId];
-        return (
-          <Space direction="vertical" size={4} style={{ width: '100%' }}>
-            <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
-              Tự động: {formatPointsDisplay(calculated)}
-            </Text>
-            <InputNumber
-              style={{ width: '100%' }}
-              placeholder="Nhập hoa hồng"
-              value={custom}
-              onChange={(value) => {
-                setCustomCommissions((prev) => ({
-                  ...prev,
-                  [record.agentId]: value
-                }));
-              }}
-              min={0}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-            />
-          </Space>
-        );
-      }
-    },
-    {
-      title: 'Đã chia',
-      key: 'paidHistory',
-      width: 140,
-      align: 'center',
-      render: (_, record) => {
-        const paidAmount = Number(record.paidCommissionAmount ?? 0);
-        return (
-          <Space direction="vertical" size={4} align="center">
-            <Text>{formatPointsDisplay(paidAmount)}</Text>
-            <Button
-              type="link"
-              size="small"
-              icon={<HistoryOutlined />}
-              onClick={() => handleShowPayoutHistory(record.agentId)}
-            >
-              Lịch sử
-            </Button>
-          </Space>
-        );
-      }
-    },
-    {
-      title: 'Ghi chú',
-      key: 'note',
-      width: 250,
-      render: (_, record) => (
-        <Space direction="vertical" size={4} style={{ width: '100%' }}>
-          <Input.TextArea
-            rows={2}
-            placeholder="Nhập ghi chú cho đại lý"
-            value={notes[record.agentId] || ''}
-            onChange={(e) => {
-              setNotes((prev) => ({
-                ...prev,
-                [record.agentId]: e.target.value
-              }));
-            }}
-            style={{ minWidth: 200 }}
-          />
-          <Button
-            type="primary"
-            size="small"
-            icon={<SaveOutlined />}
-            onClick={() => handleSaveNote(record.agentId)}
-            loading={!!noteLoading[record.agentId]}
-          >
-            Lưu
-          </Button>
-        </Space>
-      )
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      width: 120,
-      fixed: 'right',
-      align: 'center',
-      render: (_, record) => {
-        const customCommission = customCommissions[record.agentId];
-        const hasCustomCommission = customCommission && Number(customCommission) > 0;
-        
-        return (
-          <Popconfirm
-            title="Xác nhận chia hoa hồng?"
-            description={`Chia hoa hồng ${formatPointsDisplay(Number(customCommission || 0))} tháng ${selectedMonth.format('YYYY-MM')} cho đại lý ${record.username}`}
-            okText="Chia"
-            cancelText="Hủy"
-            onConfirm={() => handlePayout(record)}
-            disabled={!hasCustomCommission}
-          >
-            <Button
-              type="primary"
-              disabled={!hasCustomCommission}
-              loading={!!payoutLoading[record.agentId]}
-              size="small"
-            >
-              Chia
-            </Button>
-          </Popconfirm>
-        );
-      }
-    }
-  ], [report, selectedMonth, customCommissions, notes, payoutLoading, noteLoading, handlePayout, handleShowPayoutHistory, handleSaveNote]);
+  const handleNoteChange = (agentId, value) => {
+    setNotes((prev) => ({
+      ...prev,
+      [agentId]: value
+    }));
+  };
+
+  const handlePaginationChange = (page, pageSize) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || prev.pageSize
+    }));
+  };
+
+  // Paginate data
+  const paginatedData = useMemo(() => {
+    if (!report?.agents) return [];
+    const start = (pagination.current - 1) * pagination.pageSize;
+    const end = start + pagination.pageSize;
+    return report.agents.slice(start, end);
+  }, [report, pagination]);
 
   return (
-    <div className="space-y-6">
-      <TabPageHeader
-        title="Báo cáo đại lý"
-        description="Theo dõi hoa hồng theo tháng và thực hiện chia hoa hồng cho từng đại lý"
+    <div className="space-y-4">
+      <AgentReportFilters
+        selectedMonth={selectedMonth}
+        onMonthChange={handleMonthChange}
+        ipSearch={ipSearch}
+        onIpSearchChange={handleIpSearchChange}
+        onRefresh={() => loadReport(selectedMonth, ipSearch)}
+        loading={loading}
       />
 
-      <Card>
-        <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} md={6}>
-            <Space direction="vertical" size={2}>
-              <Text type="secondary">Tháng báo cáo</Text>
-              <DatePicker
-                picker="month"
-                format="YYYY-MM"
-                value={selectedMonth}
-                onChange={handleMonthChange}
-              />
-            </Space>
-          </Col>
-          <Col xs={24} md={8}>
-            <Space direction="vertical" size={2}>
-              <Text type="secondary">Tìm kiếm theo IP</Text>
-              <Input
-                placeholder="Nhập IP để tìm kiếm"
-                value={ipSearch}
-                onChange={(e) => setIpSearch(e.target.value)}
-                prefix={<SearchOutlined />}
-                allowClear
-              />
-            </Space>
-          </Col>
-          <Col xs={24} md={10} className="flex justify-end">
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => loadReport(selectedMonth, ipSearch)}
-              loading={loading}
-            >
-              Làm mới
-            </Button>
-          </Col>
-        </Row>
-      </Card>
+      <AgentReportStats report={report} />
 
-      <Row gutter={[16, 16]}>
-        {summaryCards.map((item) => (
-          <Col xs={24} sm={12} md={8} lg={6} xl={4} key={item.title}>
-            <Card>
-              <Statistic
-                title={item.title}
-                value={item.formatter(item.value)}
-                prefix={item.prefix}
-              />
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      <AgentReportTable
+        data={paginatedData}
+        loading={loading}
+        pagination={pagination}
+        customCommissions={customCommissions}
+        onCustomCommissionChange={handleCustomCommissionChange}
+        notes={notes}
+        onNoteChange={handleNoteChange}
+        onSaveNote={handleSaveNote}
+        noteLoading={noteLoading}
+        onPayout={handlePayout}
+        payoutLoading={payoutLoading}
+        selectedMonth={selectedMonth}
+        onShowPayoutHistory={handleShowPayoutHistory}
+        onPaginationChange={handlePaginationChange}
+      />
 
-      <Card bodyStyle={{ overflowX: 'auto' }}>
-        <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <Table
-            loading={loading}
-            dataSource={report?.agents || []}
-            columns={columns}
-            rowKey="agentId"
-            tableLayout="auto"
-            style={{ minWidth: 1600 }}
-            scroll={{ x: 2200, y: 'calc(100vh - 400px)' }}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              pageSizeOptions: ['10', '20', '50', '100'],
-              showTotal: (total) => `Tổng ${total} đại lý`
-            }}
-            locale={{
-              emptyText: 'Chưa có dữ liệu đại lý cho tháng này'
-            }}
-            size="small"
-          />
-        </div>
-      </Card>
-
-      <Drawer
-        title="Lịch sử chia hoa hồng"
-        placement="right"
-        width={600}
-        open={payoutHistoryDrawer.visible}
-        onClose={() => setPayoutHistoryDrawer({ visible: false, agentId: null, history: [] })}
-      >
-        <Table
-          dataSource={payoutHistoryDrawer.history}
-          rowKey="id"
-          scroll={{ x: 'max-content' }}
-          columns={[
-            {
-              title: 'Tháng',
-              dataIndex: 'periodMonth',
-              key: 'periodMonth'
-            },
-            {
-              title: 'Số tiền',
-              dataIndex: 'commissionAmount',
-              key: 'commissionAmount',
-              align: 'right',
-              render: (value) => formatPointsDisplay(Number(value ?? 0))
-            },
-            {
-              title: 'Ngày chia',
-              dataIndex: 'paidAt',
-              key: 'paidAt',
-              render: (value) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '-'
-            },
-            {
-              title: 'Ghi chú',
-              dataIndex: 'notes',
-              key: 'notes',
-              render: (value) => value || '-'
-            }
-          ]}
-          pagination={false}
-          locale={{
-            emptyText: 'Chưa có lịch sử chia hoa hồng'
-          }}
-        />
-      </Drawer>
+      <PayoutHistoryModal
+        open={payoutHistoryModal.open}
+        onClose={() => setPayoutHistoryModal({ open: false, agentId: null, history: [] })}
+        history={payoutHistoryModal.history}
+      />
     </div>
   );
 };
 
 export default AdminAgentReport;
-

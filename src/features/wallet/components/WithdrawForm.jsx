@@ -191,7 +191,9 @@ const WithdrawForm = () => {
         loadUserPaymentMethods();
       }
     } catch (error) {
-      message.error('Lỗi: ' + error.message);
+      console.error('Error adding payment method:', error);
+      const errorMessage = error.message || error.response?.data?.message || 'Có lỗi xảy ra khi thêm phương thức rút tiền';
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -199,12 +201,10 @@ const WithdrawForm = () => {
 
   const getMethodIcon = (type) => {
     switch (type) {
-      case 'MOMO':
-        return <img src="/iconacc/imgi_26_withdraw.avif" alt="MoMo" className="w-8 h-8 md:w-10 md:h-10" />;
       case 'BANK':
         return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
-      case 'ZALO_PAY':
-        return <img src="/iconacc/imgi_26_withdraw.avif" alt="ZaloPay" className="w-8 h-8 md:w-10 md:h-10" />;
+      case 'E_WALLET':
+        return <img src="/iconacc/imgi_26_withdraw.avif" alt="E-Wallet" className="w-8 h-8 md:w-10 md:h-10" />;
       default:
         return <img src="/iconacc/imgi_27_bank.avif" alt="Bank" className="w-8 h-8 md:w-10 md:h-10" />;
     }
@@ -212,12 +212,10 @@ const WithdrawForm = () => {
 
   const getMethodTypeText = (type) => {
     switch (type) {
-      case 'MOMO':
-        return 'MoMo';
       case 'BANK':
         return 'Ngân hàng';
-      case 'ZALO_PAY':
-        return 'ZaloPay';
+      case 'E_WALLET':
+        return 'Ví điện tử';
       default:
         return type;
     }
@@ -441,7 +439,17 @@ const WithdrawForm = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => setShowAddMethodModal(true)}
+          onClick={() => {
+            // Kiểm tra xem đã có đủ 2 loại chưa
+            const hasBank = userPaymentMethods.some(m => m.type === 'BANK');
+            const hasEWallet = userPaymentMethods.some(m => m.type === 'E_WALLET');
+            if (hasBank && hasEWallet) {
+              message.warning('Bạn đã có đủ 2 loại phương thức (Ngân hàng và Ví điện tử). Mỗi loại chỉ được thêm 1 lần.');
+              return;
+            }
+            setShowAddMethodModal(true);
+          }}
+          disabled={userPaymentMethods.length >= 2}
           size="small"
           className="bg-gradient-to-r from-green-400 to-emerald-600 hover:from-green-500 hover:to-emerald-700 text-white border-none text-xs"
           style={{
@@ -682,22 +690,6 @@ const WithdrawForm = () => {
           />
         </Form.Item>
 
-        <Alert
-          message="Lưu ý quan trọng"
-          description={
-            <ul className="space-y-0.5 mt-1">
-              <li>• Thời gian xử lý: 1-24 giờ làm việc</li>
-              <li>• Số điểm tối thiểu: 1 điểm (10,000 VNĐ)</li>
-              <li>• Khi rút tiền sẽ trừ cả số điểm tương ứng</li>
-              <li>• Đảm bảo thông tin tài khoản chính xác</li>
-              <li>• Không thể hủy sau khi đã gửi yêu cầu</li>
-            </ul>
-          }
-          type="warning"
-          showIcon
-          className="mb-2"
-        />
-
         <div className="flex gap-2 md:gap-3">
           <Button
             size="large"
@@ -863,10 +855,24 @@ const WithdrawForm = () => {
             label="Loại phương thức"
             rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
           >
-            <Select size="large" placeholder="Chọn loại phương thức">
-              <Option value="BANK">Ngân hàng</Option>
-              <Option value="MOMO">Ví MoMo</Option>
-              <Option value="ZALO_PAY">ZaloPay</Option>
+            <Select 
+              size="large" 
+              placeholder="Chọn loại phương thức"
+              onChange={(value) => {
+                // Kiểm tra xem đã có phương thức loại này chưa
+                const existingMethod = userPaymentMethods.find(m => m.type === value);
+                if (existingMethod) {
+                  message.warning(`Bạn đã có phương thức ${value === 'BANK' ? 'Ngân hàng' : 'Ví điện tử'}. Mỗi loại chỉ được thêm 1 lần.`);
+                  addMethodForm.setFieldsValue({ type: undefined });
+                }
+              }}
+            >
+              {!userPaymentMethods.some(m => m.type === 'BANK') && (
+                <Option value="BANK">Ngân hàng</Option>
+              )}
+              {!userPaymentMethods.some(m => m.type === 'E_WALLET') && (
+                <Option value="E_WALLET">Ví điện tử</Option>
+              )}
             </Select>
           </Form.Item>
 
@@ -910,11 +916,26 @@ const WithdrawForm = () => {
           </Form.Item>
 
           <Form.Item
-            name="accountNumber"
-            label="Số tài khoản"
-            rules={[{ required: true, message: 'Vui lòng nhập số tài khoản' }]}
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
           >
-            <Input size="large" placeholder="0123456789" />
+            <Form.Item
+              name="accountNumber"
+              label="Số tài khoản"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số tài khoản' },
+                {
+                  max: 60,
+                  message: 'Số tài khoản không được vượt quá 60 ký tự'
+                }
+              ]}
+            >
+              <Input 
+                size="large"
+                placeholder="Số tài khoản (có thể có chữ và số)"
+                maxLength={60}
+              />
+            </Form.Item>
           </Form.Item>
 
           <Form.Item
@@ -922,10 +943,22 @@ const WithdrawForm = () => {
             label="Số điện thoại"
             rules={[
               { required: true, message: 'Vui lòng nhập số điện thoại' },
-              { pattern: /^(0|\+84)[0-9]{9,10}$/, message: 'Số điện thoại không đúng định dạng' }
+              {
+                pattern: /^0\d{9}$/,
+                message: 'Số điện thoại phải có đúng 10 số và bắt đầu bằng 0 (ví dụ: 0912345678)'
+              }
             ]}
           >
-            <Input size="large" placeholder="0901234567" />
+            <Input 
+              size="large"
+              placeholder="0912345678"
+              maxLength={10}
+              onKeyPress={(e) => {
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+            />
           </Form.Item>
 
           <Form.Item>

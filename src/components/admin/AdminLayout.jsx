@@ -27,7 +27,10 @@ const AdminLayout = ({ children }) => {
 
   return (
     <Layout className="min-h-screen">
-      <AdminSidebar collapsed={collapsed} />
+      <AdminSidebar 
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed(!collapsed)}
+      />
       
       <Layout style={{ 
         marginLeft: collapsed ? LAYOUT.adminSidebarCollapsedWidth : LAYOUT.adminSidebarWidth, 
@@ -35,7 +38,6 @@ const AdminLayout = ({ children }) => {
       }}>
         <AdminHeader 
           collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed(!collapsed)}
         />
         
         <Content 

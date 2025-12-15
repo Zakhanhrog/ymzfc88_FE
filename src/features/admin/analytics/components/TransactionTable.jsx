@@ -1,4 +1,3 @@
-import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/Card';
 import Table from '../../../../components/ui/Table';
 import Pagination from '../../../../components/ui/Pagination';
 import dayjs from 'dayjs';
@@ -205,11 +204,10 @@ const TransactionTable = ({ data, loading, pagination, onPaginationChange }) => 
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-gray-900">Báo cáo nạp / rút / điều chỉnh</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden w-full">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">Báo cáo nạp / rút / điều chỉnh</h3>
+      </div>
         <div className="overflow-x-auto">
           <Table
             columns={columns}
@@ -221,7 +219,7 @@ const TransactionTable = ({ data, loading, pagination, onPaginationChange }) => 
         </div>
         
         {!loading && data.length > 0 && (
-          <div className="mt-4">
+        <div className="px-6 py-4 border-t border-gray-200">
             <Pagination
               current={pagination.current}
               pageSize={pagination.pageSize}
@@ -233,8 +231,7 @@ const TransactionTable = ({ data, loading, pagination, onPaginationChange }) => 
             />
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 

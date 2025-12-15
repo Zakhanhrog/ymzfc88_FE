@@ -538,20 +538,14 @@ const AdminAnalyticsDashboard = () => {
                   // Doanh thu = Tổng tiền thắng - Tổng tiền thua
                   const doanhThu = Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0);
                   
-                  // Tổng các khoản trừ: Hoàn trả + Hoàn thua theo ngày + Hoa hồng đại lý + Tiền phế + Tiền bão + Tiền KM
-                  const totalRefund = Number(betSummary.totalRefund ?? 0);
-                  const totalDailyLossRefund = Number(betSummary.totalDailyLossRefund ?? 0);
-                  const totalAgentCommission = Number(betSummary.totalAgentCommission ?? 0);
-                  const totalFee = filters.gameType === 'all' 
-                    ? (Number(betSummary.sicboTotalFee ?? 0) + Number(betSummary.xocDiaTotalFee ?? 0))
-                    : Number(betSummary.totalFee ?? 0);
-                  const totalBao = Number(betSummary.totalBao ?? 0);
-                  const totalPromotionalMoney = Number(betSummary.totalPromotionalMoney ?? 0);
+                  // Công thức: Lợi nhuận = Doanh thu - (Hoàn trả + Khuyến mãi + Hoàn Thua + Hoa hồng)
+                  const totalRefund = Number(betSummary.totalRefund ?? 0); // Hoàn trả
+                  const totalPromotionalMoney = Number(betSummary.totalPromotionalMoney ?? 0); // Khuyến mãi
+                  const totalDailyLossRefund = Number(betSummary.totalDailyLossRefund ?? 0); // Hoàn Thua
+                  const totalAgentCommission = Number(betSummary.totalAgentCommission ?? 0); // Hoa hồng
                   
-                  const tongCacKhoanTru = totalRefund + totalDailyLossRefund + totalAgentCommission + totalFee + totalBao + totalPromotionalMoney;
-                  
-                  // Lợi nhuận = Doanh thu - Tổng các khoản trừ
-                  return doanhThu - tongCacKhoanTru;
+                  // Lợi nhuận = Doanh thu - (Hoàn trả + Khuyến mãi + Hoàn Thua + Hoa hồng)
+                  return doanhThu - totalRefund - totalPromotionalMoney - totalDailyLossRefund - totalAgentCommission;
                 })()
               )}
               valueStyle={{ color: '#059669', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}

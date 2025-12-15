@@ -111,3 +111,33 @@ export const formatPointsDisplay = (points) => {
   
   return formatted + ' điểm';
 };
+
+/**
+ * Format points only (no "điểm" suffix)
+ * Use this when the value from backend is already in points
+ * Format: dấu chấm (.) cho hàng nghìn, dấu phẩy (,) cho phần thập phân
+ */
+export const formatPointsOnly = (points) => {
+  if (!points && points !== 0) return '0';
+  const formatter = new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    useGrouping: true
+  });
+  return formatter.format(Number(points ?? 0));
+};
+
+/**
+ * Format VND to points (dividing by 1000) without "điểm" suffix
+ * Format: dấu chấm (.) cho hàng nghìn, dấu phẩy (,) cho phần thập phân
+ */
+export const formatPointsFromVND = (amount) => {
+  if (!amount && amount !== 0) return '0';
+  const points = Number(amount) / 1000;
+  const formatter = new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    useGrouping: true
+  });
+  return formatter.format(points);
+};

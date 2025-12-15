@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DashboardOutlined, LogoutOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 import { adminMenuItems } from './sidebar/adminMenuData';
 import { LAYOUT } from '../../utils/theme';
 import LogoutConfirmModal from '../common/LogoutConfirmModal';
 import { getPortalLoginPath, getPortalPath } from '../../utils/navigation';
 import { getPortalType } from '../../utils/subdomain';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronRight, Search, LogOut, Menu, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
 
 const convertMenuItems = (items) => {
   return items.map(item => ({
@@ -38,7 +41,6 @@ const PORTAL_TITLES = {
 
 const AGENT_ALLOWED_KEYS = new Set([
   'agent-portal',
-  'agent-dashboard',
   'agent-customer-list',
   'agent-invite-codes',
   'agent-commission'
@@ -158,7 +160,6 @@ const getMenuForPortal = (portalType, session) => {
       const staffSection = filtered.find((item) => item.key === 'staff-portal');
       return staffSection?.children ?? [];
     }
-    // No allowed menu -> return empty array
     return [];
   }
 
@@ -289,7 +290,7 @@ const filterMenuTree = (items, term) => {
     .filter(Boolean);
 };
 
-const AdminSidebar = ({ collapsed }) => {
+const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const portalType = getPortalType();
@@ -365,12 +366,11 @@ const AdminSidebar = ({ collapsed }) => {
   const menuActions = useMemo(
     () => ({
       overview: () => goTo('/dashboard'),
-      'agent-dashboard': () => goTo('/dashboard?tab=agent-dashboard'),
       analytics: () => goTo('/dashboard?tab=analytics'),
       users: () => goTo('/dashboard?tab=users'),
       'kyc-verification': () => goTo('/dashboard?tab=kyc-verification'),
       'staff-management': () => goTo('/dashboard?tab=staff-management'),
-      'user-roles': () => goTo('/dashboard?tab=staff-management'), // Redirect to staff-management
+      'user-roles': () => goTo('/dashboard?tab=staff-management'),
       'login-history': () => goTo('/dashboard?tab=login-history'),
       deposits: () => goTo('/dashboard?tab=deposits'),
       withdraws: () => goTo('/dashboard?tab=withdraws'),
@@ -378,7 +378,6 @@ const AdminSidebar = ({ collapsed }) => {
       'deposit-gateway-configs': () => goTo('/dashboard?tab=deposit-gateway-configs'),
       'points-management': () => goTo('/points'),
       'agent-customer-list': () => goTo('/dashboard?tab=agent-customer-list'),
-      'agent-dashboard': () => goTo('/dashboard?tab=agent-dashboard'),
       'agent-invite-codes': () => goTo('/dashboard?tab=agent-invite-codes'),
       'agent-commission': () => goTo('/dashboard?tab=agent-commission'),
       'agent-report': () => goTo('/dashboard?tab=agent-report'),
@@ -447,50 +446,7 @@ const AdminSidebar = ({ collapsed }) => {
       const isSelfActive = activeKey === item.key;
       const isActive = isSelfActive || isDescendantActive;
 
-      const baseClasses = collapsed
-        ? 'w-full flex items-center justify-center py-3 rounded-lg transition-colors'
-        : 'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors';
-      const stateClasses = isActive
-        ? 'bg-emerald-500/10 text-emerald-200'
-        : 'text-slate-300 hover:text-white hover:bg-white/5';
-
-      const paddingStyle = collapsed
-        ? undefined
-        : { paddingLeft: 12 + depth * 12 };
-
       const IconComponent = item.icon;
-      const iconNode =
-        !collapsed && IconComponent ? (
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5 text-base text-emerald-300">
-            <IconComponent />
-          </span>
-        ) : null;
-
-      const badgeDot =
-        isFilterMode && !hasChildren
-          ? 'after:ml-2 after:inline-block after:h-1.5 after:w-1.5 after:rounded-full after:bg-emerald-300'
-          : '';
-
-      const content = (
-        <>
-          {collapsed ? (
-            <span className="text-xs font-semibold uppercase">
-              {item.label ? item.label.charAt(0) : ''}
-            </span>
-          ) : (
-            <span
-              className={`flex-1 text-left text-sm ${isTopLevel ? 'font-semibold uppercase tracking-wide' : 'font-medium'} ${badgeDot}`}
-            >
-              {item.label}
-            </span>
-          )}
-          {!collapsed && hasChildren && (
-            <DownOutlined
-              className={`ml-auto text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`}
-            />
-          )}
-        </>
-      );
 
       const handleClick = () => {
         if (hasChildren) {
@@ -511,19 +467,67 @@ const AdminSidebar = ({ collapsed }) => {
         }
       };
 
+      if (collapsed) {
+        return (
+          <div key={item.key} className="py-1">
+            <Button
+              type="button"
+              onClick={handleClick}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "w-full h-10 rounded-lg transition-all",
+                isActive 
+                  ? "bg-emerald-50 text-emerald-600" 
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              )}
+              title={item.label}
+            >
+              {IconComponent ? (
+                <IconComponent className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+        );
+      }
+
       return (
-        <div key={item.key} className="space-y-1">
+        <div key={item.key}>
           <button
             type="button"
             onClick={handleClick}
-            className={`${baseClasses} ${stateClasses}`}
-            style={paddingStyle}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
+              "hover:bg-gray-50",
+              isActive
+                ? "bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500"
+                : "text-gray-700 hover:text-gray-900"
+            )}
+            style={{ paddingLeft: `${12 + depth * 16}px` }}
           >
-            {!collapsed && iconNode}
-            {content}
+            {IconComponent && (
+              <IconComponent className={cn(
+                "h-4 w-4 flex-shrink-0",
+                isActive ? "text-emerald-600" : "text-gray-500"
+              )} />
+            )}
+            <span className="flex-1 text-left">
+              {item.label}
+            </span>
+            {hasChildren && (
+              <div className="ml-auto">
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                )}
+              </div>
+            )}
           </button>
           {hasChildren && isOpen && (
-            <div className="space-y-1">
+            <div className="ml-4 border-l border-gray-200 pl-2 mt-1 space-y-0.5">
               {item.children.map((child) => renderMenuNode(child, depth + 1))}
             </div>
           )}
@@ -544,67 +548,96 @@ const AdminSidebar = ({ collapsed }) => {
 
   return (
     <aside
-      className="fixed left-0 top-0 z-[100] flex h-screen flex-col border-r border-white/10 bg-[#001529] shadow-lg transition-[width] duration-200"
+      className="fixed left-0 top-0 z-[100] flex h-screen flex-col bg-white border-r border-gray-200 shadow-sm transition-[width] duration-200"
       style={{ width: sidebarWidth }}
     >
+      {/* Header */}
       <div
-        className="flex items-center border-b border-white/10 bg-[#002140]"
+        className="flex items-center justify-between border-b border-gray-200 bg-white"
         style={{
           height: LAYOUT.headerHeight,
-          padding: collapsed ? '0' : '0 24px',
-          justifyContent: collapsed ? 'center' : 'flex-start'
+          padding: collapsed ? '0 12px' : '0 16px 0 20px',
         }}
       >
         {collapsed ? (
-          <DashboardOutlined style={{ fontSize: '24px', color: '#fff' }} />
+          <Button
+            type="button"
+            onClick={onToggleCollapse}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-5 w-5 text-gray-600" />
+          </Button>
         ) : (
-          <div className="text-lg font-semibold text-white">{portalTitle}</div>
+          <>
+            <h1 className="text-base font-bold text-gray-900">
+              {portalTitle}
+            </h1>
+            <Button
+              type="button"
+              onClick={onToggleCollapse}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-600" />
+            </Button>
+          </>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="px-3 pt-4">
+      {/* Search */}
+      {!collapsed && (
+        <div className="px-3 pt-3 pb-2 border-b border-gray-100">
           <div className="relative">
-            <SearchOutlined className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm menu..."
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-9 py-2 text-sm text-slate-200 placeholder-slate-400 focus:border-emerald-400/60 focus:outline-none focus:ring-2 focus:ring-emerald-400/30"
+              placeholder="Tìm kiếm..."
+              className={cn(
+                "w-full rounded-lg border-gray-200 bg-gray-50 pl-8 pr-3 py-2",
+                "text-sm text-gray-900 placeholder:text-gray-400",
+                "focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500"
+              )}
             />
           </div>
         </div>
+      )}
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-3 custom-scrollbar">
+      {/* Menu Navigation */}
+      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-1 custom-scrollbar">
           {filteredMenuItems.length > 0 ? (
             filteredMenuItems.map((item) => (
-              <div
-                key={item.key}
-                className="rounded-2xl border border-white/5 bg-white/5 p-2 shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
-              >
+            <div key={item.key} className="mb-1">
                 {renderMenuNode(item)}
               </div>
             ))
           ) : (
-            <div className="flex h-full items-center justify-center px-3 text-center text-sm text-slate-400">
-              Không tìm thấy mục phù hợp.
+          <div className="flex h-full items-center justify-center px-4 text-center">
+            <p className="text-sm text-gray-400">Không tìm thấy mục phù hợp.</p>
             </div>
           )}
         </nav>
 
-        <div className="border-t border-white/10 px-2 py-3">
-          <button
+      {/* Logout Button */}
+      <div className="border-t border-gray-200 px-2 py-3 bg-gray-50">
+        <Button
             type="button"
             onClick={handleLogout}
-            className={`w-full rounded-lg px-3 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/10 ${
-              collapsed ? 'flex items-center justify-center' : 'flex items-center gap-3'
-            }`}
+          variant="ghost"
+          className={cn(
+            "w-full rounded-lg px-3 py-2.5 h-auto",
+            "text-red-600 hover:text-red-700 hover:bg-red-50",
+            "transition-all font-medium",
+            collapsed ? "justify-center" : "justify-start gap-3"
+          )}
           >
-            <LogoutOutlined />
+          <LogOut className="h-4 w-4" />
             {!collapsed && <span>Đăng xuất</span>}
-          </button>
-        </div>
+        </Button>
       </div>
 
       <LogoutConfirmModal

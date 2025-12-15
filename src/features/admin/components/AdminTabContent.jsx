@@ -15,7 +15,6 @@ import AdminAgentManagement from './AdminAgentManagement';
 import AgentCustomerList from './AgentCustomerList';
 import AgentInviteCodes from './AgentInviteCodes';
 import AgentCommissionManagement from './AgentCommissionManagement';
-import AgentDashboard from './AgentDashboard';
 import StaffMktUserOverview from './StaffMktUserOverview';
 import StaffMktFinanceOverview from './StaffMktFinanceOverview';
 import StaffMktGameOverview from './StaffMktGameOverview';
@@ -69,10 +68,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         }
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Dashboard" 
-              description="Tổng quan hệ thống" 
-            />
             <DashboardStats loading={loading} stats={dashboardStats?.summary} />
             <DashboardCharts 
               chartData={dashboardStats?.chart}
@@ -105,10 +100,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'users':
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý người dùng" 
-              description="Quản lý toàn bộ người dùng trong hệ thống" 
-            />
             <AdminUserManagement />
           </div>
         );
@@ -116,10 +107,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'login-history':
         return (
           <div className="space-y-6">
-            <TabPageHeader
-              title="Lịch sử đăng nhập"
-              description="Theo dõi lịch sử đăng nhập và địa chỉ IP của người dùng trong hệ thống"
-            />
             <AdminLoginHistory />
           </div>
         );
@@ -128,10 +115,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         // Redirect to staff-management (merged functionality)
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý nhân viên & Phân quyền"
-              description="Quản lý nhân viên và phân quyền đại lý, nhân viên cho người dùng"
-            />
             <AdminStaffManagement 
               initialRole="ALL"
               allowRoleFilter
@@ -145,10 +128,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'staff-management':
         return (
           <div className="space-y-6">
-            <TabPageHeader
-              title="Quản lý nhân viên & Phân quyền"
-              description="Quản lý nhân viên và phân quyền đại lý, nhân viên cho người dùng"
-            />
             <AdminStaffManagement 
               initialRole="ALL"
               allowRoleFilter
@@ -171,9 +150,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
 
       case 'agent-commission':
         return <AgentCommissionManagement />;
-
-      case 'agent-dashboard':
-        return <AgentDashboard />;
 
       case 'agent-report':
         return <AdminAgentReport />;
@@ -265,26 +241,10 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         );
 
       case 'deposits':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader 
-              title="Duyệt nạp tiền" 
-              description="Quản lý các yêu cầu nạp tiền" 
-            />
-            <AdminDepositApproval />
-          </div>
-        );
+        return <AdminDepositApproval />;
 
       case 'withdraws':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader 
-              title="Duyệt rút tiền" 
-              description="Quản lý các yêu cầu rút tiền" 
-            />
-            <AdminWithdrawApproval />
-          </div>
-        );
+        return <AdminWithdrawApproval />;
 
       case 'transactions':
         return (
@@ -301,15 +261,7 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         );
 
       case 'payment-methods':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader 
-              title="Phương thức thanh toán" 
-              description="Quản lý các phương thức thanh toán để người dùng nạp tiền" 
-            />
-            <AdminPaymentMethodManagement />
-          </div>
-        );
+        return <AdminPaymentMethodManagement />;
 
       case 'deposit-gateway-configs':
         return (
@@ -325,10 +277,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'kyc-verification':
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Xác thực tài khoản" 
-              description="Duyệt yêu cầu xác thực tài khoản từ người dùng" 
-            />
             <AdminKycVerification />
           </div>
         );
