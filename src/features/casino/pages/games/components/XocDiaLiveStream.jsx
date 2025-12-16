@@ -4,7 +4,7 @@ import Hls from 'hls.js';
 import { buildStreamUrlFromKey } from '../../../../../utils/domainUtils';
 import streamConfigService from '../../../../../services/streamConfigService';
 
-const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) => {
+const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false, isLiveEnded: propIsLiveEnded = null }) => {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -13,6 +13,9 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
   const [streamUrl, setStreamUrl] = useState('');
   const [isLivePaused, setIsLivePaused] = useState(false);
   const [isLiveEnded, setIsLiveEnded] = useState(false);
+  
+  // Use prop value if provided (for admin), otherwise use state
+  const displayIsLiveEnded = propIsLiveEnded !== null ? propIsLiveEnded : isLiveEnded;
 
   // Load stream URL from API
   useEffect(() => {
@@ -225,14 +228,18 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
             <span className="text-xs uppercase tracking-wide text-white/60">Live Stream</span>
           </div>
 
-          <span className="flex items-center gap-2 text-sm text-red-400">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            Đang phát
+          <span className={`flex items-center gap-2 text-sm ${
+            displayIsLiveEnded ? 'text-gray-400' : 'text-red-400'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${
+              displayIsLiveEnded ? 'bg-gray-500' : 'bg-red-500 animate-ping'
+            }`} />
+            {displayIsLiveEnded ? 'Đã kết thúc' : 'Đang phát'}
           </span>
         </div>
 
         <div className="flex-1 relative bg-black">
-          {!isAdmin && isLiveEnded && (
+          {!isAdmin && displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-30">
               <div className="flex flex-col items-center gap-3 text-white/90">
                 <Icon icon="mdi:stop-circle" className="w-16 h-16 text-red-400" />
@@ -244,7 +251,7 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
             </div>
           )}
 
-          {!isAdmin && isLivePaused && !isLiveEnded && (
+          {!isAdmin && isLivePaused && !displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20">
               <div className="flex flex-col items-center gap-3 text-white/90">
                 <Icon icon="mdi:pause-circle" className="w-16 h-16 text-amber-400" />
@@ -256,7 +263,7 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
             </div>
           )}
 
-          {isLoading && !isLivePaused && !isLiveEnded && (
+          {isLoading && !isLivePaused && !displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
               <div className="flex flex-col items-center gap-2 text-white/70">
                 <div className="w-16 h-16 border-4 border-white/20 border-t-white/60 rounded-full animate-spin" />
@@ -265,7 +272,7 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
             </div>
           )}
 
-          {hasError && !isLivePaused && !isLiveEnded && (
+          {hasError && !isLivePaused && !displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
               <div className="flex flex-col items-center gap-2 text-white/70">
                 <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-400" />
@@ -294,7 +301,7 @@ const XocDiaLiveStream = ({ resultOverlay, countdownDisplay, isAdmin = false }) 
             playsInline
             muted
             controls={false}
-            style={{ display: isPlaying && ((!isLivePaused && !isLiveEnded) || isAdmin) ? 'block' : 'none' }}
+            style={{ display: isPlaying && ((!isLivePaused && !displayIsLiveEnded) || isAdmin) ? 'block' : 'none' }}
           />
         </div>
       </div>

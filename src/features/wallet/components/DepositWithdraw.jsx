@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -14,7 +14,8 @@ import {
   Alert,
   message,
   QRCode,
-  Upload
+  Upload,
+  Spin
 } from 'antd';
 import Loading from '../../../components/common/Loading';
 import {
@@ -25,7 +26,9 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   CopyOutlined,
-  UploadOutlined
+  UploadOutlined,
+  LinkOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import { THEME_COLORS } from '../../../utils/theme';
 import { formatCurrency, formatPoints } from '../../../utils/helpers';
@@ -39,16 +42,155 @@ const DepositWithdraw = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [amount, setAmount] = useState(null);
+  // Mã nội dung chuyển khoản (giữ ổn định trong một phiên giao dịch)
+  const transferContentRef = useRef(`NP${Date.now().toString().slice(-6)}`);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
   const [billImage, setBillImage] = useState(null);
   const [form] = Form.useForm();
+  const [checkingStatus, setCheckingStatus] = useState(false);
+  const pollingIntervalRef = useRef(null);
+
+  const stopStatusPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+      setCheckingStatus(false);
+    }
+  }, []);
+
+  // Polling để kiểm tra trạng thái thanh toán tự động
+  const startStatusPolling = useCallback((transactionId) => {
+    stopStatusPolling(); // Dừng polling cũ nếu có
+    
+    setCheckingStatus(true);
+    let pollCount = 0;
+    const maxPolls = 60; // Tối đa 60 lần (5 phút với interval 5s)
+    
+    pollingIntervalRef.current = setInterval(async () => {
+      pollCount++;
+      
+      try {
+        const response = await walletService.getTransactionDetail(transactionId);
+        if (response.success && response.data) {
+          const transaction = response.data;
+          
+          // Nếu đã được approve hoặc completed, dừng polling
+          if (transaction.status === 'APPROVED' || transaction.status === 'COMPLETED') {
+            stopStatusPolling();
+            setTransactionResult(transaction);
+            
+            // Xóa transaction state khỏi localStorage vì đã hoàn thành
+            localStorage.removeItem('pendingDepositTransaction');
+            
+            message.success('Thanh toán thành công! Tiền đã được cộng vào tài khoản.');
+            
+            // Refresh wallet balance
+            window.dispatchEvent(new CustomEvent('transactionCreated', {
+              detail: { type: 'DEPOSIT', transaction: transaction }
+            }));
+            return;
+          }
+          
+          // Nếu bị reject hoặc cancelled, dừng polling
+          if (transaction.status === 'REJECTED' || transaction.status === 'CANCELLED') {
+            stopStatusPolling();
+            setTransactionResult(transaction);
+            
+            // Xóa transaction state khỏi localStorage vì đã kết thúc
+            localStorage.removeItem('pendingDepositTransaction');
+            
+            message.warning('Giao dịch đã bị hủy hoặc từ chối.');
+            return;
+          }
+        }
+        
+        // Nếu đã poll quá nhiều lần, dừng lại
+        if (pollCount >= maxPolls) {
+          stopStatusPolling();
+          message.info('Đã kiểm tra trạng thái trong 5 phút. Vui lòng kiểm tra lại sau.');
+        }
+      } catch (error) {
+        console.error('Error checking transaction status:', error);
+        // Tiếp tục polling nếu có lỗi
+      }
+    }, 5000); // Kiểm tra mỗi 5 giây
+  }, [stopStatusPolling]);
 
   // Load payment methods khi component mount
   useEffect(() => {
     loadPaymentMethods();
-  }, []);
+    
+    // Kiểm tra xem có transaction code trong URL không (từ returnUrl của gateway)
+    const urlParams = new URLSearchParams(window.location.search);
+    const transactionCodeFromUrl = urlParams.get('transaction');
+    
+    // Restore transaction state từ localStorage nếu có pending transaction
+    const savedTransaction = localStorage.getItem('pendingDepositTransaction');
+    if (savedTransaction) {
+      try {
+        const transaction = JSON.parse(savedTransaction);
+        
+        // Nếu có transaction code trong URL, kiểm tra xem có khớp không
+        if (transactionCodeFromUrl && transaction.transactionCode !== transactionCodeFromUrl) {
+          // Transaction code không khớp, xóa localStorage
+          localStorage.removeItem('pendingDepositTransaction');
+          return;
+        }
+        
+        // Chỉ restore nếu transaction đang pending và là auto deposit
+        if (transaction.status === 'PENDING' && transaction.isAutoDeposit && transaction.gatewayPayUrl) {
+          setTransactionResult(transaction);
+          setCurrentStep(3);
+          setAmount(transaction.amount);
+          // Tiếp tục polling nếu có transaction ID
+          if (transaction.id) {
+            startStatusPolling(transaction.id);
+          }
+          
+          // Nếu có transaction code trong URL, có thể user vừa quay lại từ gateway
+          if (transactionCodeFromUrl) {
+            message.info('Đang kiểm tra trạng thái thanh toán...');
+            // Load lại transaction detail từ server để có thông tin mới nhất
+            if (transaction.id) {
+              walletService.getTransactionDetail(transaction.id)
+                .then(response => {
+                  if (response.success && response.data) {
+                    const latestTransaction = response.data;
+                    setTransactionResult(latestTransaction);
+                    
+                    // Nếu đã approved, cập nhật localStorage
+                    if (latestTransaction.status === 'APPROVED' || latestTransaction.status === 'COMPLETED') {
+                      localStorage.removeItem('pendingDepositTransaction');
+                      message.success('Thanh toán thành công! Tiền đã được cộng vào tài khoản.');
+                      // Refresh wallet balance
+                      window.dispatchEvent(new CustomEvent('transactionCreated', {
+                        detail: { type: 'DEPOSIT', transaction: latestTransaction }
+                      }));
+                    }
+                  }
+                })
+                .catch(error => {
+                  console.error('Error loading transaction detail:', error);
+                });
+            }
+          }
+        } else {
+          // Xóa nếu đã hoàn thành hoặc không phải auto deposit
+          localStorage.removeItem('pendingDepositTransaction');
+        }
+      } catch (error) {
+        console.error('Error restoring transaction state:', error);
+        localStorage.removeItem('pendingDepositTransaction');
+      }
+    } else if (transactionCodeFromUrl) {
+      // Có transaction code trong URL nhưng không có trong localStorage
+      // Có thể user đã reload trang hoặc clear localStorage
+      // Tìm transaction theo code (cần thêm API endpoint hoặc bỏ qua)
+      message.info('Đang tải thông tin giao dịch...');
+    }
+  }, [startStatusPolling]);
 
   const loadPaymentMethods = async () => {
     try {
@@ -109,7 +251,25 @@ const DepositWithdraw = () => {
     form.setFieldsValue({ amount: value });
   };
 
-  const handleSubmit = async (values) => {
+  // Xử lý khi ấn "Thanh toán" ở Step 1 - chuyển sang Step 2 (QR code)
+  const handleProceedToPayment = () => {
+    if (!amount || !selectedMethod) {
+      message.error('Vui lòng chọn phương thức và nhập số tiền');
+      return;
+    }
+    
+    // Nếu phương thức có channelCode (auto deposit OKDPAY) thì tạo đơn luôn
+    if (selectedMethod.channelCode) {
+      handleConfirmPayment();
+      return;
+    }
+
+    // Manual transfer: hiển thị VietQR để người dùng tự chuyển
+    setCurrentStep(2);
+  };
+
+  // Xử lý khi ấn "Xác nhận" ở Step 2 - tạo lệnh nạp tiền
+  const handleConfirmPayment = async () => {
     try {
       setLoading(true);
       
@@ -149,8 +309,8 @@ const DepositWithdraw = () => {
       const depositData = {
         paymentMethodId: selectedMethod.id,
         amount: Number(amount),
-        description: values.description || '',
-        referenceCode: values.referenceCode || '',
+        description: '', // Bỏ ghi chú
+        referenceCode: '', // Bỏ mã tham chiếu
         billImage: billImageBase64,
         billImageName: billImage ? billImage.name : null
       };
@@ -158,8 +318,37 @@ const DepositWithdraw = () => {
       const response = await walletService.createDepositOrder(depositData);
       if (response.success) {
         setTransactionResult(response.data);
-        setCurrentStep(3);
-        message.success('Đã tạo lệnh nạp tiền thành công!');
+
+        // Trường hợp auto deposit và có gatewayPayUrl -> điều hướng đến trang thanh toán
+        if (response.data.isAutoDeposit && response.data.gatewayPayUrl) {
+          // Lưu transaction state vào localStorage để restore khi reload
+          localStorage.setItem('pendingDepositTransaction', JSON.stringify(response.data));
+          
+          message.success('Đang chuyển đến trang thanh toán...');
+          
+          // Bắt đầu polling trạng thái
+          if (response.data.id) {
+            startStatusPolling(response.data.id);
+          }
+          
+          // Điều hướng trực tiếp đến trang thanh toán OKDPAY
+          // Sử dụng window.location.href để đảm bảo user được điều hướng đến trang thanh toán
+          setTimeout(() => {
+            window.location.href = response.data.gatewayPayUrl;
+          }, 500); // Delay 500ms để user thấy message success
+          
+          return; // Dừng xử lý, không set step vì sẽ điều hướng
+        } 
+        // Trường hợp auto deposit nhưng không trả payUrl -> fallback sang hiển thị QR/VietQR thủ công
+        else if (response.data.isAutoDeposit && !response.data.gatewayPayUrl) {
+          message.warning('Không lấy được link thanh toán tự động, vui lòng chuyển khoản thủ công.');
+          setCurrentStep(2);
+        } 
+        // Manual deposit (không auto hoặc đã fallback)
+        else {
+          message.success('Đã tạo lệnh nạp tiền thành công! Vui lòng chuyển khoản theo thông tin.');
+          setCurrentStep(2);
+        }
         
         // Dispatch custom event to notify other components to refresh
         window.dispatchEvent(new CustomEvent('transactionCreated', {
@@ -180,9 +369,23 @@ const DepositWithdraw = () => {
     setSelectedMethod(null);
     setAmount(null);
     setTransactionResult(null);
+    transferContentRef.current = `NP${Date.now().toString().slice(-6)}`;
     setBillImage(null);
+    setCheckingStatus(false);
+    stopStatusPolling();
+    
+    // Xóa transaction state khỏi localStorage khi reset
+    localStorage.removeItem('pendingDepositTransaction');
+    
     form.resetFields();
   };
+
+  // Cleanup khi component unmount
+  useEffect(() => {
+    return () => {
+      stopStatusPolling();
+    };
+  }, [stopStatusPolling]);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -367,13 +570,113 @@ const DepositWithdraw = () => {
         />
       )}
 
-      {/* Upload bill cho nạp tiền */}
+    </div>
+  );
+
+  // Sinh URL VietQR (dạng ảnh) để dễ quét bằng app ngân hàng
+  const getVietQrUrl = () => {
+    if (!selectedMethod?.bankCode || !selectedMethod?.accountNumber) return null;
+    const addInfo =
+      transactionResult?.transactionCode ||
+      transactionResult?.referenceCode ||
+      transferContentRef.current;
+    const encodedName = encodeURIComponent(selectedMethod.accountName || '');
+    const encodedInfo = encodeURIComponent(addInfo);
+    const amountParam = amount ? `&amount=${amount}` : '';
+    return `https://img.vietqr.io/image/${selectedMethod.bankCode}-${selectedMethod.accountNumber}-qr_only.png?accountName=${encodedName}${amountParam}&addInfo=${encodedInfo}`;
+  };
+
+  // Render QR code và upload ảnh ở Step 2
+  const renderPaymentStep = () => {
+    const qrImageUrl = getVietQrUrl();
+    const transferContent =
+      transactionResult?.transactionCode ||
+      transactionResult?.referenceCode ||
+      transferContentRef.current;
+    
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-4">
+            {transactionResult?.isAutoDeposit && !transactionResult?.gatewayPayUrl
+              ? 'Không lấy được QR tự động, vui lòng quét VietQR và chuyển khoản'
+              : 'Quét mã QR để thanh toán'}
+          </h3>
+          
+          {/* QR Code */}
+          <div className="text-center mb-6">
+            <div className="inline-block p-4 bg-white rounded-lg shadow-md">
+              {qrImageUrl ? (
+                <img
+                  src={qrImageUrl}
+                  alt="VietQR"
+                  className="w-[250px] h-[250px] object-contain"
+                />
+              ) : (
+                <QRCode 
+                  value={selectedMethod?.accountNumber || 'VietQR'}
+                  size={250}
+                  errorLevel="M"
+                />
+              )}
+            </div>
+            <p className="text-gray-600 mt-4 text-sm">
+              Quét mã QR bằng ứng dụng ngân hàng để chuyển khoản nhanh
+            </p>
+          </div>
+
+          {/* Thông tin chuyển khoản */}
+          <Card className="bg-yellow-50 border-yellow-200 mb-6">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Ngân hàng/Ví:</span>
+                <span className="text-base font-bold">{selectedMethod.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Số tài khoản:</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold text-blue-600">
+                    {selectedMethod.accountNumber}
+                  </span>
+                  <Button 
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={() => copyToClipboard(selectedMethod.accountNumber)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Tên tài khoản:</span>
+                <span className="text-base font-bold">{selectedMethod.accountName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Số tiền:</span>
+                <span className="text-base font-bold text-green-600">
+                  {formatCurrency(amount)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Nội dung:</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold text-green-600">
+                    {transferContent}
+                  </span>
+                  <Button 
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={() => copyToClipboard(transferContent)}
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Upload ảnh chuyển khoản */}
       <div className="space-y-4">
-        <Form.Item
-          name="billImage"
-          label="Upload ảnh chuyển khoản"
-          extra="Vui lòng upload ảnh bill chuyển khoản để admin duyệt nhanh hơn (định dạng: JPG, PNG, tối đa 5MB)"
-        >
+            <h4 className="font-semibold text-base">Upload ảnh chuyển khoản</h4>
+            <p className="text-sm text-gray-600 mb-4">
+              Vui lòng upload ảnh bill chuyển khoản để admin duyệt nhanh hơn (định dạng: JPG, PNG, tối đa 5MB)
+            </p>
           <Upload
             listType="picture-card"
             maxCount={1}
@@ -415,91 +718,7 @@ const DepositWithdraw = () => {
               </div>
             )}
           </Upload>
-        </Form.Item>
-
-        <Form.Item
-          name="description"
-          label="Ghi chú (không bắt buộc)"
-        >
-          <Input.TextArea
-            rows={3}
-            placeholder="Nhập ghi chú cho giao dịch"
-            style={{ borderRadius: '8px' }}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="referenceCode"
-          label="Mã tham chiếu/Mã giao dịch ngân hàng (không bắt buộc)"
-        >
-          <Input
-            placeholder="Nhập mã giao dịch từ ngân hàng (nếu có)"
-            style={{ borderRadius: '8px' }}
-          />
-        </Form.Item>
-      </div>
-    </div>
-  );
-
-  const renderTransactionInfo = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Thông tin chuyển khoản</h3>
-        
-        <Card className="bg-yellow-50 border-yellow-200">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Ngân hàng/Ví:</span>
-              <span className="text-lg font-bold">{selectedMethod.name}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Số tài khoản:</span>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-blue-600">
-                  {selectedMethod.accountNumber}
-                </span>
-                <Button 
-                  size="small"
-                  icon={<CopyOutlined />}
-                  onClick={() => copyToClipboard(selectedMethod.accountNumber)}
-                />
-              </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Tên tài khoản:</span>
-              <span className="text-lg font-bold">{selectedMethod.accountName}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Số tiền:</span>
-              <span className="text-lg font-bold text-green-600">
-                {formatCurrency(amount)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-semibold">Nội dung:</span>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-green-600">
-                  NP{Date.now().toString().slice(-6)}
-                </span>
-                <Button 
-                  size="small"
-                  icon={<CopyOutlined />}
-                  onClick={() => copyToClipboard(`NP${Date.now().toString().slice(-6)}`)}
-                />
-              </div>
-            </div>
           </div>
-        </Card>
-
-        {selectedMethod.type === 'momo' && (
-          <div className="text-center">
-            <QRCode 
-              value={`2|99|${selectedMethod.accountNumber}|${selectedMethod.accountName}|${amount}|NP${Date.now().toString().slice(-6)}`}
-              size={200}
-            />
-            <p className="text-gray-600 mt-2">Quét mã QR để chuyển khoản nhanh</p>
-          </div>
-        )}
 
         <Alert
           message="Lưu ý quan trọng"
@@ -513,10 +732,39 @@ const DepositWithdraw = () => {
           }
           type="warning"
           showIcon
+            className="mt-4"
         />
-      </div>
+
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button 
+              size="large"
+              onClick={() => setCurrentStep(1)}
+              className="flex-1 h-12"
+              style={{ borderRadius: '8px' }}
+            >
+              Quay lại
+            </Button>
+            <Button 
+              type="primary"
+              size="large"
+              onClick={handleConfirmPayment}
+              loading={loading}
+              disabled={loading}
+              className="flex-1 h-12 text-white font-semibold hover:opacity-90"
+              style={{ 
+                background: THEME_COLORS.primaryGradient,
+                border: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              {loading ? 'Đang tạo lệnh...' : 'Xác nhận đã chuyển khoản'}
+            </Button>
+          </div>
+        </div>
     </div>
   );
+  };
 
   const renderProgressBar = () => {
     const steps = [
@@ -528,8 +776,9 @@ const DepositWithdraw = () => {
     // Determine active step: 0 = Nạp tiền, 1 = Thanh toán, 2 = Hoàn thành
     let activeStep = currentStep;
     if (currentStep === 0) activeStep = 0; // Chọn phương thức = Nạp tiền
-    else if (currentStep === 1) activeStep = 1; // Nhập số tiền = Thanh toán
-    else if (currentStep === 2 || currentStep === 3) activeStep = 2; // Xác nhận/Hoàn thành = Hoàn thành
+    else if (currentStep === 1) activeStep = 0; // Nhập số tiền = vẫn ở Nạp tiền
+    else if (currentStep === 2) activeStep = 1; // QR code = Thanh toán
+    else if (currentStep === 3) activeStep = 2; // Kết quả = Hoàn thành
 
     return (
       <div className="mb-6 py-2">
@@ -586,14 +835,147 @@ const DepositWithdraw = () => {
     );
   };
 
-  const renderSuccessResult = () => (
+  const renderSuccessResult = () => {
+    const isAutoDeposit = transactionResult?.isAutoDeposit;
+    const gatewayPayUrl = transactionResult?.gatewayPayUrl;
+    const transactionStatus = transactionResult?.status;
+    
+    // Nếu là auto deposit và có link thanh toán
+    if (isAutoDeposit && gatewayPayUrl) {
+      return (
+        <div className="text-center space-y-4">
+          <Result
+            status={transactionStatus === 'APPROVED' || transactionStatus === 'COMPLETED' ? 'success' : 'info'}
+            title={
+              <span style={{ fontSize: '18px' }}>
+                {transactionStatus === 'APPROVED' || transactionStatus === 'COMPLETED' 
+                  ? 'Thanh toán thành công!' 
+                  : 'Đã tạo lệnh nạp tiền tự động!'}
+              </span>
+            }
+            subTitle={
+              <div className="space-y-3" style={{ fontSize: '14px' }}>
+                <p>Mã giao dịch: <strong>{transactionResult?.transactionCode || transactionResult?.id}</strong></p>
+                <p>Số tiền nạp: <strong className="text-orange-600">{formatCurrency(amount)}</strong></p>
+                
+                {transactionStatus === 'APPROVED' || transactionStatus === 'COMPLETED' ? (
+                  <>
+                    <Alert
+                      message="Thanh toán thành công!"
+                      description="Tiền đã được cộng vào tài khoản của bạn."
+                      type="success"
+                      showIcon
+                      className="text-left"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Alert
+                      message="Vui lòng thanh toán"
+                      description={
+                        <div className="space-y-2 mt-2">
+                          <p>Nhấn nút bên dưới để chuyển đến trang thanh toán.</p>
+                          <div className="flex flex-col items-center gap-2">
+                            <QRCode value={gatewayPayUrl} size={220} />
+                            <Button 
+                              size="small"
+                              icon={<CopyOutlined />}
+                              onClick={() => copyToClipboard(gatewayPayUrl)}
+                            >
+                              Sao chép link thanh toán
+                            </Button>
+                          </div>
+                          {checkingStatus && (
+                            <div className="flex items-center gap-2 justify-center">
+                              <Spin size="small" />
+                              <span className="text-xs">Đang kiểm tra trạng thái thanh toán...</span>
+                            </div>
+                          )}
+                        </div>
+                      }
+                      type="info"
+                      showIcon
+                      className="text-left"
+                    />
+                    
+                    <div className="pt-2">
+                      <Button
+                        type="primary"
+                        size="large"
+                        icon={<LinkOutlined />}
+                        onClick={() => {
+                          // Điều hướng trực tiếp đến trang thanh toán
+                          window.location.href = gatewayPayUrl;
+                        }}
+                        style={{
+                          background: THEME_COLORS.primaryGradient,
+                          border: 'none',
+                          fontSize: '16px',
+                          height: '48px',
+                          padding: '0 32px'
+                        }}
+                      >
+                        Thanh toán ngay
+                      </Button>
+                    </div>
+                    
+                    <div className="pt-2">
+                      <Button
+                        icon={<ReloadOutlined />}
+                        onClick={() => {
+                          // Chỉ dùng ID (Long), không dùng transactionCode (String)
+                          if (transactionResult?.id) {
+                            startStatusPolling(transactionResult.id);
+                          } else {
+                            message.error('Không có transaction ID để kiểm tra');
+                          }
+                        }}
+                        disabled={checkingStatus}
+                      >
+                        {checkingStatus ? 'Đang kiểm tra...' : 'Kiểm tra trạng thái'}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            }
+            extra={[
+              <Button 
+                key="history" 
+                onClick={() => {
+                  navigate(`/wallet?tab=transaction-history&refresh=${Date.now()}`);
+                }} 
+                style={{ fontSize: '14px' }}
+              >
+                Xem lịch sử
+              </Button>,
+              <Button 
+                key="new"
+                type="primary"
+                onClick={handleReset}
+                style={{ 
+                  background: THEME_COLORS.primaryGradient,
+                  border: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                Tạo lệnh mới
+              </Button>,
+            ]}
+          />
+        </div>
+      );
+    }
+    
+    // Manual deposit (fallback)
+    return (
     <div className="text-center">
         <Result
           status="success"
         title={<span style={{ fontSize: '18px' }}>Nạp tiền thành công!</span>}
         subTitle={
           <div className="space-y-1.5" style={{ fontSize: '14px' }}>
-            <p>Mã giao dịch: <strong>{transactionResult?.transactionId || transactionResult?.id}</strong></p>
+              <p>Mã giao dịch: <strong>{transactionResult?.transactionCode || transactionResult?.id}</strong></p>
             <p>Số tiền nạp: <strong className="text-orange-600">{formatCurrency(amount)}</strong></p>
             <p>Thời gian xử lý dự kiến: {selectedMethod?.processingTime || '5-15 phút'}</p>
             <p className="text-sm text-gray-500">
@@ -602,10 +984,13 @@ const DepositWithdraw = () => {
           </div>
         }
           extra={[
-          <Button key="history" onClick={() => {
-            // Navigate to transaction history with refresh parameter
+            <Button 
+              key="history" 
+              onClick={() => {
             navigate(`/wallet?tab=transaction-history&refresh=${Date.now()}`);
-          }} style={{ fontSize: '14px' }}>
+              }} 
+              style={{ fontSize: '14px' }}
+            >
             Xem lịch sử
             </Button>,
             <Button 
@@ -624,6 +1009,7 @@ const DepositWithdraw = () => {
         />
     </div>
       );
+  };
 
 
   const renderSteps = () => {
@@ -634,7 +1020,6 @@ const DepositWithdraw = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleSubmit}
         >
           {currentStep === 0 && (
             <div className="space-y-4 md:space-y-6">
@@ -675,9 +1060,8 @@ const DepositWithdraw = () => {
                 <Button 
                   type="primary"
                   size="large"
-                  htmlType="submit"
-                  loading={loading}
-                  disabled={!amount || !selectedMethod || loading}
+                  onClick={handleProceedToPayment}
+                  disabled={!amount || !selectedMethod}
                   className="flex-1 md:flex-initial h-11 md:h-12 text-xs md:text-sm text-white font-semibold hover:opacity-90"
                   style={{ 
                     background: THEME_COLORS.primaryGradient,
@@ -686,7 +1070,7 @@ const DepositWithdraw = () => {
                     color: '#ffffff'
                   }}
                 >
-                  {loading ? 'Đang tạo lệnh...' : 'Tạo lệnh nạp'}
+                  Thanh toán
                 </Button>
               </div>
             </div>
@@ -709,7 +1093,12 @@ const DepositWithdraw = () => {
             {renderProgressBar()}
             {renderSuccessResult()}
           </>
-        ) : currentStep < 2 ? renderSteps() : renderTransactionInfo()}
+        ) : currentStep === 2 ? (
+          <>
+            {renderProgressBar()}
+            {renderPaymentStep()}
+          </>
+        ) : renderSteps()}
       </Card>
       </div>
     </div>

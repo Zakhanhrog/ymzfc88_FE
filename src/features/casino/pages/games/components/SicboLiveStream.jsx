@@ -10,6 +10,7 @@ const SicboLiveStream = ({
   tableLabel = 'Bàn số 1',
   tableNumber = 1,
   isAdmin = false,
+  isLiveEnded: propIsLiveEnded = null,
 }) => {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
@@ -19,6 +20,9 @@ const SicboLiveStream = ({
   const [streamUrl, setStreamUrl] = useState('');
   const [isLivePaused, setIsLivePaused] = useState(false);
   const [isLiveEnded, setIsLiveEnded] = useState(false);
+  
+  // Use prop value if provided (for admin), otherwise use state
+  const displayIsLiveEnded = propIsLiveEnded !== null ? propIsLiveEnded : isLiveEnded;
 
   // Load stream URL from API
   useEffect(() => {
@@ -179,9 +183,13 @@ const SicboLiveStream = ({
               {tableLabel}
             </span>
 
-            <span className="flex items-center gap-2 text-sm text-red-400">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              Đang phát
+            <span className={`flex items-center gap-2 text-sm ${
+              displayIsLiveEnded ? 'text-gray-400' : 'text-red-400'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${
+                displayIsLiveEnded ? 'bg-gray-500' : 'bg-red-500 animate-ping'
+              }`} />
+              {displayIsLiveEnded ? 'Đã kết thúc' : 'Đang phát'}
             </span>
           </div>
         </div>
@@ -189,7 +197,7 @@ const SicboLiveStream = ({
         <div 
           className="flex-1 relative bg-black"
           style={{
-            backgroundImage: (isLoading || hasError) && !isLivePaused && !isLiveEnded
+            backgroundImage: (isLoading || hasError) && !isLivePaused && !displayIsLiveEnded
               ? `url(${tableNumber === 1 ? '/images/casinolive/taixiuthuphe.jpg' : '/images/casinolive/taixiuthubao.jpg'})`
               : undefined,
             backgroundSize: 'cover',
@@ -197,7 +205,7 @@ const SicboLiveStream = ({
             backgroundRepeat: 'no-repeat',
           }}
         >
-          {!isAdmin && isLiveEnded && (
+          {!isAdmin && displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-30">
               <div className="flex flex-col items-center gap-3 text-white/90">
                 <Icon icon="mdi:stop-circle" className="w-16 h-16 text-red-400" />
@@ -209,7 +217,7 @@ const SicboLiveStream = ({
             </div>
           )}
 
-          {!isAdmin && isLivePaused && !isLiveEnded && (
+          {!isAdmin && isLivePaused && !displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20">
               <div className="flex flex-col items-center gap-3 text-white/90">
                 <Icon icon="mdi:pause-circle" className="w-16 h-16 text-amber-400" />
@@ -221,7 +229,7 @@ const SicboLiveStream = ({
             </div>
           )}
 
-          {isLoading && !isLivePaused && !isLiveEnded && (
+          {isLoading && !isLivePaused && !displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
               <div className="flex flex-col items-center gap-2 text-white/90 drop-shadow-lg">
                 <div className="w-16 h-16 border-4 border-white/30 border-t-white/80 rounded-full animate-spin" />
@@ -230,7 +238,7 @@ const SicboLiveStream = ({
             </div>
           )}
 
-          {hasError && !isLivePaused && !isLiveEnded && (
+          {hasError && !isLivePaused && !displayIsLiveEnded && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
               <div className="flex flex-col items-center gap-2 text-white/90 drop-shadow-lg">
                 <Icon icon="mdi:alert-circle" className="w-12 h-12 text-red-400" />
@@ -247,7 +255,7 @@ const SicboLiveStream = ({
             playsInline
             muted
             controls={false}
-            style={{ display: isPlaying && ((!isLivePaused && !isLiveEnded) || isAdmin) ? 'block' : 'none' }}
+            style={{ display: isPlaying && ((!isLivePaused && !displayIsLiveEnded) || isAdmin) ? 'block' : 'none' }}
           />
         </div>
       </div>

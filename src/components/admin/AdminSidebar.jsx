@@ -172,33 +172,39 @@ const getMenuForPortal = (portalType, session) => {
 
     const gameManagementItem = baseItems.find((item) => item.key === 'game-management');
     if (gameManagementItem) {
-      const staffPortal = adminMenuItems.find((item) => item.key === 'staff-portal');
-      const staffResultItems = [];
+      const sicboManagementItem = gameManagementItem.children?.find(
+        (item) => item.key === 'sicbo-management'
+      );
+      
+      if (sicboManagementItem) {
+        const staffPortal = adminMenuItems.find((item) => item.key === 'staff-portal');
+        const staffResultItems = [];
 
-      if (staffPortal?.children) {
-        staffPortal.children.forEach((section) => {
-          if (section.key === 'staff-tx1' || section.key === 'staff-tx2') {
-            section.children?.forEach((child) => {
-              if (
-                child.key === 'staff-tx1-sicbo-results' ||
-                child.key === 'staff-tx2-sicbo-results'
-              ) {
-                staffResultItems.push({ ...child });
-              }
-            });
-          }
-        });
-      }
+        if (staffPortal?.children) {
+          staffPortal.children.forEach((section) => {
+            if (section.key === 'staff-tx1' || section.key === 'staff-tx2') {
+              section.children?.forEach((child) => {
+                if (
+                  child.key === 'staff-tx1-sicbo-results' ||
+                  child.key === 'staff-tx2-sicbo-results'
+                ) {
+                  staffResultItems.push({ ...child, icon: undefined });
+                }
+              });
+            }
+          });
+        }
 
-      if (staffResultItems.length > 0) {
-        const existingKeys = new Set(
-          (gameManagementItem.children || []).map((child) => child.key)
-        );
-        const mergedChildren = [
-          ...(gameManagementItem.children || []),
-          ...staffResultItems.filter((item) => !existingKeys.has(item.key))
-        ];
-        gameManagementItem.children = mergedChildren;
+        if (staffResultItems.length > 0) {
+          const existingKeys = new Set(
+            (sicboManagementItem.children || []).map((child) => child.key)
+          );
+          const mergedChildren = [
+            ...(sicboManagementItem.children || []),
+            ...staffResultItems.filter((item) => !existingKeys.has(item.key))
+          ];
+          sicboManagementItem.children = mergedChildren;
+        }
       }
     }
 
@@ -375,7 +381,6 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
       deposits: () => goTo('/dashboard?tab=deposits'),
       withdraws: () => goTo('/dashboard?tab=withdraws'),
       'payment-methods': () => goTo('/dashboard?tab=payment-methods'),
-      'deposit-gateway-configs': () => goTo('/dashboard?tab=deposit-gateway-configs'),
       'points-management': () => goTo('/points'),
       'agent-customer-list': () => goTo('/dashboard?tab=agent-customer-list'),
       'agent-invite-codes': () => goTo('/dashboard?tab=agent-invite-codes'),

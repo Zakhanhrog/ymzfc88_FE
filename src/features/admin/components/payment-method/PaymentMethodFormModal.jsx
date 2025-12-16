@@ -21,6 +21,7 @@ const PaymentMethodFormModal = ({
     accountNumber: '',
     accountName: '',
     bankCode: '',
+    channelCode: '', // Mã kênh từ OKDPAY
     minAmount: '',
     maxAmount: '',
     feePercent: '0',
@@ -41,6 +42,7 @@ const PaymentMethodFormModal = ({
         accountNumber: initialData.accountNumber || '',
         accountName: initialData.accountName || '',
         bankCode: initialData.bankCode || '',
+        channelCode: initialData.channelCode || '',
         minAmount: initialData.minAmount?.toString() || '',
         maxAmount: initialData.maxAmount?.toString() || '',
         feePercent: initialData.feePercent?.toString() || '0',
@@ -58,6 +60,7 @@ const PaymentMethodFormModal = ({
         accountNumber: '',
         accountName: '',
         bankCode: '',
+        channelCode: '',
         minAmount: '',
         maxAmount: '',
         feePercent: '0',
@@ -106,6 +109,10 @@ const PaymentMethodFormModal = ({
     if (!formData.name) newErrors.name = 'Vui lòng nhập tên hiển thị';
     if (!formData.accountNumber) newErrors.accountNumber = 'Vui lòng nhập số tài khoản';
     if (!formData.accountName) newErrors.accountName = 'Vui lòng nhập tên chủ tài khoản';
+    if (formData.type === 'BANK') {
+      if (!formData.bankCode) newErrors.bankCode = 'Vui lòng nhập mã ngân hàng';
+      // Không validate channelCode vì đang dùng chung mã 1001 mặc định
+    }
     if (!formData.minAmount) newErrors.minAmount = 'Vui lòng nhập số tiền tối thiểu';
     else if (parseInt(formData.minAmount) < 1000) newErrors.minAmount = 'Số tiền tối thiểu phải >= 1,000';
     if (!formData.maxAmount) newErrors.maxAmount = 'Vui lòng nhập số tiền tối đa';
@@ -124,7 +131,9 @@ const PaymentMethodFormModal = ({
       maxAmount: parseInt(formData.maxAmount),
       feePercent: parseFloat(formData.feePercent) || 0,
       feeFixed: parseInt(formData.feeFixed) || 0,
-      displayOrder: parseInt(formData.displayOrder) || 1
+      displayOrder: parseInt(formData.displayOrder) || 1,
+      // Không gửi channelCode nếu type = BANK (sẽ dùng mặc định 1001)
+      channelCode: formData.type === 'BANK' ? null : (formData.channelCode || null)
     };
 
     onSubmit(submitData);
@@ -137,6 +146,7 @@ const PaymentMethodFormModal = ({
       accountNumber: '',
       accountName: '',
       bankCode: '',
+      channelCode: '',
       minAmount: '',
       maxAmount: '',
       feePercent: '0',
@@ -218,6 +228,26 @@ const PaymentMethodFormModal = ({
             {errors.accountName && <p className="text-red-500 text-xs mt-1">{errors.accountName}</p>}
           </div>
 
+          {formData.type === 'BANK' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mã ngân hàng <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.bankCode}
+                onChange={(e) => handleChange('bankCode', e.target.value.toUpperCase())}
+                placeholder="VD: VCB, TCB, MB..."
+                error={errors.bankCode}
+              />
+              {errors.bankCode && <p className="text-red-500 text-xs mt-1">{errors.bankCode}</p>}
+              <p className="text-xs text-gray-500 mt-1">Mã ngân hàng chuẩn (VD: VCB, TCB, MB, BIDV...)</p>
+              <p className="text-xs text-blue-600 mt-1 font-medium">
+                ℹ️ Mã kênh OKDPAY sẽ tự động sử dụng 1001 (chung cho tất cả ngân hàng Việt Nam)
+              </p>
+            </div>
+          )}
+
+          {formData.type !== 'BANK' && (
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Mã ngân hàng (nếu có)
@@ -228,6 +258,7 @@ const PaymentMethodFormModal = ({
               placeholder="VD: VCB, TCB, MB..."
             />
           </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">

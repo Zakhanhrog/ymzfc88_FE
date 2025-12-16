@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { message } from 'antd';
 import adminLotteryResultService from '../services/adminLotteryResultService';
-import LotteryResultFormTable from '../../../components/admin/LotteryResultFormTable';
+import LotteryResultFilters from './lottery-result/LotteryResultFilters';
+import LotteryResultTable from './lottery-result/LotteryResultTable';
+import LotteryResultModal from './lottery-result/LotteryResultModal';
+import Alert from '../../../components/ui/Alert';
 
 const AdminLotteryResultManagement = () => {
   const [results, setResults] = useState([]);
@@ -11,6 +15,7 @@ const AdminLotteryResultManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // create, edit, view
   const [selectedResult, setSelectedResult] = useState(null);
+  const [notification, setNotification] = useState(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -157,10 +162,12 @@ const AdminLotteryResultManagement = () => {
 
     const response = await adminLotteryResultService.deleteLotteryResult(id);
     if (response.success) {
-      alert(response.message);
+      message.success(response.message);
+      setNotification({ type: 'success', message: response.message });
       loadResults();
     } else {
-      alert(response.message);
+      message.error(response.message);
+      setNotification({ type: 'error', message: response.message });
     }
   };
 
@@ -171,10 +178,12 @@ const AdminLotteryResultManagement = () => {
 
     const response = await adminLotteryResultService.publishResult(id);
     if (response.success) {
-      alert(response.message);
+      message.success(response.message);
+      setNotification({ type: 'success', message: response.message });
       loadResults();
     } else {
-      alert(response.message);
+      message.error(response.message);
+      setNotification({ type: 'error', message: response.message });
     }
   };
 
@@ -185,10 +194,12 @@ const AdminLotteryResultManagement = () => {
 
     const response = await adminLotteryResultService.unpublishResult(id);
     if (response.success) {
-      alert(response.message);
+      message.success(response.message);
+      setNotification({ type: 'success', message: response.message });
       loadResults();
     } else {
-      alert(response.message);
+      message.error(response.message);
+      setNotification({ type: 'error', message: response.message });
     }
   };
 
@@ -199,7 +210,8 @@ const AdminLotteryResultManagement = () => {
       // Validate JSON
       JSON.parse(formData.results);
     } catch (error) {
-      alert('JSON kết quả không hợp lệ: ' + error.message);
+      message.error('JSON kết quả không hợp lệ: ' + error.message);
+      setNotification({ type: 'error', message: 'JSON kết quả không hợp lệ: ' + error.message });
       return;
     }
 
@@ -214,25 +226,38 @@ const AdminLotteryResultManagement = () => {
     }
 
     if (response.success) {
-      alert(response.message);
+      message.success(response.message);
+      setNotification({ type: 'success', message: response.message });
       setShowModal(false);
       loadResults();
     } else {
-      alert(response.message);
+      message.error(response.message);
+      setNotification({ type: 'error', message: response.message });
     }
   };
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const handleRegionChange = (region) => {
     const template = region === 'mienBac' 
       ? adminLotteryResultService.getMienBacTemplate()
       : adminLotteryResultService.getMienTrungNamTemplate();
     
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       region,
-      province: region === 'mienBac' ? '' : formData.province,
+      province: region === 'mienBac' ? '' : prev.province,
       results: JSON.stringify(template, null, 2)
-    });
+    }));
+  };
+
+  const handleFormDataChange = (newFormData) => {
+    setFormData(newFormData);
   };
 
   // Handle results change from form table
@@ -268,338 +293,57 @@ const AdminLotteryResultManagement = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    if (status === 'PUBLISHED') {
-      return <span className="px-2 py-1 bg-green-500 text-white rounded text-sm">Đã công bố</span>;
-    } else {
-      return <span className="px-2 py-1 bg-yellow-500 text-white rounded text-sm">Nháp</span>;
-    }
-  };
-
-  const provinces = [
-    // Miền Trung (14 tỉnh)
-    { value: 'phuyen', label: 'Phú Yên' },
-    { value: 'thuathienhue', label: 'Thừa Thiên Huế' },
-    { value: 'daklak', label: 'Đắk Lắk' },
-    { value: 'quangnam', label: 'Quảng Nam' },
-    { value: 'danang', label: 'Đà Nẵng' },
-    { value: 'khanhhoa', label: 'Khánh Hòa' },
-    { value: 'binhdinh', label: 'Bình Định' },
-    { value: 'quangbinh', label: 'Quảng Bình' },
-    { value: 'quangtri', label: 'Quảng Trị' },
-    { value: 'gialai', label: 'Gia Lai' },
-    { value: 'ninhthuan', label: 'Ninh Thuận' },
-    { value: 'daknong', label: 'Đắk Nông' },
-    { value: 'quangngai', label: 'Quảng Ngãi' },
-    { value: 'kontum', label: 'Kon Tum' },
-    
-    // Miền Nam (17 tỉnh)
-    { value: 'camau', label: 'Cà Mau' },
-    { value: 'dongthap', label: 'Đồng Tháp' },
-    { value: 'hcm', label: 'TP HCM' },
-    { value: 'baclieu', label: 'Bạc Liêu' },
-    { value: 'bentre', label: 'Bến Tre' },
-    { value: 'vungtau', label: 'Vũng Tàu' },
-    { value: 'cantho', label: 'Cần Thơ' },
-    { value: 'dongnai', label: 'Đồng Nai' },
-    { value: 'soctrang', label: 'Sóc Trăng' },
-    { value: 'angiang', label: 'An Giang' },
-    { value: 'binhthuan', label: 'Bình Thuận' },
-    { value: 'tayninh', label: 'Tây Ninh' },
-    { value: 'binhduong', label: 'Bình Dương' },
-    { value: 'travinh', label: 'Trà Vinh' },
-    { value: 'vinhlong', label: 'Vĩnh Long' },
-    { value: 'binhphuoc', label: 'Bình Phước' },
-    { value: 'haugiang', label: 'Hậu Giang' },
-    { value: 'longan', label: 'Long An' },
-    { value: 'dalat', label: 'Đà Lạt' },
-    { value: 'kiengiang', label: 'Kiên Giang' },
-    { value: 'tiengiang', label: 'Tiền Giang' }
-  ];
-
-  const getProvinceName = (provinceCode) => {
-    if (!provinceCode) return '-';
-    const province = provinces.find(p => p.value === provinceCode);
-    return province ? province.label : provinceCode;
-  };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý kết quả xổ số</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          + Tạo kết quả mới
-        </button>
-      </div>
+    <div className="space-y-6">
+      {notification && (
+        <Alert
+          type={notification.type}
+          message={notification.message}
+          closable
+          onClose={() => setNotification(null)}
+        />
+      )}
 
-      {/* Filter */}
-      <div className="mb-4 flex gap-4">
-        <select
-          value={filterRegion}
-          onChange={(e) => {
-            setFilterRegion(e.target.value);
+      <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <LotteryResultFilters
+          filterRegion={filterRegion}
+          onFilterChange={(value) => {
+            setFilterRegion(value);
             setCurrentPage(0);
           }}
-          className="border rounded px-3 py-2"
-        >
-          <option value="">Tất cả vùng miền</option>
-          <option value="mienBac">Miền Bắc</option>
-          <optgroup label="Miền Trung">
-            {provinces.filter(p => ['phuyen', 'thuathienhue', 'daklak', 'quangnam', 'danang', 'khanhhoa', 'binhdinh', 'quangbinh', 'quangtri', 'gialai', 'ninhthuan', 'daknong', 'quangngai', 'kontum'].includes(p.value)).map(province => (
-              <option key={province.value} value={province.value}>{province.label}</option>
-            ))}
-          </optgroup>
-          <optgroup label="Miền Nam">
-            {provinces.filter(p => ['camau', 'dongthap', 'hcm', 'baclieu', 'bentre', 'vungtau', 'cantho', 'dongnai', 'soctrang', 'angiang', 'binhthuan', 'tayninh', 'binhduong', 'travinh', 'vinhlong', 'binhphuoc', 'haugiang', 'longan', 'dalat', 'kiengiang', 'tiengiang'].includes(p.value)).map(province => (
-              <option key={province.value} value={province.value}>{province.label}</option>
-            ))}
-          </optgroup>
-        </select>
+          onCreate={handleCreate}
+        />
+
+        <div className="mt-4">
+          <LotteryResultTable
+            results={results}
+            loading={loading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onPublish={handlePublish}
+            onUnpublish={handleUnpublish}
+          />
+        </div>
       </div>
 
-      {/* Table */}
-      {loading ? (
-        <div className="text-center py-8">Đang tải...</div>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-2">ID</th>
-                  <th className="border p-2">Vùng miền</th>
-                  <th className="border p-2">Tỉnh</th>
-                  <th className="border p-2">Ngày quay</th>
-                  <th className="border p-2">Trạng thái</th>
-                  <th className="border p-2">Ngày tạo</th>
-                  <th className="border p-2">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4">
-                      Chưa có kết quả nào
-                    </td>
-                  </tr>
-                ) : (
-                  results.map((result) => (
-                    <tr key={result.id} className="hover:bg-gray-50">
-                      <td className="border p-2 text-center">{result.id}</td>
-                      <td className="border p-2">
-                        {result.region === 'mienBac' ? 'Miền Bắc' : 'Miền Trung Nam'}
-                      </td>
-                      <td className="border p-2">
-                        {result.region === 'mienBac' ? '-' : getProvinceName(result.province)}
-                      </td>
-                      <td className="border p-2">{formatDate(result.drawDate)}</td>
-                      <td className="border p-2 text-center">
-                        {getStatusBadge(result.status)}
-                      </td>
-                      <td className="border p-2">{formatDate(result.createdAt)}</td>
-                      <td className="border p-2">
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            onClick={() => handleView(result)}
-                            className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm"
-                          >
-                            Xem
-                          </button>
-                          <button
-                            onClick={() => handleEdit(result)}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-sm"
-                          >
-                            Sửa
-                          </button>
-                          {result.status === 'DRAFT' ? (
-                            <button
-                              onClick={() => handlePublish(result.id)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm"
-                            >
-                              Công bố
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleUnpublish(result.id)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded text-sm"
-                            >
-                              Hủy CB
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDelete(result.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm"
-                          >
-                            Xóa
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-4">
-              <button
-                onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                disabled={currentPage === 0}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Trước
-              </button>
-              <span className="px-3 py-1">
-                Trang {currentPage + 1} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
-                disabled={currentPage >= totalPages - 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Sau
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">
-              {modalMode === 'create' && 'Tạo kết quả mới'}
-              {modalMode === 'edit' && 'Sửa kết quả'}
-              {modalMode === 'view' && 'Xem kết quả'}
-            </h2>
-
-            {modalMode === 'view' ? (
-              <div>
-                <div className="mb-4">
-                  <strong>Vùng miền:</strong> {selectedResult.region === 'mienBac' ? 'Miền Bắc' : 'Miền Trung Nam'}
-                </div>
-                <div className="mb-4">
-                  <strong>Tỉnh:</strong> {selectedResult.region === 'mienBac' ? '-' : getProvinceName(selectedResult.province)}
-                </div>
-                <div className="mb-4">
-                  <strong>Ngày quay:</strong> {formatDate(selectedResult.drawDate)}
-                </div>
-                <div className="mb-4">
-                  <strong>Trạng thái:</strong> {getStatusBadge(selectedResult.status)}
-                </div>
-                <div className="mb-4">
-                  <strong>Kết quả:</strong>
-                  <div className="mt-2">
-                    <LotteryResultFormTable
-                      initialResults={selectedResult.results}
-                      isEditing={false}
-                      isReadOnly={true}
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                >
-                  Đóng
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Vùng miền *</label>
-                  <select
-                    value={formData.region}
-                    onChange={(e) => handleRegionChange(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                    required
-                  >
-                    <option value="mienBac">Miền Bắc</option>
-                    <option value="mienTrungNam">Miền Trung Nam</option>
-                  </select>
-                </div>
-
-                {formData.region === 'mienTrungNam' && (
-                  <div className="mb-4">
-                    <label className="block mb-2 font-semibold">Tỉnh *</label>
-                    <select
-                      value={formData.province}
-                      onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                      required
-                    >
-                      <option value="">-- Chọn tỉnh --</option>
-                      {provinces.map((p) => (
-                        <option key={p.value} value={p.value}>
-                          {p.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Ngày quay *</label>
-                  <input
-                    type="date"
-                    value={formData.drawDate}
-                    onChange={(e) => setFormData({ ...formData, drawDate: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                    required
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Kết quả xổ số *</label>
-                  <LotteryResultFormTable
-                    initialResults={formData.results}
-                    onResultsChange={handleResultsChange}
-                    isEditing={modalMode === 'edit'}
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Nhập số vào các ô tương ứng với từng giải thưởng. Các ô trống sẽ không được lưu.
-                  </p>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Trạng thái *</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                    required
-                  >
-                    <option value="DRAFT">Nháp (chưa dùng để check)</option>
-                    <option value="PUBLISHED">Đã công bố (dùng để check)</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                  >
-                    {modalMode === 'create' ? 'Tạo' : 'Cập nhật'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                  >
-                    Hủy
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <LotteryResultModal
+        open={showModal}
+        mode={modalMode}
+        result={selectedResult}
+        formData={formData}
+        onClose={() => {
+          setShowModal(false);
+          setSelectedResult(null);
+        }}
+        onSubmit={handleSubmit}
+        onFormDataChange={handleFormDataChange}
+        onRegionChange={handleRegionChange}
+      />
     </div>
   );
 };

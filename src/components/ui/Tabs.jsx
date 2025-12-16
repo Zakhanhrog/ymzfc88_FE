@@ -25,17 +25,21 @@ const Tabs = ({
   return (
     <div className={className}>
       {/* Tab Bar */}
-      <div className={`flex border-b border-gray-200 ${tabBarClassName}`}>
+      <div className={`flex ${tabBarClassName || 'border-b border-gray-200'}`}>
         {items.map((item) => (
           <button
             key={item.key}
             onClick={() => handleTabClick(item.key)}
             disabled={item.disabled}
             className={`
-              relative px-6 py-3 font-medium text-sm transition-all duration-200
+              relative px-6 h-10 font-medium text-sm transition-all duration-200 flex items-center justify-center
               ${currentActiveKey === item.key 
-                ? 'text-[#4CAF50] border-b-2 border-[#4CAF50]' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? tabBarClassName.includes('border-0')
+                  ? 'bg-[#4CAF50] text-white rounded-2xl'
+                  : 'text-[#4CAF50] border-b-2 border-[#4CAF50]'
+                : tabBarClassName.includes('border-0')
+                  ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-2xl'
+                  : 'text-gray-600 hover:text-gray-900'
               }
               ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
@@ -49,9 +53,11 @@ const Tabs = ({
       </div>
       
       {/* Tab Content */}
-      <div className={`${contentClassName || 'p-4 md:p-6'}`}>
-        {activeTab?.children}
-      </div>
+      {contentClassName !== 'hidden' && (
+        <div className={`${contentClassName || 'p-4 md:p-6'}`}>
+          {activeTab?.children}
+        </div>
+      )}
     </div>
   );
 };

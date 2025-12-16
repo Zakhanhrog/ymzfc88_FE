@@ -23,7 +23,6 @@ import AdminUserManagement from './AdminUserManagement';
 import AdminDepositApproval from './AdminDepositApproval';
 import AdminWithdrawApproval from './AdminWithdrawApproval';
 import AdminPaymentMethodManagement from './AdminPaymentMethodManagement';
-import AdminDepositGatewayConfig from './AdminDepositGatewayConfig';
 import AdminKycVerification from './AdminKycVerification';
 import AdminLoginHistory from './AdminLoginHistory';
 import AdminSystemSettings from './AdminSystemSettings';
@@ -263,16 +262,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'payment-methods':
         return <AdminPaymentMethodManagement />;
 
-      case 'deposit-gateway-configs':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader 
-              title="Cấu hình cổng nạp tự động" 
-              description="Khai báo mã ngân hàng, merchant, API key cho cổng nạp tự động" 
-            />
-            <AdminDepositGatewayConfig />
-          </div>
-        );
 
       case 'kyc-verification':
         return (
@@ -282,15 +271,7 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         );
 
       case 'bet-management':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý cược" 
-              description="Quản lý và thay đổi kết quả các lệnh cược của người dùng" 
-            />
-            <AdminBetManagement />
-          </div>
-        );
+        return <AdminBetManagement />;
 
       case 'game-history':
         return <AdminGameHistory />;
@@ -307,15 +288,7 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         );
 
       case 'game-results':
-        return (
-          <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý kết quả xổ số" 
-              description="Quản lý kết quả xổ số cho từng vùng miền và tỉnh" 
-            />
-            <AdminLotteryResultManagement />
-          </div>
-        );
+        return <AdminLotteryResultManagement />;
 
       case 'xoc-dia-results':
         return (

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Icon } from '@iconify/react';
+import { message } from 'antd';
 import adminBettingOddsService from '../services/adminBettingOddsService';
+import BettingOddsHeader from './betting-odds/BettingOddsHeader';
+import BettingOddsTabs from './betting-odds/BettingOddsTabs';
+import BettingOddsTable from './betting-odds/BettingOddsTable';
+import BettingOddsStats from './betting-odds/BettingOddsStats';
+import Alert from '../../../components/ui/Alert';
 
 const AdminBettingOddsManagement = () => {
   const [activeTab, setActiveTab] = useState('MIEN_BAC');
@@ -31,10 +36,12 @@ const AdminBettingOddsManagement = () => {
         });
         setEditedData(initialEditedData);
       } else {
-        showNotification('error', response.message);
+        message.error(response.message);
+        setNotification({ type: 'error', message: response.message });
       }
     } catch (error) {
-      showNotification('error', 'Lỗi khi tải dữ liệu tỷ lệ cược');
+      message.error('Lỗi khi tải dữ liệu tỷ lệ cược');
+      setNotification({ type: 'error', message: 'Lỗi khi tải dữ liệu tỷ lệ cược' });
     } finally {
       setLoading(false);
     }
@@ -80,259 +87,65 @@ const AdminBettingOddsManagement = () => {
       const response = await adminBettingOddsService.batchUpdateBettingOdds(updateList);
       
       if (response.success) {
-        showNotification('success', 'Cập nhật tỷ lệ cược thành công!');
+        message.success('Cập nhật tỷ lệ cược thành công!');
         setEditMode(false);
         await loadBettingOdds();
+        setNotification({ type: 'success', message: 'Cập nhật tỷ lệ cược thành công!' });
       } else {
-        showNotification('error', response.message);
+        message.error(response.message);
+        setNotification({ type: 'error', message: response.message });
       }
     } catch (error) {
-      showNotification('error', 'Lỗi khi lưu thay đổi');
+      message.error('Lỗi khi lưu thay đổi');
+      setNotification({ type: 'error', message: 'Lỗi khi lưu thay đổi' });
     } finally {
       setSaving(false);
     }
   };
 
-  const showNotification = (type, message) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 5000);
-  };
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(value);
-  };
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Quản lý Tỷ lệ Cược</h2>
-          <p className="text-gray-600 mt-1">Cấu hình tỷ lệ cược và đơn giá cho các loại hình xổ số</p>
-        </div>
-        <div className="flex gap-2">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleEditToggle}
-                disabled={saving}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleSaveChanges}
-                disabled={saving}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {saving ? (
-                  <>
-                    <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
-                    Đang lưu...
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="mdi:content-save" className="w-5 h-5" />
-                    Lưu thay đổi
-                  </>
-                )}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={handleEditToggle}
-              disabled={loading}
-              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              <Icon icon="mdi:pencil" className="w-5 h-5" />
-              Chỉnh sửa
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Notification */}
+    <div className="space-y-6">
       {notification && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'
-        }`}>
-          <div className="flex items-center gap-2">
-            <Icon 
-              icon={notification.type === 'success' ? 'mdi:check-circle' : 'mdi:alert-circle'} 
-              className="w-5 h-5" 
-            />
-            <span>{notification.message}</span>
-          </div>
-        </div>
+        <Alert
+          type={notification.type}
+          message={notification.message}
+          closable
+          onClose={() => setNotification(null)}
+        />
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setActiveTab('MIEN_BAC')}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            activeTab === 'MIEN_BAC'
-              ? 'bg-[#4CAF50] text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          Miền Bắc
-        </button>
-        <button
-          onClick={() => setActiveTab('MIEN_TRUNG_NAM')}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            activeTab === 'MIEN_TRUNG_NAM'
-              ? 'bg-[#4CAF50] text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          Miền Trung & Nam
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center">
-            <Icon icon="mdi:loading" className="w-12 h-12 animate-spin mx-auto text-gray-400" />
-            <p className="mt-4 text-gray-600">Đang tải dữ liệu...</p>
-          </div>
-        ) : bettingOdds.length === 0 ? (
-          <div className="p-12 text-center">
-            <Icon icon="mdi:database-off" className="w-12 h-12 mx-auto text-gray-400" />
-            <p className="mt-4 text-gray-600">Chưa có dữ liệu tỷ lệ cược. Vui lòng tạo mới từng loại cược.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Loại cược
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tên
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Mô tả
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tỷ lệ (1 ăn)
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Đơn giá/điểm
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Trạng thái
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {bettingOdds.map((odds) => (
-                  <tr key={odds.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                        {odds.betType}
-                      </code>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {editMode ? (
-                        <input
-                          type="text"
-                          value={editedData[odds.id]?.betName || ''}
-                          onChange={(e) => handleFieldChange(odds.id, 'betName', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-sm font-medium text-gray-900">{odds.betName}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {editMode ? (
-                        <input
-                          type="text"
-                          value={editedData[odds.id]?.description || ''}
-                          onChange={(e) => handleFieldChange(odds.id, 'description', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-sm text-gray-600">{odds.description}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {editMode ? (
-                        <input
-                          type="number"
-                          min="1"
-                          value={editedData[odds.id]?.odds || ''}
-                          onChange={(e) => handleFieldChange(odds.id, 'odds', e.target.value)}
-                          className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-sm font-semibold text-green-600">{odds.odds}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {editMode ? (
-                        <input
-                          type="number"
-                          min="1000"
-                          step="1000"
-                          value={editedData[odds.id]?.pricePerPoint || ''}
-                          onChange={(e) => handleFieldChange(odds.id, 'pricePerPoint', e.target.value)}
-                          className="w-32 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-sm font-medium text-gray-900">
-                          {formatCurrency(odds.pricePerPoint)}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {editMode ? (
-                        <label className="flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editedData[odds.id]?.isActive || false}
-                            onChange={(e) => handleFieldChange(odds.id, 'isActive', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">Active</span>
-                        </label>
-                      ) : (
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          odds.isActive 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {odds.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Summary */}
-      {bettingOdds.length > 0 && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <div className="flex items-center gap-2 text-blue-800">
-            <Icon icon="mdi:information" className="w-5 h-5" />
-            <span className="text-sm">
-              Tổng số: <strong>{bettingOdds.length}</strong> loại cược | 
-              Active: <strong>{bettingOdds.filter(o => o.isActive).length}</strong> | 
-              Inactive: <strong>{bettingOdds.filter(o => !o.isActive).length}</strong>
-            </span>
-          </div>
+      <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <BettingOddsTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+          <BettingOddsHeader
+            editMode={editMode}
+            saving={saving}
+            loading={loading}
+            onEditToggle={handleEditToggle}
+            onSaveChanges={handleSaveChanges}
+          />
         </div>
-      )}
+
+        <BettingOddsTable
+          bettingOdds={bettingOdds}
+          editMode={editMode}
+          editedData={editedData}
+          loading={loading}
+          onFieldChange={handleFieldChange}
+        />
+      </div>
+
+      <BettingOddsStats bettingOdds={bettingOdds} />
     </div>
   );
 };
