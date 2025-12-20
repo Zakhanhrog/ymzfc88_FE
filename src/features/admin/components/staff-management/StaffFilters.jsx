@@ -23,27 +23,26 @@ const StaffFilters = ({
   filterOptions
 }) => {
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-lg">
       <CardContent className="p-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex-1">
-            {allowRoleFilter && filterOptions.length > 0 && (
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Lọc theo vai trò:
-                </label>
-                <Select
-                  value={roleFilter}
-                  onChange={onRoleFilterChange}
-                  options={filterOptions}
-                  className="min-w-[220px] border border-transparent"
-                />
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap gap-3 xl:flex-nowrap xl:items-end">
+          {allowRoleFilter && filterOptions.length > 0 && (
+            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Lọc theo vai trò:
+              </label>
+              <Select
+                value={roleFilter}
+                onChange={onRoleFilterChange}
+                options={filterOptions}
+                className="flex-1 min-w-[180px]"
+                bordered
+              />
+            </div>
+          )}
+          <div className="flex items-center gap-2 ml-auto">
             {!readOnly && (
-              <Button onClick={onCreate} className="rounded-2xl">
+              <Button onClick={onCreate} className="rounded-lg">
                 <UserPlus className="h-4 w-4 mr-2" />
                 Tạo tài khoản nhân viên
               </Button>
@@ -52,7 +51,7 @@ const StaffFilters = ({
               variant="outline"
               onClick={onRefresh}
               disabled={loading}
-              className="rounded-2xl"
+              className="rounded-lg"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Làm mới

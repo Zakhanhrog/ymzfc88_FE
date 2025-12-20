@@ -42,7 +42,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
   };
 
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-lg">
       <CardContent className="p-4">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px]">
@@ -53,6 +53,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
                 value={formData.dateRange}
               onChange={(value) => handleFilterChange({ ...formData, dateRange: value })}
                 placeholder={['Từ ngày', 'Đến ngày']}
+                bordered
               />
             </div>
 
@@ -69,6 +70,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
                   { label: 'Tài Xỉu', value: 'sicbo' },
                   { label: 'Xóc Đĩa', value: 'xocdia' },
                 ]}
+                bordered
               />
             </div>
 
@@ -86,6 +88,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
                   { label: 'Thua', value: 'LOST' },
                   { label: 'Hủy', value: 'CANCELLED' },
                 ]}
+                bordered
               />
             </div>
 
@@ -104,6 +107,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
                   { label: 'Hoàn tiền', value: 'REFUND' },
                   { label: 'Điều chỉnh', value: 'ADJUSTMENT' },
                 ]}
+                bordered
               />
             </div>
 
@@ -123,6 +127,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
                   { label: 'Hủy', value: 'CANCELLED' },
                   { label: 'Thất bại', value: 'FAILED' },
                 ]}
+                bordered
               />
             </div>
 
@@ -131,7 +136,7 @@ const FilterForm = ({ filters, onFilterSubmit, onReset }) => {
                 type="button"
                 variant="outline"
                 onClick={handleReset}
-              className="px-4 rounded-2xl"
+                className="px-4 rounded-lg border-emerald-500 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
               >
                 Đặt lại
               </Button>

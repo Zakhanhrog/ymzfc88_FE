@@ -49,18 +49,18 @@ const UserFilterForm = ({
   };
 
   return (
-    <Card className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <Card className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="flex flex-wrap gap-3 xl:flex-nowrap xl:items-end">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
             <Input
               type="text"
               value={searchInput}
               onChange={handleSearchChange}
               placeholder="Tìm kiếm theo tên, email..."
-              className="pl-9 border border-transparent"
+              className="pl-9 h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:border-[#4CAF50]"
             />
           </div>
 
@@ -70,7 +70,8 @@ const UserFilterForm = ({
               placeholder="Vai trò"
               value={filters.role || ''}
               onChange={(value) => onFilterChange('role', value || null)}
-              className="border border-transparent"
+              className="min-w-[140px]"
+              bordered
               options={[
                 { label: 'Tất cả', value: '' },
                 { label: 'Người dùng', value: 'USER' },
@@ -84,7 +85,8 @@ const UserFilterForm = ({
             placeholder="Trạng thái"
             value={filters.status || ''}
             onChange={(value) => onFilterChange('status', value || null)}
-            className="border border-transparent"
+            className="min-w-[140px]"
+            bordered
             options={[
               { label: 'Tất cả', value: '' },
               { label: 'Hoạt động', value: 'ACTIVE' },
@@ -103,15 +105,14 @@ const UserFilterForm = ({
             }
             onChange={handleDateRangeChange}
             placeholder={['Từ ngày', 'Đến ngày']}
-            className="border border-transparent"
+            className="flex-1 min-w-[220px]"
+            bordered
           />
-        </div>
-
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-2">
           <Button
             onClick={onCreateUser}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg"
           >
             <UserPlus className="h-4 w-4 mr-2" />
             Thêm người dùng
@@ -119,11 +120,12 @@ const UserFilterForm = ({
           <Button
             onClick={onReset}
             variant="outline"
-            className="rounded-2xl"
+            className="rounded-lg border-emerald-500 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
             Đặt lại
           </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

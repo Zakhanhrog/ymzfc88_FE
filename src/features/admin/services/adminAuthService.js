@@ -21,7 +21,7 @@ const isUserAuthorizedForPortal = (portal, user) => {
   return user.role === 'ADMIN';
 };
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://api.tathiet168.com/api';
 
 const adminAPI = axios.create({
   baseURL: API_BASE_URL,

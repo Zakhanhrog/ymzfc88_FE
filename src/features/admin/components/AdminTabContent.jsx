@@ -37,7 +37,7 @@ import PromotionManagement from './PromotionManagement';
 import AdminMarqueeNotificationManagement from './AdminMarqueeNotificationManagement';
 import AdminBannerManagement from './AdminBannerManagement';
 import AdminStreamConfigManagement from './AdminStreamConfigManagement';
-import TelegramSettings from '../pages/TelegramSettings';
+import AdminTelegramSettings from './AdminTelegramSettings';
 import { getPortalType } from '../../../utils/subdomain';
 import AdminProfile from './AdminProfile';
 import StaffSicboResultManagement from './StaffSicboResultManagement';
@@ -71,6 +71,7 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
             <DashboardCharts 
               chartData={dashboardStats?.chart}
               activities={dashboardStats?.recentActivities}
+              recentUsers={dashboardStats?.recentUsers}
             />
           </div>
         );
@@ -279,10 +280,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'user-game-bets':
         return (
           <div className="space-y-6">
-            <TabPageHeader
-              title="BÁO CÁO THẮNG/THUA"
-              description="Thống kê tổng cược, lãi/lỗ và lịch sử lệnh của từng người dùng"
-            />
             <AdminUserBetHistory />
           </div>
         );
@@ -307,15 +304,15 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         return <PromotionManagement />;
 
       case 'notifications':
-        return <AdminNotificationManagement />;
+        return (
+          <div className="space-y-6">
+            <AdminNotificationManagement />
+          </div>
+        );
 
       case 'marquee-notifications':
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý thông báo chạy" 
-              description="Quản lý các thông báo chạy trên trang chủ" 
-            />
             <AdminMarqueeNotificationManagement />
           </div>
         );
@@ -323,10 +320,6 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'banners':
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý Banner" 
-              description="Quản lý các banner quảng cáo trên trang chủ" 
-            />
             <AdminBannerManagement />
           </div>
         );
@@ -334,16 +327,12 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
       case 'stream-configs':
         return (
           <div className="space-y-6">
-            <TabPageHeader 
-              title="Quản lý Stream Config" 
-              description="Quản lý stream keys cho livestream games (Xóc Đĩa, Sicbo)" 
-            />
             <AdminStreamConfigManagement />
           </div>
         );
 
       case 'telegram-settings':
-        return <TelegramSettings />;
+        return <AdminTelegramSettings />;
 
       default:
         return (

@@ -377,36 +377,39 @@ const AdminUserBetHistory = () => {
       {/* Filter Section */}
       <Card className="rounded-2xl">
         <CardContent className="p-4">
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-wrap gap-3 xl:flex-nowrap xl:items-end">
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Tìm theo tài khoản/tên
               </label>
-                <Input
-                  placeholder="Tài khoản / tên"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
+              <Input
+                placeholder="Tài khoản / tên"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0"
+              />
             </div>
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Mã đại lý
               </label>
-                <Input
-                  placeholder="Mã đại lý"
-                  value={agentCode}
-                  onChange={(e) => setAgentCode(e.target.value)}
-                />
+              <Input
+                placeholder="Mã đại lý"
+                value={agentCode}
+                onChange={(e) => setAgentCode(e.target.value)}
+                className="h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0"
+              />
             </div>
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Khoảng thời gian
               </label>
               <DateRangePicker
-                  value={dateRange}
+                value={dateRange}
                 onChange={(value) => setDateRange(value)}
-                  placeholder={['Từ ngày', 'Đến ngày']}
-                />
+                placeholder={['Từ ngày', 'Đến ngày']}
+                bordered
+              />
             </div>
             <div className="flex gap-2">
               <Button

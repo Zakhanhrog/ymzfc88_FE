@@ -7,7 +7,7 @@ import KycStatusTag from './KycStatusTag';
 const KycDetailModal = ({ open, onClose, kyc, onApprove, onReject }) => {
   if (!kyc) return null;
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.tathiet168.com';
 
   return (
     <Modal

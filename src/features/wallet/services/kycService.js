@@ -1,11 +1,12 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://api.tathiet168.com/api';
 
 const getAuthHeader = () => {
+  // Ưu tiên adminToken cho các API admin, sau đó mới đến user tokens
+  const adminToken = localStorage.getItem('adminToken');
   const authToken = localStorage.getItem('authToken');
   const legacyUserToken = localStorage.getItem('token');
-  const adminToken = localStorage.getItem('adminToken');
   
-  const token = authToken || legacyUserToken || adminToken;
+  const token = adminToken || authToken || legacyUserToken;
   
   return token
     ? { Authorization: `Bearer ${token}` }

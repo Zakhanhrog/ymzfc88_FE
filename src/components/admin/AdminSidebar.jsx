@@ -8,8 +8,10 @@ import { getPortalLoginPath, getPortalPath } from '../../utils/navigation';
 import { getPortalType } from '../../utils/subdomain';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import Dropdown, { DropdownMenu } from '../ui/Dropdown';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronRight, Search, LogOut, Menu, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, LogOut, Menu, ChevronLeft } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 const convertMenuItems = (items) => {
   return items.map(item => ({
@@ -449,9 +451,10 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
         (isFilterMode && hasChildren) ||
         (!isForcedClosed && (openGroups.includes(item.key) || isDescendantActive));
       const isSelfActive = activeKey === item.key;
+      const isDescendantActiveOnly = isDescendantActive && !isSelfActive; // Chỉ có con được chọn, không phải chính nó
       const isActive = isSelfActive || isDescendantActive;
 
-      const IconComponent = item.icon;
+      const iconName = item.icon; // Icon name string từ adminMenuData
 
       const handleClick = () => {
         if (hasChildren) {
@@ -473,27 +476,164 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
       };
 
       if (collapsed) {
+        const buttonContent = (
+          <Button
+            type="button"
+            onClick={hasChildren ? undefined : handleClick}
+            variant="ghost"
+            className={cn(
+              "w-full h-12 rounded-md transition-all duration-200 [&_svg]:!size-6 [&_svg]:!h-6 [&_svg]:!w-6",
+              isSelfActive
+                ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/30" 
+                : isDescendantActiveOnly
+                ? "bg-emerald-50 text-emerald-700"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            )}
+            title={item.label}
+          >
+            {iconName ? (
+              <Icon icon={iconName} width="24" height="24" style={{ width: '24px', height: '24px', fontSize: '24px' }} />
+            ) : (
+              <Menu className="!h-6 !w-6" style={{ width: '24px', height: '24px' }} />
+            )}
+          </Button>
+        );
+
+        // Nếu có children, wrap trong Dropdown với hover
+        if (hasChildren) {
+          const childMenuItems = item.children.map((child) => ({
+            label: child.label,
+            icon: child.icon ? <Icon icon={child.icon} className="h-4 w-4" /> : null,
+            onClick: () => handleNavigate(child.key),
+            disabled: false
+          }));
+
+          return (
+            <div key={item.key} className="py-0.5">
+              <Dropdown
+                trigger="hover"
+                placement="right-start"
+                overlay={
+                  <div className="bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[200px]">
+                    <div className="px-3 py-2 border-b border-gray-200">
+                      <span className="text-sm font-semibold text-gray-900">{item.label}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      {item.children.map((child) => {
+                      const childIconName = child.icon;
+                      const isChildActive = activeKey === child.key;
+                      const hasGrandChildren = Array.isArray(child.children) && child.children.length > 0;
+                      
+                      const buttonContent = (
+                        <button
+                          key={child.key}
+                          type="button"
+                          onClick={(e) => {
+                            if (!hasGrandChildren) {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleNavigate(child.key);
+                            }
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                          }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-3",
+                            isChildActive
+                              ? "bg-emerald-50 text-emerald-700 font-medium"
+                              : "text-gray-700 hover:bg-gray-100"
+                          )}
+                        >
+                          {childIconName && (
+                            <Icon 
+                              icon={childIconName} 
+                              className={cn(
+                                "h-4 w-4 flex-shrink-0",
+                                isChildActive ? "text-emerald-600" : "text-gray-500"
+                              )} 
+                            />
+                          )}
+                          <span className="flex-1">{child.label}</span>
+                          {hasGrandChildren && (
+                            <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                          )}
+                        </button>
+                      );
+
+                      // Nếu có children, wrap trong Dropdown
+                      if (hasGrandChildren) {
+                        return (
+                          <Dropdown
+                            key={child.key}
+                            trigger="hover"
+                            placement="right-start"
+                            overlay={
+                              <div className="bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[200px]">
+                                {child.children.map((grandChild) => {
+                                  const grandChildIconName = grandChild.icon;
+                                  const isGrandChildActive = activeKey === grandChild.key;
+                                  return (
+                                    <button
+                                      key={grandChild.key}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        handleNavigate(grandChild.key);
+                                      }}
+                                      onMouseDown={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                      className={cn(
+                                        "w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-3",
+                                        isGrandChildActive
+                                          ? "bg-emerald-50 text-emerald-700 font-medium"
+                                          : "text-gray-700 hover:bg-gray-100"
+                                      )}
+                                    >
+                                      {grandChildIconName && (
+                                        <Icon 
+                                          icon={grandChildIconName} 
+                                          className={cn(
+                                            "h-4 w-4 flex-shrink-0",
+                                            isGrandChildActive ? "text-emerald-600" : "text-gray-500"
+                                          )} 
+                                        />
+                                      )}
+                                      <span>{grandChild.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            }
+                          >
+                            {buttonContent}
+                          </Dropdown>
+                        );
+                      }
+
+                      // Nếu không có children, chỉ render button
+                      return (
+                        <div key={child.key} className="block">
+                          {buttonContent}
+                        </div>
+                      );
+                    })}
+                    </div>
+                  </div>
+                }
+              >
+                {buttonContent}
+              </Dropdown>
+            </div>
+          );
+        }
+
+        // Nếu không có children, chỉ render button
         return (
-          <div key={item.key} className="py-1">
-            <Button
-              type="button"
-              onClick={handleClick}
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "w-full h-10 rounded-lg transition-all",
-                isActive 
-                  ? "bg-emerald-50 text-emerald-600" 
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              )}
-              title={item.label}
-            >
-              {IconComponent ? (
-                <IconComponent className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
+          <div key={item.key} className="py-0.5">
+            {buttonContent}
           </div>
         );
       }
@@ -504,19 +644,27 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
             type="button"
             onClick={handleClick}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
-              "hover:bg-gray-50",
-              isActive
-                ? "bg-emerald-50 text-emerald-700 font-medium border-l-4 border-emerald-500"
-                : "text-gray-700 hover:text-gray-900"
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-200",
+              isSelfActive
+                ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold shadow-md shadow-emerald-500/30"
+                : isDescendantActiveOnly
+                ? "bg-emerald-50/50 text-emerald-700 font-medium border-l-2 border-emerald-400"
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
             )}
             style={{ paddingLeft: `${12 + depth * 16}px` }}
           >
-            {IconComponent && (
-              <IconComponent className={cn(
-                "h-4 w-4 flex-shrink-0",
-                isActive ? "text-emerald-600" : "text-gray-500"
-              )} />
+            {iconName && (
+              <Icon 
+                icon={iconName} 
+                className={cn(
+                  "h-5 w-5 flex-shrink-0",
+                  isSelfActive 
+                    ? "text-white" 
+                    : isDescendantActiveOnly
+                    ? "text-emerald-600"
+                    : "text-gray-500"
+                )} 
+              />
             )}
             <span className="flex-1 text-left">
               {item.label}
@@ -524,16 +672,37 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
             {hasChildren && (
               <div className="ml-auto">
                 {isOpen ? (
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <ChevronDown className={cn(
+                    "h-4 w-4", 
+                    isSelfActive 
+                      ? "text-white/80" 
+                      : isDescendantActiveOnly
+                      ? "text-emerald-600"
+                      : "text-gray-400"
+                  )} />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                  <ChevronRight className={cn(
+                    "h-4 w-4", 
+                    isSelfActive 
+                      ? "text-white/80" 
+                      : isDescendantActiveOnly
+                      ? "text-emerald-600"
+                      : "text-gray-400"
+                  )} />
                 )}
               </div>
             )}
           </button>
-          {hasChildren && isOpen && (
-            <div className="ml-4 border-l border-gray-200 pl-2 mt-1 space-y-0.5">
+          {hasChildren && (
+            <div
+              className={cn(
+                "grid transition-all duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+                isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              )}
+            >
+              <div className="overflow-hidden ml-4 border-l border-gray-200 pl-2 mt-1 space-y-0.5">
               {item.children.map((child) => renderMenuNode(child, depth + 1))}
+              </div>
             </div>
           )}
         </div>
@@ -565,20 +734,27 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
         }}
       >
         {collapsed ? (
-          <Button
+          <button
             type="button"
             onClick={onToggleCollapse}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+            className="flex items-center justify-center w-full h-full hover:bg-gray-50 rounded transition-colors"
+            title="Mở rộng sidebar"
           >
-            <ChevronRight className="h-5 w-5 text-gray-600" />
-          </Button>
+            <img 
+              src="/favicon.png" 
+              alt="Logo" 
+              className="h-8 w-8 object-contain"
+            />
+          </button>
         ) : (
           <>
-            <h1 className="text-base font-bold text-gray-900">
-              {portalTitle}
-            </h1>
+            <div className="flex items-center gap-3 flex-1">
+              <img 
+                src="/images/logos/logo.png" 
+                alt="Logo" 
+                className="h-10 object-contain"
+              />
+            </div>
             <Button
               type="button"
               onClick={onToggleCollapse}
@@ -591,26 +767,6 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
           </>
         )}
       </div>
-
-      {/* Search */}
-      {!collapsed && (
-        <div className="px-3 pt-3 pb-2 border-b border-gray-100">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-            <Input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm..."
-              className={cn(
-                "w-full rounded-lg border-gray-200 bg-gray-50 pl-8 pr-3 py-2",
-                "text-sm text-gray-900 placeholder:text-gray-400",
-                "focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500"
-              )}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Menu Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-1 custom-scrollbar">

@@ -236,13 +236,13 @@ const AdminXocDiaResultManagement = () => {
     <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)]">
       {/* Live Stream Section - Chỉ khung live, không có header */}
       <div className="w-full h-full">
-        <XocDiaLiveStream
-          countdownDisplay={renderSessionTimer}
-          resultOverlay={null}
-          isAdmin={true}
+          <XocDiaLiveStream
+            countdownDisplay={renderSessionTimer}
+            resultOverlay={null}
+            isAdmin={true}
           isLiveEnded={isLiveEnded}
-        />
-      </div>
+          />
+        </div>
 
       {/* Right Panel - Tất cả controls, selection và chat */}
       <div className="flex flex-col gap-4 h-full">
@@ -253,10 +253,10 @@ const AdminXocDiaResultManagement = () => {
               {/* Control Buttons */}
               <div className="grid grid-cols-1 gap-2">
                 <Button
-                  onClick={handleStartNewSession}
-                  disabled={startingSession}
+              onClick={handleStartNewSession}
+              disabled={startingSession}
                   className="w-full gap-2 bg-emerald-500 text-white hover:bg-emerald-600 rounded-2xl h-10"
-                >
+            >
                   {startingSession ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />

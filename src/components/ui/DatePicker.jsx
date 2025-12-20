@@ -8,6 +8,7 @@ const DatePicker = ({
   format = 'DD/MM/YYYY',
   disabled = false,
   className = '',
+  bordered = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value ? dayjs(value).format(format) : '');
@@ -118,7 +119,7 @@ const DatePicker = ({
         disabled={disabled}
         className={`
           w-full flex items-center justify-between gap-2 
-          border border-transparent rounded-lg 
+          border ${bordered ? 'border-gray-200 hover:border-gray-300 focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/10' : 'border-transparent'} rounded-lg 
           bg-white px-3 py-2 text-sm
           transition-all duration-200
           focus:outline-none

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Copy, History, Save, CheckCircle2 } from 'lucide-react';
+import { Copy, History, Save, CheckCircle2, Settings } from 'lucide-react';
 import Table from '../../../../components/ui/Table';
 import Pagination from '../../../../components/ui/Pagination';
 import { Button } from '../../../../components/ui/Button';
@@ -8,6 +8,8 @@ import Modal from '../../../../components/ui/Modal';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../components/ui/Tooltip';
 import { formatPointsOnly, formatPointsFromVND } from '../../../../utils/helpers';
 import dayjs from 'dayjs';
+import { adminService } from '../../services/adminService';
+import { message } from '../../../../utils/notification';
 
 // Component hiển thị IP với chức năng copy
 const IpCell = ({ ip }) => {
@@ -114,10 +116,11 @@ const AgentReportTable = ({
   onPayout,
   payoutLoading,
   selectedMonth,
-  onShowPayoutHistory,
   onPaginationChange
 }) => {
   const [payoutConfirm, setPayoutConfirm] = useState({ open: false, agent: null });
+  const [actionModal, setActionModal] = useState({ open: false, agent: null });
+  const [payoutHistory, setPayoutHistory] = useState({ loading: false, data: [], show: false });
 
   const handlePayoutClick = (agent) => {
     const customCommission = customCommissions[agent.agentId];
@@ -131,7 +134,42 @@ const AgentReportTable = ({
     if (payoutConfirm.agent) {
       onPayout(payoutConfirm.agent);
       setPayoutConfirm({ open: false, agent: null });
+      setActionModal({ open: false, agent: null });
     }
+  };
+
+  const handleOpenActionModal = (agent) => {
+    setActionModal({ open: true, agent });
+  };
+
+  const handleCloseActionModal = () => {
+    setActionModal({ open: false, agent: null });
+    setPayoutHistory({ loading: false, data: [], show: false });
+  };
+
+  const handleShowPayoutHistory = async (agentId) => {
+    try {
+      setPayoutHistory({ loading: true, data: [], show: false });
+      const month = selectedMonth.format('YYYY-MM');
+      const response = await adminService.getAgentPayoutHistory(agentId, month);
+      if (response?.success) {
+        setPayoutHistory({ loading: false, data: response.data || [], show: true });
+      } else {
+        message.error(response?.message || 'Không thể tải lịch sử');
+        setPayoutHistory({ loading: false, data: [], show: false });
+      }
+    } catch (error) {
+      message.error(error.message || 'Không thể tải lịch sử');
+      setPayoutHistory({ loading: false, data: [], show: false });
+    }
+  };
+
+  const handlePayoutFromModal = (agent) => {
+    const customCommission = customCommissions[agent.agentId];
+    if (!customCommission || Number(customCommission) <= 0) {
+      return;
+    }
+    setPayoutConfirm({ open: true, agent });
   };
 
   const columns = [
@@ -262,94 +300,20 @@ const AgentReportTable = ({
       render: (_, record) => <IpCell ip={record.firstLoginIp} />
     },
     {
-      key: 'commission',
-      title: 'Hoa hồng',
-      width: 180,
-      className: 'text-right',
-      render: (_, record) => {
-        const custom = customCommissions[record.agentId];
-        return (
-          <Input
-            type="number"
-            value={custom || ''}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
-              onCustomCommissionChange(record.agentId, value);
-            }}
-            placeholder="Nhập hoa hồng"
-            className="w-full"
-            min={0}
-          />
-        );
-      }
-    },
-    {
-      key: 'paidHistory',
-      title: 'Đã chia',
-      width: 140,
-      className: 'text-center',
-      render: (_, record) => {
-        const paidAmount = Number(record.paidCommissionAmount ?? 0);
-        return (
-          <div className="space-y-2">
-            <div className="text-sm text-gray-900">{formatPointsOnly(paidAmount)}</div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onShowPayoutHistory(record.agentId)}
-              className="w-full"
-            >
-              <History className="h-3 w-3 mr-1" />
-              Lịch sử
-            </Button>
-          </div>
-        );
-      }
-    },
-    {
-      key: 'note',
-      title: 'Ghi chú',
-      width: 250,
-      render: (_, record) => (
-        <div className="space-y-2">
-          <textarea
-            rows={2}
-            value={notes[record.agentId] || ''}
-            onChange={(e) => onNoteChange(record.agentId, e.target.value)}
-            placeholder="Nhập ghi chú cho đại lý"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          />
-          <Button
-            size="sm"
-            onClick={() => onSaveNote(record.agentId)}
-            disabled={!!noteLoading[record.agentId]}
-            className="w-full"
-          >
-            <Save className={`h-3 w-3 mr-1 ${noteLoading[record.agentId] ? 'animate-spin' : ''}`} />
-            Lưu
-          </Button>
-        </div>
-      )
-    },
-    {
       key: 'action',
       title: 'Thao tác',
-      width: 120,
+      width: 100,
       fixed: 'right',
       className: 'text-center',
       render: (_, record) => {
-        const customCommission = customCommissions[record.agentId];
-        const hasCustomCommission = customCommission && Number(customCommission) > 0;
-        
         return (
           <Button
-            onClick={() => handlePayoutClick(record)}
-            disabled={!hasCustomCommission}
-            loading={!!payoutLoading[record.agentId]}
+            variant="outline"
             size="sm"
+            onClick={() => handleOpenActionModal(record)}
             className="w-full"
           >
-            Chia
+            <Settings className="h-4 w-4" />
           </Button>
         );
       }
@@ -358,7 +322,7 @@ const AgentReportTable = ({
 
   return (
     <>
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <Table
             columns={columns}
@@ -384,6 +348,191 @@ const AgentReportTable = ({
           </div>
         )}
       </div>
+
+      {/* Action Modal - Hiển thị Hoa hồng, Đã chia, Ghi chú, Thao tác */}
+      <Modal
+        title={`Quản lý đại lý: ${actionModal.agent?.username || ''}`}
+        open={actionModal.open}
+        onClose={handleCloseActionModal}
+        width={payoutHistory.show ? "max-w-4xl" : "max-w-xl"}
+        className={`transition-all duration-300 ease-in-out ${payoutHistory.show ? 'scale-[1.02]' : 'scale-100'}`}
+      >
+        {actionModal.agent && (
+          <div className="space-y-4">
+            {/* Thông tin đại lý - Compact */}
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{actionModal.agent.username}</p>
+                {actionModal.agent.fullName && (
+                  <p className="text-xs text-gray-500 mt-0.5">{actionModal.agent.fullName}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500">Mã giới thiệu</p>
+                <p className="text-sm font-semibold text-gray-900">{actionModal.agent.referralCode || '-'}</p>
+              </div>
+            </div>
+
+            {/* Hoa hồng và Đã chia - Cùng hàng */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Hoa hồng
+                </label>
+                <Input
+                  type="number"
+                  value={customCommissions[actionModal.agent.agentId] || ''}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    onCustomCommissionChange(actionModal.agent.agentId, value);
+                  }}
+                  placeholder="Nhập hoa hồng"
+                  className="w-full"
+                  min={0}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Đã chia
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-gray-50 rounded-md px-3 py-2">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {formatPointsOnly(Number(actionModal.agent.paidCommissionAmount ?? 0))}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleShowPayoutHistory(actionModal.agent.agentId)}
+                    disabled={payoutHistory.loading}
+                    className="flex-shrink-0 px-3"
+                  >
+                    {payoutHistory.loading ? (
+                      <div className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                    ) : (
+                      <History className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Ghi chú - Compact */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-gray-700">
+                  Ghi chú
+                </label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    onSaveNote(actionModal.agent.agentId);
+                  }}
+                  disabled={!!noteLoading[actionModal.agent.agentId]}
+                  className="h-7 px-3 text-xs"
+                >
+                  <Save className={`h-3 w-3 mr-1.5 ${noteLoading[actionModal.agent.agentId] ? 'animate-spin' : ''}`} />
+                  Lưu
+                </Button>
+              </div>
+              <textarea
+                rows={3}
+                value={notes[actionModal.agent.agentId] || ''}
+                onChange={(e) => onNoteChange(actionModal.agent.agentId, e.target.value)}
+                placeholder="Nhập ghi chú cho đại lý"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+            </div>
+
+            {/* Thao tác - Compact */}
+            <div className="pt-2 border-t border-gray-200">
+              <Button
+                onClick={() => handlePayoutFromModal(actionModal.agent)}
+                disabled={!customCommissions[actionModal.agent.agentId] || Number(customCommissions[actionModal.agent.agentId]) <= 0}
+                loading={!!payoutLoading[actionModal.agent.agentId]}
+                className="w-full"
+              >
+                Chia hoa hồng
+              </Button>
+              {(!customCommissions[actionModal.agent.agentId] || Number(customCommissions[actionModal.agent.agentId]) <= 0) && (
+                <p className="text-xs text-gray-500 mt-1.5 text-center">
+                  Vui lòng nhập hoa hồng trước khi chia
+                </p>
+              )}
+            </div>
+
+            {/* Lịch sử chia hoa hồng - Slide down animation */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                payoutHistory.show
+                  ? 'max-h-[500px] opacity-100 mt-4'
+                  : 'max-h-0 opacity-0 mt-0'
+              }`}
+            >
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-900">Lịch sử chia hoa hồng</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPayoutHistory({ loading: false, data: [], show: false })}
+                    className="h-6 px-2 text-xs"
+                  >
+                    Ẩn
+                  </Button>
+                </div>
+                <div className="max-h-[400px] overflow-y-auto rounded-lg border border-gray-200">
+                  <Table
+                    columns={[
+                      {
+                        key: 'periodMonth',
+                        title: 'Tháng',
+                        width: 100,
+                        render: (_, record) => (
+                          <span className="text-sm text-gray-900">{record.periodMonth || '-'}</span>
+                        )
+                      },
+                      {
+                        key: 'commissionAmount',
+                        title: 'Số tiền',
+                        width: 150,
+                        className: 'text-right',
+                        render: (_, record) => (
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPointsOnly(Number(record.commissionAmount ?? 0))}
+                          </span>
+                        )
+                      },
+                      {
+                        key: 'paidAt',
+                        title: 'Ngày chia',
+                        width: 150,
+                        render: (_, record) => (
+                          <span className="text-sm text-gray-900">
+                            {record.paidAt ? dayjs(record.paidAt).format('DD/MM/YYYY HH:mm') : '-'}
+                          </span>
+                        )
+                      },
+                      {
+                        key: 'notes',
+                        title: 'Ghi chú',
+                        render: (_, record) => (
+                          <span className="text-sm text-gray-900">{record.notes || '-'}</span>
+                        )
+                      }
+                    ]}
+                    dataSource={payoutHistory.data}
+                    rowKey="id"
+                    emptyText="Chưa có lịch sử chia hoa hồng"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Payout Confirmation Modal */}
       <Modal
@@ -413,6 +562,7 @@ const AgentReportTable = ({
           </div>
         )}
       </Modal>
+
     </>
   );
 };

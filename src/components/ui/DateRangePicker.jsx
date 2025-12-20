@@ -10,6 +10,7 @@ const DateRangePicker = ({
   disabled = false,
   className = '',
   allowClear = true,
+  bordered = false,
 }) => {
   const getStartDate = () => {
     if (!value || !Array.isArray(value)) return null;
@@ -62,6 +63,7 @@ const DateRangePicker = ({
           format={format}
           disabled={disabled}
           className="w-full"
+          bordered={bordered}
         />
       </div>
       <span className="text-gray-400">-</span>
@@ -73,6 +75,7 @@ const DateRangePicker = ({
           format={format}
           disabled={disabled}
           className="w-full"
+          bordered={bordered}
         />
       </div>
       {allowClear && (startDate || endDate) && (

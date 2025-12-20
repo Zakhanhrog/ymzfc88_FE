@@ -134,7 +134,7 @@ const UserTable = ({
     },
     {
       key: 'role',
-      title: 'Vai trò',
+      title: 'Role',
       width: 100,
       render: (_, record) => {
         const isAgent = record.staffRole === 'AGENT';
@@ -142,8 +142,8 @@ const UserTable = ({
           <StatusTag 
             status={isAgent ? 'AGENT' : 'USER'} 
             customConfig={{
-              AGENT: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Đại lý' },
-              USER: { bgColor: 'bg-blue-50', textColor: 'text-blue-700', borderColor: 'border-blue-200', label: 'Người dùng' }
+              AGENT: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Agent' },
+              USER: { bgColor: 'bg-blue-50', textColor: 'text-blue-700', borderColor: 'border-blue-200', label: 'User' }
             }}
           />
         );
@@ -151,14 +151,14 @@ const UserTable = ({
     },
     {
       key: 'status',
-      title: 'Trạng thái',
+      title: 'Status',
       width: 120,
       render: (_, record) => {
         const statusMap = {
-          ACTIVE: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Hoạt động' },
-          INACTIVE: { bgColor: 'bg-orange-50', textColor: 'text-orange-700', borderColor: 'border-orange-200', label: 'Tạm khóa' },
-          SUSPENDED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Tạm dừng' },
-          BANNED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Bị cấm' }
+          ACTIVE: { bgColor: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200', label: 'Active' },
+          INACTIVE: { bgColor: 'bg-orange-50', textColor: 'text-orange-700', borderColor: 'border-orange-200', label: 'Inactive' },
+          SUSPENDED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Suspended' },
+          BANNED: { bgColor: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200', label: 'Banned' }
         };
         const config = statusMap[record.status] || statusMap.ACTIVE;
         return (
@@ -360,7 +360,7 @@ const UserTable = ({
 
   return (
     <>
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
         <Table
           columns={columns}
           dataSource={data}
@@ -380,6 +380,7 @@ const UserTable = ({
               showTotal={(total, range) =>
                 `${range[0]}-${range[1]} của ${total} người dùng`
               }
+              className="ant-pagination-emerald-theme"
             />
           </div>
         )}

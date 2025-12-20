@@ -183,7 +183,7 @@ const PaymentMethodTable = ({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl overflow-hidden border border-gray-200">
+      <div className="rounded-lg overflow-hidden border border-gray-200">
         <Table columns={columns} dataSource={paymentMethods} loading={loading} />
       </div>
       <Pagination

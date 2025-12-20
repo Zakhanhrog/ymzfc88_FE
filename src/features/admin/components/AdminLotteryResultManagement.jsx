@@ -327,9 +327,9 @@ const AdminLotteryResultManagement = () => {
             onDelete={handleDelete}
             onPublish={handlePublish}
             onUnpublish={handleUnpublish}
-          />
-        </div>
-      </div>
+                    />
+                  </div>
+                </div>
 
       <LotteryResultModal
         open={showModal}

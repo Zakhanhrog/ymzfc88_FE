@@ -83,6 +83,37 @@ const PaymentMethodFormModal = ({
     return value.replace(/,/g, '');
   };
 
+  // Mapping PaymentType -> ChannelCode và MinAmount
+  const getChannelCodeForType = (type) => {
+    const mapping = {
+      'BANK': '1001',      // 银行卡转账
+      'MOMO': '1004',      // MomoPay原生 (MomoPay Native)
+      'VIET_QR': '1003',   // 网银扫码
+      'ZALO_PAY': '1005'   // ZALO
+    };
+    return mapping[type] || null;
+  };
+
+  const getMinAmountForChannel = (channelCode) => {
+    const mapping = {
+      '1001': 50000,  // 5万-3亿
+      '1003': 50000,  // 5万-3亿
+      '1004': 10000,  // 1万-1000万 (MomoPay原生)
+      '1005': 50000   // 5万-5000万
+    };
+    return mapping[channelCode] || 1000;
+  };
+
+  const getMaxAmountForChannel = (channelCode) => {
+    const mapping = {
+      '1001': 3000000000,  // 3亿 (3 tỷ)
+      '1003': 3000000000,  // 3亿 (3 tỷ)
+      '1004': 100000000,   // 1000万 (100 triệu)
+      '1005': 500000000    // 5000万 (500 triệu)
+    };
+    return mapping[channelCode] || 1000000000;
+  };
+
   const handleChange = (field, value) => {
     if (field === 'minAmount' || field === 'maxAmount' || field === 'feeFixed' || field === 'displayOrder') {
       const numValue = parseNumber(value.toString());
@@ -94,6 +125,19 @@ const PaymentMethodFormModal = ({
       if (numValue === '' || (!isNaN(numValue) && parseFloat(numValue) >= 0 && parseFloat(numValue) <= 100)) {
         setFormData(prev => ({ ...prev, [field]: numValue }));
       }
+    } else if (field === 'type') {
+      // Khi thay đổi type, tự động set channelCode, minAmount và maxAmount (cố định)
+      const channelCode = getChannelCodeForType(value);
+      const minAmount = channelCode ? getMinAmountForChannel(channelCode) : null;
+      const maxAmount = channelCode ? getMaxAmountForChannel(channelCode) : null;
+      
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        channelCode: channelCode || prev.channelCode,
+        minAmount: minAmount ? minAmount.toString() : prev.minAmount,
+        maxAmount: maxAmount ? maxAmount.toString() : prev.maxAmount
+      }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
@@ -113,11 +157,13 @@ const PaymentMethodFormModal = ({
       if (!formData.bankCode) newErrors.bankCode = 'Vui lòng nhập mã ngân hàng';
       // Không validate channelCode vì đang dùng chung mã 1001 mặc định
     }
-    if (!formData.minAmount) newErrors.minAmount = 'Vui lòng nhập số tiền tối thiểu';
-    else if (parseInt(formData.minAmount) < 1000) newErrors.minAmount = 'Số tiền tối thiểu phải >= 1,000';
-    if (!formData.maxAmount) newErrors.maxAmount = 'Vui lòng nhập số tiền tối đa';
-    else if (parseInt(formData.maxAmount) < parseInt(formData.minAmount || 0)) {
-      newErrors.maxAmount = 'Số tiền tối đa phải >= số tiền tối thiểu';
+    // Validate minAmount và maxAmount (tự động set theo channelCode, không cần validate nữa)
+    // Nhưng vẫn check để đảm bảo có giá trị
+    if (!formData.minAmount) {
+      newErrors.minAmount = 'Vui lòng chọn loại phương thức để tự động set số tiền tối thiểu';
+    }
+    if (!formData.maxAmount) {
+      newErrors.maxAmount = 'Vui lòng chọn loại phương thức để tự động set số tiền tối đa';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -132,8 +178,8 @@ const PaymentMethodFormModal = ({
       feePercent: parseFloat(formData.feePercent) || 0,
       feeFixed: parseInt(formData.feeFixed) || 0,
       displayOrder: parseInt(formData.displayOrder) || 1,
-      // Không gửi channelCode nếu type = BANK (sẽ dùng mặc định 1001)
-      channelCode: formData.type === 'BANK' ? null : (formData.channelCode || null)
+      // Gửi channelCode (đã được tự động set khi chọn type)
+      channelCode: formData.channelCode || null
     };
 
     onSubmit(submitData);
@@ -229,22 +275,24 @@ const PaymentMethodFormModal = ({
           </div>
 
           {formData.type === 'BANK' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Mã ngân hàng <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.bankCode}
-                onChange={(e) => handleChange('bankCode', e.target.value.toUpperCase())}
-                placeholder="VD: VCB, TCB, MB..."
-                error={errors.bankCode}
-              />
-              {errors.bankCode && <p className="text-red-500 text-xs mt-1">{errors.bankCode}</p>}
-              <p className="text-xs text-gray-500 mt-1">Mã ngân hàng chuẩn (VD: VCB, TCB, MB, BIDV...)</p>
-              <p className="text-xs text-blue-600 mt-1 font-medium">
-                ℹ️ Mã kênh OKDPAY sẽ tự động sử dụng 1001 (chung cho tất cả ngân hàng Việt Nam)
-              </p>
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Mã ngân hàng <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={formData.bankCode}
+                  onChange={(e) => handleChange('bankCode', e.target.value.toUpperCase())}
+                  placeholder="VD: VCB, TCB, MB..."
+                  error={errors.bankCode}
+                />
+                {errors.bankCode && <p className="text-red-500 text-xs mt-1">{errors.bankCode}</p>}
+                <p className="text-xs text-gray-500 mt-1">Mã ngân hàng chuẩn (VD: VCB, TCB, MB, BIDV...)</p>
+              {formData.channelCode && (
+                <p className="text-xs text-blue-600 mt-1 font-medium">
+                  ℹ️ Mã kênh OKDPAY: {formData.channelCode} - Số tiền tối thiểu: {formData.minAmount ? formatNumber(formData.minAmount) : 'N/A'} VNĐ
+                </p>
+              )}
+              </div>
           )}
 
           {formData.type !== 'BANK' && (
@@ -263,6 +311,7 @@ const PaymentMethodFormModal = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Số tiền tối thiểu <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Cố định theo OKDPAY)</span>
             </label>
             <Input
               type="text"
@@ -270,13 +319,21 @@ const PaymentMethodFormModal = ({
               onChange={(e) => handleChange('minAmount', e.target.value)}
               placeholder="1,000"
               error={errors.minAmount}
+              disabled={!!formData.channelCode} // Disable khi đã có channelCode
+              className={formData.channelCode ? 'bg-gray-100 cursor-not-allowed' : ''}
             />
             {errors.minAmount && <p className="text-red-500 text-xs mt-1">{errors.minAmount}</p>}
+            {formData.channelCode && (
+              <p className="text-xs text-blue-600 mt-1 font-medium">
+                ✓ Quy định OKDPAY cho channel {formData.channelCode}: Tối thiểu {getMinAmountForChannel(formData.channelCode).toLocaleString('vi-VN')} VNĐ (không thể chỉnh sửa)
+              </p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Số tiền tối đa <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-500 ml-2">(Cố định theo OKDPAY)</span>
             </label>
             <Input
               type="text"
@@ -284,8 +341,15 @@ const PaymentMethodFormModal = ({
               onChange={(e) => handleChange('maxAmount', e.target.value)}
               placeholder="10,000,000"
               error={errors.maxAmount}
+              disabled={!!formData.channelCode} // Disable khi đã có channelCode
+              className={formData.channelCode ? 'bg-gray-100 cursor-not-allowed' : ''}
             />
             {errors.maxAmount && <p className="text-red-500 text-xs mt-1">{errors.maxAmount}</p>}
+            {formData.channelCode && (
+              <p className="text-xs text-blue-600 mt-1 font-medium">
+                ✓ Quy định OKDPAY cho channel {formData.channelCode}: Tối đa {getMaxAmountForChannel(formData.channelCode).toLocaleString('vi-VN')} VNĐ (không thể chỉnh sửa)
+              </p>
+            )}
           </div>
 
           <div>
@@ -335,29 +399,6 @@ const PaymentMethodFormModal = ({
               value={formData.displayOrder ? formatNumber(formData.displayOrder) : ''}
               onChange={(e) => handleChange('displayOrder', e.target.value)}
               placeholder="1"
-            />
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Mô tả
-            </label>
-            <Textarea
-              rows={3}
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Mô tả chi tiết về phương thức thanh toán..."
-            />
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Mã QR (URL)
-            </label>
-            <Input
-              value={formData.qrCode}
-              onChange={(e) => handleChange('qrCode', e.target.value)}
-              placeholder="URL đến ảnh mã QR"
             />
           </div>
 

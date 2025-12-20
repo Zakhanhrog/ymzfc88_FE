@@ -65,7 +65,7 @@ const PointAdjustForm = ({
   };
 
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-lg">
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Điều chỉnh điểm người dùng</h2>
         
@@ -84,6 +84,7 @@ const PointAdjustForm = ({
                   ...userOptions
                 ]}
                 disabled={loading}
+                bordered
                 className={errors.userId ? 'border-red-500' : ''}
               />
               {errors.userId && <p className="text-red-500 text-xs mt-1">{errors.userId}</p>}
@@ -100,6 +101,7 @@ const PointAdjustForm = ({
                   { label: 'Cộng điểm', value: 'ADD' },
                   { label: 'Trừ điểm', value: 'SUBTRACT' }
                 ]}
+                bordered
               />
             </div>
 

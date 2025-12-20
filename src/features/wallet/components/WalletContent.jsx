@@ -17,11 +17,11 @@ const WalletContent = ({ activeTab, onTabChange, onProfileUpdate }) => {
     case 'transaction-history':
       return <TransactionHistory />;
     case 'kyc-verification':
-    case 'account':
       return <KycVerification />;
     case 'promotions':
       return <PromotionContent />;
     case 'settings':
+    case 'account':
       return <AccountSettings onProfileUpdate={onProfileUpdate} />;
     default:
       return <AccountSettings onProfileUpdate={onProfileUpdate} />;

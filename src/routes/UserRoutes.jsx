@@ -136,6 +136,22 @@ const UserRoutes = () => {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/account/kyc" 
+        element={
+          <ProtectedRoute>
+            <ResponsiveAccountWrapper />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/account/settings" 
+        element={
+          <ProtectedRoute>
+            <ResponsiveAccountWrapper />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Block admin routes - redirect to home */}
       <Route path="/admin/*" element={<Navigate to="/" replace />} />

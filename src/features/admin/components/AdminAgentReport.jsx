@@ -5,7 +5,6 @@ import { adminService } from '../services/adminService';
 import AgentReportStats from './agent-report/AgentReportStats';
 import AgentReportFilters from './agent-report/AgentReportFilters';
 import AgentReportTable from './agent-report/AgentReportTable';
-import PayoutHistoryModal from './agent-report/PayoutHistoryModal';
 
 const AdminAgentReport = () => {
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
@@ -16,11 +15,6 @@ const AdminAgentReport = () => {
   const [noteLoading, setNoteLoading] = useState({});
   const [customCommissions, setCustomCommissions] = useState({});
   const [notes, setNotes] = useState({});
-  const [payoutHistoryModal, setPayoutHistoryModal] = useState({ 
-    open: false, 
-    agentId: null, 
-    history: [] 
-  });
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -118,23 +112,6 @@ const AdminAgentReport = () => {
     }
   }, [selectedMonth, ipSearch, customCommissions, notes, loadReport]);
 
-  const handleShowPayoutHistory = useCallback(async (agentId) => {
-    try {
-      const month = selectedMonth.format('YYYY-MM');
-      const response = await adminService.getAgentPayoutHistory(agentId, month);
-      if (response?.success) {
-        setPayoutHistoryModal({
-          open: true,
-          agentId: agentId,
-          history: response.data || []
-        });
-      } else {
-        message.error(response?.message || 'Không thể tải lịch sử');
-      }
-    } catch (error) {
-      message.error(error.message || 'Không thể tải lịch sử');
-    }
-  }, [selectedMonth]);
 
   const handleSaveNote = useCallback(async (agentId) => {
     try {
@@ -210,14 +187,7 @@ const AdminAgentReport = () => {
         onPayout={handlePayout}
         payoutLoading={payoutLoading}
         selectedMonth={selectedMonth}
-        onShowPayoutHistory={handleShowPayoutHistory}
         onPaginationChange={handlePaginationChange}
-      />
-
-      <PayoutHistoryModal
-        open={payoutHistoryModal.open}
-        onClose={() => setPayoutHistoryModal({ open: false, agentId: null, history: [] })}
-        history={payoutHistoryModal.history}
       />
     </div>
   );

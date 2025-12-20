@@ -1,38 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card as AntCard,
-  Table,
-  Tag,
-  Space,
-  Button,
-  DatePicker,
-  Select,
-  Input,
-  Modal,
-  Descriptions,
-  Row,
-  Col,
-  Statistic,
-  message
-} from 'antd';
+import { Card, CardContent } from '../../../components/ui/Card';
+import { Button } from '../../../components/ui/Button';
+import Select from '../../../components/ui/Select';
+import { Input } from '../../../components/ui/Input';
+import Table from '../../../components/ui/Table';
+import Modal from '../../../components/ui/Modal';
+import DateRangePicker from '../../../components/ui/DateRangePicker';
+import Pagination from '../../../components/ui/Pagination';
+import StatCard from '../../admin/analytics/components/StatCard';
 import Loading from '../../../components/common/Loading';
+import { Badge } from '../../../components/ui/Badge';
 import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  EyeOutlined,
-  SearchOutlined,
-  FilterOutlined,
-  ReloadOutlined
-} from '@ant-design/icons';
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Gift,
+  Clock,
+  RefreshCw,
+  Eye,
+  Search,
+  Filter
+} from 'lucide-react';
 import dayjs from 'dayjs';
-import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
+import isBetween from 'dayjs/plugin/isBetween';
 import walletService from '../services/walletService';
 import BettingHistory from './BettingHistory';
-import { Card, CardContent } from '../../../components/ui/Card';
 import { formatPoints } from '../../../utils/helpers';
+import { message } from 'antd';
 
-const { RangePicker } = DatePicker;
-const { Option } = Select;
+dayjs.extend(isBetween);
 
 // Component hiển thị lịch sử giao dịch
 const TransactionHistoryTab = () => {
@@ -75,11 +70,10 @@ const TransactionHistoryTab = () => {
       
       if (response.success) {
         let transactions = response.data.content || [];
-        // Sắp xếp theo createdAt DESC (mới nhất trước) để đảm bảo thứ tự đúng
         transactions.sort((a, b) => {
           const dateA = new Date(a.createdAt);
           const dateB = new Date(b.createdAt);
-          return dateB - dateA; // DESC order
+          return dateB - dateA;
         });
         setTransactions(transactions);
         setPagination(prev => ({
@@ -118,11 +112,18 @@ const TransactionHistoryTab = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'COMPLETED': case 'APPROVED': return 'green';
-      case 'PENDING': return 'orange';
-      case 'FAILED': case 'REJECTED': return 'red';
-      case 'CANCELLED': return 'gray';
-      default: return 'blue';
+      case 'COMPLETED':
+      case 'APPROVED':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'PENDING':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'FAILED':
+      case 'REJECTED':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'CANCELLED':
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+      default:
+        return 'bg-blue-50 text-blue-700 border-blue-200';
     }
   };
 
@@ -141,11 +142,11 @@ const TransactionHistoryTab = () => {
   const getTypeIcon = (type) => {
     switch (type) {
       case 'DEPOSIT':
-        return <img src="/iconacc/imgi_25_deposit.avif" alt="Nạp tiền" className="w-5 h-5" />;
+        return <ArrowUpCircle className="w-5 h-5 text-green-600" />;
       case 'WITHDRAW':
-        return <img src="/iconacc/imgi_26_withdraw.avif" alt="Rút tiền" className="w-5 h-5" />;
+        return <ArrowDownCircle className="w-5 h-5 text-red-600" />;
       case 'BONUS':
-        return <ArrowUpOutlined style={{ color: '#1890ff' }} />;
+        return <Gift className="w-5 h-5 text-blue-600" />;
       default:
         return null;
     }
@@ -165,17 +166,14 @@ const TransactionHistoryTab = () => {
   // Filter transactions
   const filteredTransactions = transactions
     .filter(transaction => {
-      // Filter by type
       if (filters.type !== 'all' && transaction.type !== filters.type.toUpperCase()) {
         return false;
       }
       
-      // Filter by status
       if (filters.status !== 'all' && transaction.status !== filters.status.toUpperCase()) {
         return false;
       }
       
-      // Filter by date range
       if (filters.dateRange && filters.dateRange.length === 2) {
         const transactionDate = dayjs(transaction.createdAt);
         const [startDate, endDate] = filters.dateRange;
@@ -184,7 +182,6 @@ const TransactionHistoryTab = () => {
         }
       }
       
-      // Filter by search text
       if (filters.searchText) {
         const searchLower = filters.searchText.toLowerCase();
         return (
@@ -196,11 +193,10 @@ const TransactionHistoryTab = () => {
       
       return true;
     })
-    // Đảm bảo sắp xếp theo createdAt DESC sau khi filter
     .sort((a, b) => {
       const dateA = new Date(a.createdAt);
       const dateB = new Date(b.createdAt);
-      return dateB - dateA; // DESC order
+      return dateB - dateA;
     });
 
   // Paginated transactions
@@ -242,38 +238,36 @@ const TransactionHistoryTab = () => {
 
   const columns = [
     {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Mã giao dịch</span>,
-      dataIndex: 'transactionCode',
       key: 'transactionCode',
+      dataIndex: 'transactionCode',
+      title: 'Mã giao dịch',
       render: (text) => (
-        <span style={{ fontFamily: 'monospace', color: '#1890ff', fontSize: FONT_SIZE.sm }}>
-          {text}
-        </span>
+        <span className="font-mono text-sm text-blue-600">{text}</span>
       ),
     },
     {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Loại</span>,
-      dataIndex: 'type',
       key: 'type',
+      dataIndex: 'type',
+      title: 'Loại',
       render: (type) => (
-        <Space>
+        <div className="flex items-center gap-2">
           {getTypeIcon(type)}
-          <span style={{ fontSize: FONT_SIZE.base }}>{getTypeName(type)}</span>
-        </Space>
+          <span className="text-sm text-gray-900">{getTypeName(type)}</span>
+        </div>
       ),
     },
     {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Số tiền</span>,
-      dataIndex: 'amount',
       key: 'amount',
+      dataIndex: 'amount',
+      title: 'Số tiền',
       render: (amount, record) => {
         const netAmount = record.netAmount || amount;
         return (
-          <span style={{ 
-            color: record.type === 'DEPOSIT' || record.type === 'BONUS' ? '#52c41a' : '#ff4d4f',
-            fontSize: FONT_SIZE.md,
-            fontWeight: FONT_WEIGHT.bold
-          }}>
+          <span className={`text-sm font-semibold ${
+            record.type === 'DEPOSIT' || record.type === 'BONUS' 
+              ? 'text-green-600' 
+              : 'text-red-600'
+          }`}>
             {record.type === 'DEPOSIT' || record.type === 'BONUS' ? '+' : '-'}
             {formatPoints(netAmount)}
           </span>
@@ -281,37 +275,42 @@ const TransactionHistoryTab = () => {
       },
     },
     {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Phương thức</span>,
-      dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (paymentMethod) => <span style={{ ...BODY_STYLES.base }}>{paymentMethod?.name || 'N/A'}</span>,
-    },
-    {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Trạng thái</span>,
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={getStatusColor(status)} style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>
-          {getStatusText(status)}
-        </Tag>
+      dataIndex: 'paymentMethod',
+      title: 'Phương thức',
+      render: (paymentMethod) => (
+        <span className="text-sm text-gray-700">{paymentMethod?.name || 'N/A'}</span>
       ),
     },
     {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Thời gian</span>,
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (date) => <span style={{ fontSize: FONT_SIZE.sm }}>{dayjs(date).format('DD/MM/YYYY HH:mm')}</span>,
+      key: 'status',
+      dataIndex: 'status',
+      title: 'Trạng thái',
+      render: (status) => (
+        <Badge className={`${getStatusColor(status)} border text-xs`}>
+          {getStatusText(status)}
+        </Badge>
+      ),
     },
     {
-      title: <span style={{ ...HEADING_STYLES.h6 }}>Hành động</span>,
+      key: 'createdAt',
+      dataIndex: 'createdAt',
+      title: 'Thời gian',
+      render: (date) => (
+        <span className="text-sm text-gray-700">{dayjs(date).format('DD/MM/YYYY HH:mm')}</span>
+      ),
+    },
+    {
       key: 'action',
+      title: 'Hành động',
       render: (_, record) => (
         <Button
-          type="link"
-          icon={<EyeOutlined />}
+          variant="ghost"
+          size="sm"
           onClick={() => showTransactionDetail(record)}
-          style={{ fontSize: FONT_SIZE.base }}
+          className="h-8"
         >
+          <Eye className="h-4 w-4 mr-1" />
           Chi tiết
         </Button>
       ),
@@ -320,111 +319,249 @@ const TransactionHistoryTab = () => {
 
   return (
     <div className="space-y-4">
-      {/* Title Header */}
-
-
-      {/* Statistics Cards - Responsive */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4 text-center">
-            <div className="flex flex-col items-center">
-              <div className="text-xs text-gray-500 mb-1">Tổng nạp</div>
-              <div className="text-lg font-bold text-green-600">{formatPoints(stats.totalDeposit)}</div>
-          </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4 text-center">
-            <div className="flex flex-col items-center">
-              <div className="text-xs text-gray-500 mb-1">Tổng rút</div>
-              <div className="text-lg font-bold text-green-600">{formatPoints(stats.totalWithdraw)}</div>
-          </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4 text-center">
-            <div className="flex flex-col items-center">
-              <div className="text-xs text-gray-500 mb-1">Đang chờ</div>
-              <div className="text-lg font-bold text-orange-600">{stats.pendingCount} giao dịch</div>
-          </div>
-          </CardContent>
-        </Card>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard
+          title="Tổng nạp"
+          value={formatPoints(stats.totalDeposit)}
+          icon={ArrowUpCircle}
+          bgColor="bg-green-600"
+          valueColor="text-white"
+          textColor="text-white"
+        />
+        <StatCard
+          title="Tổng rút"
+          value={formatPoints(stats.totalWithdraw)}
+          icon={ArrowDownCircle}
+          bgColor="bg-red-600"
+          valueColor="text-white"
+          textColor="text-white"
+        />
+        <StatCard
+          title="Đang chờ"
+          value={`${stats.pendingCount} giao dịch`}
+          icon={Clock}
+          bgColor="bg-orange-600"
+          valueColor="text-white"
+          textColor="text-white"
+        />
       </div>
 
+      {/* Filters */}
+      <Card className="rounded-2xl">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Khoảng thời gian
+              </label>
+              <DateRangePicker
+                value={filters.dateRange}
+                onChange={(value) => handleFilterChange('dateRange', value)}
+                placeholder={['Từ ngày', 'Đến ngày']}
+                format="DD/MM/YYYY"
+                bordered
+              />
+            </div>
+
+            <div className="w-[160px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Loại
+              </label>
+              <Select
+                value={filters.type}
+                onChange={(value) => handleFilterChange('type', value)}
+                options={[
+                  { label: 'Tất cả', value: 'all' },
+                  { label: 'Nạp tiền', value: 'DEPOSIT' },
+                  { label: 'Rút tiền', value: 'WITHDRAW' },
+                  { label: 'Thưởng', value: 'BONUS' },
+                  { label: 'Hoàn tiền', value: 'REFUND' },
+                  { label: 'Điều chỉnh', value: 'ADJUSTMENT' },
+                ]}
+                bordered
+              />
+            </div>
+
+            <div className="w-[160px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Trạng thái
+              </label>
+              <Select
+                value={filters.status}
+                onChange={(value) => handleFilterChange('status', value)}
+                options={[
+                  { label: 'Tất cả', value: 'all' },
+                  { label: 'Hoàn thành', value: 'COMPLETED' },
+                  { label: 'Đã duyệt', value: 'APPROVED' },
+                  { label: 'Đang chờ', value: 'PENDING' },
+                  { label: 'Thất bại', value: 'FAILED' },
+                  { label: 'Từ chối', value: 'REJECTED' },
+                  { label: 'Đã hủy', value: 'CANCELLED' },
+                ]}
+                bordered
+              />
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tìm kiếm
+              </label>
+              <Input
+                value={filters.searchText}
+                onChange={(e) => handleFilterChange('searchText', e.target.value)}
+                placeholder="Mã giao dịch, mô tả..."
+                prefix={<Search className="w-4 h-4 text-gray-400" />}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={resetFilters}
+                className="h-10"
+              >
+                <Filter className="h-4 w-4 mr-1" />
+                Đặt lại
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  loadTransactionHistory();
+                  loadTransactionStatistics();
+                }}
+                className="h-10"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Làm mới
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Table */}
-      <AntCard className="shadow-sm" style={{ borderRadius: '12px' }}>
-        {loading ? (
-          <Loading />
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={paginatedTransactions}
-            pagination={{
-              ...pagination,
-              total: filteredTransactions.length,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) => (
-                <span style={{ fontSize: FONT_SIZE.sm }}>
-                  {`${range[0]}-${range[1]} của ${total} giao dịch`}
-                </span>
-              ),
-            }}
-            rowKey="id"
-            onChange={handleTableChange}
-            scroll={{ x: 1000 }}
-          />
-        )}
-      </AntCard>
+      <Card className="rounded-2xl">
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="py-12">
+              <Loading />
+            </div>
+          ) : (
+            <>
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Lịch sử giao dịch</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <Table
+                  columns={columns}
+                  dataSource={paginatedTransactions}
+                  loading={false}
+                  rowKey="id"
+                  emptyText="Không có dữ liệu giao dịch"
+                />
+              </div>
+              {filteredTransactions.length > 0 && (
+                <div className="px-6 py-4 border-t border-gray-200">
+                  <Pagination
+                    current={pagination.current}
+                    pageSize={pagination.pageSize}
+                    total={filteredTransactions.length}
+                    onChange={(page, size) => {
+                      setPagination({
+                        current: page,
+                        pageSize: size,
+                        total: filteredTransactions.length
+                      });
+                    }}
+                    onShowSizeChange={(page, size) => {
+                      setPagination({
+                        current: page,
+                        pageSize: size,
+                        total: filteredTransactions.length
+                      });
+                    }}
+                    showSizeChanger={true}
+                    pageSizeOptions={['10', '20', '50', '100']}
+                    showTotal={(total, range) => (
+                      <span className="text-sm text-gray-600">
+                        {`${range[0]}-${range[1]} của ${total} giao dịch`}
+                      </span>
+                    )}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Detail Modal */}
       <Modal
-        title={<span style={{ ...HEADING_STYLES.h4 }}>Chi tiết giao dịch</span>}
         open={detailModalVisible}
-        onCancel={() => setDetailModalVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setDetailModalVisible(false)} style={{ fontSize: FONT_SIZE.base }}>
-            Đóng
-          </Button>
-        ]}
-        width={700}
+        onClose={() => setDetailModalVisible(false)}
+        title="Chi tiết giao dịch"
+        width="max-w-2xl"
       >
         {selectedTransaction && (
-          <Descriptions bordered column={1} size="small">
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Mã giao dịch</span>}>
-              <span style={{ fontFamily: 'monospace', fontSize: FONT_SIZE.sm }}>{selectedTransaction.transactionCode}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Loại giao dịch</span>}>
-              <span style={{ fontSize: FONT_SIZE.base }}>{getTypeName(selectedTransaction.type)}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Số tiền</span>}>
-              <span style={{ fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: selectedTransaction.type === 'DEPOSIT' ? '#52c41a' : '#ff4d4f' }}>
-                {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
-                {formatPoints(selectedTransaction.netAmount || selectedTransaction.amount)}
-              </span>
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Phương thức</span>}>
-              <span style={{ fontSize: FONT_SIZE.base }}>{selectedTransaction.paymentMethod?.name || 'N/A'}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Trạng thái</span>}>
-              <Tag color={getStatusColor(selectedTransaction.status)} style={{ fontSize: FONT_SIZE.sm }}>
-                {getStatusText(selectedTransaction.status)}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Mô tả</span>}>
-              <span style={{ ...BODY_STYLES.base }}>{selectedTransaction.description || 'Không có'}</span>
-            </Descriptions.Item>
-            <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Thời gian tạo</span>}>
-              <span style={{ fontSize: FONT_SIZE.base }}>{dayjs(selectedTransaction.createdAt).format('DD/MM/YYYY HH:mm:ss')}</span>
-            </Descriptions.Item>
-            {selectedTransaction.completedAt && (
-              <Descriptions.Item label={<span style={{ fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.medium }}>Thời gian hoàn thành</span>}>
-                <span style={{ fontSize: FONT_SIZE.base }}>{dayjs(selectedTransaction.completedAt).format('DD/MM/YYYY HH:mm:ss')}</span>
-              </Descriptions.Item>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Mã giao dịch</label>
+                <p className="text-sm font-mono text-gray-900 mt-1">{selectedTransaction.transactionCode}</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Loại giao dịch</label>
+                <div className="flex items-center gap-2 mt-1">
+                  {getTypeIcon(selectedTransaction.type)}
+                  <span className="text-sm text-gray-900">{getTypeName(selectedTransaction.type)}</span>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Số tiền</label>
+                <p className={`text-base font-bold mt-1 ${
+                  selectedTransaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {selectedTransaction.type === 'DEPOSIT' ? '+' : '-'}
+                  {formatPoints(selectedTransaction.netAmount || selectedTransaction.amount)}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Phương thức</label>
+                <p className="text-sm text-gray-900 mt-1">{selectedTransaction.paymentMethod?.name || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</label>
+                <div className="mt-1">
+                  <Badge className={`${getStatusColor(selectedTransaction.status)} border text-xs`}>
+                    {getStatusText(selectedTransaction.status)}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Thời gian tạo</label>
+                <p className="text-sm text-gray-900 mt-1">
+                  {dayjs(selectedTransaction.createdAt).format('DD/MM/YYYY HH:mm:ss')}
+                </p>
+              </div>
+            </div>
+
+            {selectedTransaction.description && (
+              <div className="border-t border-gray-200 pt-4">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Mô tả</label>
+                <p className="text-sm text-gray-900 mt-1">{selectedTransaction.description}</p>
+              </div>
             )}
-          </Descriptions>
+
+            {selectedTransaction.completedAt && (
+              <div className="border-t border-gray-200 pt-4">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Thời gian hoàn thành</label>
+                <p className="text-sm text-gray-900 mt-1">
+                  {dayjs(selectedTransaction.completedAt).format('DD/MM/YYYY HH:mm:ss')}
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </Modal>
     </div>

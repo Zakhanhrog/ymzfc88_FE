@@ -187,7 +187,7 @@ const AdminHeader = ({ collapsed }) => {
         <Tooltip title={isAdmin ? 'Xem thông tin tài khoản' : undefined}>
           <Avatar 
             icon={<UserOutlined />} 
-            className="bg-blue-600"
+            className="bg-emerald-500"
             size="large"
             onClick={handleProfileClick}
             style={{ cursor: isAdmin ? 'pointer' : 'default' }}

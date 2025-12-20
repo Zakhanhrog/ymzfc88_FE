@@ -480,7 +480,7 @@ const WalletBalance = ({ onTabChange }) => {
                             className="relative h-44 p-5 flex flex-col justify-between"
                         style={{
                           backgroundImage: promotion.imageUrl
-                            ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `http://localhost:8080/api${promotion.imageUrl}`})`
+                            ? `url(${promotion.imageUrl.startsWith('http') ? promotion.imageUrl : `https://api.tathiet168.com/api${promotion.imageUrl}`})`
                             : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',

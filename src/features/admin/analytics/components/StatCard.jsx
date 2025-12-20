@@ -9,7 +9,7 @@ const StatCard = ({
 }) => {
   return (
     <div 
-      className={`${bgColor} rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-all duration-200 w-full relative overflow-hidden`}
+      className={`${bgColor} rounded-lg px-4 py-3 shadow-sm hover:shadow-md transition-all duration-200 w-full relative overflow-hidden`}
       style={{
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       }}

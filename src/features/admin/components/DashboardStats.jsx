@@ -4,7 +4,8 @@ import {
   DollarSign, 
   ArrowUpCircle, 
   ArrowDownCircle,
-  Activity
+  Activity,
+  TrendingUp
 } from 'lucide-react';
 
 const numberFormatter = new Intl.NumberFormat('vi-VN');
@@ -18,6 +19,7 @@ const DashboardStats = ({ loading, stats = {} }) => {
   const totalUsers = Number(stats.totalUsers ?? 0);
   const newUsersToday = Number(stats.newUsersToday ?? 0);
   const revenueToday = Number(stats.revenueToday ?? 0);
+  const profitToday = Number(stats.profitToday ?? 0);
   const depositsTodayAmount = Number(stats.depositsTodayAmount ?? 0);
   const withdrawalsTodayAmount = Number(stats.withdrawalsTodayAmount ?? 0);
   const onlineUsers = Number(stats.onlineUsers ?? 0);
@@ -43,6 +45,16 @@ const DashboardStats = ({ loading, stats = {} }) => {
       subtitle: 'Tổng tiền từ các lệnh cược thua',
       icon: DollarSign,
       bgColor: 'bg-green-600',
+      textColor: 'text-white',
+      valueColor: 'text-white'
+    },
+    {
+      id: 'profit',
+      title: 'Lợi nhuận hôm nay',
+      value: currencyFormatter.format(profitToday),
+      subtitle: 'Doanh thu trừ các khoản chi phí',
+      icon: TrendingUp,
+      bgColor: 'bg-emerald-600',
       textColor: 'text-white',
       valueColor: 'text-white'
     },
@@ -80,11 +92,11 @@ const DashboardStats = ({ loading, stats = {} }) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {statsCards.map((stat) => (
           <div
             key={stat.id}
-            className="h-32 bg-gray-200 rounded-2xl animate-pulse"
+            className="h-32 bg-gray-200 rounded-lg animate-pulse"
           />
         ))}
       </div>
@@ -92,7 +104,7 @@ const DashboardStats = ({ loading, stats = {} }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
       {statsCards.map((stat) => (
         <StatCard
           key={stat.id}

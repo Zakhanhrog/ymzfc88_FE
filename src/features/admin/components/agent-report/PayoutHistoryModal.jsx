@@ -47,7 +47,7 @@ const PayoutHistoryModal = ({ open, onClose, history = [] }) => {
       onClose={onClose}
       width="max-w-3xl"
     >
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
         <Table
           columns={columns}
           dataSource={history}

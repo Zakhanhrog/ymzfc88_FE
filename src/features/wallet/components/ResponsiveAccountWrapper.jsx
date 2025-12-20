@@ -22,8 +22,8 @@ const ResponsiveAccountWrapper = () => {
     return <MobileAccountPage />;
   }
 
-  // For desktop, show ResponsiveWalletWrapper with account tab as default
-  return <ResponsiveWalletWrapper initialTab="account" />;
+  // For desktop, show ResponsiveWalletWrapper with settings tab as default (Tài khoản)
+  return <ResponsiveWalletWrapper initialTab="settings" />;
 };
 
 export default ResponsiveAccountWrapper;

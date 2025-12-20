@@ -161,7 +161,7 @@ const LoginHistoryTable = ({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
         <Table
           columns={columns}
           dataSource={data}

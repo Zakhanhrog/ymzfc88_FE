@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const Select = ({ 
   value,
@@ -10,24 +11,67 @@ const Select = ({
   size = 'md',
   className = '',
   allowClear = false,
+  bordered = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [internalValue, setInternalValue] = useState(defaultValue);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, placement: 'bottom' });
   const selectRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const currentValue = value !== undefined ? value : internalValue;
   const selectedOption = options.find(opt => opt.value === currentValue);
 
   useEffect(() => {
+    const updateDropdownPosition = () => {
+      if (!selectRef.current || !isOpen) return;
+      
+      const rect = selectRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const dropdownHeight = 240; // max-h-60 = 240px
+      const scrollY = window.scrollY || window.pageYOffset;
+      const scrollX = window.scrollX || window.pageXOffset;
+      
+      let placement = 'bottom';
+      let top = rect.bottom + scrollY + 4; // mt-1 = 4px
+      
+      // Nếu không đủ không gian bên dưới và có đủ không gian bên trên, hiển thị lên trên
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        placement = 'top';
+        top = rect.top + scrollY - dropdownHeight - 4; // mb-1 = 4px
+      }
+      
+      setDropdownPosition({
+        top,
+        left: rect.left + scrollX,
+        width: rect.width,
+        placement
+      });
+    };
+
     const handleClickOutside = (event) => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
+      if (selectRef.current && !selectRef.current.contains(event.target) &&
+          dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      updateDropdownPosition();
+      
+      // Update position on scroll and resize
+      window.addEventListener('scroll', updateDropdownPosition, true);
+      window.addEventListener('resize', updateDropdownPosition);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+      window.removeEventListener('resize', updateDropdownPosition);
+    };
+  }, [isOpen]);
 
   const handleSelect = (option) => {
     const newValue = option.value;
@@ -60,7 +104,7 @@ const Select = ({
         disabled={disabled}
         className={`
           w-full flex items-center justify-between gap-2 
-          border border-transparent rounded-lg 
+          border ${bordered ? 'border-gray-200 hover:border-gray-300 focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/10' : 'border-transparent'} rounded-lg 
           bg-white transition-all duration-200
           focus:outline-none
           disabled:bg-gray-100 disabled:cursor-not-allowed
@@ -94,8 +138,16 @@ const Select = ({
         </div>
       </button>
 
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          ref={dropdownRef}
+          className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+          }}
+        >
           {options.map((option, index) => (
             <button
               key={option.value ?? index}
@@ -111,7 +163,8 @@ const Select = ({
               {option.label}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

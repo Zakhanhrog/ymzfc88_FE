@@ -20,7 +20,7 @@ const DepositDetailModal = ({
     }
     if (deposit.billImageUrl) {
       const filename = deposit.billImageUrl.split('/').pop();
-      return `http://localhost:8080/api/files/bills/${filename}`;
+      return `https://api.tathiet168.com/api/files/bills/${filename}`;
     }
     return null;
   };

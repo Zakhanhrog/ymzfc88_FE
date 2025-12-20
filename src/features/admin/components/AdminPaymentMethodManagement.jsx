@@ -21,13 +21,12 @@ const AdminPaymentMethodManagement = () => {
     total: 0
   });
 
-  // Payment method types
+  // Payment method types (chỉ các loại OKDPAY hỗ trợ)
   const paymentTypes = [
-    { value: 'MOMO', label: 'Ví MoMo', icon: '📱', color: 'pink' },
     { value: 'BANK', label: 'Ngân hàng', icon: '🏦', color: 'blue' },
-    { value: 'USDT', label: 'USDT', icon: '💰', color: 'gold' },
-    { value: 'ZALO_PAY', label: 'ZaloPay', icon: '💳', color: 'cyan' },
-    { value: 'VIET_QR', label: 'VietQR', icon: '📲', color: 'green' }
+    { value: 'MOMO', label: 'Ví MoMo', icon: '📱', color: 'pink' },
+    { value: 'VIET_QR', label: 'VietQR', icon: '📲', color: 'green' },
+    { value: 'ZALO_PAY', label: 'ZaloPay', icon: '💳', color: 'cyan' }
   ];
 
   useEffect(() => {
@@ -135,7 +134,7 @@ const AdminPaymentMethodManagement = () => {
         paymentTypes={paymentTypes}
       />
 
-      <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <div className="rounded-lg bg-white p-4 shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Danh sách phương thức thanh toán</h2>
           <div className="flex gap-2">
@@ -150,7 +149,7 @@ const AdminPaymentMethodManagement = () => {
               variant="outline"
               onClick={loadPaymentMethods}
               disabled={loading}
-              className="gap-2 rounded-2xl"
+              className="gap-2 rounded-lg"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Làm mới

@@ -32,6 +32,61 @@ const normalizeBetCode = (code) => {
   return code.trim().toLowerCase().replace(/[\s_]+/g, '-');
 };
 
+const RESULT_LABELS = {
+  'four-white': '4 Trắng',
+  'three-white-one-red': '3 Trắng 1 Đỏ',
+  'two-two': '2 Trắng 2 Đỏ',
+  'three-red-one-white': '3 Đỏ 1 Trắng',
+  'four-red': '4 Đỏ',
+  'four-white-or-four-red': '4 Trắng/4 Đỏ',
+};
+
+const formatSessionResult = (code) => {
+  if (!code || typeof code !== 'string') {
+    return null;
+  }
+  const normalized = normalizeBetCode(code);
+  return RESULT_LABELS[normalized] || code;
+};
+
+const parseSessionResult = (code) => {
+  if (!code || typeof code !== 'string') {
+    return null;
+  }
+  const normalized = normalizeBetCode(code);
+  
+  // Parse pattern từ result code
+  let pattern = [];
+  if (normalized.includes('four-white')) {
+    pattern = ['white', 'white', 'white', 'white'];
+  } else if (normalized.includes('four-red')) {
+    pattern = ['red', 'red', 'red', 'red'];
+  } else if (normalized.includes('three-white-one-red')) {
+    pattern = ['white', 'white', 'white', 'red'];
+  } else if (normalized.includes('three-red-one-white')) {
+    pattern = ['red', 'red', 'red', 'white'];
+  } else if (normalized.includes('two-two')) {
+    pattern = ['white', 'white', 'red', 'red'];
+  } else {
+    return null;
+  }
+  
+  // Tính toán thông tin
+  const redCount = pattern.filter(c => c === 'red').length;
+  const whiteCount = pattern.filter(c => c === 'white').length;
+  const parity = redCount % 2 === 0 ? 'Chẵn' : 'Lẻ';
+  const size = redCount >= 3 ? 'Tài' : redCount <= 1 ? 'Xỉu' : 'Hòa';
+  
+  return {
+    pattern,
+    redCount,
+    whiteCount,
+    parity,
+    size,
+    label: RESULT_LABELS[normalized] || code,
+  };
+};
+
 const BetHistoryItem = ({ item, option }) => {
   const meta = STATUS_METADATA[item.status] ?? STATUS_METADATA.PENDING;
   const borderClass = STATUS_BORDER_CLASSES[item.status] ?? 'border-gray-200';
@@ -62,9 +117,16 @@ const BetHistoryItem = ({ item, option }) => {
     return formatRatioLabel(multiplier);
   }, [item.payoutMultiplier, option?.payoutMultiplier]);
   const betLabel = option?.label ?? item.betCode;
+  const sessionResult = useMemo(() => {
+    // Debug log
+    if (item.sessionResultCode) {
+      console.log('[XocDia History] Session result code:', item.sessionResultCode, 'for bet:', item.id);
+    }
+    return parseSessionResult(item.sessionResultCode);
+  }, [item.sessionResultCode, item.id]);
 
   return (
-    <div className={`rounded-xl border ${borderClass} bg-white px-4 py-3 shadow-sm flex flex-col gap-3 min-h-[152px]`}>
+    <div className={`rounded-xl border ${borderClass} bg-white px-4 py-3 shadow-sm flex flex-col gap-3`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1 text-[11px] text-gray-600">
           {item.sessionId ? (
@@ -123,6 +185,40 @@ const BetHistoryItem = ({ item, option }) => {
         </div>
         </div>
       </div>
+
+      {item.sessionResultCode ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-700">
+            Kết quả
+          </span>
+          {sessionResult ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1">
+                {sessionResult.pattern.map((color, index) => (
+                  <span
+                    key={`session-result-${item.id}-${index}`}
+                    className={`h-3.5 w-3.5 rounded-full border shadow-sm ${
+                      color === 'white'
+                        ? 'border-gray-600 bg-white'
+                        : 'border-[#9f1d1d] bg-[#e43f3f]'
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className="text-[11px] text-gray-600 leading-tight">
+                <div>{sessionResult.label}</div>
+                <div>
+                  {sessionResult.parity}
+                  {' • '}
+                  {sessionResult.size}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <span className="text-[11px] text-gray-600">{item.sessionResultCode}</span>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -134,7 +230,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [error, setError] = useState('');
-  const [daysFilter, setDaysFilter] = useState(14); // Mặc định 14 ngày (tối đa cho phép)
+  const [daysFilter, setDaysFilter] = useState(0); // Mặc định Hôm nay
   const [totals, setTotals] = useState({
     totalWinAmount: 0,
     totalLossAmount: 0,
@@ -176,6 +272,13 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
 
       const data = response.data || {};
       const fetchedItems = Array.isArray(data.items) ? data.items : [];
+      
+      // Debug log để kiểm tra dữ liệu
+      if (fetchedItems.length > 0) {
+        console.log('[XocDia History] Fetched items:', fetchedItems.length);
+        console.log('[XocDia History] First item:', fetchedItems[0]);
+        console.log('[XocDia History] First item sessionResultCode:', fetchedItems[0]?.sessionResultCode);
+      }
 
       const rawTotalWin = Number(data.totalWinAmount ?? 0);
       const rawTotalLoss = Number(data.totalLossAmount ?? 0);
@@ -205,7 +308,7 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
         totalWinAmount: 0,
         totalLossAmount: 0,
       });
-      setDaysFilter(14);
+      setDaysFilter(0);
       return;
     }
 
@@ -267,6 +370,8 @@ const XocDiaBetHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
               }}
               className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
+              <option value="0">Hôm nay</option>
+              <option value="-1">Hôm qua</option>
               <option value="7">7 ngày</option>
               <option value="14">14 ngày</option>
             </select>

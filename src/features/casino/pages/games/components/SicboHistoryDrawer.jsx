@@ -182,7 +182,7 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [error, setError] = useState('');
-  const [daysFilter, setDaysFilter] = useState(14); // Mặc định 14 ngày (tối đa cho phép)
+  const [daysFilter, setDaysFilter] = useState(0); // Mặc định Hôm nay
   const [totals, setTotals] = useState({
     totalWinAmount: 0,
     totalLossAmount: 0,
@@ -252,7 +252,7 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
         totalWinAmount: 0,
         totalLossAmount: 0,
       });
-      setDaysFilter(14);
+      setDaysFilter(0);
       return;
     }
 
@@ -331,6 +331,8 @@ const SicboHistoryDrawer = ({ isOpen, onClose, optionLookup }) => {
             }}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
           >
+            <option value="0">Hôm nay</option>
+            <option value="-1">Hôm qua</option>
             <option value="7">7 ngày</option>
             <option value="14">14 ngày</option>
           </select>

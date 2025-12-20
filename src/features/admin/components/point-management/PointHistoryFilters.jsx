@@ -19,9 +19,9 @@ const PointHistoryFilters = ({
   ];
 
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-lg">
       <CardContent className="p-4">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap gap-3 xl:flex-nowrap xl:items-end">
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Từ ngày
@@ -30,7 +30,7 @@ const PointHistoryFilters = ({
               type="date"
               value={filters.startDate}
               onChange={(e) => onFiltersChange({ ...filters, startDate: e.target.value })}
-              className="border border-transparent"
+              className="h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0"
             />
           </div>
           <div className="flex-1 min-w-[200px]">
@@ -41,10 +41,10 @@ const PointHistoryFilters = ({
               type="date"
               value={filters.endDate}
               onChange={(e) => onFiltersChange({ ...filters, endDate: e.target.value })}
-              className="border border-transparent"
+              className="h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0"
             />
           </div>
-          <div className="w-[200px]">
+          <div className="min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Người dùng
             </label>
@@ -52,13 +52,13 @@ const PointHistoryFilters = ({
               value={filters.userId}
               onChange={(value) => onFiltersChange({ ...filters, userId: value })}
               options={userOptions}
-              className="border border-transparent"
+              bordered
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center">
             <Button
               onClick={onApply}
-              className="bg-[#4CAF50] text-white hover:bg-[#45a049] rounded-2xl"
+              className="bg-[#4CAF50] text-white hover:bg-[#45a049] rounded-lg"
             >
               Lọc
             </Button>

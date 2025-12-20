@@ -47,7 +47,7 @@ const AdminLoginHistory = () => {
       params.success = false;
     }
 
-    if (filters.dateRange && filters.dateRange.length === 2) {
+    if (filters.dateRange && filters.dateRange.length === 2 && filters.dateRange[0] && filters.dateRange[1]) {
       params.from = filters.dateRange[0].toISOString();
       params.to = filters.dateRange[1].toISOString();
     }

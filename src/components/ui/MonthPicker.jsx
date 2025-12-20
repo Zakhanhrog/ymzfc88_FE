@@ -9,6 +9,7 @@ const MonthPicker = ({
   format = 'YYYY-MM',
   disabled = false,
   className = '',
+  bordered = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value ? dayjs(value).format(format) : '');
@@ -78,8 +79,9 @@ const MonthPicker = ({
         disabled={disabled}
         className={`
           w-full flex items-center justify-between gap-2 
-          border border-transparent rounded-lg 
-          bg-white px-3 py-2 text-sm
+          ${bordered ? 'border border-gray-200 focus-visible:ring-2 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0' : 'border border-transparent'} 
+          rounded-lg 
+          bg-white px-3 py-2 text-sm h-10
           transition-all duration-200
           focus:outline-none
           disabled:bg-gray-100 disabled:cursor-not-allowed

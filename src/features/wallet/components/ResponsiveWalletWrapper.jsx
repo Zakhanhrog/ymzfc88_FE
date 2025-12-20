@@ -12,7 +12,7 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(initialTab || 'account');
+  const [activeTab, setActiveTab] = useState(initialTab || 'settings');
   const [userInfo, setUserInfo] = useState({
     username: '',
     email: '',
@@ -119,6 +119,18 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
       return;
     }
     
+    // Check specific /account routes first (these have priority)
+    if (location.pathname === '/account/kyc') {
+      setActiveTab('kyc-verification');
+      return;
+    }
+    
+    if (location.pathname === '/account/settings') {
+      setActiveTab('settings');
+      return;
+    }
+    
+    // Check query params BEFORE checking pathname
     const tab = searchParams.get('tab');
     if (tab) {
       // Nếu tab là balance, redirect về /account
@@ -126,19 +138,40 @@ const ResponsiveWalletWrapper = ({ initialTab }) => {
         navigate('/account', { replace: true });
         return;
       } else {
-      setActiveTab(tab);
+        setActiveTab(tab);
+        return;
       }
-    } else if (initialTab) {
+    }
+    
+    // Only set default if no query params
+    if (location.pathname === '/account') {
+      // Mặc định là 'settings' (Tài khoản) khi vào /account mà không có query params
+      setActiveTab('settings');
+      return;
+    }
+    
+    if (initialTab) {
       setActiveTab(initialTab);
+    } else if (location.pathname === '/wallet') {
+      // Mặc định cho /wallet
+      setActiveTab('deposit-withdraw');
     }
   }, [searchParams, initialTab, location.pathname, navigate]);
 
   // Handler để cập nhật tab và URL
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    // Nếu đang ở /account, giữ nguyên URL, chỉ cập nhật tab
-    if (location.pathname === '/account') {
-      // Không cần cập nhật URL vì đã ở /account
+    
+    // Nếu đang ở /account routes, cập nhật URL tương ứng
+    if (location.pathname.startsWith('/account')) {
+      if (tab === 'kyc-verification') {
+        navigate('/account/kyc', { replace: true });
+      } else if (tab === 'settings') {
+        navigate('/account', { replace: true });
+      } else {
+        // Các tab khác vẫn dùng query param
+        navigate(`/account?tab=${tab}`, { replace: true });
+      }
     } else if (tab === 'promotions') {
       // Navigate to /promotions route
       navigate('/promotions', { replace: true });

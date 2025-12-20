@@ -32,7 +32,7 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
       section: 'Thông Tin'
     },
     {
-      key: 'account',
+      key: 'kyc-verification',
       label: 'Xác thực tài khoản (KYC)',
       icon: '/iconacc/imgi_29_account.avif',
       section: 'Thông Tin'
@@ -60,17 +60,7 @@ const WalletSidebar = ({ activeTab, onTabChange, userBalance, userInfo, kycVerif
   }, [activeTab]);
 
   const handleItemClick = (key) => {
-    if (key === 'promotions') {
-      // Use onTabChange to show promotions in wallet layout
-      onTabChange('promotions');
-    } else if (key === 'account') {
-      // For account tab, use onTabChange to set the tab
-      onTabChange('account');
-    } else if (key === 'settings') {
-      onTabChange('settings');
-    } else {
-      onTabChange(key);
-    }
+    onTabChange(key);
   };
 
   return (

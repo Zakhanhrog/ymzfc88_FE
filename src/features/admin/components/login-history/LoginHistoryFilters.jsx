@@ -4,7 +4,7 @@ import { Button } from '../../../../components/ui/Button';
 import { Input } from '../../../../components/ui/Input';
 import Select from '../../../../components/ui/Select';
 import DateRangePicker from '../../../../components/ui/DateRangePicker';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, RotateCcw } from 'lucide-react';
 import dayjs from 'dayjs';
 
 const successOptions = [
@@ -60,10 +60,10 @@ const LoginHistoryFilters = ({ filters, onFiltersChange, onRefresh, loading }) =
   };
 
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-lg">
       <CardContent className="p-4">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div>
+        <div className="flex flex-wrap gap-3 xl:flex-nowrap xl:items-end">
+          <div className="flex-1 min-w-[180px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Tài khoản / Email
             </label>
@@ -72,10 +72,10 @@ const LoginHistoryFilters = ({ filters, onFiltersChange, onRefresh, loading }) =
               value={localFilters.username || ''}
               onChange={(e) => handleFilterChange('username', e.target.value)}
               placeholder="Nhập username hoặc email"
-              className="border border-transparent"
+              className="h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0"
             />
           </div>
-          <div>
+          <div className="flex-1 min-w-[180px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Địa chỉ IP
             </label>
@@ -84,10 +84,10 @@ const LoginHistoryFilters = ({ filters, onFiltersChange, onRefresh, loading }) =
               value={localFilters.ip || ''}
               onChange={(e) => handleFilterChange('ip', e.target.value)}
               placeholder="Ví dụ: 192.168.1.1"
-              className="border border-transparent"
+              className="h-10 border border-gray-200 focus-visible:ring-[#4CAF50] focus-visible:ring-offset-0"
             />
           </div>
-          <div>
+          <div className="min-w-[140px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Cổng đăng nhập
             </label>
@@ -95,10 +95,10 @@ const LoginHistoryFilters = ({ filters, onFiltersChange, onRefresh, loading }) =
               value={localFilters.portal || 'all'}
               onChange={(value) => handleFilterChange('portal', value)}
               options={portalOptions}
-              className="border border-transparent"
+              bordered
             />
           </div>
-          <div>
+          <div className="min-w-[140px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Trạng thái
             </label>
@@ -106,10 +106,10 @@ const LoginHistoryFilters = ({ filters, onFiltersChange, onRefresh, loading }) =
               value={localFilters.success || 'all'}
               onChange={(value) => handleFilterChange('success', value)}
               options={successOptions}
-              className="border border-transparent"
+              bordered
             />
           </div>
-          <div className="md:col-span-2 lg:col-span-4">
+          <div className="flex-1 min-w-[220px]">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Khoảng thời gian
             </label>
@@ -118,27 +118,28 @@ const LoginHistoryFilters = ({ filters, onFiltersChange, onRefresh, loading }) =
               onChange={(dates) => handleFilterChange('dateRange', dates)}
               showTime
               format="DD/MM/YYYY HH:mm"
-              className="w-full border border-transparent"
+              bordered
             />
           </div>
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="rounded-2xl"
-          >
-            Đặt lại
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onRefresh}
-            disabled={loading}
-            className="rounded-2xl"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Tải lại
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              className="rounded-lg"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Đặt lại
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onRefresh}
+              disabled={loading}
+              className="rounded-lg"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Tải lại
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

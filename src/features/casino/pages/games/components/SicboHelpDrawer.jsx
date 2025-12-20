@@ -60,8 +60,8 @@ const SicboHelpDrawer = ({ isOpen, onClose, tableType = 'table1' }) => {
               </>
             ) : (
               <>
-                <p>• Tổng số điểm từ 11 đến 17 là <strong>Tài</strong></p>
-                <p>• Tổng số điểm từ 4 đến 10 là <strong>Xỉu</strong></p>
+                <p>• Tổng số điểm từ 11 đến 18 là <strong>Tài</strong> (trừ bão)</p>
+                <p>• Tổng số điểm từ 3 đến 10 là <strong>Xỉu</strong> (trừ bão)</p>
                 <div className="bg-amber-50 rounded-lg p-3 mt-2 border border-amber-200">
                   <p className="font-semibold text-gray-900 mb-2">Trường hợp đặc biệt với Bão:</p>
                   <p>• Nếu 3 hạt xí ngầu là 1,1,1 hoặc 2,2,2 hoặc 3,3,3: cược <strong>Xỉu</strong> sẽ <strong>Hòa</strong>, cược <strong>Tài</strong> sẽ <strong>Thua</strong></p>
@@ -76,9 +76,16 @@ const SicboHelpDrawer = ({ isOpen, onClose, tableType = 'table1' }) => {
         <section className="space-y-3">
           <h3 className="text-base font-semibold text-gray-900">Chẵn lẻ</h3>
           <div className="text-sm leading-relaxed space-y-2">
-            <p>Người chơi dự đoán tổng số điểm của 3 hạt xí ngầu là "chẵn" hoặc "lẻ".</p>
-            <p>• Tổng số điểm 3, 5, 7, 9, 11, 13, 15, 17 là <strong>Lẻ</strong></p>
-            <p>• Tổng số điểm 4, 6, 8, 10, 12, 14, 16, 18 là <strong>Chẵn</strong></p>
+            <p>Người chơi dự đoán tổng số điểm của 3 hạt xí ngầu là "Chẵn" hoặc "Lẻ".</p>
+            <p>• Tổng số điểm 3, 5, 7, 9, 11, 13, 15, 17 là <strong>Lẻ</strong> (trừ bão)</p>
+            <p>• Tổng số điểm 4, 6, 8, 10, 12, 14, 16, 18 là <strong>Chẵn</strong> (trừ bão)</p>
+            {!isTable1 && (
+              <div className="bg-amber-50 rounded-lg p-3 mt-2 border border-amber-200">
+                <p className="font-semibold text-gray-900 mb-2">Trường hợp đặc biệt với Bão:</p>
+                <p>• Nếu 3 hạt xí ngầu là 1,1,1 hoặc 3,3,3 hoặc 5,5,5: cược <strong>Lẻ</strong> sẽ <strong>Hòa</strong>, cược <strong>Chẵn</strong> sẽ <strong>Thua</strong></p>
+                <p>• Nếu 3 hạt xí ngầu là 2,2,2 hoặc 4,4,4 hoặc 6,6,6: cược <strong>Chẵn</strong> sẽ <strong>Hòa</strong>, cược <strong>Lẻ</strong> sẽ <strong>Thua</strong></p>
+              </div>
+            )}
           </div>
         </section>
 
@@ -140,7 +147,7 @@ const SicboHelpDrawer = ({ isOpen, onClose, tableType = 'table1' }) => {
               <div className="grid grid-cols-[1.5fr_2fr_1fr] gap-2 items-center border-b border-gray-100 pb-2">
                 <div className="font-medium">Tài</div>
                 <div className="text-gray-600">
-                  {isTable1 ? 'Tổng số điểm 11 đến 18' : 'Tổng số điểm 11 đến 17 (Trừ bão)'}
+                  {isTable1 ? 'Tổng số điểm 11 đến 18' : 'Tổng số điểm 11 đến 18 (Trừ bão)'}
                 </div>
                 <div className="text-sm font-semibold text-green-600 text-right">{isTable1 ? '1:0.97' : '1:1'}</div>
               </div>
@@ -149,7 +156,7 @@ const SicboHelpDrawer = ({ isOpen, onClose, tableType = 'table1' }) => {
               <div className="grid grid-cols-[1.5fr_2fr_1fr] gap-2 items-center border-b border-gray-100 pb-2">
                 <div className="font-medium">Xỉu</div>
                 <div className="text-gray-600">
-                  {isTable1 ? 'Tổng số điểm 3 đến 10' : 'Tổng số điểm 4 đến 10 (Trừ bão)'}
+                  {isTable1 ? 'Tổng số điểm 3 đến 10' : 'Tổng số điểm 3 đến 10 (Trừ bão)'}
                 </div>
                 <div className="text-sm font-semibold text-green-600 text-right">{isTable1 ? '1:0.97' : '1:1'}</div>
               </div>

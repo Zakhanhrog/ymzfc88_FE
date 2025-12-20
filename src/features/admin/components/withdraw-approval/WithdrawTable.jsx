@@ -1,7 +1,7 @@
 import Table from '../../../../components/ui/Table';
-import { Button } from '../../../../components/ui/Button';
 import Pagination from '../../../../components/ui/Pagination';
 import StatusTag from '../StatusTag';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../components/ui/Tooltip';
 import { Eye, Check, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../../../utils/helpers';
 
@@ -139,36 +139,51 @@ const WithdrawTable = ({
       title: 'Hành động',
       width: 200,
       render: (_, record) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewDetail(record)}
-            className="gap-1"
-          >
-            <Eye className="h-4 w-4" />
-            Chi tiết
-          </Button>
+        <div className="flex items-center gap-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => onViewDetail(record)}
+                  className="p-1.5 border border-gray-200 hover:bg-gray-100 rounded transition-colors"
+                >
+                  <Eye className="h-4 w-4 text-gray-600" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Chi tiết</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           {record.status === 'PENDING' && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onApprove(record.id)}
-                className="gap-1 bg-green-600 text-white hover:bg-green-700 border-green-600"
-              >
-                <Check className="h-4 w-4" />
-                Duyệt
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onReject(record.id)}
-                className="gap-1 text-red-600 border-red-600 hover:bg-red-50"
-              >
-                <X className="h-4 w-4" />
-                Từ chối
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onApprove(record.id)}
+                      className="p-1.5 border border-green-200 hover:bg-green-50 rounded transition-colors"
+                    >
+                      <Check className="h-4 w-4 text-green-600" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Duyệt</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onReject(record.id)}
+                      className="p-1.5 border border-red-200 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <X className="h-4 w-4 text-red-600" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Từ chối</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </>
           )}
         </div>
@@ -178,7 +193,7 @@ const WithdrawTable = ({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl overflow-hidden border border-gray-200">
+      <div className="rounded-lg overflow-hidden border border-gray-200">
         <Table columns={columns} dataSource={withdraws} loading={loading} />
       </div>
       <Pagination

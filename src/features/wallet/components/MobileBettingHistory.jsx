@@ -78,7 +78,7 @@ const MobileBettingHistory = () => {
         let sicboHasMore = true;
         
         while (sicboHasMore && sicboAllBets.length < 10000) {
-          const sicboResponse = await axios.get(`http://localhost:8080/api/sicbo/bets/history`, {
+          const sicboResponse = await axios.get(`https://api.tathiet168.com/api/sicbo/bets/history`, {
             params: {
               page: sicboPage,
               size: 100
@@ -121,7 +121,7 @@ const MobileBettingHistory = () => {
         let xocDiaHasMore = true;
         
         while (xocDiaHasMore && xocDiaAllBets.length < 10000) {
-          const xocDiaResponse = await axios.get(`http://localhost:8080/api/xoc-dia/bets/history`, {
+          const xocDiaResponse = await axios.get(`https://api.tathiet168.com/api/xoc-dia/bets/history`, {
             params: {
               page: xocDiaPage,
               size: 100
@@ -164,7 +164,7 @@ const MobileBettingHistory = () => {
         let lotteryHasMore = true;
         
         while (lotteryHasMore && lotteryAllBets.length < 10000) {
-          const lotteryResponse = await axios.get(`http://localhost:8080/api/bets/my-bets`, {
+          const lotteryResponse = await axios.get(`https://api.tathiet168.com/api/bets/my-bets`, {
             params: {
               page: lotteryPage,
               size: 100
@@ -240,7 +240,7 @@ const MobileBettingHistory = () => {
       
       // Fetch Tài Xỉu betting history
       try {
-        const sicboResponse = await axios.get(`http://localhost:8080/api/sicbo/bets/history`, {
+        const sicboResponse = await axios.get(`https://api.tathiet168.com/api/sicbo/bets/history`, {
           params: {
             page: reset ? 0 : sicboPage,
             size: 10
@@ -278,7 +278,7 @@ const MobileBettingHistory = () => {
 
       // Fetch Xoc Dia betting history
       try {
-        const xocDiaResponse = await axios.get(`http://localhost:8080/api/xoc-dia/bets/history`, {
+        const xocDiaResponse = await axios.get(`https://api.tathiet168.com/api/xoc-dia/bets/history`, {
           params: {
             page: reset ? 0 : xocDiaPage,
             size: 10
@@ -316,7 +316,7 @@ const MobileBettingHistory = () => {
 
       // Fetch Lottery betting history
       try {
-        const lotteryResponse = await axios.get(`http://localhost:8080/api/bets/my-bets`, {
+        const lotteryResponse = await axios.get(`https://api.tathiet168.com/api/bets/my-bets`, {
           params: {
             page: reset ? 0 : lotteryPage,
             size: 10

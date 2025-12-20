@@ -169,7 +169,7 @@ const StaffTable = ({
                 <button
                   type="button"
                   onClick={() => onEdit(record)}
-                  className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1.5 border border-gray-200 hover:bg-gray-100 rounded transition-colors"
                 >
                   <Edit className="h-4 w-4 text-gray-600" />
                 </button>
@@ -183,7 +183,7 @@ const StaffTable = ({
                 <button
                   type="button"
                   onClick={() => onPassword(record)}
-                  className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1.5 border border-gray-200 hover:bg-gray-100 rounded transition-colors"
                 >
                   <Key className="h-4 w-4 text-gray-600" />
                 </button>
@@ -197,7 +197,7 @@ const StaffTable = ({
                 <button
                   type="button"
                   onClick={() => onC2Password(record)}
-                  className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1.5 border border-gray-200 hover:bg-gray-100 rounded transition-colors"
                 >
                   <Shield className="h-4 w-4 text-gray-600" />
                 </button>
@@ -211,14 +211,16 @@ const StaffTable = ({
   ];
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <Table
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        rowKey="id"
-        emptyText="Không có nhân viên nào"
-      />
+    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+        <Table
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          rowKey="id"
+          emptyText="Không có nhân viên nào"
+        />
+      </div>
       {pagination.total > 0 && (
         <div className="border-t border-gray-200 px-4 py-3">
           <Pagination

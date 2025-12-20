@@ -61,7 +61,7 @@ const AdminPointManagement = () => {
     try {
       setLoading(true);
       
-      const userResponse = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
+      const userResponse = await fetch(`https://api.tathiet168.com/api/admin/users/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -224,7 +224,7 @@ const AdminPointManagement = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Lịch sử điểm người dùng</h2>
             <p className="text-sm text-gray-600">
               Người dùng: {selectedUser.username} - {selectedUser.fullName || 'N/A'}
@@ -273,7 +273,7 @@ const AdminPointManagement = () => {
         <Alert 
           type="error" 
           description={error}
-          className="rounded-2xl"
+          className="rounded-lg"
         />
       )}
 
@@ -281,16 +281,19 @@ const AdminPointManagement = () => {
         <Alert 
           type="success" 
           description={success}
-          className="rounded-2xl"
+          className="rounded-lg"
         />
       )}
 
-      <Tabs
-        items={tabItems}
-        activeKey={currentTab}
-        onChange={handleTabChange}
-        className="bg-white rounded-2xl shadow-sm"
-      />
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <Tabs
+          items={tabItems}
+          activeKey={currentTab}
+          onChange={handleTabChange}
+          tabBarClassName="border-0 mb-4"
+          contentClassName="pt-0"
+        />
+      </div>
     </div>
   );
 };

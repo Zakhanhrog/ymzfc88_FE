@@ -18,7 +18,7 @@ const Table = ({
   if (!dataSource || dataSource.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500 text-sm">
-        {emptyText}
+        {typeof emptyText === 'string' ? emptyText : emptyText}
       </div>
     );
   }
@@ -28,15 +28,19 @@ const Table = ({
       <table className="w-full divide-y divide-gray-200 table-auto">
         <thead className="bg-gray-50">
           <tr>
-            {columns.map((column, index) => (
-              <th
-                key={column.key || column.dataIndex || index}
-                className={`px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider ${column.className || ''}`}
-                style={{ width: column.width }}
-              >
-                {column.title}
-              </th>
-            ))}
+            {columns.map((column, index) => {
+              const align = column.align || 'left';
+              const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+              return (
+                <th
+                  key={column.key || column.dataIndex || index}
+                  className={`px-4 py-3 ${alignClass} text-xs font-semibold text-gray-700 uppercase tracking-wider ${column.className || ''}`}
+                  style={{ width: column.width }}
+                >
+                  {column.title}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -56,10 +60,13 @@ const Table = ({
                     ? column.render(value, record, recordIndex)
                     : <span className="text-sm text-gray-900">{value}</span>;
                   
+                  const align = column.align || 'left';
+                  const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
+                  
                   return (
                     <td
                       key={column.key || column.dataIndex || columnIndex}
-                      className={`px-4 py-3 text-sm text-gray-900 ${column.className || ''}`}
+                      className={`px-4 py-3 text-sm text-gray-900 ${alignClass} ${column.className || ''}`}
                     >
                       {content}
                     </td>

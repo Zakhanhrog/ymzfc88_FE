@@ -134,7 +134,7 @@ const AdminBettingOddsManagement = () => {
             onEditToggle={handleEditToggle}
             onSaveChanges={handleSaveChanges}
           />
-        </div>
+      </div>
 
         <BettingOddsTable
           bettingOdds={bettingOdds}

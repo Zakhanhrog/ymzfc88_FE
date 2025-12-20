@@ -17,12 +17,41 @@ const Modal = ({
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (open) {
+      // Lưu lại scroll position hiện tại
+      const scrollY = window.scrollY;
+      // Ngăn scroll body
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      
+      // Lưu scroll position vào data attribute để khôi phục sau
+      document.body.setAttribute('data-scroll-y', scrollY.toString());
     } else {
-      document.body.style.overflow = 'unset';
+      // Khôi phục scroll position
+      const scrollY = document.body.getAttribute('data-scroll-y') || '0';
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.removeAttribute('data-scroll-y');
+      window.scrollTo(0, parseInt(scrollY));
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      // Cleanup
+      const scrollY = document.body.getAttribute('data-scroll-y') || '0';
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.removeAttribute('data-scroll-y');
+      window.scrollTo(0, parseInt(scrollY));
     };
   }, [open]);
 
@@ -47,7 +76,7 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] overflow-y-auto" {...props}>
+    <div className="fixed inset-0 z-[200]" {...props}>
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity z-[200]"
@@ -55,22 +84,31 @@ const Modal = ({
       />
       
       {/* Modal Container */}
-      <div className={`relative min-h-screen flex items-center justify-center p-4 z-[201] ${centered ? '' : 'items-start pt-20'}`}>
+      <div 
+        className={`fixed inset-0 flex items-center justify-center p-4 z-[201] overflow-y-auto ${centered ? '' : 'items-start pt-20'}`}
+        onClick={(e) => {
+          if (maskClosable && closable && e.target === e.currentTarget) {
+            onClose?.();
+          }
+        }}
+        onScroll={(e) => e.stopPropagation()}
+      >
         {/* Modal Content */}
         <div 
-          className={`relative bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto ${width} ${className}`}
+          className={`relative bg-white rounded-lg shadow-xl w-full max-h-[calc(100vh-2rem)] overflow-y-auto transition-all duration-300 ease-in-out ${width} ${className} my-auto`}
           onClick={(e) => e.stopPropagation()}
+          onScroll={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {(title || closable) && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              {title && <h3 className="text-xl font-bold text-gray-900">{title}</h3>}
+            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
+              {title && <h3 className="text-base font-semibold text-gray-900">{title}</h3>}
               {closable && (
                 <button
                   onClick={onClose}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>

@@ -5,6 +5,7 @@ import { message } from '../../../utils/notification';
 import { adminAuthService } from '../services/adminAuthService';
 import { getPortalType } from '../../../utils/subdomain';
 import { adminService } from '../services/adminService';
+import { cn } from '@/lib/utils';
 import UserStatsCards from './user-management/UserStatsCards';
 import UserFilterForm from './user-management/UserFilterForm';
 import UserTable from './user-management/UserTable';
