@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import { marqueeNotificationService } from '../services/adminMarqueeNotificationService';
 import MarqueeNotificationTable from './marquee-notification/MarqueeNotificationTable';
 import MarqueeNotificationModal from './marquee-notification/MarqueeNotificationModal';
-import Alert from '../../../components/ui/Alert';
 
 const AdminMarqueeNotificationManagement = () => {
   const [marqueeNotifications, setMarqueeNotifications] = useState([]);
@@ -18,7 +17,6 @@ const AdminMarqueeNotificationManagement = () => {
     total: 0
   });
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     loadMarqueeNotifications();
@@ -36,10 +34,10 @@ const AdminMarqueeNotificationManagement = () => {
           total: response.data.totalElements
         }));
       } else {
-        showNotification('Lỗi khi tải danh sách thông báo', 'error');
+        message.error(response.message || 'Lỗi khi tải danh sách thông báo');
       }
     } catch (error) {
-      showNotification('Lỗi khi tải danh sách thông báo', 'error');
+      message.error(error.message || 'Lỗi khi tải danh sách thông báo');
       console.error('Error loading marquee notifications:', error);
     } finally {
       setLoading(false);
@@ -63,17 +61,17 @@ const AdminMarqueeNotificationManagement = () => {
     try {
       if (modalMode === 'edit' && editingItem) {
         await marqueeNotificationService.updateMarqueeNotification(editingItem.id, formData);
-        showNotification('Cập nhật thông báo thành công', 'success');
+        message.success('Cập nhật thông báo thành công');
       } else {
         await marqueeNotificationService.createMarqueeNotification(formData);
-        showNotification('Tạo thông báo thành công', 'success');
+        message.success('Tạo thông báo thành công');
       }
       
       setModalVisible(false);
       setEditingItem(null);
       loadMarqueeNotifications(pagination.current, searchKeyword);
     } catch (error) {
-      showNotification('Lỗi khi lưu thông báo', 'error');
+      message.error(error.message || 'Lỗi khi lưu thông báo');
       console.error('Error saving marquee notification:', error);
     } finally {
       setSubmitting(false);
@@ -83,10 +81,10 @@ const AdminMarqueeNotificationManagement = () => {
   const handleDelete = async (id) => {
     try {
       await marqueeNotificationService.deleteMarqueeNotification(id);
-      showNotification('Xóa thông báo thành công', 'success');
+      message.success('Xóa thông báo thành công');
       loadMarqueeNotifications(pagination.current, searchKeyword);
     } catch (error) {
-      showNotification('Lỗi khi xóa thông báo', 'error');
+      message.error(error.message || 'Lỗi khi xóa thông báo');
       console.error('Error deleting marquee notification:', error);
     }
   };
@@ -94,10 +92,10 @@ const AdminMarqueeNotificationManagement = () => {
   const handleToggleActive = async (id) => {
     try {
       await marqueeNotificationService.toggleActiveStatus(id);
-      showNotification('Thay đổi trạng thái thành công', 'success');
+      message.success('Thay đổi trạng thái thành công');
       loadMarqueeNotifications(pagination.current, searchKeyword);
     } catch (error) {
-      showNotification('Lỗi khi thay đổi trạng thái', 'error');
+      message.error(error.message || 'Lỗi khi thay đổi trạng thái');
       console.error('Error toggling active status:', error);
     }
   };
@@ -117,31 +115,8 @@ const AdminMarqueeNotificationManagement = () => {
     loadMarqueeNotifications(newPage, searchKeyword);
   };
 
-  const showNotification = (message, type = 'info') => {
-    setNotification({ message, type });
-  };
-
-  useEffect(() => {
-    let timer;
-    if (notification) {
-      timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-    }
-    return () => clearTimeout(timer);
-  }, [notification]);
-
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <MarqueeNotificationTable
         notifications={marqueeNotifications}
         loading={loading}

@@ -60,6 +60,7 @@ const AdminGameHistory = () => {
         }
       } catch (error) {
         console.error('Error loading game history:', error);
+        // Silent fail - không hiển thị notification cho lỗi tải dữ liệu
       } finally {
         setLoading(false);
       }

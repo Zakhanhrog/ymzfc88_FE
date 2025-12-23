@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import useXocDiaSession from '../../casino/hooks/useXocDiaSession';
 import xocDiaSessionService from '../../../services/xocDiaSessionService';
 import streamConfigService from '../../../services/streamConfigService';

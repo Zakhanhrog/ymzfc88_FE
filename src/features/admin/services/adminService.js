@@ -471,6 +471,73 @@ export const adminService = {
 
   // ============ STAFF & AGENTS ============
 
+  // ============ SUB ADMIN MANAGEMENT ============
+
+  // Lấy danh sách admin phụ
+  getSubAdmins: async (page = 0, size = 20) => {
+    try {
+      const response = await adminAPI.get(`/admin/sub-admins?page=${page}&size=${size}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi lấy danh sách admin phụ');
+    }
+  },
+
+  // Tạo admin phụ mới
+  createSubAdmin: async (subAdminData) => {
+    try {
+      const response = await adminAPI.post('/admin/sub-admins', {
+        ...subAdminData,
+        role: 'SUB_ADMIN'
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi tạo admin phụ');
+    }
+  },
+
+  // Cập nhật admin phụ
+  updateSubAdmin: async (subAdminId, subAdminData) => {
+    try {
+      const response = await adminAPI.put(`/admin/sub-admins/${subAdminId}`, subAdminData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật admin phụ');
+    }
+  },
+
+  // Xóa admin phụ
+  deleteSubAdmin: async (subAdminId) => {
+    try {
+      const response = await adminAPI.delete(`/admin/sub-admins/${subAdminId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi xóa admin phụ');
+    }
+  },
+
+  // Cập nhật trạng thái admin phụ
+  updateSubAdminStatus: async (subAdminId, status) => {
+    try {
+      const response = await adminAPI.put(`/admin/sub-admins/${subAdminId}/status?status=${status}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật trạng thái admin phụ');
+    }
+  },
+
+  // Cập nhật mật khẩu C2 cho admin phụ
+  updateSubAdminC2Password: async (subAdminId, newPassword) => {
+    try {
+      const response = await adminAPI.post(`/admin/sub-admins/${subAdminId}/c2-password`, {
+        newPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Lỗi khi cập nhật mật khẩu bảo vệ');
+    }
+  },
+
   getStaffUsers: async ({ staffRole = 'ALL', page = 0, size = 20 } = {}) => {
     try {
       const params = new URLSearchParams({

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Form, Input, Button, Space, message, Divider } from 'antd';
+import { Form, Input, Button, Space, Divider } from 'antd';
+import { message } from '../../../utils/notification';
 import { Icon } from '@iconify/react';
 import walletService from '../services/walletService';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import useSicboSession from '../../casino/hooks/useSicboSession';
 import sicboSessionService from '../../../services/sicboSessionService';
 import streamConfigService from '../../../services/streamConfigService';

@@ -193,9 +193,11 @@ const AdminAnalyticsDashboard = () => {
   };
 
   const calculateRevenue = () => {
-    const totalStake = Number(betSummary.totalStake ?? 0);
-    const totalWinAmount = Number(betSummary.totalWinAmount ?? 0);
-    return totalStake - totalWinAmount;
+    // Doanh thu = Tổng tiền thua cược - Tiền thắng cược (không tính gốc)
+    // totalWinAmount từ backend đã là profit (winAmount - stake), không tính gốc
+    const totalLostAmount = Number(betSummary.totalLostAmount ?? 0);
+    const totalWinAmount = Number(betSummary.totalWinAmount ?? 0); // Đã là profit (không tính gốc)
+    return totalLostAmount - totalWinAmount;
   };
 
   const calculateProfit = () => {

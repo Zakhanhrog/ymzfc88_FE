@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import { Button } from '../../../components/ui/Button';
 import { Plus, RefreshCw } from 'lucide-react';
 import PaymentMethodStats from './payment-method/PaymentMethodStats';
@@ -21,11 +21,12 @@ const AdminPaymentMethodManagement = () => {
     total: 0
   });
 
-  // Payment method types (chỉ các loại OKDPAY hỗ trợ)
+  // Payment method types (chỉ các loại KPay hỗ trợ)
   const paymentTypes = [
     { value: 'BANK', label: 'Ngân hàng', icon: '🏦', color: 'blue' },
     { value: 'MOMO', label: 'Ví MoMo', icon: '📱', color: 'pink' },
-    { value: 'VIET_QR', label: 'VietQR', icon: '📲', color: 'green' },
+    { value: 'VIETTEL_QR', label: 'Viettel QR', icon: '📲', color: 'green' },
+    { value: 'CARD_PC', label: 'Card PC', icon: '💳', color: 'purple' },
     { value: 'ZALO_PAY', label: 'ZaloPay', icon: '💳', color: 'cyan' }
   ];
 
@@ -46,7 +47,7 @@ const AdminPaymentMethodManagement = () => {
         }));
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error.message || 'Lỗi khi tải danh sách phương thức thanh toán');
     } finally {
       setLoading(false);
     }
@@ -59,9 +60,11 @@ const AdminPaymentMethodManagement = () => {
         message.success('Tạo phương thức thanh toán thành công!');
         setShowCreateModal(false);
         loadPaymentMethods();
+      } else {
+        message.error(response.message || 'Lỗi khi tạo phương thức thanh toán');
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error.message || 'Lỗi khi tạo phương thức thanh toán');
     }
   };
 
@@ -73,9 +76,11 @@ const AdminPaymentMethodManagement = () => {
         setShowEditModal(false);
         setSelectedPaymentMethod(null);
         loadPaymentMethods();
+      } else {
+        message.error(response.message || 'Lỗi khi cập nhật phương thức thanh toán');
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error.message || 'Lỗi khi cập nhật phương thức thanh toán');
     }
   };
 
@@ -85,9 +90,11 @@ const AdminPaymentMethodManagement = () => {
       if (response.success) {
         message.success('Xóa phương thức thanh toán thành công!');
         loadPaymentMethods();
+      } else {
+        message.error(response.message || 'Lỗi khi xóa phương thức thanh toán');
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error.message || 'Lỗi khi xóa phương thức thanh toán');
     }
   };
 
@@ -97,9 +104,11 @@ const AdminPaymentMethodManagement = () => {
       if (response.success) {
         message.success('Cập nhật trạng thái thành công!');
         loadPaymentMethods();
+      } else {
+        message.error(response.message || 'Lỗi khi cập nhật trạng thái');
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error.message || 'Lỗi khi cập nhật trạng thái');
     }
   };
 

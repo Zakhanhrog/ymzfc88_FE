@@ -25,7 +25,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 import walletService from '../services/walletService';
 import BettingHistory from './BettingHistory';
 import { formatPoints } from '../../../utils/helpers';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 
 dayjs.extend(isBetween);
 

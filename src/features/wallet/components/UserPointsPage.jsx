@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Statistic, Row, Col, Table, Tag, Empty, Spin, message } from 'antd';
+import { Card, Statistic, Row, Col, Table, Tag, Empty, Spin } from 'antd';
+import { message } from '../../../utils/notification';
 import { TrophyOutlined, StarOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { HEADING_STYLES, BODY_STYLES, FONT_SIZE, FONT_WEIGHT, TEXT_COLORS } from '../../../utils/typography';
 import { THEME_COLORS } from '../../../utils/theme';

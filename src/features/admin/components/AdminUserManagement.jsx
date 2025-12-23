@@ -1418,7 +1418,8 @@ const AdminUserManagement = () => {
                       { label: 'Ngân hàng', value: 'BANK' },
                       { label: 'Ví MoMo', value: 'MOMO' },
                       { label: 'ZaloPay', value: 'ZALO_PAY' },
-                      { label: 'VietQR', value: 'VIET_QR' }
+                      { label: 'Viettel QR', value: 'VIETTEL_QR' },
+                      { label: 'Card PC', value: 'CARD_PC' }
                     ]}
                     className={bankFormErrors.type ? 'border-red-500' : ''}
                     placeholder="Chọn loại"

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import adminBettingOddsService from '../services/adminBettingOddsService';
 import BettingOddsHeader from './betting-odds/BettingOddsHeader';
 import BettingOddsTabs from './betting-odds/BettingOddsTabs';
 import BettingOddsTable from './betting-odds/BettingOddsTable';
 import BettingOddsStats from './betting-odds/BettingOddsStats';
-import Alert from '../../../components/ui/Alert';
 
 const AdminBettingOddsManagement = () => {
   const [activeTab, setActiveTab] = useState('MIEN_BAC');
@@ -14,7 +13,6 @@ const AdminBettingOddsManagement = () => {
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editedData, setEditedData] = useState({});
-  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     loadBettingOdds();
@@ -36,12 +34,10 @@ const AdminBettingOddsManagement = () => {
         });
         setEditedData(initialEditedData);
       } else {
-        message.error(response.message);
-        setNotification({ type: 'error', message: response.message });
+        message.error(response.message || 'Lỗi khi tải dữ liệu tỷ lệ cược');
       }
     } catch (error) {
-      message.error('Lỗi khi tải dữ liệu tỷ lệ cược');
-      setNotification({ type: 'error', message: 'Lỗi khi tải dữ liệu tỷ lệ cược' });
+      message.error(error.message || 'Lỗi khi tải dữ liệu tỷ lệ cược');
     } finally {
       setLoading(false);
     }
@@ -90,37 +86,18 @@ const AdminBettingOddsManagement = () => {
         message.success('Cập nhật tỷ lệ cược thành công!');
         setEditMode(false);
         await loadBettingOdds();
-        setNotification({ type: 'success', message: 'Cập nhật tỷ lệ cược thành công!' });
       } else {
-        message.error(response.message);
-        setNotification({ type: 'error', message: response.message });
+        message.error(response.message || 'Lỗi khi cập nhật tỷ lệ cược');
       }
     } catch (error) {
-      message.error('Lỗi khi lưu thay đổi');
-      setNotification({ type: 'error', message: 'Lỗi khi lưu thay đổi' });
+      message.error(error.message || 'Lỗi khi lưu thay đổi');
     } finally {
       setSaving(false);
     }
   };
 
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
-
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <BettingOddsTabs

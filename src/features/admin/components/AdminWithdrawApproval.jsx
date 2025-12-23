@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import WithdrawStats from './withdraw-approval/WithdrawStats';
 import WithdrawFilters from './withdraw-approval/WithdrawFilters';
 import WithdrawTable from './withdraw-approval/WithdrawTable';
@@ -51,7 +51,7 @@ const AdminWithdrawApproval = () => {
         }
       }
     } catch (error) {
-      message.error('Lỗi khi tải danh sách rút tiền: ' + error.message);
+      message.error(error.message || 'Lỗi khi tải danh sách rút tiền');
     } finally {
       setLoading(false);
     }
@@ -88,10 +88,10 @@ const AdminWithdrawApproval = () => {
         loadWithdraws();
         loadStatistics();
       } else {
-        message.error('Lỗi khi duyệt: ' + (response.message || 'Không xác định'));
+        message.error(response.message || 'Lỗi khi duyệt lệnh rút tiền');
       }
     } catch (error) {
-      message.error('Lỗi khi duyệt: ' + error.message);
+      message.error(error.message || 'Lỗi khi duyệt lệnh rút tiền');
     }
   };
 
@@ -110,10 +110,10 @@ const AdminWithdrawApproval = () => {
         loadWithdraws();
         loadStatistics();
       } else {
-        message.error('Lỗi khi từ chối: ' + (response.message || 'Không xác định'));
+        message.error(response.message || 'Lỗi khi từ chối lệnh rút tiền');
       }
     } catch (error) {
-      message.error('Lỗi khi từ chối: ' + error.message);
+      message.error(error.message || 'Lỗi khi từ chối lệnh rút tiền');
     }
   };
 

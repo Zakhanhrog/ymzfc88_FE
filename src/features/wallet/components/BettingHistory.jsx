@@ -20,7 +20,7 @@ import {
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import axios from 'axios';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import { defaultSicboQuickBetConfigs } from '../../casino/pages/games/sicboConfig';
 import { defaultQuickBetConfigs as xocDiaConfigs } from '../../casino/pages/games/xocDiaConfig';
 

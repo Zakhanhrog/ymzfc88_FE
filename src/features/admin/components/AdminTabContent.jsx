@@ -44,9 +44,37 @@ import StaffSicboResultManagement from './StaffSicboResultManagement';
 import StaffSicboHistory from './StaffSicboHistory';
 import StaffXocDiaHistory from './StaffXocDiaHistory';
 import StaffXocDiaResultManagement from './StaffXocDiaResultManagement';
+import AdminSubAdminManagement from './AdminSubAdminManagement';
+import { adminAuthService } from '../services/adminAuthService';
 
 const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
   const portalType = getPortalType();
+  const session = adminAuthService.getCurrentAdmin();
+  const isSubAdmin = session?.role === 'SUB_ADMIN';
+  
+  // Danh sách các tab kết quả game bị chặn cho SUB_ADMIN
+  const restrictedGameResultTabs = [
+    'game-results',
+    'xoc-dia-results',
+    'staff-tx1-sicbo-results',
+    'staff-tx2-sicbo-results'
+  ];
+  
+  // Chặn truy cập các tab kết quả game nếu là SUB_ADMIN
+  if (isSubAdmin && restrictedGameResultTabs.includes(currentTab)) {
+    return (
+      <div className="space-y-6">
+        <TabPageHeader
+          title="Không có quyền truy cập"
+          description="Bạn không có quyền truy cập vào trang này"
+        />
+        <PlaceholderContent
+          icon={TrophyOutlined}
+          message="Bạn không có quyền truy cập vào các tab kết quả game. Vui lòng liên hệ quản trị viên."
+        />
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (currentTab) {
@@ -108,6 +136,13 @@ const AdminTabContent = ({ currentTab, dashboardStats, loading }) => {
         return (
           <div className="space-y-6">
             <AdminLoginHistory />
+          </div>
+        );
+
+      case 'sub-admin-management':
+        return (
+          <div className="space-y-6">
+            <AdminSubAdminManagement />
           </div>
         );
 

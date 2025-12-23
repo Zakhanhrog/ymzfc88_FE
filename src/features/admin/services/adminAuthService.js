@@ -18,7 +18,7 @@ const isUserAuthorizedForPortal = (portal, user) => {
   if (portal === 'staff') {
     return STAFF_PORTAL_ROLES.includes(user.staffRole);
   }
-  return user.role === 'ADMIN';
+  return user.role === 'ADMIN' || user.role === 'SUB_ADMIN';
 };
 
 const API_BASE_URL = 'https://api.tathiet168.com/api';

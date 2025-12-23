@@ -102,6 +102,11 @@ export const adminMenuItems = [
         key: 'agent-report',
         icon: ICONS.agentReport,
         label: 'Báo cáo đại lý',
+      },
+      {
+        key: 'sub-admin-management',
+        icon: ICONS.staff,
+        label: 'Quản lý admin phụ',
       }
     ]
   },

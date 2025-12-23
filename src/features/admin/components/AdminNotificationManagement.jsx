@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import notificationService from '../../notification/services/notificationService';
 import { adminService } from '../services/adminService';
 import NotificationStats from './notification/NotificationStats';
 import NotificationTable from './notification/NotificationTable';
 import NotificationModal from './notification/NotificationModal';
-import Alert from '../../../components/ui/Alert';
 
 const AdminNotificationManagement = () => {
   const [notifications, setNotifications] = useState([]);
@@ -13,7 +12,6 @@ const AdminNotificationManagement = () => {
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
-  const [notification, setNotification] = useState(null);
 
   // Statistics
   const [stats, setStats] = useState({
@@ -51,7 +49,7 @@ const AdminNotificationManagement = () => {
         });
       }
     } catch (error) {
-      showNotification('Lỗi khi tải danh sách thông báo: ' + error.message, 'error');
+      message.error(error.message || 'Lỗi khi tải danh sách thông báo');
     } finally {
       setLoading(false);
     }
@@ -74,14 +72,14 @@ const AdminNotificationManagement = () => {
       const response = await notificationService.createNotification(notificationData);
 
       if (response.success) {
-        showNotification('Gửi thông báo thành công!', 'success');
+        message.success('Gửi thông báo thành công!');
         setCreateModalVisible(false);
         loadNotifications();
       } else {
-        showNotification('Lỗi khi gửi thông báo: ' + (response.message || 'Unknown error'), 'error');
+        message.error(response.message || 'Lỗi khi gửi thông báo');
       }
     } catch (error) {
-      showNotification('Lỗi khi gửi thông báo: ' + error.message, 'error');
+      message.error(error.message || 'Lỗi khi gửi thông báo');
     } finally {
       setLoading(false);
     }
@@ -92,13 +90,13 @@ const AdminNotificationManagement = () => {
     try {
       const response = await notificationService.deleteNotification(notificationId);
       if (response.success) {
-        showNotification('Xóa thông báo thành công!', 'success');
+        message.success('Xóa thông báo thành công!');
         loadNotifications();
       } else {
-        showNotification('Lỗi khi xóa thông báo: ' + (response.message || 'Unknown error'), 'error');
+        message.error(response.message || 'Lỗi khi xóa thông báo');
       }
     } catch (error) {
-      showNotification('Lỗi khi xóa thông báo: ' + error.message, 'error');
+      message.error(error.message || 'Lỗi khi xóa thông báo');
     } finally {
       setLoading(false);
     }
@@ -112,31 +110,8 @@ const AdminNotificationManagement = () => {
     });
   };
 
-  const showNotification = (message, type = 'info') => {
-    setNotification({ message, type });
-  };
-
-  useEffect(() => {
-    let timer;
-    if (notification) {
-      timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-    }
-    return () => clearTimeout(timer);
-  }, [notification]);
-
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <NotificationStats stats={stats} />
 
       <NotificationTable

@@ -21,7 +21,7 @@ const PaymentMethodFormModal = ({
     accountNumber: '',
     accountName: '',
     bankCode: '',
-    channelCode: '', // Mã kênh từ OKDPAY
+    channelCode: '', // Mã kênh từ gateway (KPay)
     minAmount: '',
     maxAmount: '',
     feePercent: '0',
@@ -83,35 +83,44 @@ const PaymentMethodFormModal = ({
     return value.replace(/,/g, '');
   };
 
-  // Mapping PaymentType -> ChannelCode và MinAmount
+  // Mapping PaymentType -> ChannelCode (KPay)
   const getChannelCodeForType = (type) => {
     const mapping = {
-      'BANK': '1001',      // 银行卡转账
-      'MOMO': '1004',      // MomoPay原生 (MomoPay Native)
-      'VIET_QR': '1003',   // 网银扫码
-      'ZALO_PAY': '1005'   // ZALO
+      'BANK': 'bank_qr',            // Bank → bank_qr
+      'MOMO': 'momo_qr',            // Momo → momo_qr
+      'VIETTEL_QR': 'viettel_qr',   // Viettel QR → viettel_qr
+      'CARD_PC': 'card_pc',        // Card PC → card_pc
+      'ZALO_PAY': 'zalo_qr'         // ZaloPay → zalo_qr
     };
     return mapping[type] || null;
   };
 
   const getMinAmountForChannel = (channelCode) => {
     const mapping = {
-      '1001': 50000,  // 5万-3亿
-      '1003': 50000,  // 5万-3亿
-      '1004': 10000,  // 1万-1000万 (MomoPay原生)
-      '1005': 50000   // 5万-5000万
+      'bank_transfer': 20000,
+      'bank_qr': 20000,
+      'kpay_universal_qr': 20000,
+      'momo_qr': 10000,
+      'zalo_bank': 20000,
+      'viettel_bank': 20000,
+      'card_pc': 10000,
+      'payout': 100000
     };
-    return mapping[channelCode] || 1000;
+    return mapping[channelCode] || 20000;
   };
 
   const getMaxAmountForChannel = (channelCode) => {
     const mapping = {
-      '1001': 3000000000,  // 3亿 (3 tỷ)
-      '1003': 3000000000,  // 3亿 (3 tỷ)
-      '1004': 100000000,   // 1000万 (100 triệu)
-      '1005': 500000000    // 5000万 (500 triệu)
+      'bank_transfer': 300000000,
+      'bank_qr': 300000000,
+      'kpay_universal_qr': 300000000,
+      'momo_qr': 10000000,
+      'zalo_bank': 300000000,
+      'viettel_bank': 300000000,
+      'card_pc': 1000000,
+      'payout': 300000000
     };
-    return mapping[channelCode] || 1000000000;
+    return mapping[channelCode] || 300000000;
   };
 
   const handleChange = (field, value) => {
@@ -286,12 +295,6 @@ const PaymentMethodFormModal = ({
                   error={errors.bankCode}
                 />
                 {errors.bankCode && <p className="text-red-500 text-xs mt-1">{errors.bankCode}</p>}
-                <p className="text-xs text-gray-500 mt-1">Mã ngân hàng chuẩn (VD: VCB, TCB, MB, BIDV...)</p>
-              {formData.channelCode && (
-                <p className="text-xs text-blue-600 mt-1 font-medium">
-                  ℹ️ Mã kênh OKDPAY: {formData.channelCode} - Số tiền tối thiểu: {formData.minAmount ? formatNumber(formData.minAmount) : 'N/A'} VNĐ
-                </p>
-              )}
               </div>
           )}
 
@@ -311,7 +314,6 @@ const PaymentMethodFormModal = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Số tiền tối thiểu <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Cố định theo OKDPAY)</span>
             </label>
             <Input
               type="text"
@@ -319,21 +321,15 @@ const PaymentMethodFormModal = ({
               onChange={(e) => handleChange('minAmount', e.target.value)}
               placeholder="1,000"
               error={errors.minAmount}
-              disabled={!!formData.channelCode} // Disable khi đã có channelCode
+              disabled={!!formData.channelCode}
               className={formData.channelCode ? 'bg-gray-100 cursor-not-allowed' : ''}
             />
             {errors.minAmount && <p className="text-red-500 text-xs mt-1">{errors.minAmount}</p>}
-            {formData.channelCode && (
-              <p className="text-xs text-blue-600 mt-1 font-medium">
-                ✓ Quy định OKDPAY cho channel {formData.channelCode}: Tối thiểu {getMinAmountForChannel(formData.channelCode).toLocaleString('vi-VN')} VNĐ (không thể chỉnh sửa)
-              </p>
-            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Số tiền tối đa <span className="text-red-500">*</span>
-              <span className="text-xs text-gray-500 ml-2">(Cố định theo OKDPAY)</span>
             </label>
             <Input
               type="text"
@@ -341,15 +337,10 @@ const PaymentMethodFormModal = ({
               onChange={(e) => handleChange('maxAmount', e.target.value)}
               placeholder="10,000,000"
               error={errors.maxAmount}
-              disabled={!!formData.channelCode} // Disable khi đã có channelCode
+              disabled={!!formData.channelCode}
               className={formData.channelCode ? 'bg-gray-100 cursor-not-allowed' : ''}
             />
             {errors.maxAmount && <p className="text-red-500 text-xs mt-1">{errors.maxAmount}</p>}
-            {formData.channelCode && (
-              <p className="text-xs text-blue-600 mt-1 font-medium">
-                ✓ Quy định OKDPAY cho channel {formData.channelCode}: Tối đa {getMaxAmountForChannel(formData.channelCode).toLocaleString('vi-VN')} VNĐ (không thể chỉnh sửa)
-              </p>
-            )}
           </div>
 
           <div>

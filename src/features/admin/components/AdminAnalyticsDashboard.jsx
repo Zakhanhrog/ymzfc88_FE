@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Row, Col, Form, Select, DatePicker, Button, Table, Tag, Space, Statistic, message } from 'antd';
+import { Card, Row, Col, Form, Select, DatePicker, Button, Table, Tag, Space, Statistic } from 'antd';
+import { message } from '../../../utils/notification';
 import dayjs from 'dayjs';
 import adminService from '../services/adminService';
 import { formatPoints as formatPointsFromVND } from '../../../utils/helpers';
@@ -523,7 +524,9 @@ const AdminAnalyticsDashboard = () => {
             <Statistic
               title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Doanh thu</span>}
               value={formatPointsDisplay(
-                Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0)
+                // Doanh thu = Tổng tiền thua cược - Tiền thắng cược (không tính gốc)
+                // totalWinAmount từ backend đã là profit (winAmount - stake), không tính gốc
+                Number(betSummary.totalLostAmount ?? 0) - Number(betSummary.totalWinAmount ?? 0)
               )}
               valueStyle={{ color: '#f97316', fontSize: '14px', lineHeight: '1.2', wordBreak: 'break-word', textAlign: 'center' }}
             />
@@ -535,8 +538,9 @@ const AdminAnalyticsDashboard = () => {
               title={<span style={{ fontSize: '12px', lineHeight: '1.2', display: 'block' }}>Lợi nhuận</span>}
               value={formatPointsDisplay(
                 (() => {
-                  // Doanh thu = Tổng tiền thắng - Tổng tiền thua
-                  const doanhThu = Number(betSummary.totalWinAmount ?? 0) - Number(betSummary.totalLostAmount ?? 0);
+                  // Doanh thu = Tổng tiền thua cược - Tiền thắng cược (không tính gốc)
+                  // totalWinAmount từ backend đã là profit (winAmount - stake), không tính gốc
+                  const doanhThu = Number(betSummary.totalLostAmount ?? 0) - Number(betSummary.totalWinAmount ?? 0);
                   
                   // Công thức: Lợi nhuận = Doanh thu - (Hoàn trả + Khuyến mãi + Hoàn Thua + Hoa hồng)
                   const totalRefund = Number(betSummary.totalRefund ?? 0); // Hoàn trả

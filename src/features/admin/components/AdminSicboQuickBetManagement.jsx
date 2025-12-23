@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import adminSicboQuickBetService from '../services/adminSicboQuickBetService';
 import SicboQuickBetHeader from './sicbo-quick-bet/SicboQuickBetHeader';
 import SicboQuickBetTable from './sicbo-quick-bet/SicboQuickBetTable';
 import SicboQuickBetStats from './sicbo-quick-bet/SicboQuickBetStats';
-import Alert from '../../../components/ui/Alert';
 
 const AdminSicboQuickBetManagement = () => {
   const [quickBets, setQuickBets] = useState([]);
@@ -12,7 +11,6 @@ const AdminSicboQuickBetManagement = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     loadQuickBets();
@@ -28,13 +26,6 @@ const AdminSicboQuickBetManagement = () => {
       }),
     [quickBets]
   );
-
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
 
   const loadQuickBets = async () => {
     try {
@@ -55,12 +46,10 @@ const AdminSicboQuickBetManagement = () => {
         setEditedQuickBets(initialEdited);
       } else {
         message.error(response.message || 'Không thể tải cấu hình quick bet');
-        setNotification({ type: 'error', message: response.message || 'Không thể tải cấu hình quick bet' });
       }
     } catch (error) {
       console.error('Load Sicbo quick bet configs error:', error);
-      message.error('Không thể tải cấu hình quick bet');
-      setNotification({ type: 'error', message: 'Không thể tải cấu hình quick bet' });
+      message.error(error.message || 'Không thể tải cấu hình quick bet');
     } finally {
       setLoading(false);
     }
@@ -125,15 +114,12 @@ const AdminSicboQuickBetManagement = () => {
         message.success(response.message || 'Đã lưu thay đổi');
         setEditMode(false);
         await loadQuickBets();
-        setNotification({ type: 'success', message: response.message || 'Đã lưu thay đổi' });
       } else {
         message.error(response.message || 'Không thể lưu thay đổi');
-        setNotification({ type: 'error', message: response.message || 'Không thể lưu thay đổi' });
       }
     } catch (error) {
       console.error('Save Sicbo quick bet configs error:', error);
       message.error(error.message || 'Không thể lưu thay đổi');
-      setNotification({ type: 'error', message: error.message || 'Không thể lưu thay đổi' });
     } finally {
       setSaving(false);
     }
@@ -141,15 +127,6 @@ const AdminSicboQuickBetManagement = () => {
 
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="flex justify-end items-center mb-4">
           <SicboQuickBetHeader

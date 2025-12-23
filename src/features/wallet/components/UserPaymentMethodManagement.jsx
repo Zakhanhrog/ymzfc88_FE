@@ -115,7 +115,15 @@ const UserPaymentMethodManagement = () => {
   const handleCreatePaymentMethod = async (values) => {
     try {
       setLoading(true);
-      const response = await walletService.createUserPaymentMethod(values);
+      // Chuẩn hóa dữ liệu: convert chuỗi rỗng thành null cho các enum fields
+      const normalizedValues = {
+        ...values,
+        walletType: values.walletType || null,
+        network: values.network || null,
+        walletProvider: values.walletProvider || null,
+        bankCode: values.bankCode || null
+      };
+      const response = await walletService.createUserPaymentMethod(normalizedValues);
       if (response.success) {
         message.success('Thêm phương thức thanh toán thành công!');
         setShowCreateModal(false);
@@ -228,7 +236,9 @@ const UserPaymentMethodManagement = () => {
               <div className="font-medium">{method.accountName}</div>
             </div>
             <div>
-              <Text type="secondary" style={{ fontSize: '12px' }}>Số tài khoản</Text>
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                {method.type === 'E_WALLET' && method.walletType === 'CRYPTO' ? 'Địa chỉ ví' : 'Số tài khoản'}
+              </Text>
               <div className="font-mono font-medium text-blue-600">{method.accountNumber}</div>
             </div>
             {bankInfo && (
@@ -236,6 +246,28 @@ const UserPaymentMethodManagement = () => {
                 <Text type="secondary" style={{ fontSize: '12px' }}>Ngân hàng</Text>
                 <div className="font-medium">{bankInfo.name}</div>
                 <div className="text-sm text-gray-500">{bankInfo.fullName}</div>
+              </div>
+            )}
+            {method.type === 'E_WALLET' && method.walletType && (
+              <div>
+                <Text type="secondary" style={{ fontSize: '12px' }}>Loại ví</Text>
+                <div className="font-medium">
+                  {method.walletType === 'CRYPTO' ? 'Crypto' : 'Việt Nam'}
+                </div>
+              </div>
+            )}
+            {method.type === 'E_WALLET' && method.walletType === 'CRYPTO' && method.network && (
+              <div>
+                <Text type="secondary" style={{ fontSize: '12px' }}>Mạng lưới</Text>
+                <div className="font-medium">{method.network}</div>
+              </div>
+            )}
+            {method.type === 'E_WALLET' && method.walletType === 'VIETNAM' && method.walletProvider && (
+              <div>
+                <Text type="secondary" style={{ fontSize: '12px' }}>Nhà cung cấp</Text>
+                <div className="font-medium">
+                  {method.walletProvider === 'MOMO' ? 'MoMo' : 'ZaloPay'}
+                </div>
               </div>
             )}
           </div>
@@ -405,9 +437,22 @@ const UserPaymentMethodManagement = () => {
                 const existingMethod = userPaymentMethods.find(m => m.type === value);
                 if (existingMethod) {
                   message.warning(`Bạn đã có phương thức ${value === 'BANK' ? 'Ngân hàng' : 'Ví điện tử'}. Mỗi loại chỉ được thêm 1 lần.`);
-                  createForm.setFieldsValue({ type: undefined });
+                  createForm.setFieldsValue({ 
+                    type: undefined,
+                    walletType: undefined,
+                    network: undefined,
+                    walletProvider: undefined
+                  });
+                } else {
+                  // Reset các trường liên quan khi thay đổi type
+                  createForm.setFieldsValue({
+                    walletType: undefined,
+                    network: undefined,
+                    walletProvider: undefined
+                  });
                 }
               }}
+              style={{ border: '1px solid #d1d5db', borderRadius: '8px' }}
             >
               {withdrawalPaymentTypes
                 .filter(type => {
@@ -425,28 +470,124 @@ const UserPaymentMethodManagement = () => {
             </Select>
           </Form.Item>
 
+          {/* Chọn loại ví điện tử (chỉ hiện khi chọn E_WALLET) */}
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('type') === 'E_WALLET' && (
+                <Form.Item
+                  name="walletType"
+                  label="Loại ví điện tử"
+                  rules={[{ required: true, message: 'Vui lòng chọn loại ví điện tử' }]}
+                >
+                  <Select
+                    placeholder="Chọn loại ví điện tử"
+                    onChange={(value) => {
+                      // Reset các trường liên quan khi thay đổi walletType
+                      createForm.setFieldsValue({
+                        network: undefined,
+                        walletProvider: undefined
+                      });
+                    }}
+                    style={{ border: '1px solid #d1d5db', borderRadius: '8px' }}
+                  >
+                    <Option value="CRYPTO">Crypto</Option>
+                    <Option value="VIETNAM">Việt Nam</Option>
+                  </Select>
+                </Form.Item>
+              )
+            }
+          </Form.Item>
+
+          {/* Chọn mạng lưới (chỉ hiện khi chọn CRYPTO) */}
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => 
+              prevValues.type !== currentValues.type || 
+              prevValues.walletType !== currentValues.walletType
+            }
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('type') === 'E_WALLET' && getFieldValue('walletType') === 'CRYPTO' && (
+                <Form.Item
+                  name="network"
+                  label="Mạng lưới"
+                  rules={[{ required: true, message: 'Vui lòng chọn mạng lưới' }]}
+                >
+                  <Select 
+                    placeholder="Chọn mạng lưới"
+                    style={{ border: '1px solid #d1d5db', borderRadius: '8px' }}
+                  >
+                    <Option value="TRC20">TRC20</Option>
+                    <Option value="BEP20">BEP20</Option>
+                  </Select>
+                </Form.Item>
+              )
+            }
+          </Form.Item>
+
+          {/* Chọn loại ví Việt Nam (chỉ hiện khi chọn VIETNAM) */}
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => 
+              prevValues.type !== currentValues.type || 
+              prevValues.walletType !== currentValues.walletType
+            }
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('type') === 'E_WALLET' && getFieldValue('walletType') === 'VIETNAM' && (
+                <Form.Item
+                  name="walletProvider"
+                  label="Loại ví"
+                  rules={[{ required: true, message: 'Vui lòng chọn loại ví' }]}
+                >
+                  <Select 
+                    placeholder="Chọn loại ví"
+                    style={{ border: '1px solid #d1d5db', borderRadius: '8px' }}
+                  >
+                    <Option value="MOMO">MoMo</Option>
+                    <Option value="ZALOPAY">ZaloPay</Option>
+                  </Select>
+                </Form.Item>
+              )
+            }
+          </Form.Item>
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 noStyle
-                shouldUpdate={(prevValues, currentValues) => prevValues.type !== currentValues.type}
+                shouldUpdate={(prevValues, currentValues) => 
+                  prevValues.type !== currentValues.type || 
+                  prevValues.walletType !== currentValues.walletType
+                }
               >
+                {({ getFieldValue }) => {
+                  const type = getFieldValue('type');
+                  const walletType = getFieldValue('walletType');
+                  const isCrypto = type === 'E_WALLET' && walletType === 'CRYPTO';
+                  
+                  return (
                 <Form.Item
                   name="accountNumber"
-                  label="Số tài khoản"
+                      label={isCrypto ? 'Địa chỉ ví' : 'Số tài khoản'}
                   rules={[
-                    { required: true, message: 'Vui lòng nhập số tài khoản' },
+                        { required: true, message: isCrypto ? 'Vui lòng nhập địa chỉ ví' : 'Vui lòng nhập số tài khoản' },
                     {
                       max: 60,
-                      message: 'Số tài khoản không được vượt quá 60 ký tự'
+                          message: isCrypto ? 'Địa chỉ ví không được vượt quá 60 ký tự' : 'Số tài khoản không được vượt quá 60 ký tự'
                     }
                   ]}
                 >
                   <Input 
-                    placeholder="Số tài khoản (có thể có chữ và số)"
+                        placeholder={isCrypto ? "Địa chỉ ví (có thể có chữ và số)" : "Số tài khoản (có thể có chữ và số)"}
                     maxLength={60}
                   />
                 </Form.Item>
+                  );
+                }}
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -503,6 +644,7 @@ const UserPaymentMethodManagement = () => {
                     filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
+                    style={{ border: '1px solid #d1d5db', borderRadius: '8px' }}
                   >
                     {popularBanks.map(bank => (
                       <Option key={bank.code} value={bank.code}>

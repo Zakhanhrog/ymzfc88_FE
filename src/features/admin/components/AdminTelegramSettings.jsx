@@ -11,7 +11,6 @@ const AdminTelegramSettings = () => {
   const [loading, setLoading] = useState(false);
   const [editingConfig, setEditingConfig] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchConfigs();
@@ -21,13 +20,14 @@ const AdminTelegramSettings = () => {
   const fetchConfigs = async () => {
     try {
       setLoading(true);
-      setError('');
       const data = await adminService.getAllTelegramConfigs();
       if (data.success) {
         setConfigs(data.data);
+      } else {
+        message.error(data.message || 'Không thể tải danh sách cấu hình');
       }
     } catch (error) {
-      setError(error.message || 'Không thể tải danh sách cấu hình');
+      message.error(error.message || 'Không thể tải danh sách cấu hình');
     } finally {
       setLoading(false);
     }
@@ -106,16 +106,6 @@ const AdminTelegramSettings = () => {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <Alert
-          type="error"
-          description={error}
-          closable
-          onClose={() => setError('')}
-          className="rounded-2xl"
-        />
-      )}
-
       {/* Active Config Alert */}
       {activeConfig && (
         <Alert

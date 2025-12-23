@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import adminLotteryResultService from '../services/adminLotteryResultService';
 import LotteryResultFilters from './lottery-result/LotteryResultFilters';
 import LotteryResultTable from './lottery-result/LotteryResultTable';
 import LotteryResultModal from './lottery-result/LotteryResultModal';
-import Alert from '../../../components/ui/Alert';
 
 const AdminLotteryResultManagement = () => {
   const [results, setResults] = useState([]);
@@ -15,7 +14,6 @@ const AdminLotteryResultManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // create, edit, view
   const [selectedResult, setSelectedResult] = useState(null);
-  const [notification, setNotification] = useState(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -162,12 +160,10 @@ const AdminLotteryResultManagement = () => {
 
     const response = await adminLotteryResultService.deleteLotteryResult(id);
     if (response.success) {
-      message.success(response.message);
-      setNotification({ type: 'success', message: response.message });
+      message.success(response.message || 'Xóa kết quả thành công');
       loadResults();
     } else {
-      message.error(response.message);
-      setNotification({ type: 'error', message: response.message });
+      message.error(response.message || 'Lỗi khi xóa kết quả');
     }
   };
 
@@ -178,12 +174,10 @@ const AdminLotteryResultManagement = () => {
 
     const response = await adminLotteryResultService.publishResult(id);
     if (response.success) {
-      message.success(response.message);
-      setNotification({ type: 'success', message: response.message });
+      message.success(response.message || 'Công bố kết quả thành công');
       loadResults();
     } else {
-      message.error(response.message);
-      setNotification({ type: 'error', message: response.message });
+      message.error(response.message || 'Lỗi khi công bố kết quả');
     }
   };
 
@@ -194,12 +188,10 @@ const AdminLotteryResultManagement = () => {
 
     const response = await adminLotteryResultService.unpublishResult(id);
     if (response.success) {
-      message.success(response.message);
-      setNotification({ type: 'success', message: response.message });
+      message.success(response.message || 'Hủy công bố kết quả thành công');
       loadResults();
     } else {
-      message.error(response.message);
-      setNotification({ type: 'error', message: response.message });
+      message.error(response.message || 'Lỗi khi hủy công bố kết quả');
     }
   };
 
@@ -211,7 +203,6 @@ const AdminLotteryResultManagement = () => {
       JSON.parse(formData.results);
     } catch (error) {
       message.error('JSON kết quả không hợp lệ: ' + error.message);
-      setNotification({ type: 'error', message: 'JSON kết quả không hợp lệ: ' + error.message });
       return;
     }
 
@@ -226,22 +217,13 @@ const AdminLotteryResultManagement = () => {
     }
 
     if (response.success) {
-      message.success(response.message);
-      setNotification({ type: 'success', message: response.message });
+      message.success(response.message || (modalMode === 'create' ? 'Tạo kết quả thành công' : 'Cập nhật kết quả thành công'));
       setShowModal(false);
       loadResults();
     } else {
-      message.error(response.message);
-      setNotification({ type: 'error', message: response.message });
+      message.error(response.message || 'Lỗi khi lưu kết quả');
     }
   };
-
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
 
   const handleRegionChange = (region) => {
     const template = region === 'mienBac' 
@@ -296,15 +278,6 @@ const AdminLotteryResultManagement = () => {
 
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <LotteryResultFilters
           filterRegion={filterRegion}

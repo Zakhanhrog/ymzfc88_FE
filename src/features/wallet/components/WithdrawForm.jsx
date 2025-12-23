@@ -49,7 +49,10 @@ const WithdrawForm = () => {
     name: '',
     accountName: '',
     accountNumber: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    walletType: '',
+    network: '',
+    walletProvider: ''
   });
   const [addMethodFormErrors, setAddMethodFormErrors] = useState({});
 
@@ -180,6 +183,17 @@ const WithdrawForm = () => {
     if (addMethodFormData.type === 'BANK' && !addMethodFormData.bankCode) {
       errors.bankCode = 'Vui lòng chọn ngân hàng';
     }
+    if (addMethodFormData.type === 'E_WALLET') {
+      if (!addMethodFormData.walletType) {
+        errors.walletType = 'Vui lòng chọn loại ví điện tử';
+      }
+      if (addMethodFormData.walletType === 'CRYPTO' && !addMethodFormData.network) {
+        errors.network = 'Vui lòng chọn mạng lưới';
+      }
+      if (addMethodFormData.walletType === 'VIETNAM' && !addMethodFormData.walletProvider) {
+        errors.walletProvider = 'Vui lòng chọn loại ví';
+      }
+    }
     if (!addMethodFormData.name) {
       errors.name = 'Vui lòng nhập tên';
     }
@@ -187,10 +201,14 @@ const WithdrawForm = () => {
       errors.accountName = 'Vui lòng nhập tên tài khoản';
     }
     if (!addMethodFormData.accountNumber) {
-      errors.accountNumber = 'Vui lòng nhập số tài khoản';
+      errors.accountNumber = addMethodFormData.type === 'E_WALLET' && addMethodFormData.walletType === 'CRYPTO'
+        ? 'Vui lòng nhập địa chỉ ví'
+        : 'Vui lòng nhập số tài khoản';
     }
     if (addMethodFormData.accountNumber && addMethodFormData.accountNumber.length > 60) {
-      errors.accountNumber = 'Số tài khoản không được vượt quá 60 ký tự';
+      errors.accountNumber = addMethodFormData.type === 'E_WALLET' && addMethodFormData.walletType === 'CRYPTO'
+        ? 'Địa chỉ ví không được vượt quá 60 ký tự'
+        : 'Số tài khoản không được vượt quá 60 ký tự';
     }
     if (!addMethodFormData.phoneNumber) {
       errors.phoneNumber = 'Vui lòng nhập số điện thoại';
@@ -206,7 +224,15 @@ const WithdrawForm = () => {
 
     try {
       setLoading(true);
-      const response = await walletService.createUserPaymentMethod(addMethodFormData);
+      // Chuẩn hóa dữ liệu: convert chuỗi rỗng thành null cho các enum fields
+      const normalizedData = {
+        ...addMethodFormData,
+        walletType: addMethodFormData.walletType || null,
+        network: addMethodFormData.network || null,
+        walletProvider: addMethodFormData.walletProvider || null,
+        bankCode: addMethodFormData.bankCode || null
+      };
+      const response = await walletService.createUserPaymentMethod(normalizedData);
       if (response.success) {
         message.success('Thêm phương thức rút tiền thành công!');
         setShowAddMethodModal(false);
@@ -216,7 +242,10 @@ const WithdrawForm = () => {
           name: '',
           accountName: '',
           accountNumber: '',
-          phoneNumber: ''
+          phoneNumber: '',
+          walletType: '',
+          network: '',
+          walletProvider: ''
         });
         setAddMethodFormErrors({});
         loadUserPaymentMethods();
@@ -839,7 +868,10 @@ const WithdrawForm = () => {
               name: '',
               accountName: '',
               accountNumber: '',
-              phoneNumber: ''
+              phoneNumber: '',
+              walletType: '',
+              network: '',
+              walletProvider: ''
             });
             setAddMethodFormErrors({});
           }}
@@ -858,7 +890,13 @@ const WithdrawForm = () => {
                     message.warning(`Bạn đã có phương thức ${value === 'BANK' ? 'Ngân hàng' : 'Ví điện tử'}. Mỗi loại chỉ được thêm 1 lần.`);
                     return;
                   }
-                  setAddMethodFormData(prev => ({ ...prev, type: value }));
+                  setAddMethodFormData(prev => ({ 
+                    ...prev, 
+                    type: value,
+                    walletType: '',
+                    network: '',
+                    walletProvider: ''
+                  }));
                   setAddMethodFormErrors(prev => ({ ...prev, type: '' }));
                 }}
                 options={[
@@ -867,12 +905,95 @@ const WithdrawForm = () => {
                 ]}
                 placeholder="Chọn loại phương thức"
                 size="lg"
-                className={addMethodFormErrors.type ? 'border-red-500' : ''}
+                className={`border border-gray-300 rounded-lg ${addMethodFormErrors.type ? 'border-red-500' : ''}`}
               />
               {addMethodFormErrors.type && (
                 <p className="mt-1 text-sm text-red-500">{addMethodFormErrors.type}</p>
               )}
             </div>
+
+            {/* Chọn loại ví điện tử (chỉ hiện khi chọn E_WALLET) */}
+            {addMethodFormData.type === 'E_WALLET' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Loại ví điện tử <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  value={addMethodFormData.walletType}
+                  onChange={(value) => {
+                    setAddMethodFormData(prev => ({ 
+                      ...prev, 
+                      walletType: value,
+                      network: '',
+                      walletProvider: ''
+                    }));
+                    setAddMethodFormErrors(prev => ({ ...prev, walletType: '' }));
+                  }}
+                  options={[
+                    { value: 'CRYPTO', label: 'Crypto' },
+                    { value: 'VIETNAM', label: 'Việt Nam' }
+                  ]}
+                  placeholder="Chọn loại ví điện tử"
+                  size="lg"
+                  className={`border border-gray-300 rounded-lg ${addMethodFormErrors.walletType ? 'border-red-500' : ''}`}
+                />
+                {addMethodFormErrors.walletType && (
+                  <p className="mt-1 text-sm text-red-500">{addMethodFormErrors.walletType}</p>
+                )}
+              </div>
+            )}
+
+            {/* Chọn mạng lưới (chỉ hiện khi chọn CRYPTO) */}
+            {addMethodFormData.type === 'E_WALLET' && addMethodFormData.walletType === 'CRYPTO' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mạng lưới <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  value={addMethodFormData.network}
+                  onChange={(value) => {
+                    setAddMethodFormData(prev => ({ ...prev, network: value }));
+                    setAddMethodFormErrors(prev => ({ ...prev, network: '' }));
+                  }}
+                  options={[
+                    { value: 'TRC20', label: 'TRC20' },
+                    { value: 'BEP20', label: 'BEP20' }
+                  ]}
+                  placeholder="Chọn mạng lưới"
+                  size="lg"
+                  className={`border border-gray-300 rounded-lg ${addMethodFormErrors.network ? 'border-red-500' : ''}`}
+                />
+                {addMethodFormErrors.network && (
+                  <p className="mt-1 text-sm text-red-500">{addMethodFormErrors.network}</p>
+                )}
+              </div>
+            )}
+
+            {/* Chọn loại ví Việt Nam (chỉ hiện khi chọn VIETNAM) */}
+            {addMethodFormData.type === 'E_WALLET' && addMethodFormData.walletType === 'VIETNAM' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Loại ví <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  value={addMethodFormData.walletProvider}
+                  onChange={(value) => {
+                    setAddMethodFormData(prev => ({ ...prev, walletProvider: value }));
+                    setAddMethodFormErrors(prev => ({ ...prev, walletProvider: '' }));
+                  }}
+                  options={[
+                    { value: 'MOMO', label: 'MoMo' },
+                    { value: 'ZALOPAY', label: 'ZaloPay' }
+                  ]}
+                  placeholder="Chọn loại ví"
+                  size="lg"
+                  className={`border border-gray-300 rounded-lg ${addMethodFormErrors.walletProvider ? 'border-red-500' : ''}`}
+                />
+                {addMethodFormErrors.walletProvider && (
+                  <p className="mt-1 text-sm text-red-500">{addMethodFormErrors.walletProvider}</p>
+                )}
+              </div>
+            )}
 
             {addMethodFormData.type === 'BANK' && (
               <div>
@@ -888,7 +1009,7 @@ const WithdrawForm = () => {
                   options={popularBanks.map(bank => ({ value: bank.code, label: bank.name }))}
                   placeholder="Chọn ngân hàng"
                   size="lg"
-                  className={addMethodFormErrors.bankCode ? 'border-red-500' : ''}
+                  className={`border border-gray-300 rounded-lg ${addMethodFormErrors.bankCode ? 'border-red-500' : ''}`}
                 />
                 {addMethodFormErrors.bankCode && (
                   <p className="mt-1 text-sm text-red-500">{addMethodFormErrors.bankCode}</p>
@@ -934,7 +1055,9 @@ const WithdrawForm = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Số tài khoản <span className="text-red-500">*</span>
+                {addMethodFormData.type === 'E_WALLET' && addMethodFormData.walletType === 'CRYPTO' 
+                  ? 'Địa chỉ ví' 
+                  : 'Số tài khoản'} <span className="text-red-500">*</span>
               </label>
               <Input
                 value={addMethodFormData.accountNumber}
@@ -943,7 +1066,11 @@ const WithdrawForm = () => {
                   setAddMethodFormData(prev => ({ ...prev, accountNumber: value }));
                   setAddMethodFormErrors(prev => ({ ...prev, accountNumber: '' }));
                 }}
-                placeholder="Số tài khoản (có thể có chữ và số)"
+                placeholder={
+                  addMethodFormData.type === 'E_WALLET' && addMethodFormData.walletType === 'CRYPTO'
+                    ? "Địa chỉ ví (có thể có chữ và số)"
+                    : "Số tài khoản (có thể có chữ và số)"
+                }
                 maxLength={60}
                 className={`h-12 ${addMethodFormErrors.accountNumber ? 'border-red-500' : ''}`}
               />
@@ -985,7 +1112,10 @@ const WithdrawForm = () => {
                     name: '',
                     accountName: '',
                     accountNumber: '',
-                    phoneNumber: ''
+                    phoneNumber: '',
+                    walletType: '',
+                    network: '',
+                    walletProvider: ''
                   });
                   setAddMethodFormErrors({});
                 }}

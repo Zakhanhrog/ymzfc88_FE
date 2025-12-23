@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './layout/AdminHeader';
 import { LAYOUT } from '../../utils/theme';
-import { getPortalLoginPath } from '../../utils/navigation';
+import { getPortalLoginPath, getPortalDashboardPath } from '../../utils/navigation';
 import { getPortalType } from '../../utils/subdomain';
 import { adminAuthService } from '../../features/admin/services/adminAuthService';
 import { adminMenuItems } from './sidebar/adminMenuData';
@@ -33,6 +33,11 @@ const getActiveKeyFromLocation = (portalType, location) => {
   const path = stripPortalPrefix(portalType, location.pathname);
   const searchParams = new URLSearchParams(location.search);
   const tab = searchParams.get('tab');
+
+  // Trạng thái tab rỗng theo yêu cầu
+  if (tab === 'empty') {
+    return null;
+  }
 
   if (path.includes('/points')) {
     return 'points-management';
@@ -127,6 +132,7 @@ const AdminLayout = ({ children }) => {
     // Khởi tạo activeTabId từ location hiện tại
     return `${location.pathname}${location.search || ''}`;
   });
+const [isTabless, setIsTabless] = useState(false);
 
   // State và ref cho scroll tab bar
   const tabsScrollRef = useRef(null);
@@ -161,8 +167,24 @@ const AdminLayout = ({ children }) => {
   // Cập nhật danh sách tab đang mở khi route thay đổi
   useEffect(() => {
     const activeKey = getActiveKeyFromLocation(portalType, location);
-    const title = buildTitleFromMenu(portalType, activeKey);
     const tabId = `${location.pathname}${location.search || ''}`;
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+
+    // Nếu đang ở trạng thái tab rỗng thì không auto mở tab
+    if (tabParam === 'empty') {
+      setIsTabless(true);
+      setTabs([]);
+      setActiveTabId(null);
+      return;
+    }
+
+    // Khi chuyển sang route thực (chọn từ sidebar), thoát chế độ tab rỗng
+    if (isTabless) {
+      setIsTabless(false);
+    }
+
+    const title = buildTitleFromMenu(portalType, activeKey);
 
     setTabs((prevTabs) => {
       // Kiểm tra xem tab này đã tồn tại chưa
@@ -189,7 +211,7 @@ const AdminLayout = ({ children }) => {
     });
 
     setActiveTabId(tabId);
-  }, [location.pathname, location.search, portalType]);
+  }, [location.pathname, location.search, portalType, isTabless]);
 
   // Đồng bộ tabs vào sessionStorage để không bị mất khi AdminLayout remount
   useEffect(() => {
@@ -307,8 +329,11 @@ const AdminLayout = ({ children }) => {
         return nextTabs;
       }
 
-      const dashboardPath = portalType === 'admin' ? '/dashboard' : '/';
-      navigate(dashboardPath);
+      // Đóng tab cuối (thường là Tổng quan): chuyển sang trạng thái không tab
+      const emptyPath = getPortalDashboardPath(portalType || 'admin', 'empty');
+      setIsTabless(true);
+      setActiveTabId(null);
+      navigate(emptyPath, { replace: true });
       return [];
     });
   };
@@ -360,7 +385,7 @@ const AdminLayout = ({ children }) => {
         />
 
         {/* Thanh tab các màn hình admin đang mở - nằm sát dưới header */}
-        {hasTabs && (
+        {(hasTabs || isTabless) && (
           <div
             style={{
               position: 'fixed',
@@ -375,7 +400,7 @@ const AdminLayout = ({ children }) => {
           >
             <div className="h-full flex items-center justify-between px-4 gap-2">
               {/* Nút scroll trái */}
-              {canScrollLeft && (
+              {hasTabs && canScrollLeft && (
                 <button
                   type="button"
                   onClick={scrollLeft}
@@ -391,55 +416,59 @@ const AdminLayout = ({ children }) => {
                 className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1"
                 style={{ scrollBehavior: 'smooth' }}
               >
-                {tabs.map((tab) => {
-                  const isActive = tab.id === activeTabId;
-                  return (
-                    <button
-                      key={tab.id}
-                      data-tab-id={tab.id}
-                      type="button"
-                      onClick={() => handleTabClick(tab)}
-                      className={cn(
-                        'group inline-flex items-center justify-center px-3 py-1.5 text-xs whitespace-nowrap transition-all duration-150 rounded-sm flex-shrink-0',
-                        isActive
-                          ? 'bg-emerald-500 text-white shadow-sm'
-                          : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-                      )}
-                    >
-                      <div className="relative flex items-center justify-center">
-                        {/* Label chỉ hiện khi chưa hover & tab không active */}
-                        {!isActive && (
-                          <span className="truncate max-w-[180px] font-medium group-hover:opacity-0 group-hover:scale-95 transition-all duration-150">
-                            {tab.title}
-                          </span>
+                {hasTabs ? (
+                  tabs.map((tab) => {
+                    const isActive = tab.id === activeTabId;
+                    return (
+                      <button
+                        key={tab.id}
+                        data-tab-id={tab.id}
+                        type="button"
+                        onClick={() => handleTabClick(tab)}
+                        className={cn(
+                          'group inline-flex items-center justify-center px-3 py-1.5 text-xs whitespace-nowrap transition-all duration-150 rounded-sm flex-shrink-0',
+                          isActive
+                            ? 'bg-emerald-500 text-white shadow-sm'
+                            : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
                         )}
-
-                        {/* Label + nút đóng khi hover (hoặc luôn với tab active) */}
-                        <span
-                          className={cn(
-                            'inline-flex items-center justify-center gap-2 truncate max-w-[180px] font-medium transition-all duration-150',
-                            isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 absolute inset-0'
+                      >
+                        <div className="relative flex items-center justify-center">
+                          {/* Label chỉ hiện khi chưa hover & tab không active */}
+                          {!isActive && (
+                            <span className="truncate max-w-[180px] font-medium group-hover:opacity-0 group-hover:scale-95 transition-all duration-150">
+                              {tab.title}
+                            </span>
                           )}
-                        >
-                          <span className="truncate">{tab.title}</span>
+
+                          {/* Label + nút đóng khi hover (hoặc luôn với tab active) */}
                           <span
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCloseTab(tab.id);
-                            }}
-                            className="flex items-center justify-center rounded-sm p-[2px] text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+                            className={cn(
+                              'inline-flex items-center justify-center gap-2 truncate max-w-[180px] font-medium transition-all duration-150',
+                              isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 absolute inset-0'
+                            )}
                           >
-                            <X className="h-3 w-3" />
+                            <span className="truncate">{tab.title}</span>
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCloseTab(tab.id);
+                              }}
+                              className="flex items-center justify-center rounded-sm p-[2px] text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+                            >
+                              <X className="h-3 w-3" />
+                            </span>
                           </span>
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <span className="text-sm text-gray-500">Hãy chọn mục trên sidebar</span>
+                )}
               </div>
 
               {/* Nút scroll phải */}
-              {canScrollRight && (
+              {hasTabs && canScrollRight && (
                 <button
                   type="button"
                   onClick={scrollRight}
@@ -456,6 +485,7 @@ const AdminLayout = ({ children }) => {
                   type="button"
                   onClick={handleRefresh}
                   className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 transition-colors text-xs font-medium"
+                  disabled={!hasTabs}
                 >
                   <RefreshCw className="h-4 w-4" />
                   <span>Refresh</span>
@@ -464,6 +494,7 @@ const AdminLayout = ({ children }) => {
                   type="button"
                   onClick={handleClearAll}
                   className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 transition-colors text-xs font-medium"
+                  disabled={!hasTabs}
                 >
                   <Trash2 className="h-4 w-4" />
                   <span>Clear</span>
@@ -475,14 +506,14 @@ const AdminLayout = ({ children }) => {
         
         <Content 
           style={{
-            margin: `${HEADER_HEIGHT + (hasTabs ? TAB_BAR_HEIGHT : 0)}px 0 0 0`,
+            margin: `${HEADER_HEIGHT + ((hasTabs || isTabless) ? TAB_BAR_HEIGHT : 0)}px 0 0 0`,
             padding: '16px 24px 24px',
             background: '#f0f2f5',
             minHeight: `calc(100vh - ${LAYOUT.headerHeight})`,
             overflow: 'auto'
           }}
         >
-          {children}
+          {isTabless ? null : children}
         </Content>
       </Layout>
     </Layout>

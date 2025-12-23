@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import streamConfigService from '../../../services/streamConfigService';
 import StreamConfigInfo from './stream-config/StreamConfigInfo';
 import StreamConfigTable from './stream-config/StreamConfigTable';
 import StreamConfigModal from './stream-config/StreamConfigModal';
-import Alert from '../../../components/ui/Alert';
 import { Card } from '../../../components/ui/Card';
 
 const AdminStreamConfigManagement = () => {
@@ -14,7 +13,6 @@ const AdminStreamConfigManagement = () => {
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
   const [editingConfig, setEditingConfig] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   const gameTypes = [
     { value: 'XOC_DIA', label: 'Xóc Đĩa' },
@@ -32,11 +30,11 @@ const AdminStreamConfigManagement = () => {
       if (response.success) {
         setConfigs(response.data || []);
       } else {
-        showNotification(response.message || 'Lỗi khi tải danh sách stream config', 'error');
+        message.error(response.message || 'Lỗi khi tải danh sách stream config');
       }
     } catch (error) {
       console.error('Error loading stream configs:', error);
-      showNotification('Lỗi khi tải danh sách stream config', 'error');
+      message.error(error.message || 'Lỗi khi tải danh sách stream config');
     } finally {
       setLoading(false);
     }
@@ -58,14 +56,14 @@ const AdminStreamConfigManagement = () => {
     try {
       const response = await streamConfigService.deleteStreamConfig(id);
       if (response.success) {
-        showNotification('Xóa stream config thành công', 'success');
+        message.success('Xóa stream config thành công');
         loadConfigs();
       } else {
-        showNotification(response.message || 'Lỗi khi xóa stream config', 'error');
+        message.error(response.message || 'Lỗi khi xóa stream config');
       }
     } catch (error) {
       console.error('Error deleting stream config:', error);
-      showNotification('Lỗi khi xóa stream config', 'error');
+      message.error(error.message || 'Lỗi khi xóa stream config');
     }
   };
 
@@ -80,49 +78,25 @@ const AdminStreamConfigManagement = () => {
       }
 
       if (response.success) {
-        showNotification(
-          modalMode === 'edit' ? 'Cập nhật stream config thành công' : 'Tạo stream config thành công',
-          'success'
+        message.success(
+          modalMode === 'edit' ? 'Cập nhật stream config thành công' : 'Tạo stream config thành công'
         );
         setModalVisible(false);
         setEditingConfig(null);
         loadConfigs();
       } else {
-        showNotification(response.message || 'Lỗi khi lưu stream config', 'error');
+        message.error(response.message || 'Lỗi khi lưu stream config');
       }
     } catch (error) {
       console.error('Error saving stream config:', error);
-      showNotification('Lỗi khi lưu stream config', 'error');
+      message.error(error.message || 'Lỗi khi lưu stream config');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const showNotification = (message, type = 'info') => {
-    setNotification({ message, type });
-  };
-
-  useEffect(() => {
-    let timer;
-    if (notification) {
-      timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-    }
-    return () => clearTimeout(timer);
-  }, [notification]);
-
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <Card className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="mb-4">
           <StreamConfigInfo />

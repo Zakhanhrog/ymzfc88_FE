@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import { adminBannerService } from '../services/adminBannerService';
 import BannerHeader from './banner/BannerHeader';
 import BannerSection from './banner/BannerSection';
 import BannerModal from './banner/BannerModal';
-import Alert from '../../../components/ui/Alert';
 import { Card } from '../../../components/ui/Card';
 
 const AdminBannerManagement = () => {
@@ -14,7 +13,6 @@ const AdminBannerManagement = () => {
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
   const [editingBanner, setEditingBanner] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   const bannerTypes = [
     { value: 'MAIN_BANNER', label: 'Banner chính (4:1) - Tối đa 5 cái', aspectRatio: '4:1', maxCount: 5 },
@@ -35,7 +33,7 @@ const AdminBannerManagement = () => {
       }
     } catch (error) {
       console.error('Error loading banners:', error);
-      showNotification('Lỗi khi tải danh sách banner', 'error');
+      message.error(error.message || 'Lỗi khi tải danh sách banner');
     } finally {
       setLoading(false);
     }
@@ -56,11 +54,11 @@ const AdminBannerManagement = () => {
   const handleDelete = async (id) => {
     try {
       await adminBannerService.deleteBanner(id);
-      showNotification('Xóa banner thành công', 'success');
+      message.success('Xóa banner thành công');
       loadBanners();
     } catch (error) {
       console.error('Error deleting banner:', error);
-      showNotification('Lỗi khi xóa banner: ' + (error.response?.data?.message || error.message), 'error');
+      message.error(error.response?.data?.message || error.message || 'Lỗi khi xóa banner');
     }
   };
 
@@ -69,10 +67,10 @@ const AdminBannerManagement = () => {
     try {
       if (modalMode === 'edit' && editingBanner) {
         await adminBannerService.updateBanner(editingBanner.id, formData);
-        showNotification('Cập nhật banner thành công', 'success');
+        message.success('Cập nhật banner thành công');
       } else {
         await adminBannerService.createBanner(formData);
-        showNotification('Tạo banner thành công', 'success');
+        message.success('Tạo banner thành công');
       }
       
       setModalVisible(false);
@@ -80,7 +78,7 @@ const AdminBannerManagement = () => {
       loadBanners();
     } catch (error) {
       console.error('Error saving banner:', error);
-      showNotification('Lỗi khi lưu banner: ' + (error.response?.data?.message || error.message), 'error');
+      message.error(error.response?.data?.message || error.message || 'Lỗi khi lưu banner');
     } finally {
       setSubmitting(false);
     }
@@ -95,31 +93,8 @@ const AdminBannerManagement = () => {
     return type ? type.aspectRatio : '1:1';
   };
 
-  const showNotification = (message, type = 'info') => {
-    setNotification({ message, type });
-  };
-
-  useEffect(() => {
-    let timer;
-    if (notification) {
-      timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-    }
-    return () => clearTimeout(timer);
-  }, [notification]);
-
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <Card className="rounded-2xl bg-white p-4 shadow-sm">
         <BannerHeader onCreate={handleCreate} />
 

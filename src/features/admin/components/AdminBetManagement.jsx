@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import adminBetService from '../services/adminBetService';
 import BetManagementHeader from './bet-management/BetManagementHeader';
 import BetManagementFilters from './bet-management/BetManagementFilters';
 import BetManagementTable from './bet-management/BetManagementTable';
 import BetEditModal from './bet-management/BetEditModal';
-import Alert from '../../../components/ui/Alert';
 
 /**
  * Component quản lý bet cho admin
@@ -32,7 +31,6 @@ const AdminBetManagement = () => {
     selectedNumbers: '',
     groupedNumbers: [] // Mảng các cụm số
   });
-  const [notification, setNotification] = useState(null);
 
   // Load bets
   useEffect(() => {
@@ -57,8 +55,7 @@ const AdminBetManagement = () => {
         }));
       }
     } catch (error) {
-      message.error('Không thể tải danh sách bet');
-      setNotification({ type: 'error', message: 'Không thể tải danh sách bet' });
+      message.error(error.message || 'Không thể tải danh sách bet');
     } finally {
       setLoading(false);
     }
@@ -79,7 +76,6 @@ const AdminBetManagement = () => {
     // CHỈ cho phép edit bet có status = PENDING
     if (bet.status !== 'PENDING') {
       message.error('Chỉ có thể chỉnh sửa bet đang chờ (PENDING)');
-      setNotification({ type: 'error', message: 'Chỉ có thể chỉnh sửa bet đang chờ (PENDING)' });
       return;
     }
     
@@ -192,7 +188,6 @@ const AdminBetManagement = () => {
 
       if (selectedNumbers.length === 0) {
         message.error('Vui lòng nhập ít nhất 1 số');
-        setNotification({ type: 'error', message: 'Vui lòng nhập ít nhất 1 số' });
         return;
       }
 
@@ -204,14 +199,12 @@ const AdminBetManagement = () => {
 
       if (response.success) {
         message.success('Đã cập nhật số đã chọn thành công');
-        setNotification({ type: 'success', message: 'Đã cập nhật số đã chọn thành công' });
         setShowEditModal(false);
         setSelectedBet(null);
         loadBets();
       }
     } catch (error) {
       message.error(error.message || 'Không thể chỉnh sửa bet');
-      setNotification({ type: 'error', message: error.message || 'Không thể chỉnh sửa bet' });
     }
   };
 
@@ -219,7 +212,6 @@ const AdminBetManagement = () => {
     // CHỈ cho phép xóa bet có status = PENDING
     if (bet.status !== 'PENDING') {
       message.error('Chỉ có thể xóa bet đang chờ (PENDING)');
-      setNotification({ type: 'error', message: 'Chỉ có thể xóa bet đang chờ (PENDING)' });
       return;
     }
 
@@ -231,12 +223,10 @@ const AdminBetManagement = () => {
       const response = await adminBetService.deleteBet(bet.id);
       if (response.success) {
         message.success('Xóa bet và hoàn tiền thành công');
-        setNotification({ type: 'success', message: 'Xóa bet và hoàn tiền thành công' });
         loadBets();
       }
     } catch (error) {
       message.error(error.message || 'Không thể xóa bet');
-      setNotification({ type: 'error', message: error.message || 'Không thể xóa bet' });
     }
   };
 
@@ -245,33 +235,15 @@ const AdminBetManagement = () => {
       const response = await adminBetService.checkAllBetResults();
       if (response.success) {
         message.success('Đã kiểm tra kết quả tất cả bet đang chờ');
-        setNotification({ type: 'success', message: 'Đã kiểm tra kết quả tất cả bet đang chờ' });
         loadBets(); // Refresh để hiển thị kết quả mới
       }
     } catch (error) {
       message.error(error.message || 'Không thể kiểm tra kết quả');
-      setNotification({ type: 'error', message: error.message || 'Không thể kiểm tra kết quả' });
     }
   };
 
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
-
   return (
     <div className="space-y-6">
-      {notification && (
-        <Alert
-          type={notification.type}
-          message={notification.message}
-          closable
-          onClose={() => setNotification(null)}
-        />
-      )}
-
       <div className="rounded-2xl bg-white p-4 shadow-sm">
         <div className="flex justify-end items-center mb-4">
           <BetManagementHeader

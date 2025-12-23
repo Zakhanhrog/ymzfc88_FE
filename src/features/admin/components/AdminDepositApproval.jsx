@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { message } from '../../../utils/notification';
 import DepositStats from './deposit-approval/DepositStats';
 import DepositFilters from './deposit-approval/DepositFilters';
 import DepositTable from './deposit-approval/DepositTable';
@@ -51,7 +51,7 @@ const AdminDepositApproval = () => {
         }
       }
     } catch (error) {
-      message.error('Lỗi khi tải danh sách nạp tiền: ' + error.message);
+      message.error(error.message || 'Lỗi khi tải danh sách nạp tiền');
     } finally {
       setLoading(false);
     }
@@ -96,10 +96,10 @@ const AdminDepositApproval = () => {
         loadDeposits();
         loadStatistics();
       } else {
-        message.error('Lỗi khi duyệt: ' + (response.message || 'Không xác định'));
+        message.error(response.message || 'Lỗi khi duyệt lệnh nạp tiền');
       }
     } catch (error) {
-      message.error('Lỗi khi duyệt: ' + error.message);
+      message.error(error.message || 'Lỗi khi duyệt lệnh nạp tiền');
     }
   };
 
@@ -118,10 +118,10 @@ const AdminDepositApproval = () => {
         loadDeposits();
         loadStatistics();
       } else {
-        message.error('Lỗi khi từ chối: ' + (response.message || 'Không xác định'));
+        message.error(response.message || 'Lỗi khi từ chối lệnh nạp tiền');
       }
     } catch (error) {
-      message.error('Lỗi khi từ chối: ' + error.message);
+      message.error(error.message || 'Lỗi khi từ chối lệnh nạp tiền');
     }
   };
 

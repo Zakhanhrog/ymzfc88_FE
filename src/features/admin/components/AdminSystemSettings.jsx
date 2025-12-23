@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Percent, PercentCircle } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import Tabs from '../../../components/ui/Tabs';
-import Alert from '../../../components/ui/Alert';
+import { message } from '../../../utils/notification';
 import CommissionSettingsTab from './system-settings/CommissionSettingsTab';
 import GameRefundTab from './system-settings/GameRefundTab';
 
@@ -10,7 +10,6 @@ const AdminSystemSettings = () => {
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({});
   const [activeTab, setActiveTab] = useState('commission');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     loadSettings();
@@ -18,7 +17,6 @@ const AdminSystemSettings = () => {
 
   const loadSettings = async () => {
     setLoading(true);
-    setError('');
     try {
       const response = await adminService.getAllSystemSettings();
       if (response.success) {
@@ -29,10 +27,10 @@ const AdminSystemSettings = () => {
         });
         setSettings(settingsMap);
       } else {
-        setError(response.message || 'Không thể tải cài đặt');
+        message.error(response.message || 'Không thể tải cài đặt');
       }
     } catch (error) {
-      setError('Lỗi khi tải cài đặt: ' + error.message);
+      message.error(error.message || 'Lỗi khi tải cài đặt');
     } finally {
       setLoading(false);
     }
@@ -75,16 +73,6 @@ const AdminSystemSettings = () => {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <Alert
-          type="error"
-          description={error}
-          closable
-          onClose={() => setError('')}
-          className="rounded-2xl"
-        />
-      )}
-
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <Tabs
           items={tabItems}

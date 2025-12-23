@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Table, Button, Space, Tag, message } from 'antd';
+import { Card, Table, Button, Space, Tag } from 'antd';
+import { message } from '../../../utils/notification';
 import dayjs from 'dayjs';
 import TabPageHeader from './TabPageHeader';
 import xocDiaResultHistoryService from '../../../services/xocDiaResultHistoryService';

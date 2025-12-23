@@ -166,46 +166,101 @@ const getMenuForPortal = (portalType, session) => {
   }
 
   if (portalType === 'admin') {
+    const userRole = session?.role;
+    const staffRole = session?.staffRole;
+    const isSubAdmin = userRole === 'SUB_ADMIN';
+    const isAdmin = userRole === 'ADMIN';
+    
     const baseItems = deepCloneMenuItems(
       adminMenuItems.filter(
         (item) => item.key !== 'agent-portal' && item.key !== 'staff-portal'
       )
     );
 
-    const gameManagementItem = baseItems.find((item) => item.key === 'game-management');
-    if (gameManagementItem) {
-      const sicboManagementItem = gameManagementItem.children?.find(
-        (item) => item.key === 'sicbo-management'
-      );
-      
-      if (sicboManagementItem) {
-        const staffPortal = adminMenuItems.find((item) => item.key === 'staff-portal');
-        const staffResultItems = [];
+    // Ẩn menu "Quản lý admin phụ" nếu không phải ADMIN
+    if (!isAdmin) {
+      const userManagementItem = baseItems.find((item) => item.key === 'user-management');
+      if (userManagementItem?.children) {
+        userManagementItem.children = userManagementItem.children.filter(
+          (child) => child.key !== 'sub-admin-management'
+        );
+      }
+    }
 
-        if (staffPortal?.children) {
-          staffPortal.children.forEach((section) => {
-            if (section.key === 'staff-tx1' || section.key === 'staff-tx2') {
-              section.children?.forEach((child) => {
-                if (
-                  child.key === 'staff-tx1-sicbo-results' ||
-                  child.key === 'staff-tx2-sicbo-results'
-                ) {
-                  staffResultItems.push({ ...child, icon: undefined });
-                }
-              });
-            }
-          });
-        }
+    // Ẩn các tab kết quả game nếu là SUB_ADMIN
+    if (isSubAdmin) {
+      const gameManagementItem = baseItems.find((item) => item.key === 'game-management');
+      if (gameManagementItem?.children) {
+        gameManagementItem.children = gameManagementItem.children.map((child) => {
+          if (child.key === 'lottery-management') {
+            // Ẩn tab "Kết quả xổ số"
+            return {
+              ...child,
+              children: child.children?.filter(
+                (subChild) => subChild.key !== 'game-results'
+              )
+            };
+          }
+          if (child.key === 'xoc-dia-management') {
+            // Ẩn tab "Kết quả Xóc Đĩa"
+            return {
+              ...child,
+              children: child.children?.filter(
+                (subChild) => subChild.key !== 'xoc-dia-results'
+              )
+            };
+          }
+          if (child.key === 'sicbo-management') {
+            // Ẩn các tab kết quả Tài Xỉu
+            return {
+              ...child,
+              children: child.children?.filter(
+                (subChild) => 
+                  subChild.key !== 'staff-tx1-sicbo-results' &&
+                  subChild.key !== 'staff-tx2-sicbo-results'
+              )
+            };
+          }
+          return child;
+        });
+      }
+    } else {
+      // Logic cũ cho ADMIN: merge staff result items
+      const gameManagementItem = baseItems.find((item) => item.key === 'game-management');
+      if (gameManagementItem) {
+        const sicboManagementItem = gameManagementItem.children?.find(
+          (item) => item.key === 'sicbo-management'
+        );
+        
+        if (sicboManagementItem) {
+          const staffPortal = adminMenuItems.find((item) => item.key === 'staff-portal');
+          const staffResultItems = [];
 
-        if (staffResultItems.length > 0) {
-          const existingKeys = new Set(
-            (sicboManagementItem.children || []).map((child) => child.key)
-          );
-          const mergedChildren = [
-            ...(sicboManagementItem.children || []),
-            ...staffResultItems.filter((item) => !existingKeys.has(item.key))
-          ];
-          sicboManagementItem.children = mergedChildren;
+          if (staffPortal?.children) {
+            staffPortal.children.forEach((section) => {
+              if (section.key === 'staff-tx1' || section.key === 'staff-tx2') {
+                section.children?.forEach((child) => {
+                  if (
+                    child.key === 'staff-tx1-sicbo-results' ||
+                    child.key === 'staff-tx2-sicbo-results'
+                  ) {
+                    staffResultItems.push({ ...child, icon: undefined });
+                  }
+                });
+              }
+            });
+          }
+
+          if (staffResultItems.length > 0) {
+            const existingKeys = new Set(
+              (sicboManagementItem.children || []).map((child) => child.key)
+            );
+            const mergedChildren = [
+              ...(sicboManagementItem.children || []),
+              ...staffResultItems.filter((item) => !existingKeys.has(item.key))
+            ];
+            sicboManagementItem.children = mergedChildren;
+          }
         }
       }
     }
@@ -380,6 +435,7 @@ const AdminSidebar = ({ collapsed, onToggleCollapse }) => {
       'staff-management': () => goTo('/dashboard?tab=staff-management'),
       'user-roles': () => goTo('/dashboard?tab=staff-management'),
       'login-history': () => goTo('/dashboard?tab=login-history'),
+      'sub-admin-management': () => goTo('/dashboard?tab=sub-admin-management'),
       deposits: () => goTo('/dashboard?tab=deposits'),
       withdraws: () => goTo('/dashboard?tab=withdraws'),
       'payment-methods': () => goTo('/dashboard?tab=payment-methods'),

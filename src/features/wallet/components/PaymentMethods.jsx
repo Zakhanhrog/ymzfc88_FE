@@ -74,8 +74,10 @@ const PaymentMethods = () => {
         return <CreditCardOutlined style={{ color: '#f7931a' }} />;
       case 'ZALO_PAY':
         return <MobileOutlined style={{ color: '#0068ff' }} />;
-      case 'VIET_QR':
+      case 'VIETTEL_QR':
         return <QrcodeOutlined style={{ color: '#00a84f' }} />;
+      case 'CARD_PC':
+        return <CreditCardOutlined style={{ color: '#722ed1' }} />;
       default:
         return <CreditCardOutlined />;
     }
@@ -91,8 +93,10 @@ const PaymentMethods = () => {
         return 'USDT';
       case 'ZALO_PAY':
         return 'ZaloPay';
-      case 'VIET_QR':
-        return 'VietQR';
+      case 'VIETTEL_QR':
+        return 'Viettel QR';
+      case 'CARD_PC':
+        return 'Card PC';
       default:
         return type;
     }

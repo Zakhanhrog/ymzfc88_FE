@@ -39,6 +39,8 @@ const DepositWithdraw = () => {
   const [checkingStatus, setCheckingStatus] = useState(false);
   const pollingIntervalRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [countdown, setCountdown] = useState(600); // 10 phút = 600 giây
+  const countdownIntervalRef = useRef(null);
 
   const stopStatusPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
@@ -132,6 +134,25 @@ const DepositWithdraw = () => {
           setTransactionResult(transaction);
           setCurrentStep(3);
           setAmount(transaction.amount);
+          // Reset countdown khi restore
+          setCountdown(600);
+          
+          // Bắt đầu countdown timer
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+          }
+          countdownIntervalRef.current = setInterval(() => {
+            setCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(countdownIntervalRef.current);
+                handleReset();
+                message.info('Đã hết thời gian. Vui lòng tạo lệnh mới.');
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
           // Tiếp tục polling nếu có transaction ID
           if (transaction.id) {
             startStatusPolling(transaction.id);
@@ -256,23 +277,23 @@ const DepositWithdraw = () => {
       return false;
     }
     
-    // Validation cho nạp tiền
-    if (numValue < 10000) {
-      setAmountError('Số tiền nạp tối thiểu là 10,000 VNĐ');
-      return false;
-    }
-    if (numValue > 100000000) {
-      setAmountError('Số tiền nạp tối đa là 100,000,000 VNĐ');
-      return false;
-    }
-    
-    // Validation theo payment method nếu có
+    // Validation theo payment method (ưu tiên)
     if (selectedMethod.minAmount && numValue < selectedMethod.minAmount) {
       setAmountError(`Số tiền tối thiểu cho phương thức này là ${formatCurrency(selectedMethod.minAmount)}`);
       return false;
     }
     if (selectedMethod.maxAmount && numValue > selectedMethod.maxAmount) {
       setAmountError(`Số tiền tối đa cho phương thức này là ${formatCurrency(selectedMethod.maxAmount)}`);
+      return false;
+    }
+    
+    // Validation chung (fallback nếu không có payment method)
+    if (!selectedMethod.minAmount && numValue < 10000) {
+      setAmountError('Số tiền nạp tối thiểu là 10,000 VNĐ');
+      return false;
+    }
+    if (!selectedMethod.maxAmount && numValue > 300000000) {
+      setAmountError('Số tiền nạp tối đa là 300,000,000 VNĐ');
       return false;
     }
     
@@ -307,7 +328,7 @@ const DepositWithdraw = () => {
       return;
     }
     
-    // Nếu phương thức có channelCode (auto deposit OKDPAY) thì tạo đơn luôn
+    // Nếu phương thức có channelCode (auto deposit KPay) thì tạo đơn luôn
     if (selectedMethod.channelCode) {
       await handleConfirmPayment();
       return;
@@ -374,6 +395,8 @@ const DepositWithdraw = () => {
       const response = await walletService.createDepositOrder(depositData);
       if (response.success) {
         setTransactionResult(response.data);
+        // Reset countdown khi tạo lệnh mới
+        setCountdown(600);
 
         // Trường hợp auto deposit và có gatewayPayUrl -> điều hướng đến trang thanh toán
         if (response.data.isAutoDeposit && response.data.gatewayPayUrl) {
@@ -387,7 +410,23 @@ const DepositWithdraw = () => {
             startStatusPolling(response.data.id);
           }
           
-          // Điều hướng trực tiếp đến trang thanh toán OKDPAY
+          // Bắt đầu countdown timer
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+          }
+          countdownIntervalRef.current = setInterval(() => {
+            setCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(countdownIntervalRef.current);
+                handleReset();
+                message.info('Đã hết thời gian. Vui lòng tạo lệnh mới.');
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          // Điều hướng trực tiếp đến trang thanh toán KPay
           setTimeout(() => {
             window.location.href = response.data.gatewayPayUrl;
           }, 500);
@@ -421,6 +460,12 @@ const DepositWithdraw = () => {
   };
 
   const handleReset = () => {
+    // Clear countdown interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    setCountdown(600);
     setCurrentStep(0);
     setSelectedMethod(null);
     setAmount(null);
@@ -440,6 +485,9 @@ const DepositWithdraw = () => {
   useEffect(() => {
     return () => {
       stopStatusPolling();
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
     };
   }, [stopStatusPolling]);
 
@@ -923,7 +971,6 @@ const DepositWithdraw = () => {
                       <div className="space-y-2 mt-2">
                         <p>Nhấn nút bên dưới để chuyển đến trang thanh toán.</p>
                         <div className="flex flex-col items-center gap-2">
-                          <QRCode value={gatewayPayUrl} size={220} />
                           <Button 
                             variant="outline"
                             onClick={() => copyToClipboard(gatewayPayUrl)}
@@ -939,6 +986,12 @@ const DepositWithdraw = () => {
                             <span className="text-xs">Đang kiểm tra trạng thái thanh toán...</span>
                           </div>
                         )}
+                        <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
+                          <Clock className="w-4 h-4 text-orange-500" />
+                          <span className="text-sm font-medium text-orange-600">
+                            Tự động đóng sau: {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
+                          </span>
+                        </div>
                       </div>
                     }
                     showIcon

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Form, Input, Button, message, Divider } from 'antd';
+import { Form, Input, Button, Divider } from 'antd';
+import { message } from '../../../utils/notification';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import walletService from '../services/walletService';

@@ -126,9 +126,9 @@ const Header = ({
                 {/* Notifications Icon */}
                 <button 
                   onClick={() => setShowNotificationSheet(true)}
-                  className="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 rounded-lg relative"
+                  className="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 rounded-lg relative hover:bg-gray-50 transition-colors"
                 >
-                  <Icon icon="mdi:bell-outline" className="w-5 h-5 text-gray-700" />
+                  <Icon icon="solar:bell-bold" className="w-5 h-5 text-gray-700" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-lg animate-pulse">
                       {unreadCount > 99 ? '99+' : unreadCount}
@@ -180,9 +180,9 @@ const Header = ({
                   <button 
                     onClick={() => navigate('/notifications', { replace: false })}
                     data-notification-button
-                    className="w-[32px] h-[32px] flex items-center justify-center bg-gray-200 rounded-lg"
+                    className="w-[32px] h-[32px] flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                   >
-                    <Icon icon="mdi:bell-outline" className="w-6 h-6 text-gray-700" />
+                    <Icon icon="solar:bell-bold" className="w-6 h-6 text-gray-700" />
                   </button>
                   {/* Notification badge */}
                   {unreadCount > 0 && (

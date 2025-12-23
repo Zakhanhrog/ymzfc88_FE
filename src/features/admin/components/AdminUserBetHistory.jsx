@@ -154,6 +154,7 @@ const AdminUserBetHistory = () => {
       }
     } catch (error) {
       console.error('Lỗi khi tải thống kê cược người dùng:', error);
+      // Silent fail - không hiển thị notification cho lỗi tải dữ liệu
     } finally {
       setSummaryLoading(false);
     }
@@ -220,6 +221,7 @@ const AdminUserBetHistory = () => {
         }
       } catch (error) {
         console.error('Lỗi khi tải chi tiết cược người dùng:', error);
+        // Silent fail - không hiển thị notification cho lỗi tải dữ liệu
       } finally {
         setDetailLoading(false);
       }
